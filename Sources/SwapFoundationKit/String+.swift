@@ -1,4 +1,16 @@
+/*****************************************************************************
+ * String+.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
+ 
 import Foundation
+import SwiftUI
 
 public extension String {
     /// Returns true if the string is blank (empty or whitespace only).
@@ -52,5 +64,14 @@ public extension String {
     var wordCount: Int {
         let words = components(separatedBy: CharacterSet.whitespacesAndNewlines).filter { !$0.isEmpty }
         return words.count
+    }
+
+    func localized(comment: String? = nil) -> String {
+        NSLocalizedString(self, comment: comment ?? "")
+    }
+
+    @available(iOS 14.0, *)
+    func localized() -> LocalizedStringKey {
+        LocalizedStringKey(self)
     }
 }
