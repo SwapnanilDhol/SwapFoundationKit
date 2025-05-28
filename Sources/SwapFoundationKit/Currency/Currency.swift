@@ -11,7 +11,7 @@
 
 import SwiftUI
 
- public enum Currency: String, CaseIterable, Hashable, Codable {
+public enum Currency: String, CaseIterable, Hashable, Codable {
 
     case AUD
     case INR
@@ -51,7 +51,7 @@ import SwiftUI
     case ARS
     case LKR
 
-     var description: LocalizedStringKey {
+    public var description: LocalizedStringKey {
         switch self {
         case .EUR:
             return "Euro"
@@ -130,7 +130,7 @@ import SwiftUI
         }
     }
 
-    var symbol: String {
+    public var symbol: String {
         switch self {
         case .AUD:
             return "🇦🇺"
@@ -209,7 +209,7 @@ import SwiftUI
         }
     }
 
-    var currencySymbol: String {
+    public var currencySymbol: String {
         switch self {
         case .AUD:
             return "A$"
@@ -290,12 +290,12 @@ import SwiftUI
 }
 
 // Wrapper for concurrency-safe access
-struct CurrencyRates: @unchecked Sendable {
+public struct CurrencyRates: @unchecked Sendable {
     let rates: [Currency: Double]
 }
 
 extension Currency {
-   static let fallBackExchangeRates = CurrencyRates(rates: [
+    public static let fallBackExchangeRates = CurrencyRates(rates: [
         .EUR: 1.0,
         .USD: 1.08,
         .GBP: 0.85,

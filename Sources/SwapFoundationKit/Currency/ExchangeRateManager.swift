@@ -11,23 +11,44 @@
  
 import Foundation
 
+/// Codable struct for cache serialization
+private struct RatePair: Codable {
+    let code: String
+    let rate: Double
+}
+
 /// An actor-based manager for currency exchange rates.
 public actor ExchangeRateManager: NSObject, XMLParserDelegate {
     public static let shared = ExchangeRateManager()
 
     private let exchangeRateURL = URL(string: "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")!
+    private let cacheFileName = "exchangeRatesCache.json"
+    private var cacheFileURL: URL {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return dir.appendingPathComponent(cacheFileName)
+    }
 
     private(set) var exchangeRates = Currency.fallBackExchangeRates.rates
 
     private override init() { }
 
-    /// Fetches and updates exchange rates from the ECB.
+    /// Call this on app launch to load cached rates if available.
+    public func start() async {
+        if let cached = await loadRatesFromCache() {
+            exchangeRates = cached
+        } else {
+            exchangeRates = Currency.fallBackExchangeRates.rates
+        }
+    }
+
+    /// Fetches and updates exchange rates from the ECB, then caches them.
     public func cacheExchangeRates() async {
         do {
             let (data, _) = try await URLSession.shared.data(from: exchangeRateURL)
             let parser = XMLParser(data: data)
             parser.delegate = self
             parser.parse()
+            await saveRatesToCache()
         } catch {
             print("Failed to fetch exchange rates: \(error)")
         }
@@ -71,5 +92,33 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
             return
         }
         exchangeRates[availableCurrency] = doubleRate
+    }
+
+    // MARK: - Caching Helpers
+
+    private func saveRatesToCache() async {
+        do {
+            let pairs = exchangeRates.map { RatePair(code: $0.key.rawValue, rate: $0.value) }
+            let data = try JSONEncoder().encode(pairs)
+            try data.write(to: cacheFileURL, options: .atomic)
+        } catch {
+            print("Failed to save exchange rates cache: \(error)")
+        }
+    }
+
+    private func loadRatesFromCache() async -> [Currency: Double]? {
+        do {
+            let data = try Data(contentsOf: cacheFileURL)
+            let pairs = try JSONDecoder().decode([RatePair].self, from: data)
+            var dict: [Currency: Double] = [:]
+            for pair in pairs {
+                if let currency = Currency(rawValue: pair.code) {
+                    dict[currency] = pair.rate
+                }
+            }
+            return dict.isEmpty ? nil : dict
+        } catch {
+            return nil
+        }
     }
 }
