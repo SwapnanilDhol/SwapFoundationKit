@@ -26,46 +26,46 @@ public final class HapticsHelper {
 
     private let impactFeedbackGenerator = UIImpactFeedbackGenerator()
     private let notificationFeedbackGenerator = UINotificationFeedbackGenerator()
-    static let shared = HapticsHelper()
+    public static let shared = HapticsHelper()
 
     public init() {
         impactFeedbackGenerator.prepare()
         notificationFeedbackGenerator.prepare()
     }
 
-    func lightButtonTap() {
+    public func lightButtonTap() {
         impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.buttonTapLight.rawValue)
     }
 
-    func mediumButtonTap() {
+    public func mediumButtonTap() {
         impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.buttonTapMedium.rawValue)
     }
 
-    func hardButtonTap() {
+    public func hardButtonTap() {
         impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.buttonTapHard.rawValue)
     }
 
-    func cellTap() {
+    public func cellTap() {
         impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.cellTap.rawValue)
     }
 
-    func barButtonTap() {
+    public func barButtonTap() {
         impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.barButtonTap.rawValue)
     }
 
-    func segmentChangedValue() {
+    public func segmentChangedValue() {
         impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.segmentValueChange.rawValue)
     }
 
-    func success() {
+    public func success() {
         notificationFeedbackGenerator.notificationOccurred(.success)
     }
 
-    func warning() {
+    public func warning() {
         notificationFeedbackGenerator.notificationOccurred(.warning)
     }
 
-    func error() {
+    public func error() {
         notificationFeedbackGenerator.notificationOccurred(.error)
     }
 }
