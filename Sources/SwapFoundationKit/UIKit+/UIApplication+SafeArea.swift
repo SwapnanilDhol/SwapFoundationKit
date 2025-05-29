@@ -16,7 +16,7 @@
     /// Returns the safe area padding for a given edge.
     /// - Parameter edge: The edge to get the safe area padding for.
     /// - Returns: The safe area padding for the given edge.
-    static func safeAreaPadding(for edge: UIRectEdge) -> CGFloat {
+    func safeAreaPadding(for edge: UIRectEdge) -> CGFloat {
         guard let window = connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first?.windows.first else {
