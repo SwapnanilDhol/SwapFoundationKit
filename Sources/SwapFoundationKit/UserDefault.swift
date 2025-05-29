@@ -34,3 +34,16 @@ public struct UserDefault<T, Key: UserDefaultKeyProtocol> {
         self.container = container
     }
 }
+
+public extension UserDefaults {
+
+    static func incrementCounter(for key: UserDefaultKeyProtocol) {
+        let currentValue = self.integer(forKey: key.keyString)
+        self.set(currentValue + 1, forKey: key.keyString)
+    }
+
+    static func decrementCounter(for key: UserDefaultKeyProtocol) {
+        let currentValue = self.integer(forKey: key.keyString)
+        self.set(currentValue - 1, forKey: key.keyString)
+    }
+}
