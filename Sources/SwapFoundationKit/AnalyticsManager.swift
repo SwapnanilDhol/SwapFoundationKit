@@ -8,7 +8,7 @@
  *
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
- 
+
 import Foundation
 #if canImport(UIKit)
 import UIKit
@@ -30,11 +30,11 @@ public protocol AnalyticsEvent: Sendable {
 // MARK: - Sendable wrapper for telemetry data
 public struct TelemetryData: Sendable {
     public let data: [String: any Sendable]
-    
+
     public init(_ data: [String: any Sendable]) {
         self.data = data
     }
-    
+
     /// Convert to [String: Any] for compatibility with existing APIs
     public var dictionary: [String: Any] {
         data.mapValues { $0 as Any }
@@ -101,7 +101,7 @@ public actor AnalyticsManager {
     // MARK: - Private
 
     private var eventBuffer: [AnalyticsEvent] = []
-    
+
     @MainActor
     private var flushTimer: Timer?
 
@@ -129,9 +129,9 @@ public actor AnalyticsManager {
                 Task { await self.flush() }
             }
             self.flushTimer = timer
-            #if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS)
             RunLoop.main.add(timer, forMode: .common)
-            #endif
+#endif
         }
     }
 
@@ -143,12 +143,12 @@ public actor AnalyticsManager {
         // --- App Info ---
         context["app_bundle_id"] = bundle.bundleIdentifier
         context["app_display_name"] = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ??
-            bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? ""
-        #if DEBUG
+        bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? ""
+#if DEBUG
         context["app_build_type"] = "debug"
-        #else
+#else
         context["app_build_type"] = "release"
-        #endif
+#endif
         // Install/update date
         if let url = bundle.bundleURL as URL?,
            let attrs = try? FileManager.default.attributesOfItem(atPath: url.path) {
@@ -160,7 +160,7 @@ public actor AnalyticsManager {
             }
         }
         // --- Device Info ---
-        #if canImport(UIKit)
+#if canImport(UIKit)
         let deviceInfo = await MainActor.run { () -> [String: any Sendable] in
             var dict: [String: any Sendable] = [:]
             let device = UIDevice.current
@@ -169,11 +169,11 @@ public actor AnalyticsManager {
             dict["system_name"] = device.systemName
             dict["system_version"] = device.systemVersion
             dict["is_simulator"] = {
-                #if targetEnvironment(simulator)
+#if targetEnvironment(simulator)
                 return true
-                #else
+#else
                 return false
-                #endif
+#endif
             }()
             dict["device_type"] = device.userInterfaceIdiom == .pad ? "iPad" : device.userInterfaceIdiom == .phone ? "iPhone" : "other"
             dict["device_orientation"] = device.orientation.isPortrait ? "portrait" : device.orientation.isLandscape ? "landscape" : "unknown"
@@ -209,7 +209,7 @@ public actor AnalyticsManager {
             return dict
         }
         for (k, v) in deviceInfo { context[k] = v }
-        #endif
+#endif
         // --- System Info ---
         context["os"] = ProcessInfo.processInfo.operatingSystemVersionString
         context["locale"] = Locale.current.identifier
@@ -225,11 +225,11 @@ public actor AnalyticsManager {
             }
         }
         // --- Network Info ---
-        #if canImport(Network)
+#if canImport(Network)
         let networkInfo = await withCheckedContinuation { (continuation: CheckedContinuation<(String, Bool), Never>) in
             let monitor = NWPathMonitor()
             let queue = DispatchQueue(label: "NetworkMonitor")
-            
+
             monitor.pathUpdateHandler = { path in
                 let networkType: String
                 if path.usesInterfaceType(.wifi) { networkType = "wifi" }
@@ -238,15 +238,15 @@ public actor AnalyticsManager {
                 else if path.usesInterfaceType(.loopback) { networkType = "loopback" }
                 else if path.usesInterfaceType(.other) { networkType = "other" }
                 else { networkType = "unknown" }
-                
+
                 let isVPN = path.status == .satisfied && path.availableInterfaces.contains(where: { $0.type == .other })
-                
+
                 monitor.cancel()
                 continuation.resume(returning: (networkType, isVPN))
             }
-            
+
             monitor.start(queue: queue)
-            
+
             // Timeout after 100ms
             queue.asyncAfter(deadline: .now() + 0.1) {
                 monitor.cancel()
@@ -260,30 +260,41 @@ public actor AnalyticsManager {
     }
 }
 
-// MARK: - Example Usage (in your app, not the framework)
-/*
-public enum AppAnalyticsEvent: AnalyticsEvent {
-    case appLaunched
-    case userSignedIn(userId: String)
-    case purchase(amount: Double, currency: String)
-    // ...add more
-
-    public var name: String {
-        switch self {
-        case .appLaunched: return "app_launched"
-        case .userSignedIn: return "user_signed_in"
-        case .purchase: return "purchase"
-        }
+// MARK: - AnalyticsManager Configuration
+public extension AnalyticsManager {
+    func setUserProperties(_ properties: [String: any Sendable]) {
+        self.userProperties = properties
     }
-    public var parameters: [String: any Sendable] {
-        switch self {
-        case .appLaunched: return [:]
-        case .userSignedIn(let userId): return ["user_id": userId]
-        case .purchase(let amount, let currency): return ["amount": amount, "currency": currency]
-        }
+
+    func setSendTelemetry(_ closure: @escaping @Sendable (AnalyticsEvent, TelemetryData) -> Void) {
+        self.sendTelemetry = closure
     }
 }
 
-// In your app's startup code:
-// await AnalyticsManager.shared.logEvent(AppAnalyticsEvent.userSignedIn(userId: "123"))
-*/ 
+// MARK: - Example Usage (in your app, not the framework)
+/*
+ public enum AppAnalyticsEvent: AnalyticsEvent {
+ case appLaunched
+ case userSignedIn(userId: String)
+ case purchase(amount: Double, currency: String)
+ // ...add more
+
+ public var name: String {
+ switch self {
+ case .appLaunched: return "app_launched"
+ case .userSignedIn: return "user_signed_in"
+ case .purchase: return "purchase"
+ }
+ }
+ public var parameters: [String: any Sendable] {
+ switch self {
+ case .appLaunched: return [:]
+ case .userSignedIn(let userId): return ["user_id": userId]
+ case .purchase(let amount, let currency): return ["amount": amount, "currency": currency]
+ }
+ }
+ }
+
+ // In your app's startup code:
+ // await AnalyticsManager.shared.logEvent(AppAnalyticsEvent.userSignedIn(userId: "123"))
+ */
