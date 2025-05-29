@@ -35,22 +35,28 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
     /// Call this on app launch to load cached rates if available.
     public func start() async {
         if let cached = await loadRatesFromCache() {
+            Logger.info("Loaded exchange rates from cache")
             exchangeRates = cached
         } else {
+            Logger.info("No cached exchange rates found, using fallback rates")
             exchangeRates = Currency.fallBackExchangeRates.rates
         }
+        await cacheExchangeRates()
     }
 
     /// Fetches and updates exchange rates from the ECB, then caches them.
-    public func cacheExchangeRates() async {
+    private func cacheExchangeRates() async {
         do {
             let (data, _) = try await URLSession.shared.data(from: exchangeRateURL)
             let parser = XMLParser(data: data)
             parser.delegate = self
+            Logger.info("Parsing exchange rates from XML")
             parser.parse()
+            Logger.info("Exchange rates parsed successfully")
             await saveRatesToCache()
+            Logger.info("Exchange rates cached successfully")
         } catch {
-            print("Failed to fetch exchange rates: \(error)")
+            Logger.error("Failed to fetch exchange rates: \(error)")
         }
     }
 
@@ -102,7 +108,7 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
             let data = try JSONEncoder().encode(pairs)
             try data.write(to: cacheFileURL, options: .atomic)
         } catch {
-            print("Failed to save exchange rates cache: \(error)")
+            Logger.error("Failed to save exchange rates cache: \(error)")
         }
     }
 
