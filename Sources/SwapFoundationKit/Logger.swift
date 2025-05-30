@@ -39,6 +39,9 @@ public enum LogLevel: String, Sendable {
 public enum Logger {
     public static let minimumLevel: LogLevel = .debug // Change to .info for less verbosity
 
+    /// If true, send an analytics event when an error is logged.
+    public static var sendAnalyticsOnError: Bool = false
+
     public static func log(
         _ level: LogLevel,
         _ message: String,
@@ -56,6 +59,17 @@ public enum Logger {
         let color = level.color
         let reset = "\u{001B}[0m"
         print("\(color)\(level.emoji) [\(projectName)][\(timestamp)][\(level.rawValue)] [\(fileName):\(line) \(function)] [\(thread)]\(contextString) - \(message)\(reset)")
+        if level == .error && sendAnalyticsOnError {
+            Task {
+                await AnalyticsManager.shared.logEvent(LoggerAnalyticsEvent.errorLogged(
+                    message: message,
+                    context: context,
+                    function: function,
+                    file: file,
+                    line: line
+                ))
+            }
+        }
     }
 
     public static func info(_ message: String, context: String? = nil, function: String = #function, file: String = #file, line: Int = #line) {
@@ -85,5 +99,28 @@ public enum Logger {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
         return formatter.string(from: Date())
+    }
+}
+
+/// Analytics event for logger errors
+private enum LoggerAnalyticsEvent: AnalyticsEvent {
+    case errorLogged(message: String, context: String?, function: String, file: String, line: Int)
+
+    var name: String {
+        switch self {
+        case .errorLogged: return "logger_error_logged"
+        }
+    }
+    var parameters: [String: any Sendable] {
+        switch self {
+        case let .errorLogged(message, context, function, file, line):
+            return [
+                "message": message,
+                "context": context ?? "",
+                "function": function,
+                "file": file,
+                "line": line
+            ]
+        }
     }
 }
