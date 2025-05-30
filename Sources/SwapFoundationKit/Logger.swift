@@ -36,11 +36,29 @@ public enum LogLevel: String, Sendable {
     }
 }
 
+actor LoggerSettings {
+    static let shared = LoggerSettings()
+    private var _sendAnalyticsOnError: Bool = false
+
+    var sendAnalyticsOnError: Bool {
+        get { _sendAnalyticsOnError }
+    }
+
+    func setSendAnalyticsOnError(_ value: Bool) {
+        _sendAnalyticsOnError = value
+    }
+}
+
 public enum Logger {
     public static let minimumLevel: LogLevel = .debug // Change to .info for less verbosity
 
-    /// If true, send an analytics event when an error is logged.
-    public static var sendAnalyticsOnError: Bool = false
+    public static func setSendAnalyticsOnError(_ value: Bool) async {
+        await LoggerSettings.shared.setSendAnalyticsOnError(value)
+    }
+
+    public static func getSendAnalyticsOnError() async -> Bool {
+        await LoggerSettings.shared.sendAnalyticsOnError
+    }
 
     public static func log(
         _ level: LogLevel,
@@ -59,8 +77,9 @@ public enum Logger {
         let color = level.color
         let reset = "\u{001B}[0m"
         print("\(color)\(level.emoji) [\(projectName)][\(timestamp)][\(level.rawValue)] [\(fileName):\(line) \(function)] [\(thread)]\(contextString) - \(message)\(reset)")
-        if level == .error && sendAnalyticsOnError {
-            Task {
+        Task {
+            let shouldSendAnalytics = await LoggerSettings.shared.sendAnalyticsOnError
+            if level == .error && shouldSendAnalytics {
                 await AnalyticsManager.shared.logEvent(LoggerAnalyticsEvent.errorLogged(
                     message: message,
                     context: context,
