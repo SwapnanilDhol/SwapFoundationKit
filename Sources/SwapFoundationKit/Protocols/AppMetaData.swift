@@ -21,4 +21,6 @@
     var appPrivacyPolicyUrl: URL? { get }
     var appEULAUrl: URL? { get }
     var appSupportEmail: String? { get }
+
+    var developerWebsite: URL? { get }
  }
