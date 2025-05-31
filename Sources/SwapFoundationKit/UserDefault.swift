@@ -72,7 +72,7 @@ public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicPro
     ///   - key: The key to use for UserDefaults.
     ///   - defaultValue: The default value if no value is stored.
     ///   - container: The UserDefaults instance to use (default: .standard).
-    init(_ key: Key, default defaultValue: T, container: UserDefaults = .standard) {
+    public init(_ key: Key, default defaultValue: T, container: UserDefaults = .standard) {
         self.box = UserDefaultBox(key: key.keyString, defaultValue: defaultValue, container: container)
     }
 }
