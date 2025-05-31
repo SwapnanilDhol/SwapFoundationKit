@@ -51,6 +51,7 @@ final class UserDefaultBox<T: Equatable>: ObservableObject {
 /// A property wrapper for type-safe, observable UserDefaults access with SwiftUI support.
 ///
 /// Use with a key conforming to `UserDefaultKeyProtocol` and an `Equatable` value type.
+@MainActor
 @propertyWrapper
 struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicProperty {
     @ObservedObject private var box: UserDefaultBox<T>
