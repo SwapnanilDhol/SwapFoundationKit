@@ -12,15 +12,15 @@
 import Foundation
 
 public protocol AppMetaData {
-    var appID: String { get }
-    var appName: String { get }
-    var appShareDescription: String { get }
-    var appInstagramUrl: URL? { get }
-    var appTwitterUrl: URL? { get }
-    var appWebsiteUrl: URL? { get }
-    var appPrivacyPolicyUrl: URL? { get }
-    var appEULAUrl: URL? { get }
-    var appSupportEmail: String? { get }
+    static var appID: String { get }
+    static var appName: String { get }
+    static var appShareDescription: String { get }
+    static var appInstagramUrl: URL? { get }
+    static var appTwitterUrl: URL? { get }
+    static var appWebsiteUrl: URL? { get }
+    static var appPrivacyPolicyUrl: URL? { get }
+    static var appEULAUrl: URL? { get }
+    static var appSupportEmail: String? { get }
 
-    var developerWebsite: URL? { get }
+    static var developerWebsite: URL? { get }
 }
