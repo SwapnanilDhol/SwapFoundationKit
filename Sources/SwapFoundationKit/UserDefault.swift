@@ -53,7 +53,7 @@ final class UserDefaultBox<T: Equatable>: ObservableObject {
 /// Use with a key conforming to `UserDefaultKeyProtocol` and an `Equatable` value type.
 @MainActor
 @propertyWrapper
-struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicProperty {
+public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicProperty {
     @ObservedObject private var box: UserDefaultBox<T>
 
     /// The value stored in UserDefaults.
