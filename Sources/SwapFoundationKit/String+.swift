@@ -70,8 +70,8 @@ public extension String {
         NSLocalizedString(self, comment: comment ?? "")
     }
 
-    @available(iOS 14.0, *)
-    func localized() -> LocalizedStringKey {
-        LocalizedStringKey(self)
+    @available(iOS 16.0, *)
+    func localized() -> LocalizedStringResource {
+        LocalizedStringResource(stringLiteral: self)
     }
 }
