@@ -57,13 +57,13 @@ public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicPro
     @ObservedObject private var box: UserDefaultBox<T>
 
     /// The value stored in UserDefaults.
-    var wrappedValue: T {
+    public var wrappedValue: T {
         get { box.value }
         nonmutating set { box.value = newValue }
     }
 
     /// A SwiftUI binding to the value.
-    var projectedValue: Binding<T> {
+    public var projectedValue: Binding<T> {
         Binding(get: { self.box.value }, set: { self.box.value = $0 })
     }
 
