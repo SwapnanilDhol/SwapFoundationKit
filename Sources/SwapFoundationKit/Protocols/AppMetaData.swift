@@ -8,13 +8,13 @@
  *
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
- 
- import Foundation
 
- public protocol AppMetaData {
+import Foundation
+
+public protocol AppMetaData {
     var appID: String { get }
     var appName: String { get }
-    var appShareDescription: LocalizedStringResource { get }
+    var appShareDescription: String { get }
     var appInstagramUrl: URL? { get }
     var appTwitterUrl: URL? { get }
     var appWebsiteUrl: URL? { get }
@@ -23,4 +23,4 @@
     var appSupportEmail: String? { get }
 
     var developerWebsite: URL? { get }
- }
+}
