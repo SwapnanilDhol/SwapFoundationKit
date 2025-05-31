@@ -23,4 +23,5 @@ public protocol AppMetaData {
     static var appSupportEmail: String? { get }
 
     static var developerWebsite: URL? { get }
+    static var developerTwitterUrl: URL? { get }
 }
