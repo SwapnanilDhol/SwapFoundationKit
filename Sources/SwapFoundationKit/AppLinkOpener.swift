@@ -47,6 +47,22 @@ public enum AppLinkOpener {
         open(url: url)
     }
 
+    /// Opens the App Store page for the given app ID.
+    /// - Parameter appID: The App Store app identifier.
+    @MainActor
+    public static func openAppStorePage(appID: String) {
+        let url = appStoreURL(for: appID)
+        open(url: url)
+    }
+
+    /// Opens the App Store review page for the given app ID.
+    /// - Parameter appID: The App Store app identifier.
+    @MainActor
+    public static func openAppReviewPage(appID: String) {
+        let url = appReviewURL(for: appID)
+        open(url: url)
+    }
+
     // MARK: - URL Constructors
 
     /// Constructs an Apple Maps URL for the given coordinates.
