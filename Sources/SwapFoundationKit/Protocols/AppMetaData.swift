@@ -14,7 +14,7 @@
  public protocol AppMetaData {
     var appID: String { get }
     var appName: String { get }
-    var appShareDescription: String { get }
+    var appShareDescription: LocalizedStringResource { get }
     var appInstagramUrl: URL? { get }
     var appTwitterUrl: URL? { get }
     var appWebsiteUrl: URL? { get }
