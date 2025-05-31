@@ -11,27 +11,43 @@
 
 import Foundation
 
-/// Protocol for UserDefault keys, allowing enums or other types to be used as keys.
+import SwiftUI
+
 public protocol UserDefaultKeyProtocol {
     var keyString: String { get }
 }
 
-/// Property wrapper for type-safe UserDefaults access using protocol-based keys.
 @propertyWrapper
-public struct UserDefault<T, Key: UserDefaultKeyProtocol> {
+public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicProperty {
     let key: Key
     let defaultValue: T
     var container: UserDefaults = .standard
 
+    @State private var value: T
+
     public var wrappedValue: T {
-        get { container.object(forKey: key.keyString) as? T ?? defaultValue }
-        set { container.set(newValue, forKey: key.keyString) }
+        get { value }
+        nonmutating set {
+            if value != newValue {
+                value = newValue
+                container.set(newValue, forKey: key.keyString)
+            }
+        }
+    }
+
+    public var projectedValue: Binding<T> {
+        Binding(
+            get: { self.wrappedValue },
+            set: { self.wrappedValue = $0 }
+        )
     }
 
     public init(_ key: Key, default defaultValue: T, container: UserDefaults = .standard) {
         self.key = key
         self.defaultValue = defaultValue
         self.container = container
+        let stored = container.object(forKey: key.keyString) as? T
+        _value = State(initialValue: stored ?? defaultValue)
     }
 }
 
