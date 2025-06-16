@@ -61,24 +61,15 @@ public extension Date {
     }
 }
 
-// MARK: - DateFormatter Cache Actor
-actor DateFormatterCache {
-    private var cache: [String: DateFormatter] = [:]
-    func formatter(forKey key: String, builder: @Sendable @escaping () -> DateFormatter) -> DateFormatter {
-        if let cached = cache[key] { return cached }
-        let f = builder()
-        cache[key] = f
-        return f
-    }
-}
-
+// MARK: - DateFormatter Cache (Sync, Lock-Based)
 private extension DateFormatter {
-    private static let cacheActor = DateFormatterCache()
+    private static var cache: [String: DateFormatter] = [:]
+    private static let lock = NSLock()
 
     /// Returns a cached DateFormatter for the given date and time styles.
     static func cached(_ dateStyle: Style, _ timeStyle: Style) -> DateFormatter {
         let key = "\(dateStyle.rawValue)-\(timeStyle.rawValue)"
-        return cached(forKey: key, builder: { @Sendable () -> DateFormatter in
+        return cached(forKey: key, builder: { () -> DateFormatter in
             let f = DateFormatter()
             f.dateStyle = dateStyle
             f.timeStyle = timeStyle
@@ -87,18 +78,18 @@ private extension DateFormatter {
     }
     /// Returns a cached DateFormatter for a custom format.
     static func cached(format: String) -> DateFormatter {
-        return cached(forKey: format, builder: { @Sendable () -> DateFormatter in
+        return cached(forKey: format, builder: { () -> DateFormatter in
             let f = DateFormatter()
             f.dateFormat = format
             return f
         })
     }
-    private static func cached(forKey key: String, builder: @Sendable @escaping () -> DateFormatter) -> DateFormatter {
-        return withUnsafeContinuation { continuation in
-            Task {
-                let formatter = await cacheActor.formatter(forKey: key, builder: builder)
-                continuation.resume(returning: formatter)
-            }
-        }
+    private static func cached(forKey key: String, builder: () -> DateFormatter) -> DateFormatter {
+        lock.lock()
+        defer { lock.unlock() }
+        if let cached = cache[key] { return cached }
+        let f = builder()
+        cache[key] = f
+        return f
     }
 } 
