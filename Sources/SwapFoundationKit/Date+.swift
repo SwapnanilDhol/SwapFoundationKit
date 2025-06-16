@@ -62,6 +62,7 @@ public extension Date {
 }
 
 // MARK: - DateFormatter Cache (Sync, Lock-Based)
+@preconcurrency
 private extension DateFormatter {
     private static var cache: [String: DateFormatter] = [:]
     private static let lock = NSLock()
