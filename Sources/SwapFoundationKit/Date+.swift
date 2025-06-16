@@ -97,7 +97,7 @@ private extension DateFormatter {
         // Use Task for actor isolation, but block for sync API
         let semaphore = DispatchSemaphore(value: 0)
         var result: DateFormatter!
-        Task {
+        Task.detached {
             result = await cacheActor.formatter(forKey: key, builder: builder)
             semaphore.signal()
         }
