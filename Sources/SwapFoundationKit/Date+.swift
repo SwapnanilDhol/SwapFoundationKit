@@ -94,14 +94,11 @@ private extension DateFormatter {
         })
     }
     private static func cached(forKey key: String, builder: @Sendable @escaping () -> DateFormatter) -> DateFormatter {
-        // Use Task for actor isolation, but block for sync API
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: DateFormatter!
-        Task.detached {
-            result = await cacheActor.formatter(forKey: key, builder: builder)
-            semaphore.signal()
+        return withUnsafeContinuation { continuation in
+            Task {
+                let formatter = await cacheActor.formatter(forKey: key, builder: builder)
+                continuation.resume(returning: formatter)
+            }
         }
-        semaphore.wait()
-        return result
     }
 } 
