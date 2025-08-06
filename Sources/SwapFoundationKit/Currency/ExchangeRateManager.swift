@@ -86,7 +86,8 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
         attributes attributeDict: [String : String] = [:]
     ) {
         if elementName == "Cube", let currency = attributeDict["currency"], let rate = attributeDict["rate"] {
-            Task { [currency, rate] in
+            Task { [weak self, currency, rate] in
+                guard let self = self else { return }
                 await self.mergeExchangeRate(for: currency, with: rate)
             }
         }

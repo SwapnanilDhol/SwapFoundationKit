@@ -4,7 +4,7 @@ import Foundation
 
 struct BundleInfoPlistTests {
     // Helper: Create a mock bundle by subclassing Bundle
-    private final class MockBundle: Bundle {
+    private final class MockBundle: Bundle, @unchecked Sendable {
         let mockInfo: [String: Any]
         let mockResources: [String: [String: Any]]
         init(info: [String: Any], resources: [String: [String: Any]] = [:]) {

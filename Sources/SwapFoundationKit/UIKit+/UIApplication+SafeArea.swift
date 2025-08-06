@@ -8,10 +8,10 @@
  *
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
- 
- import UIKit
 
- public extension UIApplication {
+import UIKit
+
+public extension UIApplication {
 
     /// Returns the safe area padding for a given edge.
     /// - Parameter edge: The edge to get the safe area padding for.
@@ -38,4 +38,4 @@
             return 0
         }
     }  
- }
+}

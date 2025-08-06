@@ -10,15 +10,9 @@
  *****************************************************************************/
 
 import Foundation
-#if canImport(UIKit)
 import UIKit
-#endif
-#if canImport(Network)
 import Network
-#endif
-#if canImport(CoreTelephony)
 import CoreTelephony
-#endif
 
 // MARK: - AnalyticsEvent Protocol
 /// Protocol for analytics events. Define your events in your app using this protocol.
@@ -255,7 +249,7 @@ public actor AnalyticsManager {
         }
         context["network_type"] = networkInfo.0
         context["is_vpn_active"] = networkInfo.1
-        #endif
+#endif
         return TelemetryData(context)
     }
 }
