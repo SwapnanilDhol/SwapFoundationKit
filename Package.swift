@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwapFoundationKit",
     platforms: [
-        .iOS(.v13),
+        .iOS(.v16),
         .watchOS(.v6)
     ],
     products: [
