@@ -39,7 +39,7 @@ public protocol ItemDetailSource {
 }
 
 #if canImport(UIKit) && os(iOS)
-extension ItemDetailSource: UIActivityItemSource {
+extension ItemDetailSource {
     public func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
         return text
     }
