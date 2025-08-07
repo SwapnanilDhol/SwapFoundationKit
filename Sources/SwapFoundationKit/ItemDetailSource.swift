@@ -10,7 +10,9 @@
  *****************************************************************************/
 
 import UIKit
+#if canImport(LinkPresentation)
 import LinkPresentation
+#endif
 
 public final class ItemDetailSource: NSObject {
     public let name: String

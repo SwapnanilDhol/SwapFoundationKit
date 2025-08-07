@@ -12,7 +12,9 @@
 import Foundation
 import UIKit
 import Network
+#if canImport(CoreTelephony)
 import CoreTelephony
+#endif
 
 // MARK: - AnalyticsEvent Protocol
 /// Protocol for analytics events. Define your events in your app using this protocol.
