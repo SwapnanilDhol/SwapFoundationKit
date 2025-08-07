@@ -355,7 +355,7 @@ public extension Color {
     }
 
     init(hex: String) {
-        self.init(UIColor(hex: hex))
+        self.init(UIColor(hex: hex) ?? UIColor.black)
     }
 }
 #endif

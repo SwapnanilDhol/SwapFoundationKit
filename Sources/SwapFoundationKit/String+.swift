@@ -117,26 +117,26 @@ public extension String {
     }
     
 #if canImport(SwiftUI) && (os(iOS) || os(macOS))
-    /// Returns a localized version of the string using LocalizedStringResource (iOS 16+, macOS 13+).
-    @available(iOS 16.0, macOS 13.0, *)
+    /// Returns a localized version of the string using LocalizedStringResource.
+    @available(macOS 13.0, *)
     func localizedResource() -> LocalizedStringResource {
         return LocalizedStringResource(stringLiteral: self)
     }
     
-    /// Returns a localized version of the string using LocalizedStringResource with a specific bundle (iOS 16+, macOS 13+).
+    /// Returns a localized version of the string using LocalizedStringResource with a specific bundle.
     /// - Parameter bundle: The bundle to use for localization.
     /// - Returns: The localized string resource.
-    @available(iOS 16.0, macOS 13.0, *)
+    @available(macOS 13.0, *)
     func localizedResource(bundle: Bundle) -> LocalizedStringResource {
         return LocalizedStringResource(stringLiteral: self)
     }
     
-    /// Returns a localized version of the string using LocalizedStringResource with a specific bundle and table (iOS 16+, macOS 13+).
+    /// Returns a localized version of the string using LocalizedStringResource with a specific bundle and table.
     /// - Parameters:
     ///   - bundle: The bundle to use for localization.
     ///   - table: The table name to use for localization.
     /// - Returns: The localized string resource.
-    @available(iOS 16.0, macOS 13.0, *)
+    @available(macOS 13.0, *)
     func localizedResource(bundle: Bundle, table: String) -> LocalizedStringResource {
         return LocalizedStringResource(stringLiteral: self)
     }
