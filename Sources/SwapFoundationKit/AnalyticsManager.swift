@@ -10,10 +10,13 @@
  *****************************************************************************/
 
 import Foundation
-import UIKit
 import Network
 #if canImport(CoreTelephony)
 import CoreTelephony
+#endif
+
+#if canImport(UIKit) && os(iOS)
+import UIKit
 #endif
 
 // MARK: - AnalyticsEvent Protocol
@@ -39,6 +42,7 @@ public struct TelemetryData: Sendable {
 
 // MARK: - AnalyticsManager
 /// Advanced analytics manager with batching, context, and extensibility.
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public actor AnalyticsManager {
     public static let shared = AnalyticsManager()
     private init() {}
@@ -156,7 +160,7 @@ public actor AnalyticsManager {
             }
         }
         // --- Device Info ---
-#if canImport(UIKit)
+#if canImport(UIKit) && os(iOS)
         let deviceInfo = await MainActor.run { () -> [String: any Sendable] in
             var dict: [String: any Sendable] = [:]
             let device = UIDevice.current
@@ -257,6 +261,7 @@ public actor AnalyticsManager {
 }
 
 // MARK: - AnalyticsManager Configuration
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public extension AnalyticsManager {
     func setUserProperties(_ properties: [String: any Sendable]) {
         self.userProperties = properties

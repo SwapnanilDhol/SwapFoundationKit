@@ -6,6 +6,7 @@ import Foundation
 /// - Manages a maximum number of backup files, deleting the oldest when the limit is exceeded.
 /// - Allows custom file naming and backup directory.
 /// - Supports listing and restoring backups.
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public final class GenericBackupService<T: Codable & Sendable> {
     public typealias FileNameProvider = @Sendable (T) -> String
 
@@ -144,6 +145,7 @@ public final class GenericBackupService<T: Codable & Sendable> {
 }
 
 // MARK: - Example FileNameProvider
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public extension GenericBackupService {
     /// Returns a timestamped file name for the backup, with the given prefix and extension.
     static func timestampedFileName(prefix: String, ext: String = "json") -> @Sendable (T) -> String {

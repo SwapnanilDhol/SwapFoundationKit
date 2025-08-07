@@ -9,121 +9,194 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
+import Foundation
+
+#if canImport(UIKit) && os(iOS)
 import UIKit
+#endif
 
-public struct AnchoredConstraints {
-    var top, leading, bottom, trailing, width, height: NSLayoutConstraint?
-}
-
+#if canImport(UIKit) && os(iOS)
 public extension UIView {
-
+    /// A struct to hold layout constraints for easy access and management.
+    struct LayoutConstraints {
+        var top, leading, bottom, trailing, width, height: NSLayoutConstraint?
+    }
+    
+    /// The layout constraints for this view.
+    var layoutConstraints: LayoutConstraints {
+        get { objc_getAssociatedObject(self, &AssociatedKeys.layoutConstraints) as? LayoutConstraints ?? LayoutConstraints() }
+        set { objc_setAssociatedObject(self, &AssociatedKeys.layoutConstraints, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+    }
+    
+    /// Sets up Auto Layout constraints for the view.
+    /// - Parameters:
+    ///   - top: The top anchor constraint.
+    ///   - leading: The leading anchor constraint.
+    ///   - bottom: The bottom anchor constraint.
+    ///   - trailing: The trailing anchor constraint.
+    ///   - padding: The padding to apply to all edges.
+    ///   - size: The size constraints.
+    /// - Returns: The layout constraints that were created.
     @discardableResult
     func anchor(top: NSLayoutYAxisAnchor?, leading: NSLayoutXAxisAnchor?,
-                bottom: NSLayoutYAxisAnchor?,
-                trailing: NSLayoutXAxisAnchor?,
-                padding: UIEdgeInsets = .zero,
-                size: CGSize = .zero) -> AnchoredConstraints {
-
+                bottom: NSLayoutYAxisAnchor?, trailing: NSLayoutXAxisAnchor?,
+                padding: UIEdgeInsets = .zero, size: CGSize = .zero) -> LayoutConstraints {
+        
         translatesAutoresizingMaskIntoConstraints = false
-        var anchoredConstraints = AnchoredConstraints()
-
+        
+        var constraints = LayoutConstraints()
+        
         if let top = top {
-            anchoredConstraints.top = topAnchor.constraint(equalTo: top, constant: padding.top)
+            constraints.top = topAnchor.constraint(equalTo: top, constant: padding.top)
+            constraints.top?.isActive = true
         }
-
+        
         if let leading = leading {
-            anchoredConstraints.leading = leadingAnchor.constraint(equalTo: leading, constant: padding.left)
+            constraints.leading = leadingAnchor.constraint(equalTo: leading, constant: padding.left)
+            constraints.leading?.isActive = true
         }
-
+        
         if let bottom = bottom {
-            anchoredConstraints.bottom = bottomAnchor.constraint(equalTo: bottom, constant: -padding.bottom)
+            constraints.bottom = bottomAnchor.constraint(equalTo: bottom, constant: -padding.bottom)
+            constraints.bottom?.isActive = true
         }
-
+        
         if let trailing = trailing {
-            anchoredConstraints.trailing = trailingAnchor.constraint(equalTo: trailing, constant: -padding.right)
+            constraints.trailing = trailingAnchor.constraint(equalTo: trailing, constant: -padding.right)
+            constraints.trailing?.isActive = true
         }
-
+        
         if size.width != 0 {
-            anchoredConstraints.width = widthAnchor.constraint(equalToConstant: size.width)
+            constraints.width = widthAnchor.constraint(equalToConstant: size.width)
+            constraints.width?.isActive = true
         }
-
+        
         if size.height != 0 {
-            anchoredConstraints.height = heightAnchor.constraint(equalToConstant: size.height)
+            constraints.height = heightAnchor.constraint(equalToConstant: size.height)
+            constraints.height?.isActive = true
         }
-
-        [anchoredConstraints.top, anchoredConstraints.leading, anchoredConstraints.bottom, anchoredConstraints.trailing, anchoredConstraints.width, anchoredConstraints.height].forEach {$0?.isActive = true}
-
-        return anchoredConstraints
+        
+        layoutConstraints = constraints
+        return constraints
     }
-
-    func fillSuperview(padding: UIEdgeInsets = .zero) {
+    
+    /// Centers the view within its superview.
+    /// - Parameters:
+    ///   - x: The x-axis center anchor.
+    ///   - y: The y-axis center anchor.
+    ///   - size: The size constraints.
+    /// - Returns: The layout constraints that were created.
+    @discardableResult
+    func center(x: NSLayoutXAxisAnchor? = nil, y: NSLayoutYAxisAnchor? = nil, size: CGSize = .zero) -> LayoutConstraints {
         translatesAutoresizingMaskIntoConstraints = false
-        if let superviewTopAnchor = superview?.topAnchor {
-            topAnchor.constraint(equalTo: superviewTopAnchor, constant: padding.top).isActive = true
+        
+        var constraints = LayoutConstraints()
+        
+        if let x = x {
+            constraints.leading = centerXAnchor.constraint(equalTo: x)
+            constraints.leading?.isActive = true
         }
-
-        if let superviewBottomAnchor = superview?.bottomAnchor {
-            bottomAnchor.constraint(equalTo: superviewBottomAnchor, constant: -padding.bottom).isActive = true
+        
+        if let y = y {
+            constraints.top = centerYAnchor.constraint(equalTo: y)
+            constraints.top?.isActive = true
         }
-
-        if let superviewLeadingAnchor = superview?.leadingAnchor {
-            leadingAnchor.constraint(equalTo: superviewLeadingAnchor, constant: padding.left).isActive = true
-        }
-
-        if let superviewTrailingAnchor = superview?.trailingAnchor {
-            trailingAnchor.constraint(equalTo: superviewTrailingAnchor, constant: -padding.right).isActive = true
-        }
-    }
-
-    func centerInSuperview(size: CGSize = .zero) {
-        translatesAutoresizingMaskIntoConstraints = false
-        if let superviewCenterXAnchor = superview?.centerXAnchor {
-            centerXAnchor.constraint(equalTo: superviewCenterXAnchor).isActive = true
-        }
-
-        if let superviewCenterYAnchor = superview?.centerYAnchor {
-            centerYAnchor.constraint(equalTo: superviewCenterYAnchor).isActive = true
-        }
-
+        
         if size.width != 0 {
-            widthAnchor.constraint(equalToConstant: size.width).isActive = true
+            constraints.width = widthAnchor.constraint(equalToConstant: size.width)
+            constraints.width?.isActive = true
         }
-
+        
         if size.height != 0 {
-            heightAnchor.constraint(equalToConstant: size.height).isActive = true
+            constraints.height = heightAnchor.constraint(equalToConstant: size.height)
+            constraints.height?.isActive = true
         }
+        
+        layoutConstraints = constraints
+        return constraints
     }
-
-    func centerXInSuperview() {
-        translatesAutoresizingMaskIntoConstraints = false
-        if let superViewCenterXAnchor = superview?.centerXAnchor {
-            centerXAnchor.constraint(equalTo: superViewCenterXAnchor).isActive = true
+    
+    /// Fills the view to its superview with optional padding.
+    /// - Parameter padding: The padding to apply to all edges.
+    /// - Returns: The layout constraints that were created.
+    @discardableResult
+    func fillSuperview(padding: UIEdgeInsets = .zero) -> LayoutConstraints {
+        guard let superview = superview else { return LayoutConstraints() }
+        return anchor(top: superview.topAnchor, leading: superview.leadingAnchor,
+                     bottom: superview.bottomAnchor, trailing: superview.trailingAnchor,
+                     padding: padding)
+    }
+    
+    /// Centers the view within its superview.
+    /// - Parameter size: The size constraints.
+    /// - Returns: The layout constraints that were created.
+    @discardableResult
+    func centerInSuperview(size: CGSize = .zero) -> LayoutConstraints {
+        guard let superview = superview else { return LayoutConstraints() }
+        return center(x: superview.centerXAnchor, y: superview.centerYAnchor, size: size)
+    }
+    
+    /// Sets the width and height constraints.
+    /// - Parameter size: The size to set.
+    /// - Returns: The layout constraints that were created.
+    @discardableResult
+    func anchorSize(to size: CGSize) -> LayoutConstraints {
+        var constraints = LayoutConstraints()
+        
+        if size.width != 0 {
+            constraints.width = widthAnchor.constraint(equalToConstant: size.width)
+            constraints.width?.isActive = true
         }
-    }
-
-    func centerYInSuperview() {
-        translatesAutoresizingMaskIntoConstraints = false
-        if let centerY = superview?.centerYAnchor {
-            centerYAnchor.constraint(equalTo: centerY).isActive = true
+        
+        if size.height != 0 {
+            constraints.height = heightAnchor.constraint(equalToConstant: size.height)
+            constraints.height?.isActive = true
         }
+        
+        layoutConstraints = constraints
+        return constraints
     }
-
-    func constrainWidth(constant: CGFloat) {
+    
+    /// Sets the width constraint.
+    /// - Parameter width: The width to set.
+    /// - Returns: The width constraint that was created.
+    @discardableResult
+    func anchorWidth(to width: CGFloat) -> NSLayoutConstraint {
         translatesAutoresizingMaskIntoConstraints = false
-        widthAnchor.constraint(equalToConstant: constant).isActive = true
+        let constraint = widthAnchor.constraint(equalToConstant: width)
+        constraint.isActive = true
+        layoutConstraints.width = constraint
+        return constraint
     }
-
-    func constrainHeight(constant: CGFloat) {
+    
+    /// Sets the height constraint.
+    /// - Parameter height: The height to set.
+    /// - Returns: The height constraint that was created.
+    @discardableResult
+    func anchorHeight(to height: CGFloat) -> NSLayoutConstraint {
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(equalToConstant: constant).isActive = true
-    }
-} 
-
-public extension UIStackView {
-    func addArrangedSubviews(_ views: [UIView]) {
-        views.forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            self.addArrangedSubview($0)
-        }
+        let constraint = heightAnchor.constraint(equalToConstant: height)
+        constraint.isActive = true
+        layoutConstraints.height = constraint
+        return constraint
     }
 }
+
+public extension UIStackView {
+    /// Adds multiple arranged subviews to the stack view.
+    /// - Parameter views: An array of views to add as arranged subviews.
+    func addArrangedSubviews(_ views: [UIView]) {
+        views.forEach { addArrangedSubview($0) }
+    }
+    
+    /// Adds multiple arranged subviews to the stack view.
+    /// - Parameter views: A variadic list of views to add as arranged subviews.
+    func addArrangedSubviews(_ views: UIView...) {
+        addArrangedSubviews(views)
+    }
+}
+
+private struct AssociatedKeys {
+    static var layoutConstraints = "layoutConstraints"
+}
+#endif 

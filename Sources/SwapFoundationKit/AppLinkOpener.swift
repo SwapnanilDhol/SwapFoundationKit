@@ -9,14 +9,19 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
  
-import UIKit
+import Foundation
 import CoreLocation
+
+#if canImport(UIKit) && os(iOS)
+import UIKit
+#endif
 
 /// Utility for opening app links, URLs, and map locations in iOS apps.
 ///
 /// Provides static methods to open URLs, strings, and map coordinates in Apple Maps or Google Maps,
 /// as well as constructing App Store and review URLs.
 public enum AppLinkOpener {
+    #if canImport(UIKit) && os(iOS)
     /// Opens a URL using UIApplication. Logs an error if the URL is nil.
     /// - Parameter url: The URL to open.
     @MainActor
@@ -62,6 +67,7 @@ public enum AppLinkOpener {
         let url = appReviewURL(for: appID)
         open(url: url)
     }
+    #endif
 
     // MARK: - URL Constructors
 

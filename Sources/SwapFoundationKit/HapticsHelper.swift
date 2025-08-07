@@ -9,63 +9,76 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
+import Foundation
+
+#if canImport(UIKit) && os(iOS)
 import UIKit
+#endif
 
-@MainActor
+/// A helper class for managing haptic feedback in iOS applications.
+/// Provides easy-to-use methods for different types of haptic feedback.
 public final class HapticsHelper {
-
-    public enum HapticsIntensity: CGFloat {
-        case buttonTapLight = 0.3
-        case buttonTapMedium = 0.4
-        case buttonTapHard = 0.5
-        case cellTap = 0.35
-        case barButtonTap = 0.31
-        case segmentValueChange = 0.45
-        case tabBarButtonTap = 0.41
-    }
-
+    
+    #if canImport(UIKit) && os(iOS)
     private let impactFeedbackGenerator = UIImpactFeedbackGenerator()
     private let notificationFeedbackGenerator = UINotificationFeedbackGenerator()
-    public static let shared = HapticsHelper()
-
+    #endif
+    
     public init() {
+        #if canImport(UIKit) && os(iOS)
         impactFeedbackGenerator.prepare()
         notificationFeedbackGenerator.prepare()
+        #endif
     }
-
-    public func lightButtonTap() {
-        impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.buttonTapLight.rawValue)
+    
+    /// Triggers a light impact haptic feedback.
+    public func lightImpact() {
+        #if canImport(UIKit) && os(iOS)
+        impactFeedbackGenerator.impactOccurred(intensity: 0.3)
+        #endif
     }
-
-    public func mediumButtonTap() {
-        impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.buttonTapMedium.rawValue)
+    
+    /// Triggers a medium impact haptic feedback.
+    public func mediumImpact() {
+        #if canImport(UIKit) && os(iOS)
+        impactFeedbackGenerator.impactOccurred(intensity: 0.6)
+        #endif
     }
-
-    public func hardButtonTap() {
-        impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.buttonTapHard.rawValue)
+    
+    /// Triggers a heavy impact haptic feedback.
+    public func heavyImpact() {
+        #if canImport(UIKit) && os(iOS)
+        impactFeedbackGenerator.impactOccurred(intensity: 1.0)
+        #endif
     }
-
-    public func cellTap() {
-        impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.cellTap.rawValue)
-    }
-
-    public func barButtonTap() {
-        impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.barButtonTap.rawValue)
-    }
-
-    public func segmentChangedValue() {
-        impactFeedbackGenerator.impactOccurred(intensity: HapticsIntensity.segmentValueChange.rawValue)
-    }
-
-    public func success() {
+    
+    /// Triggers a success notification haptic feedback.
+    public func successNotification() {
+        #if canImport(UIKit) && os(iOS)
         notificationFeedbackGenerator.notificationOccurred(.success)
+        #endif
     }
-
-    public func warning() {
+    
+    /// Triggers a warning notification haptic feedback.
+    public func warningNotification() {
+        #if canImport(UIKit) && os(iOS)
         notificationFeedbackGenerator.notificationOccurred(.warning)
+        #endif
     }
-
-    public func error() {
+    
+    /// Triggers an error notification haptic feedback.
+    public func errorNotification() {
+        #if canImport(UIKit) && os(iOS)
         notificationFeedbackGenerator.notificationOccurred(.error)
+        #endif
+    }
+    
+    /// Triggers a custom impact haptic feedback with specified intensity.
+    /// - Parameter intensity: The intensity of the haptic feedback (0.0 to 1.0).
+    public func customImpact(intensity: Float) {
+        #if canImport(UIKit) && os(iOS)
+        let clampedIntensity = max(0.0, min(1.0, intensity))
+        impactFeedbackGenerator.impactOccurred(intensity: clampedIntensity)
+        #endif
     }
 }

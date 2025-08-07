@@ -11,7 +11,9 @@
 
 import Foundation
 
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 
 /// Protocol for UserDefault keys, allowing enums or other types to be used as keys.
 public protocol UserDefaultKeyProtocol {
@@ -19,9 +21,11 @@ public protocol UserDefaultKeyProtocol {
     var keyString: String { get }
 }
 
+#if canImport(SwiftUI)
 /// An observable box for a value stored in UserDefaults, used for property wrappers and SwiftUI bindings.
 ///
 /// - Note: Only updates UserDefaults when the value actually changes.
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 final class UserDefaultBox<T: Equatable>: ObservableObject {
     /// The value stored in UserDefaults. Updates UserDefaults when changed.
     @Published var value: T {
@@ -47,12 +51,15 @@ final class UserDefaultBox<T: Equatable>: ObservableObject {
         self.value = stored ?? defaultValue
     }
 }
+#endif
 
+#if canImport(SwiftUI)
 /// A property wrapper for type-safe, observable UserDefaults access with SwiftUI support.
 ///
 /// Use with a key conforming to `UserDefaultKeyProtocol` and an `Equatable` value type.
 @MainActor
 @propertyWrapper
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicProperty {
     @ObservedObject private var box: UserDefaultBox<T>
 
@@ -76,6 +83,7 @@ public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicPro
         self.box = UserDefaultBox(key: key.keyString, defaultValue: defaultValue, container: container)
     }
 }
+#endif
 
 public extension UserDefaults {
     /// Increments an integer counter for the given key in UserDefaults.

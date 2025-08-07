@@ -9,33 +9,37 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
+import Foundation
+
+#if canImport(UIKit) && os(iOS)
 import UIKit
+#endif
 
+#if canImport(UIKit) && os(iOS)
 public extension UIApplication {
-
-    /// Returns the safe area padding for a given edge.
-    /// - Parameter edge: The edge to get the safe area padding for.
-    /// - Returns: The safe area padding for the given edge.
-    func safeAreaPadding(for edge: UIRectEdge) -> CGFloat {
-        guard let window = connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first?.windows.first else {
-            return 0
-        }
-
-        let safeAreaInsets = window.safeAreaInsets
-
-        switch edge {
-        case .top:
-            return safeAreaInsets.top
-        case .left:
-            return safeAreaInsets.left
-        case .bottom:
-            return safeAreaInsets.bottom
-        case .right:
-            return safeAreaInsets.right
-        default:
-            return 0
-        }
-    }  
+    /// Returns the safe area insets for the key window.
+    var safeAreaInsets: UIEdgeInsets {
+        return keyWindow?.safeAreaInsets ?? .zero
+    }
+    
+    /// Returns the top safe area inset.
+    var topSafeAreaInset: CGFloat {
+        return safeAreaInsets.top
+    }
+    
+    /// Returns the bottom safe area inset.
+    var bottomSafeAreaInset: CGFloat {
+        return safeAreaInsets.bottom
+    }
+    
+    /// Returns the left safe area inset.
+    var leftSafeAreaInset: CGFloat {
+        return safeAreaInsets.left
+    }
+    
+    /// Returns the right safe area inset.
+    var rightSafeAreaInset: CGFloat {
+        return safeAreaInsets.right
+    }
 }
+#endif

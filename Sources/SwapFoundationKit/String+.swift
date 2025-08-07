@@ -10,7 +10,10 @@
  *****************************************************************************/
  
 import Foundation
+
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 
 public extension String {
     /// Returns true if the string is blank (empty or whitespace only).
@@ -66,12 +69,76 @@ public extension String {
         return words.count
     }
 
-    func localized(comment: String? = nil) -> String {
-        NSLocalizedString(self, comment: comment ?? "")
+    /// Returns a localized version of the string using the main bundle.
+    var localized: String {
+        return NSLocalizedString(self, comment: "")
     }
-
-    @available(iOS 16.0, *)
-    func localized() -> LocalizedStringResource {
-        LocalizedStringResource(stringLiteral: self)
+    
+    /// Returns a localized version of the string using the specified bundle.
+    /// - Parameter bundle: The bundle to use for localization.
+    /// - Returns: The localized string.
+    func localized(bundle: Bundle) -> String {
+        return NSLocalizedString(self, bundle: bundle, comment: "")
     }
+    
+    /// Returns a localized version of the string using the specified bundle and table.
+    /// - Parameters:
+    ///   - bundle: The bundle to use for localization.
+    ///   - table: The table name to use for localization.
+    /// - Returns: The localized string.
+    func localized(bundle: Bundle, table: String) -> String {
+        return NSLocalizedString(self, tableName: table, bundle: bundle, comment: "")
+    }
+    
+    /// Returns a localized version of the string with format arguments.
+    /// - Parameter arguments: The arguments to format the string with.
+    /// - Returns: The formatted localized string.
+    func localizedFormat(_ arguments: CVarArg...) -> String {
+        return String(format: localized, arguments: arguments)
+    }
+    
+    /// Returns a localized version of the string with format arguments using the specified bundle.
+    /// - Parameters:
+    ///   - bundle: The bundle to use for localization.
+    ///   - arguments: The arguments to format the string with.
+    /// - Returns: The formatted localized string.
+    func localizedFormat(bundle: Bundle, _ arguments: CVarArg...) -> String {
+        return String(format: localized(bundle: bundle), arguments: arguments)
+    }
+    
+    /// Returns a localized version of the string with format arguments using the specified bundle and table.
+    /// - Parameters:
+    ///   - bundle: The bundle to use for localization.
+    ///   - table: The table name to use for localization.
+    ///   - arguments: The arguments to format the string with.
+    /// - Returns: The formatted localized string.
+    func localizedFormat(bundle: Bundle, table: String, _ arguments: CVarArg...) -> String {
+        return String(format: localized(bundle: bundle, table: table), arguments: arguments)
+    }
+    
+#if canImport(SwiftUI) && (os(iOS) || os(macOS))
+    /// Returns a localized version of the string using LocalizedStringResource (iOS 16+, macOS 13+).
+    @available(iOS 16.0, macOS 13.0, *)
+    func localizedResource() -> LocalizedStringResource {
+        return LocalizedStringResource(stringLiteral: self)
+    }
+    
+    /// Returns a localized version of the string using LocalizedStringResource with a specific bundle (iOS 16+, macOS 13+).
+    /// - Parameter bundle: The bundle to use for localization.
+    /// - Returns: The localized string resource.
+    @available(iOS 16.0, macOS 13.0, *)
+    func localizedResource(bundle: Bundle) -> LocalizedStringResource {
+        return LocalizedStringResource(stringLiteral: self)
+    }
+    
+    /// Returns a localized version of the string using LocalizedStringResource with a specific bundle and table (iOS 16+, macOS 13+).
+    /// - Parameters:
+    ///   - bundle: The bundle to use for localization.
+    ///   - table: The table name to use for localization.
+    /// - Returns: The localized string resource.
+    @available(iOS 16.0, macOS 13.0, *)
+    func localizedResource(bundle: Bundle, table: String) -> LocalizedStringResource {
+        return LocalizedStringResource(stringLiteral: self)
+    }
+#endif
 }

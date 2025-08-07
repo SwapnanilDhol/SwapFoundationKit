@@ -32,6 +32,7 @@ import Foundation
 ///     watchConnectivity: watchService
 /// )
 /// ```
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public final class ItemSyncServiceFactory {
     
     // MARK: - Factory Methods

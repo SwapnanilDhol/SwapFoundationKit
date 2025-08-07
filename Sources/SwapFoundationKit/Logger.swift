@@ -49,6 +49,7 @@ actor LoggerSettings {
     }
 }
 
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public enum Logger {
     public static let minimumLevel: LogLevel = .debug // Change to .info for less verbosity
 

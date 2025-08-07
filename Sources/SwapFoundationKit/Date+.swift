@@ -79,6 +79,7 @@ public extension Date {
     }
 
     /// Returns a relative time string (e.g., '2 hours ago').
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
     var relativeTime: String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
