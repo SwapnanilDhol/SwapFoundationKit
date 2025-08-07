@@ -5,6 +5,7 @@ import UIKit
 #endif
 
 #if canImport(UIKit) && os(iOS)
+@MainActor
 public extension UINavigationController {
     /// Pops to the root view controller with optional animation.
     /// - Parameter animated: Whether the transition should be animated.

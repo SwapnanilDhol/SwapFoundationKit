@@ -16,6 +16,7 @@ import UIKit
 #endif
 
 #if canImport(UIKit) && os(iOS)
+@MainActor
 public extension UIView {
     /// Adds multiple subviews to the current view.
     /// - Parameter views: An array of views to add as subviews.

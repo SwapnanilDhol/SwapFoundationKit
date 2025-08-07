@@ -17,6 +17,7 @@ public protocol Coordinator: AnyObject {
 }
 
 #if canImport(UIKit) && os(iOS)
+@MainActor
 public extension Coordinator {
     /// Pushes a view controller onto the navigation stack.
     /// - Parameters:

@@ -5,6 +5,7 @@ import UIKit
 #endif
 
 #if canImport(UIKit) && os(iOS)
+@MainActor
 public extension UIViewController {
     /// Presents a view controller modally with optional animation and completion.
     /// - Parameters:

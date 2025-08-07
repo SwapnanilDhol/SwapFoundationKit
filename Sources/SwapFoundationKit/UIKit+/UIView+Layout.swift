@@ -16,6 +16,7 @@ import UIKit
 #endif
 
 #if canImport(UIKit) && os(iOS)
+@MainActor
 public extension UIView {
     /// A struct to hold layout constraints for easy access and management.
     struct LayoutConstraints {

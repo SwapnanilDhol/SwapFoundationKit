@@ -5,6 +5,7 @@ import UIKit
 #endif
 
 #if canImport(UIKit) && os(iOS)
+@MainActor
 public extension UIApplication {
     /// Returns the top-most view controller in the application.
     /// - Parameter rootViewController: The root view controller to start from. If nil, uses the first connected scene's root view controller.
