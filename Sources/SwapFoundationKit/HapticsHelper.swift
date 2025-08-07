@@ -17,6 +17,7 @@ import UIKit
 
 /// A helper class for managing haptic feedback in iOS applications.
 /// Provides easy-to-use methods for different types of haptic feedback.
+@MainActor
 public final class HapticsHelper {
     
     #if canImport(UIKit) && os(iOS)
@@ -75,7 +76,7 @@ public final class HapticsHelper {
     
     /// Triggers a custom impact haptic feedback with specified intensity.
     /// - Parameter intensity: The intensity of the haptic feedback (0.0 to 1.0).
-    public func customImpact(intensity: Float) {
+    public func customImpact(intensity: CGFloat) {
         #if canImport(UIKit) && os(iOS)
         let clampedIntensity = max(0.0, min(1.0, intensity))
         impactFeedbackGenerator.impactOccurred(intensity: clampedIntensity)
