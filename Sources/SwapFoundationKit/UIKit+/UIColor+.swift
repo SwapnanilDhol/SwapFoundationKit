@@ -27,11 +27,14 @@ import SwiftUI
 public extension UIColor {
     /// Creates a color from a hex string.
     /// - Parameter hex: The hex string (e.g., "#FF0000" or "FF0000").
-    /// - Returns: A UIColor instance, or nil if the hex string is invalid.
-    convenience init?(hex: String) {
+    /// If invalid, falls back to black.
+    convenience init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
+        guard Scanner(string: hex).scanHexInt64(&int) else {
+            self.init(white: 0.0, alpha: 1.0)
+            return
+        }
         let a, r, g, b: UInt64
         switch hex.count {
         case 3: // RGB (12-bit)
@@ -41,14 +44,15 @@ public extension UIColor {
         case 8: // ARGB (32-bit)
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
-            return nil
+            self.init(white: 0.0, alpha: 1.0)
+            return
         }
         
         self.init(
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            alpha: Double(a) / 255
+            red: CGFloat(r) / 255,
+            green: CGFloat(g) / 255,
+            blue: CGFloat(b) / 255,
+            alpha: CGFloat(a) / 255
         )
     }
     
@@ -68,6 +72,13 @@ public extension UIColor {
         } else {
             return String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
         }
+    }
+
+    /// Returns the hex string representation of the color (alias for hexString()).
+    /// - Parameter includeAlpha: Whether to include the alpha component.
+    /// - Returns: Hex string like "#RRGGBB" or "#RRGGBBAA".
+    func hex(includeAlpha: Bool = false) -> String {
+        hexString(includeAlpha: includeAlpha)
     }
     
     /// Creates a color with adjusted brightness.
