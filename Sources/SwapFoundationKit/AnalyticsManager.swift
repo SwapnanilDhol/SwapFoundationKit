@@ -42,7 +42,6 @@ public struct TelemetryData: Sendable {
 
 // MARK: - AnalyticsManager
 /// Advanced analytics manager with batching, context, and extensibility.
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public actor AnalyticsManager {
     public static let shared = AnalyticsManager()
     private init() {}
@@ -261,7 +260,6 @@ public actor AnalyticsManager {
 }
 
 // MARK: - AnalyticsManager Configuration
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public extension AnalyticsManager {
     func setUserProperties(_ properties: [String: any Sendable]) {
         self.userProperties = properties

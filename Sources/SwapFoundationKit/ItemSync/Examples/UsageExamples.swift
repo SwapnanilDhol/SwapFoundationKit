@@ -9,11 +9,7 @@
 
 import Foundation
 
-#if canImport(Combine)
 import Combine
-#endif
-
-#if canImport(Combine)
 
 // MARK: - Example Data Models
 
@@ -59,7 +55,6 @@ struct Subscription: SyncableData {
 // MARK: - Basic Usage Examples
 
 /// Example 1: Basic setup and usage
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 func basicUsageExample() {
     // Create sync service with App Group storage
     let syncService = ItemSyncServiceFactory.create(
@@ -103,7 +98,6 @@ func basicUsageExample() {
 // MARK: - Watch Integration Examples
 
 /// Example 2: Watch connectivity setup
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 func watchIntegrationExample() {
     #if os(iOS)
     // Create sync service with Watch support
@@ -154,7 +148,6 @@ func watchIntegrationExample() {
 // MARK: - Advanced Usage Examples
 
 /// Example 3: Custom storage implementation
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 func customStorageExample() {
     // Create custom storage service
     class CustomStorageService: FileStorageService {
@@ -204,7 +197,6 @@ func customStorageExample() {
 
 /// Example 4: Widget data manager
 @MainActor
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 class WidgetDataManager: ObservableObject {
     @Published var userProfile: UserProfile?
     @Published var subscriptions: [Subscription] = []
@@ -271,7 +263,6 @@ class WidgetDataManager: ObservableObject {
 // MARK: - Error Handling Examples
 
 /// Example 5: Comprehensive error handling
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 func errorHandlingExample() {
     let syncService = ItemSyncServiceFactory.create(
         appGroupIdentifier: "group.com.yourapp.widget"
@@ -311,7 +302,6 @@ func errorHandlingExample() {
 // MARK: - Batch Operations Example
 
 /// Example 6: Batch operations
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 func batchOperationsExample() {
     let syncService = ItemSyncServiceFactory.create(
         appGroupIdentifier: "group.com.yourapp.widget"
@@ -369,4 +359,3 @@ func batchOperationsExample() {
         }
     }
 }
-#endif

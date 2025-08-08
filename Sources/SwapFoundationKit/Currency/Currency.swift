@@ -51,7 +51,6 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
     case ARS
     case LKR
 
-    @available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
     public var description: LocalizedStringKey {
         switch self {
         case .EUR:

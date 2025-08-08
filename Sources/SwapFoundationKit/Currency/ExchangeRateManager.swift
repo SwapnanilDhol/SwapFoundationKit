@@ -18,7 +18,6 @@ private struct RatePair: Codable {
 }
 
 /// An actor-based manager for currency exchange rates.
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public actor ExchangeRateManager: NSObject, XMLParserDelegate {
     public static let shared = ExchangeRateManager()
 

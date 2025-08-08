@@ -25,7 +25,6 @@ import Combine
 /// )
 /// #endif
 /// ```
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public protocol WatchConnectivityService {
     /// Activates the Watch connectivity session
     func activate()

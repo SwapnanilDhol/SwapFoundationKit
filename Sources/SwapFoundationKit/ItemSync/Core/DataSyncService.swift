@@ -7,11 +7,8 @@
 
 import Foundation
 
-#if canImport(Combine)
 import Combine
-#endif
 
-#if canImport(Combine)
 /// Main protocol for data synchronization across your app ecosystem
 /// This service orchestrates file storage and optional Watch connectivity
 ///
@@ -33,7 +30,6 @@ import Combine
 ///     // Data is available
 /// }
 /// ```
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
 public protocol DataSyncService {
     /// Saves data and syncs it across the app ecosystem
     /// - Parameter data: The data to save and sync
@@ -97,4 +93,3 @@ public enum DataSyncError: LocalizedError {
         }
     }
 }
-#endif
