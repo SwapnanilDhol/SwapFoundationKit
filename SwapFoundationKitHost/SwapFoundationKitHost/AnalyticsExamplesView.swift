@@ -8,20 +8,24 @@ struct AnalyticsExamplesView: View {
     var body: some View {
         List {
             Section("Setup") {
-                Button("Configure sender closure") {
-                    Task { @MainActor in
-                        await AnalyticsManager.shared.setSendTelemetry { event, payload in
-                            DispatchQueue.main.async {
-                                sent.append("\(event.name): \(payload.dictionary)")
-                            }
+                Button("Add Test Logger") {
+                    let testLogger = TestLogger { event, parameters in
+                        DispatchQueue.main.async {
+                            let paramsString = parameters?.description ?? "nil"
+                            sent.append("\(event.rawValue): \(paramsString)")
                         }
                     }
+                    AnalyticsManager.shared.addLogger(testLogger)
                 }
                 Button("Log appLaunched") {
-                    Task { await AnalyticsManager.shared.logEvent(AppEvent.appLaunched) }
+                    AnalyticsManager.shared.logEvent(event: AppEvent.appLaunched)
                 }
-                Button("Flush") {
-                    Task { await AnalyticsManager.shared.flush() }
+                Button("Log Custom Event") {
+                    let customEvent = DefaultAnalyticsEvent(
+                        name: "custom_event",
+                        parameters: ["user_id": "123", "action": "button_tap"]
+                    )
+                    AnalyticsManager.shared.logEvent(event: customEvent)
                 }
             }
             Section("Sent Events") {
@@ -34,8 +38,28 @@ struct AnalyticsExamplesView: View {
 
 private enum AppEvent: AnalyticsEvent {
     case appLaunched
-    var name: String { "app_launched" }
+    
+    var rawValue: String {
+        switch self {
+        case .appLaunched:
+            return "app_launched"
+        }
+    }
+    
+    var name: String { rawValue }
     var parameters: [String : any Sendable] { [:] }
+}
+
+private class TestLogger: AnalyticsLogger {
+    private let callback: (AnalyticsEvent, [String: String]?) -> Void
+    
+    init(callback: @escaping (AnalyticsEvent, [String: String]?) -> Void) {
+        self.callback = callback
+    }
+    
+    func logEvent(event: AnalyticsEvent, parameters: [String: String]?) {
+        callback(event, parameters)
+    }
 }
 
 

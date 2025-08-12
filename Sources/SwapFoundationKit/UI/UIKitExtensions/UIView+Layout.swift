@@ -198,6 +198,6 @@ public extension UIStackView {
 }
 
 private struct AssociatedKeys {
-    static var layoutConstraints = "layoutConstraints"
+    nonisolated(unsafe) static var layoutConstraints = "layoutConstraints"
 }
 #endif 

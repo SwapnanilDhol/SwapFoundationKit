@@ -4,6 +4,7 @@ import Foundation
 
 /// Service for image processing, manipulation, and caching
 /// Note: This service is only available on iOS, watchOS, and tvOS
+@MainActor
 public class ImageProcessor {
     public static let shared = ImageProcessor()
     

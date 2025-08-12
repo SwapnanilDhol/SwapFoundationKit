@@ -14,7 +14,7 @@ struct DateExamplesView: View {
                 LabeledContent("Long", value: now.longDate)
                 LabeledContent("Time", value: now.timeOnly)
                 LabeledContent("yyyy-MM-dd", value: now.yyyyMMdd)
-                LabeledContent("MMM d, yyyy", value: now.MMMdyyyy)
+                LabeledContent("MMM dd, yyyy", value: now.MMMddyyyy)
             }
             Section("Custom format") {
                 LabeledContent("EEE, MMM d @ h:mm a", value: now.string(format: "EEE, MMM d @ h:mm a"))

@@ -245,4 +245,15 @@ public extension Date {
         components.second = -1
         return calendar.date(byAdding: components, to: startOfWeek) ?? self
     }
+    
+    // MARK: - Custom Formatting
+    
+    /// Returns a string representation using a custom date format
+    /// - Parameter format: The date format string (e.g., "EEE, MMM d @ h:mm a")
+    /// - Returns: Formatted date string
+    func string(format: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.string(from: self)
+    }
 }
