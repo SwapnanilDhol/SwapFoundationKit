@@ -80,13 +80,17 @@ public enum Logger {
         Task {
             let shouldSendAnalytics = await LoggerSettings.shared.sendAnalyticsOnError
             if level == .error && shouldSendAnalytics {
-                await AnalyticsManager.shared.logEvent(LoggerAnalyticsEvent.errorLogged(
-                    message: message,
-                    context: context,
-                    function: function,
-                    file: file,
-                    line: line
-                ))
+                let event = DefaultAnalyticsEvent(
+                    name: "logger_error_logged",
+                    parameters: [
+                        "message": message,
+                        "context": context ?? "",
+                        "function": function,
+                        "file": file,
+                        "line": String(line)
+                    ]
+                )
+                AnalyticsManager.shared.logEvent(event: event, parameters: event.parameters)
             }
         }
     }
@@ -121,25 +125,4 @@ public enum Logger {
     }
 }
 
-/// Analytics event for logger errors
-private enum LoggerAnalyticsEvent: AnalyticsEvent {
-    case errorLogged(message: String, context: String?, function: String, file: String, line: Int)
 
-    var name: String {
-        switch self {
-        case .errorLogged: return "logger_error_logged"
-        }
-    }
-    var parameters: [String: any Sendable] {
-        switch self {
-        case let .errorLogged(message, context, function, file, line):
-            return [
-                "message": message,
-                "context": context ?? "",
-                "function": function,
-                "file": file,
-                "line": line
-            ]
-        }
-    }
-}
