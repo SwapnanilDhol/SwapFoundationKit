@@ -21,7 +21,15 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "SwapFoundationKit",
-            exclude: ["ItemSync/README.md"]
+            exclude: [
+                "ItemSync/README.md",
+                "Currency/README.md",
+                "Extensions/README.md", 
+                "Services/README.md",
+                "ImageProcessor/README.md",
+                "Analytics/README.md",
+                "Core/README.md"
+            ]
         ),
         .testTarget(
             name: "SwapFoundationKitTests",

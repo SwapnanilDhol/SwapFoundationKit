@@ -32,6 +32,12 @@ jobs:
     - name: Build for Release
       run: swift build -c release -v
     
+    - name: Check Package Format
+      run: swift package format --check
+    
+    - name: Describe Package
+      run: swift package describe
+    
   ios-build:
     runs-on: macos-latest
     
