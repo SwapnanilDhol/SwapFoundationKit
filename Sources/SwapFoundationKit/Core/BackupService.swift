@@ -1,6 +1,7 @@
 import Foundation
 
 /// Service for handling data backup and export operations
+@MainActor
 public final class BackupService {
     
     public enum FileType: String, CaseIterable {
@@ -39,10 +40,8 @@ public final class BackupService {
     ///   - data: The data to backup
     ///   - fileType: The type of backup file
     /// - Throws: BackupError
-    public func performBackup<T: Encodable>(_ data: T, fileType: FileType) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try self.backup(encodable: data, item: fileType)
-        }.value
+    public func performBackup<T: Encodable & Sendable>(_ data: T, fileType: FileType) async throws {
+        try self.backup(encodable: data, item: fileType)
     }
     
     /// Restores data from backup file

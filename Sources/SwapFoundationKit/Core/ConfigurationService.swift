@@ -1,6 +1,7 @@
 import Foundation
 
 /// Service for managing app configuration, environment settings, and configuration values
+@MainActor
 public final class ConfigurationService {
     
     public enum ConfigurationError: Error, LocalizedError {

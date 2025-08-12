@@ -2,6 +2,7 @@ import Foundation
 import Network
 
 /// Service for handling network operations, reachability, and basic networking utilities
+@MainActor
 public final class NetworkService: ObservableObject {
     
     public enum NetworkError: Error, LocalizedError {
@@ -308,21 +309,12 @@ extension NetworkService {
             return true
         }
         
-        return await withCheckedContinuation { continuation in
-            let startTime = Date()
-            
-            let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-                if self.isConnected {
-                    timer.invalidate()
-                    continuation.resume(returning: true)
-                } else if Date().timeIntervalSince(startTime) >= timeout {
-                    timer.invalidate()
-                    continuation.resume(returning: false)
-                }
-            }
-            
-            timer.fire()
+        let startTime = Date()
+        while !isConnected && Date().timeIntervalSince(startTime) < timeout {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
         }
+        
+        return isConnected
     }
 }
 
