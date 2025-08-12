@@ -8,6 +8,7 @@ A comprehensive Swift package providing essential utilities, extensions, and ser
 - **🔄 ItemSync** - Data synchronization between main app, widgets, and Apple Watch
 - **💾 Generic Backup Service** - Flexible backup and restore functionality
 - **🌍 Currency & Exchange Rates** - Real-time currency conversion with ECB data
+- **🖼️ Image Processing** - Image manipulation, caching, and file operations
 - **📱 UIKit Extensions** - Helpful extensions for common UI operations
 - **📅 Date Utilities** - Comprehensive date formatting and manipulation
 - **🔧 Logger** - Configurable logging with analytics integration
@@ -149,6 +150,26 @@ print(date.yyyyMMdd)             // "2024-01-15"
 print(date.relativeTime)         // "2 hours ago"
 ```
 
+### Image Processing
+
+```swift
+import SwapFoundationKit
+
+let imageProcessor = ImageProcessor.shared
+
+// Resize and round corners
+if let resizedImage = imageProcessor.resize(originalImage, to: CGSize(width: 300, height: 300)),
+   let roundedImage = imageProcessor.roundCorners(resizedImage, radius: 20) {
+    imageView.image = roundedImage
+}
+
+// Cache processed image
+imageProcessor.cacheImage(roundedImage, forKey: "profile_processed")
+
+// Save to documents directory
+try imageProcessor.saveImage(roundedImage, filename: "profile.jpg", quality: 0.9)
+```
+
 ### Logger
 
 ```swift
@@ -176,6 +197,9 @@ Data synchronization between main app, widgets, and Apple Watch.
 
 ### [Currency System](Sources/SwapFoundationKit/Currency/)
 Real-time exchange rates and currency conversion utilities.
+
+### [Image Processor](Sources/SwapFoundationKit/ImageProcessor/)
+Image manipulation, caching, and file operations.
 
 ### [UIKit Extensions](Sources/SwapFoundationKit/UIKit+/)
 Helpful extensions for common UI operations and safe area handling.
