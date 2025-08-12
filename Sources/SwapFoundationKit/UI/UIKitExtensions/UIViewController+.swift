@@ -6,24 +6,7 @@ import UIKit
 
 #if canImport(UIKit) && os(iOS)
 @MainActor
-public extension UIViewController {
-    /// Presents a view controller modally with optional animation and completion.
-    /// - Parameters:
-    ///   - viewController: The view controller to present.
-    ///   - animated: Whether the transition should be animated.
-    ///   - completion: A closure to execute after the presentation completes.
-    func present(_ viewController: UIViewController, animated: Bool = true, completion: (() -> Void)? = nil) {
-        present(viewController, animated: animated, completion: completion)
-    }
-    
-    /// Dismisses the view controller with optional animation and completion.
-    /// - Parameters:
-    ///   - animated: Whether the transition should be animated.
-    ///   - completion: A closure to execute after the dismissal completes.
-    func dismiss(animated: Bool = true, completion: (() -> Void)? = nil) {
-        dismiss(animated: animated, completion: completion)
-    }
-    
+public extension UIViewController {    
     /// Adds a child view controller and adds its view as a subview.
     /// - Parameters:
     ///   - child: The child view controller to add.
