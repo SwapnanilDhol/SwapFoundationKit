@@ -1,5 +1,60 @@
 import Foundation
 
+// MARK: - Date Format Enum
+
+public enum DateFormat {
+    case iso8601
+    case short
+    case medium
+    case long
+    case full
+    case timeOnly
+    case time24Hour
+    case yyyyMMdd
+    case MMddyyyy
+    case MMMddyyyy
+    case custom(String)
+    
+    var formatter: DateFormatter {
+        let formatter = DateFormatter()
+        
+        switch self {
+        case .iso8601:
+            let iso8601Formatter = ISO8601DateFormatter()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            return dateFormatter
+        case .short:
+            formatter.dateStyle = .short
+            formatter.timeStyle = .none
+        case .medium:
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
+        case .long:
+            formatter.dateStyle = .long
+            formatter.timeStyle = .none
+        case .full:
+            formatter.dateStyle = .full
+            formatter.timeStyle = .none
+        case .timeOnly:
+            formatter.dateStyle = .none
+            formatter.timeStyle = .short
+        case .time24Hour:
+            formatter.dateFormat = "HH:mm"
+        case .yyyyMMdd:
+            formatter.dateFormat = "yyyy-MM-dd"
+        case .MMddyyyy:
+            formatter.dateFormat = "MM/dd/yyyy"
+        case .MMMddyyyy:
+            formatter.dateFormat = "MMM dd, yyyy"
+        case .custom(let format):
+            formatter.dateFormat = format
+        }
+        
+        return formatter
+    }
+}
+
 public extension Date {
     
     // MARK: - ISO 8601 Formatting
@@ -255,5 +310,12 @@ public extension Date {
         let formatter = DateFormatter()
         formatter.dateFormat = format
         return formatter.string(from: self)
+    }
+    
+    /// Returns a string representation using the specified DateFormat
+    /// - Parameter format: The DateFormat to use for formatting
+    /// - Returns: Formatted date string
+    func toString(using format: DateFormat) -> String {
+        return format.formatter.string(from: self)
     }
 }

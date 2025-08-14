@@ -301,3 +301,15 @@ public extension String {
         return components(separatedBy: substring).count - 1
     }
 }
+
+// MARK: - String Date Extensions
+
+public extension String {
+    
+    /// Converts the string to a Date using the specified DateFormat
+    /// - Parameter format: The DateFormat to use for parsing
+    /// - Returns: A Date object if the string can be parsed, nil otherwise
+    func toDate(using format: DateFormat) -> Date? {
+        return format.formatter.date(from: self)
+    }
+}
