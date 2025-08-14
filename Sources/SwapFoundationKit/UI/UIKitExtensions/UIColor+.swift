@@ -241,6 +241,16 @@ public extension UIColor {
         getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         return [red, green, blue]
     }
+    
+    /// Returns the RGB string representation of the color in the format "rgb(r, g, b)".
+    /// - Returns: A string representation of the color in RGB format.
+    func toRGBString() -> String {
+        let components = cgColor.components ?? [0.0, 0.0, 0.0]
+        let red = Int(components[0] * 255.0)
+        let green = Int(components[1] * 255.0)
+        let blue = Int(components[2] * 255.0)
+        return "rgb(\(red), \(green), \(blue))"
+    }
 }
 #endif
 
@@ -367,6 +377,17 @@ public extension Color {
 
     init(hex: String) {
         self.init(UIColor(hex: hex) ?? UIColor.black)
+    }
+    
+    /// Returns the RGB string representation of the color in the format "rgb(r, g, b)".
+    /// - Returns: A string representation of the color in RGB format.
+    func toRGBString() -> String {
+        let uiColor = UIColor(self)
+        let components = uiColor.cgColor.components ?? [0.0, 0.0, 0.0]
+        let red = Int(components[0] * 255.0)
+        let green = Int(components[1] * 255.0)
+        let blue = Int(components[2] * 255.0)
+        return "rgb(\(red), \(green), \(blue))"
     }
 }
 #endif
