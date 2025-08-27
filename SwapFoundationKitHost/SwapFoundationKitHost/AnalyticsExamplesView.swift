@@ -56,8 +56,8 @@ private final class TestLogger: AnalyticsLogger {
         self.callback = callback
     }
 
-    func logEvent(event: AnalyticsEvent, parameters: [String: String]?) {
-        callback(event, parameters)
+    func logEvent(event: AnalyticsEvent, additionalParameters: [String: String]?) {
+        callback(event, additionalParameters)
     }
 }
 

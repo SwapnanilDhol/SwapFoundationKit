@@ -2,7 +2,7 @@ import Foundation
 
 /// Protocol for analytics tracking
 public protocol AnalyticsLogger {
-    func logEvent(event: AnalyticsEvent, parameters: [String: String]?)
+    func logEvent(event: AnalyticsEvent, additionalParameters: [String: String]?)
 }
 
 /// Protocol for analytics events
@@ -32,8 +32,14 @@ public final class AnalyticsManager: @unchecked Sendable {
     }
 
     public func logEvent(event: AnalyticsEvent, parameters: [String: String]? = nil) {
+        // Merge event.parameters with additional parameters; additional overrides defaults
+        var merged: [String: String]? = event.parameters
+        if let extras = parameters {
+            if merged == nil { merged = [:] }
+            for (k, v) in extras { merged![k] = v }
+        }
         for logger in loggers {
-            logger.logEvent(event: event, parameters: parameters)
+            logger.logEvent(event: event, additionalParameters: merged)
         }
     }
 
