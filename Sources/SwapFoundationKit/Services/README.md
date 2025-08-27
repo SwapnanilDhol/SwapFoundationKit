@@ -22,14 +22,14 @@ import SwapFoundationKit
 enum AppAnalyticsEvent: AnalyticsEvent {
     case userSignedIn(userId: String)
     case purchase(amount: Double, currency: String)
-    
+
     var rawValue: String {
         switch self {
         case .userSignedIn: return "user_signed_in"
         case .purchase: return "purchase"
         }
     }
-    
+
     var parameters: [String: String]? {
         switch self {
         case .userSignedIn(let userId):
@@ -91,36 +91,56 @@ Logger.error("Failed to load user data")
 
 ## ⚙️ User Defaults
 
-Type-safe UserDefaults with SwiftUI support.
+Type-safe, key-safe UserDefaults with SwiftUI support.
 
 ### Features
 
-- **🔒 Type Safety** - Compile-time type checking
-- **📱 SwiftUI Support** - `@Published` integration
-- **🔄 Observable** - Automatic UI updates
-- **💾 Persistence** - Automatic data persistence
+- **🔒 Type Safety**: Compile-time type checking for stored values
+- **🔑 Key Safety**: Use enums via `UserDefaultKeyProtocol` instead of raw strings
+- **📱 SwiftUI Support**: `@UserDefault` property wrapper and `AppStorage` conveniences
+- **🔄 Observable**: Automatic UI updates when values change
+- **➕ Utilities**: Convenience getters/setters and counter helpers on `UserDefaults`
 
-### Quick Start
+### Define Keys
+
+```swift
+import SwapFoundationKit
+
+enum SettingsKey: UserDefaultKeyProtocol {
+    case username
+    case isPremium
+    case lastLoginDate
+
+    var keyString: String {
+        switch self {
+        case .username: return "settings.username"
+        case .isPremium: return "settings.isPremium"
+        case .lastLoginDate: return "settings.lastLoginDate"
+        }
+    }
+}
+```
+
+### Quick Start (Property Wrapper)
 
 ```swift
 import SwapFoundationKit
 import SwiftUI
 
-class UserSettings: ObservableObject {
-    @UserDefault("username", defaultValue: "")
+final class UserSettings: ObservableObject {
+    @UserDefault(SettingsKey.username, default: "")
     var username: String
-    
-    @UserDefault("isPremium", defaultValue: false)
+
+    @UserDefault(SettingsKey.isPremium, default: false)
     var isPremium: Bool
-    
-    @UserDefault("lastLoginDate", defaultValue: Date())
+
+    @UserDefault(SettingsKey.lastLoginDate, default: Date())
     var lastLoginDate: Date
 }
 
-// Usage in SwiftUI
 struct SettingsView: View {
     @StateObject private var settings = UserSettings()
-    
+
     var body: some View {
         Form {
             TextField("Username", text: $settings.username)
@@ -129,6 +149,45 @@ struct SettingsView: View {
         }
     }
 }
+```
+
+### SwiftUI `AppStorage` Convenience
+
+```swift
+import SwiftUI
+import SwapFoundationKit
+
+struct PremiumToggleView: View {
+    @AppStorage(SettingsKey.isPremium) var isPremium = false
+
+    var body: some View {
+        Toggle("Premium", isOn: $isPremium)
+    }
+}
+```
+
+### `UserDefaults` Helpers
+
+```swift
+import SwapFoundationKit
+
+let defaults = UserDefaults.standard
+
+// Set using key-safe API
+defaults.set("swap", for: SettingsKey.username)
+
+// Get values
+let isPro: Bool = defaults.bool(for: SettingsKey.isPremium)
+let name: String? = defaults.string(for: SettingsKey.username)
+let last: Date? = defaults.date(for: SettingsKey.lastLoginDate)
+
+// Counters
+enum CounterKey: UserDefaultKeyProtocol {
+    case appLaunches
+    var keyString: String { "metrics.appLaunches" }
+}
+defaults.incrementCounter(for: CounterKey.appLaunches)
+defaults.decrementCounter(for: CounterKey.appLaunches)
 ```
 
 ## 🔗 App Link Opener
@@ -220,7 +279,7 @@ class ProductDetailSource: ItemDetailSource {
         let details = try await apiService.fetchProduct(id: itemId)
         return details
     }
-    
+
     func updateDetails(_ details: ProductDetails) async throws {
         // Update product details
         try await apiService.updateProduct(details)
@@ -253,7 +312,7 @@ let productDetails = try await detailSource.fetchDetails(for: "product123")
 // Mock service for testing
 class MockAnalyticsLogger: AnalyticsLogger {
     private(set) var loggedEvents: [(event: AnalyticsEvent, parameters: [String: String]?)] = []
-    
+
     func logEvent(event: AnalyticsEvent, parameters: [String: String]?) {
         loggedEvents.append((event: event, parameters: parameters))
     }

@@ -82,19 +82,3 @@ public struct UserDefault<T: Equatable, Key: UserDefaultKeyProtocol>: DynamicPro
     }
 }
 #endif
-
-public extension UserDefaults {
-    /// Increments an integer counter for the given key in UserDefaults.
-    /// - Parameter key: The key for the counter.
-    func incrementCounter(for key: UserDefaultKeyProtocol) {
-        let currentValue = self.integer(forKey: key.keyString)
-        self.set(currentValue + 1, forKey: key.keyString)
-    }
-
-    /// Decrements an integer counter for the given key in UserDefaults.
-    /// - Parameter key: The key for the counter.
-    func decrementCounter(for key: UserDefaultKeyProtocol) {
-        let currentValue = self.integer(forKey: key.keyString)
-        self.set(currentValue - 1, forKey: key.keyString)
-    }
-}
