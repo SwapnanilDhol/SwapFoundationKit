@@ -33,13 +33,10 @@ public final class AnalyticsManager: @unchecked Sendable {
 
     public func logEvent(event: AnalyticsEvent, parameters: [String: String]? = nil) {
         // Merge event.parameters with additional parameters; additional overrides defaults
-        var merged: [String: String]? = event.parameters
-        if let extras = parameters {
-            if merged == nil { merged = [:] }
-            for (k, v) in extras { merged![k] = v }
-        }
+        let base = event.parameters ?? [:]
+        let merged = parameters.map { base.merging($0) { _, new in new } } ?? base
         for logger in loggers {
-            logger.logEvent(event: event, additionalParameters: merged)
+            logger.logEvent(event: event, additionalParameters: merged.isEmpty ? nil : merged)
         }
     }
 
