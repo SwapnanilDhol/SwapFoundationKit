@@ -9,20 +9,13 @@ struct AnalyticsExamplesView: View {
         List {
             Section("Setup") {
                 Button("Add Test Logger") {
-                    let loggerForAppEvent = TestLogger<AppEvent> { event, parameters in
+                    let testLogger = TestLogger { event, parameters in
                         DispatchQueue.main.async {
                             let paramsString = parameters?.description ?? "nil"
                             sent.append("\(event.rawValue): \(paramsString)")
                         }
                     }
-                    let loggerForDefault = TestLogger<DefaultAnalyticsEvent> { event, parameters in
-                        DispatchQueue.main.async {
-                            let paramsString = parameters?.description ?? "nil"
-                            sent.append("\(event.rawValue): \(paramsString)")
-                        }
-                    }
-                    AnalyticsManager.shared.addLogger(loggerForAppEvent)
-                    AnalyticsManager.shared.addLogger(loggerForDefault)
+                    AnalyticsManager.shared.addLogger(testLogger)
                 }
                 Button("Log appLaunched") {
                     AnalyticsManager.shared.logEvent(event: AppEvent.appLaunched)
@@ -56,15 +49,14 @@ private enum AppEvent: AnalyticsEvent {
     var name: String { rawValue }
 }
 
-private final class TestLogger<E: AnalyticsEvent>: AnalyticsLogger {
-    typealias T = E
-    private let callback: (E, [String: String]?) -> Void
+private final class TestLogger: AnalyticsLogger {
+    private let callback: (AnalyticsEvent, [String: String]?) -> Void
 
-    init(callback: @escaping (E, [String: String]?) -> Void) {
+    init(callback: @escaping (AnalyticsEvent, [String: String]?) -> Void) {
         self.callback = callback
     }
 
-    func logEvent(event: E, parameters: [String: String]?) {
+    func logEvent(event: AnalyticsEvent, parameters: [String: String]?) {
         callback(event, parameters)
     }
 }
