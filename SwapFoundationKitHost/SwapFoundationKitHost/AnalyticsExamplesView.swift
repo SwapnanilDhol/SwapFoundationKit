@@ -9,13 +9,20 @@ struct AnalyticsExamplesView: View {
         List {
             Section("Setup") {
                 Button("Add Test Logger") {
-                    let testLogger = TestLogger { event, parameters in
+                    let loggerForAppEvent = TestLogger<AppEvent> { event, parameters in
                         DispatchQueue.main.async {
                             let paramsString = parameters?.description ?? "nil"
                             sent.append("\(event.rawValue): \(paramsString)")
                         }
                     }
-                    AnalyticsManager.shared.addLogger(testLogger)
+                    let loggerForDefault = TestLogger<DefaultAnalyticsEvent> { event, parameters in
+                        DispatchQueue.main.async {
+                            let paramsString = parameters?.description ?? "nil"
+                            sent.append("\(event.rawValue): \(paramsString)")
+                        }
+                    }
+                    AnalyticsManager.shared.addLogger(loggerForAppEvent)
+                    AnalyticsManager.shared.addLogger(loggerForDefault)
                 }
                 Button("Log appLaunched") {
                     AnalyticsManager.shared.logEvent(event: AppEvent.appLaunched)
@@ -47,17 +54,17 @@ private enum AppEvent: AnalyticsEvent {
     }
     
     var name: String { rawValue }
-    var parameters: [String : any Sendable] { [:] }
 }
 
-private class TestLogger: AnalyticsLogger {
-    private let callback: (AnalyticsEvent, [String: String]?) -> Void
-    
-    init(callback: @escaping (AnalyticsEvent, [String: String]?) -> Void) {
+private final class TestLogger<E: AnalyticsEvent>: AnalyticsLogger {
+    typealias T = E
+    private let callback: (E, [String: String]?) -> Void
+
+    init(callback: @escaping (E, [String: String]?) -> Void) {
         self.callback = callback
     }
-    
-    func logEvent(event: AnalyticsEvent, parameters: [String: String]?) {
+
+    func logEvent(event: E, parameters: [String: String]?) {
         callback(event, parameters)
     }
 }
