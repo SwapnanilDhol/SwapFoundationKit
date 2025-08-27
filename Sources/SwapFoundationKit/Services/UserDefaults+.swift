@@ -7,8 +7,7 @@
 
 import Foundation
 
-
-extension UserDefaults {
+public extension UserDefaults {
 
     func set(_ value: Any, for key: UserDefaultKeyProtocol) {
         self.set(value, forKey: key.keyString)
@@ -70,7 +69,7 @@ extension UserDefaults {
 }
 
 import SwiftUI
-extension AppStorage {
+public extension AppStorage {
 
     init(wrappedValue: Value, _ key: UserDefaultKeyProtocol, store: UserDefaults? = nil) where Value == Bool {
         self.init(wrappedValue: wrappedValue, key.keyString, store: store)
