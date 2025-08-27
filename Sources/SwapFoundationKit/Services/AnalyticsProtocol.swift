@@ -21,11 +21,11 @@ public extension AnalyticsEvent {
 /// Analytics manager for handling tracking across different services
 public final class AnalyticsManager: AnalyticsLogger, @unchecked Sendable {
     public static let shared = AnalyticsManager()
-    private var loggers: [AnalyticsLogger] = []
-    
+    private var loggers: [any AnalyticsLogger] = []
+
     private init() {}
     
-    public func addLogger(_ logger: AnalyticsLogger) {
+    public func addLogger(_ logger: any AnalyticsLogger) {
         loggers.append(logger)
     }
     
