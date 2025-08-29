@@ -22,7 +22,9 @@ import UIKit
 /// A protocol for providing detailed information about items that can be shared or displayed.
 /// This is commonly used with UIActivityViewController for sharing content.
 public protocol ItemDetailSource {
-    /// The title to display for the item.
+    /// A short display title for the item (used in previews/metadata).
+    /// This helps render link/preview metadata (e.g., `LPLinkMetadata.title`) and
+    /// UI labels where a concise name is expected.
     var title: String { get }
     
     /// The subtitle or description of the item.
@@ -34,7 +36,9 @@ public protocol ItemDetailSource {
     /// The image data associated with the item.
     var imageData: Data? { get }
     
-    /// The text content to share.
+    /// The primary textual payload that gets shared or copied.
+    /// This is the actual content passed to share sheets when requesting a string.
+    /// Keeping this non-optional guarantees we always have a fallback share body.
     var text: String { get }
 }
 
