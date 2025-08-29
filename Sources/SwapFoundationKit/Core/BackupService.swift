@@ -4,6 +4,8 @@ import Foundation
 @MainActor
 public final class BackupService {
     
+    public init() {}
+    
     public enum FileType: String, CaseIterable {
         case data = "data"
         
