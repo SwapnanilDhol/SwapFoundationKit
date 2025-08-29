@@ -69,6 +69,7 @@ public extension UserDefaults {
 }
 
 import SwiftUI
+@available(watchOS 7.0, *)
 public extension AppStorage {
 
     init(wrappedValue: Value, _ key: UserDefaultKeyProtocol, store: UserDefaults? = nil) where Value == Bool {

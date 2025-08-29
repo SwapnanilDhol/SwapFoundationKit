@@ -1,3 +1,6 @@
+import Foundation
+
+#if canImport(UIKit) && os(iOS)
 import UIKit
 
 extension UIImage {
@@ -29,3 +32,4 @@ extension UIImage {
         return UIGraphicsGetImageFromCurrentImageContext()
     }
 }
+#endif
