@@ -41,7 +41,7 @@ public final class AppGroupFileStorageService: FileStorageService {
         guard let config = SwapFoundationKit.shared.getConfiguration() else {
             fatalError("SwapFoundationKit not initialized. Call SwapFoundationKit.shared.start(with:) first.")
         }
-        self.appGroupIdentifier = config.appGroupIdentifier
+        self.appGroupIdentifier = config.appMetadata.appGroupIdentifier
         self.fileManager = .default
     }
     

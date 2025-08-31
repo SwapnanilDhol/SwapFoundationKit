@@ -50,7 +50,7 @@ public final class SwapFoundationKit {
     // MARK: - Private Methods
     
     private func validateConfiguration(_ config: SwapFoundationKitConfiguration) throws {
-        guard !config.appGroupIdentifier.isEmpty else {
+        guard !config.appMetadata.appGroupIdentifier.isEmpty else {
             throw SwapFoundationKitError.invalidConfiguration("App group identifier cannot be empty")
         }
         

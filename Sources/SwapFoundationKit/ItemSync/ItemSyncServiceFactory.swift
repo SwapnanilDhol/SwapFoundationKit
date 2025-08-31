@@ -56,7 +56,7 @@ public final class ItemSyncServiceFactory {
         if let customStorage = config.customStorageService {
             storage = customStorage
         } else {
-            storage = AppGroupFileStorageService(appGroupIdentifier: config.appGroupIdentifier)
+            storage = AppGroupFileStorageService(appGroupIdentifier: config.appMetadata.appGroupIdentifier)
         }
         
         #if os(iOS)

@@ -94,7 +94,7 @@ import Foundation
 ///
 /// // Get current configuration
 /// if let config = SwapFoundationKit.shared.getConfiguration() {
-///     print("App Group: \(config.appGroupIdentifier)")
+///     print("App Group: \(config.appMetadata.appGroupIdentifier)")
 ///     print("Watch Connectivity: \(config.enableWatchConnectivity)")
 /// }
 /// ```

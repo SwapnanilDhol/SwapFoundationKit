@@ -4,14 +4,9 @@ import Foundation
 /// Contains all necessary settings for initializing and configuring the framework
 public struct SwapFoundationKitConfiguration {
     
-    // MARK: - App Group & Sharing
-    
-    /// App group identifier for sharing data between app, widgets, and extensions
-    public let appGroupIdentifier: String
-    
     // MARK: - App Metadata
     
-    /// App metadata containing app information
+    /// App metadata containing app information including app group identifier
     public let appMetadata: AppMetaData
     
     // MARK: - Service Flags
@@ -45,8 +40,7 @@ public struct SwapFoundationKitConfiguration {
     
     /// Creates a new configuration instance
     /// - Parameters:
-    ///   - appGroupIdentifier: App group identifier for data sharing
-    ///   - appMetadata: App metadata information
+    ///   - appMetadata: App metadata information (must include appGroupIdentifier)
     ///   - enableWatchConnectivity: Whether to enable Watch connectivity
     ///   - enableAnalytics: Whether to enable analytics
     ///   - enableItemSync: Whether to enable item synchronization
@@ -55,7 +49,6 @@ public struct SwapFoundationKitConfiguration {
     ///   - customAnalyticsLogger: Custom analytics logger
     ///   - customStorageService: Custom storage service
     public init(
-        appGroupIdentifier: String,
         appMetadata: AppMetaData,
         enableWatchConnectivity: Bool = false,
         enableAnalytics: Bool = true,
@@ -65,7 +58,6 @@ public struct SwapFoundationKitConfiguration {
         customAnalyticsLogger: AnalyticsLogger? = nil,
         customStorageService: FileStorageService? = nil
     ) {
-        self.appGroupIdentifier = appGroupIdentifier
         self.appMetadata = appMetadata
         self.enableWatchConnectivity = enableWatchConnectivity
         self.enableAnalytics = enableAnalytics
@@ -82,31 +74,23 @@ public struct SwapFoundationKitConfiguration {
 extension SwapFoundationKitConfiguration {
     
     /// Creates a basic configuration with minimal required parameters
-    /// - Parameters:
-    ///   - appGroupIdentifier: App group identifier
-    ///   - appMetadata: App metadata
+    /// - Parameter appMetadata: App metadata (must include appGroupIdentifier)
     /// - Returns: Configuration with default values
     public static func basic(
-        appGroupIdentifier: String,
         appMetadata: AppMetaData
     ) -> SwapFoundationKitConfiguration {
         return SwapFoundationKitConfiguration(
-            appGroupIdentifier: appGroupIdentifier,
             appMetadata: appMetadata
         )
     }
     
     /// Creates a configuration optimized for Watch apps
-    /// - Parameters:
-    ///   - appGroupIdentifier: App group identifier
-    ///   - appMetadata: App metadata
+    /// - Parameter appMetadata: App metadata (must include appGroupIdentifier)
     /// - Returns: Configuration with Watch-optimized settings
     public static func watchOptimized(
-        appGroupIdentifier: String,
         appMetadata: AppMetaData
     ) -> SwapFoundationKitConfiguration {
         return SwapFoundationKitConfiguration(
-            appGroupIdentifier: appGroupIdentifier,
             appMetadata: appMetadata,
             enableWatchConnectivity: true,
             enableAnalytics: false, // Watch apps typically don't need analytics
@@ -117,16 +101,12 @@ extension SwapFoundationKitConfiguration {
     }
     
     /// Creates a configuration optimized for widget extensions
-    /// - Parameters:
-    ///   - appGroupIdentifier: App group identifier
-    ///   - appMetadata: App metadata
+    /// - Parameter appMetadata: App metadata (must include appGroupIdentifier)
     /// - Returns: Configuration with widget-optimized settings
     public static func widgetOptimized(
-        appGroupIdentifier: String,
         appMetadata: AppMetaData
     ) -> SwapFoundationKitConfiguration {
         return SwapFoundationKitConfiguration(
-            appGroupIdentifier: appGroupIdentifier,
             appMetadata: appMetadata,
             enableWatchConnectivity: false,
             enableAnalytics: false, // Widgets typically don't need analytics
