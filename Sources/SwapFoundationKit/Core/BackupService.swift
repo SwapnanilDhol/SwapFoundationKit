@@ -1,7 +1,6 @@
 import Foundation
 
 /// Service for handling data backup and export operations
-@MainActor
 public final class BackupService {
     
     public init() {}
