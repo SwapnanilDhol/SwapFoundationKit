@@ -53,14 +53,14 @@ import SwapFoundationKit
 enum AppAnalyticsEvent: AnalyticsEvent {
     case userSignedIn(userId: String)
     case purchase(amount: Double, currency: String)
-    
+
     var rawValue: String {
         switch self {
         case .userSignedIn: return "user_signed_in"
         case .purchase: return "purchase"
         }
     }
-    
+
     var parameters: [String: String]? {
         switch self {
         case .userSignedIn(let userId):
@@ -105,6 +105,11 @@ struct UserProfile: SyncableData {
 }
 
 // Create sync service
+// 🆕 NEW: Using centralized configuration (recommended)
+// After calling SwapFoundationKit.shared.start(with: config)
+let syncService = ItemSyncServiceFactory.create() // Automatic configuration!
+
+// Legacy: Manual configuration (still supported)
 let syncService = ItemSyncServiceFactory.create(
     appGroupIdentifier: "group.com.yourapp.widget"
 )
@@ -190,18 +195,23 @@ Logger.error("Failed to load user data")
 ## 📚 Documentation
 
 ### [Analytics System](Sources/SwapFoundationKit/Analytics/README.md)
+
 Complete guide to implementing analytics with Firebase, Mixpanel, and custom providers.
 
 ### [ItemSync](Sources/SwapFoundationKit/ItemSync/README.md)
+
 Data synchronization between main app, widgets, and Apple Watch.
 
 ### [Currency System](Sources/SwapFoundationKit/Currency/)
+
 Real-time exchange rates and currency conversion utilities.
 
 ### [Image Processor](Sources/SwapFoundationKit/ImageProcessor/)
+
 Image manipulation, caching, and file operations.
 
 ### [UIKit Extensions](Sources/SwapFoundationKit/UIKit+/)
+
 Helpful extensions for common UI operations and safe area handling.
 
 ## 🏗️ Architecture
@@ -248,7 +258,7 @@ Many components include mock implementations for testing:
 // Mock analytics logger for testing
 class MockAnalyticsLogger: AnalyticsLogger {
     private(set) var loggedEvents: [(event: AnalyticsEvent, parameters: [String: String]?)] = []
-    
+
     func logEvent(event: AnalyticsEvent, parameters: [String: String]?) {
         loggedEvents.append((event: event, parameters: parameters))
     }

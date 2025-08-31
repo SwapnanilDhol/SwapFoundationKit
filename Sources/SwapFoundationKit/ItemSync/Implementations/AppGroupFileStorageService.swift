@@ -12,7 +12,10 @@ import Foundation
 ///
 /// ## Usage Example
 /// ```swift
-/// // Create with your app group identifier
+/// // NEW: Automatic configuration (recommended)
+/// let storage = AppGroupFileStorageService()
+///
+/// // Legacy: Create with your app group identifier
 /// let storage = AppGroupFileStorageService(
 ///     appGroupIdentifier: "group.com.yourapp.widget"
 /// )
@@ -31,6 +34,16 @@ public final class AppGroupFileStorageService: FileStorageService {
     private let fileManager: FileManager
     
     // MARK: - Initialization
+    
+    /// Creates a new App Group file storage service using centralized configuration
+    /// - Note: Requires SwapFoundationKit.shared.start(with:) to be called first
+    public init() {
+        guard let config = SwapFoundationKit.shared.getConfiguration() else {
+            fatalError("SwapFoundationKit not initialized. Call SwapFoundationKit.shared.start(with:) first.")
+        }
+        self.appGroupIdentifier = config.appGroupIdentifier
+        self.fileManager = .default
+    }
     
     /// Creates a new App Group file storage service
     /// - Parameters:

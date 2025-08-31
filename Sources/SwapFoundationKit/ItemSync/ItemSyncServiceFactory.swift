@@ -12,19 +12,22 @@ import Foundation
 ///
 /// ## Usage Examples
 /// ```swift
-/// // Quick setup with just app group identifier
+/// // NEW: Centralized configuration (recommended)
+/// let syncService = ItemSyncServiceFactory.create()
+///
+/// // Legacy: Quick setup with just app group identifier
 /// let syncService = ItemSyncServiceFactory.create(
 ///     appGroupIdentifier: "group.com.yourapp.widget"
 /// )
 ///
-/// // Setup with Watch connectivity (iOS only)
+/// // Legacy: Setup with Watch connectivity (iOS only)
 /// #if os(iOS)
 /// let syncService = ItemSyncServiceFactory.createWithWatch(
 ///     appGroupIdentifier: "group.com.yourapp.widget"
 /// )
 /// #endif
 ///
-/// // Custom configuration
+/// // Legacy: Custom configuration
 /// let storage = AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget")
 /// let watchService = WatchConnectivityServiceImpl()
 /// let syncService = ItemSyncServiceFactory.create(
@@ -35,6 +38,37 @@ import Foundation
 public final class ItemSyncServiceFactory {
     
     // MARK: - Factory Methods
+    
+    /// Creates a sync service using the centralized framework configuration
+    /// - Returns: Configured DataSyncService instance
+    /// - Note: Requires SwapFoundationKit.shared.start(with:) to be called first
+    public static func create() -> DataSyncService {
+        guard let config = SwapFoundationKit.shared.getConfiguration() else {
+            fatalError("SwapFoundationKit not initialized. Call SwapFoundationKit.shared.start(with:) first.")
+        }
+        
+        guard config.enableItemSync else {
+            fatalError("ItemSync is disabled in the current configuration.")
+        }
+        
+        let storage: FileStorageService
+        
+        if let customStorage = config.customStorageService {
+            storage = customStorage
+        } else {
+            storage = AppGroupFileStorageService(appGroupIdentifier: config.appGroupIdentifier)
+        }
+        
+        #if os(iOS)
+        if config.enableWatchConnectivity {
+            let watchService = WatchConnectivityServiceImpl()
+            watchService.activate()
+            return DataSyncServiceImpl(storage: storage, watchConnectivity: watchService)
+        }
+        #endif
+        
+        return DataSyncServiceImpl(storage: storage)
+    }
     
     /// Creates a sync service with the default App Group storage
     /// - Parameter appGroupIdentifier: Your app group identifier
