@@ -20,53 +20,53 @@ public struct AppMetaDataImpl: AppMetaData {
     
     /// App group identifier for data sharing between app, widgets, and extensions
     /// - Note: This must be provided by the implementing type
-    public static var appGroupIdentifier: String {
+    public var appGroupIdentifier: String {
         fatalError("appGroupIdentifier must be provided by implementing type")
     }
     
     /// Unique app identifier
     /// - Note: This must be provided by the implementing type
-    public static var appID: String {
+    public var appID: String {
         fatalError("appID must be provided by implementing type")
     }
     
     /// App name
     /// - Note: This must be provided by the implementing type
-    public static var appName: String {
+    public var appName: String {
         fatalError("appName must be provided by implementing type")
     }
     
     /// App share description
     /// - Note: This must be provided by the implementing type
-    public static var appShareDescription: String {
+    public var appShareDescription: String {
         fatalError("appShareDescription must be provided by implementing type")
     }
     
     // MARK: - Optional Properties (with sensible defaults)
     
     /// App Instagram URL
-    public static var appInstagramUrl: URL? { nil }
+    public var appInstagramUrl: URL? { nil }
     
     /// App Twitter URL
-    public static var appTwitterUrl: URL? { nil }
+    public var appTwitterUrl: URL? { nil }
     
     /// App website URL
-    public static var appWebsiteUrl: URL? { nil }
+    public var appWebsiteUrl: URL? { nil }
     
     /// App privacy policy URL
-    public static var appPrivacyPolicyUrl: URL? { nil }
+    public var appPrivacyPolicyUrl: URL? { nil }
     
     /// App EULA URL
-    public static var appEULAUrl: URL? { nil }
+    public var appEULAUrl: URL? { nil }
     
     /// App support email
-    public static var appSupportEmail: String? { nil }
+    public var appSupportEmail: String? { nil }
     
     /// Developer website URL
-    public static var appDeveloperWebsite: URL? { nil }
+    public var developerWebsite: URL? { nil }
     
     /// Developer Twitter URL
-    public static var appDeveloperTwitterUrl: URL? { nil }
+    public var developerTwitterUrl: URL? { nil }
 }
 
 // MARK: - Convenience Extensions
@@ -167,6 +167,16 @@ public struct BasicAppMetadata: AppMetaData {
     public let appName: String
     public let appShareDescription: String
     
+    // All other required properties with default values
+    public let appInstagramUrl: URL? = nil
+    public let appTwitterUrl: URL? = nil
+    public let appWebsiteUrl: URL? = nil
+    public let appPrivacyPolicyUrl: URL? = nil
+    public let appEULAUrl: URL? = nil
+    public let appSupportEmail: String? = nil
+    public let developerWebsite: URL? = nil
+    public let developerTwitterUrl: URL? = nil
+    
     public init(
         appGroupIdentifier: String,
         appID: String,
@@ -178,8 +188,6 @@ public struct BasicAppMetadata: AppMetaData {
         self.appName = appName
         self.appShareDescription = appShareDescription
     }
-    
-    // All other properties use default implementations from AppMetaData extension
 }
 
 /// Social media focused app metadata
@@ -191,6 +199,13 @@ public struct SocialAppMetadata: AppMetaData {
     public let appInstagramUrl: URL?
     public let appTwitterUrl: URL?
     public let appWebsiteUrl: URL?
+    
+    // All other required properties with default values
+    public let appPrivacyPolicyUrl: URL? = nil
+    public let appEULAUrl: URL? = nil
+    public let appSupportEmail: String? = nil
+    public let developerWebsite: URL? = nil
+    public let developerTwitterUrl: URL? = nil
     
     public init(
         appGroupIdentifier: String,
@@ -209,8 +224,6 @@ public struct SocialAppMetadata: AppMetaData {
         self.appTwitterUrl = twitterUrl
         self.appWebsiteUrl = websiteUrl
     }
-    
-    // All other properties use default implementations from AppMetaData extension
 }
 
 /// Business-focused app metadata
@@ -223,6 +236,12 @@ public struct BusinessAppMetadata: AppMetaData {
     public let appPrivacyPolicyUrl: URL?
     public let appEULAUrl: URL?
     public let appSupportEmail: String?
+    
+    // All other required properties with default values
+    public let appInstagramUrl: URL? = nil
+    public let appTwitterUrl: URL? = nil
+    public let developerWebsite: URL? = nil
+    public let developerTwitterUrl: URL? = nil
     
     public init(
         appGroupIdentifier: String,
@@ -243,6 +262,4 @@ public struct BusinessAppMetadata: AppMetaData {
         self.appEULAUrl = eulaUrl
         self.appSupportEmail = supportEmail
     }
-    
-    // All other properties use default implementations from AppMetaData extension
 }

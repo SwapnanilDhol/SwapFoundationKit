@@ -83,36 +83,4 @@ extension SwapFoundationKitConfiguration {
             appMetadata: appMetadata
         )
     }
-    
-    /// Creates a configuration optimized for Watch apps
-    /// - Parameter appMetadata: App metadata (must include appGroupIdentifier)
-    /// - Returns: Configuration with Watch-optimized settings
-    public static func watchOptimized(
-        appMetadata: AppMetaData
-    ) -> SwapFoundationKitConfiguration {
-        return SwapFoundationKitConfiguration(
-            appMetadata: appMetadata,
-            enableWatchConnectivity: true,
-            enableAnalytics: false, // Watch apps typically don't need analytics
-            enableItemSync: true,
-            networkTimeout: 15.0, // Shorter timeout for Watch
-            enableCertificatePinning: false
-        )
-    }
-    
-    /// Creates a configuration optimized for widget extensions
-    /// - Parameter appMetadata: App metadata (must include appGroupIdentifier)
-    /// - Returns: Configuration with widget-optimized settings
-    public static func widgetOptimized(
-        appMetadata: AppMetaData
-    ) -> SwapFoundationKitConfiguration {
-        return SwapFoundationKitConfiguration(
-            appMetadata: appMetadata,
-            enableWatchConnectivity: false,
-            enableAnalytics: false, // Widgets typically don't need analytics
-            enableItemSync: true,
-            networkTimeout: 10.0, // Very short timeout for widgets
-            enableCertificatePinning: false
-        )
-    }
 }
