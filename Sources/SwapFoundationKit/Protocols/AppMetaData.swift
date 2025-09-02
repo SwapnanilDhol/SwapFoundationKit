@@ -1,88 +1,164 @@
-/*****************************************************************************
- * AppMetaData.swift
- * SwapFoundationKit
- *****************************************************************************
- * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
- *
- * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
- *
- * Refer to the COPYING file of the official project for license.
- *****************************************************************************/
-
 import Foundation
 
-public protocol AppMetaData {
-    // MARK: - Required Properties for Configuration
+/// App metadata containing information about the application
+/// Provides sensible defaults from Bundle.main for common properties
+public struct AppMetaData {
+    
+    // MARK: - Required Properties
     
     /// App group identifier for data sharing between app, widgets, and extensions
-    var appGroupIdentifier: String { get }
-    
-    /// Bundle identifier of the app
-    var bundleIdentifier: String { get }
-    
-    /// App version string
-    var appVersion: String { get }
-    
-    /// Build number string
-    var buildNumber: String { get }
-    
-    // MARK: - Existing Properties (for backward compatibility)
+    public let appGroupIdentifier: String
     
     /// Unique app identifier
-    var appID: String { get }
+    public let appID: String
     
     /// App name
-    var appName: String { get }
+    public let appName: String
     
     /// App share description
-    var appShareDescription: String { get }
+    public let appShareDescription: String
+    
+    // MARK: - Optional Properties
     
     /// App Instagram URL
-    var appInstagramUrl: URL? { get }
+    public let appInstagramUrl: URL?
     
     /// App Twitter URL
-    var appTwitterUrl: URL? { get }
+    public let appTwitterUrl: URL?
     
     /// App website URL
-    var appWebsiteUrl: URL? { get }
+    public let appWebsiteUrl: URL?
     
     /// App privacy policy URL
-    var appPrivacyPolicyUrl: URL? { get }
+    public let appPrivacyPolicyUrl: URL?
     
     /// App EULA URL
-    var appEULAUrl: URL? { get }
+    public let appEULAUrl: URL?
     
     /// App support email
-    var appSupportEmail: String? { get }
+    public let appSupportEmail: String?
     
     /// Developer website URL
-    var developerWebsite: URL? { get }
+    public let developerWebsite: URL?
     
     /// Developer Twitter URL
-    var developerTwitterUrl: URL? { get }
-}
-
-// MARK: - Default Implementations
-
-public extension AppMetaData {
+    public let developerTwitterUrl: URL?
     
-    /// Default implementation for bundle identifier using Bundle.main
-    var bundleIdentifier: String {
+    // MARK: - Computed Properties (from Bundle)
+    
+    /// Bundle identifier of the app (from Bundle.main)
+    public var bundleIdentifier: String {
         return Bundle.main.bundleIdentifier
     }
     
-    /// Default implementation for app version using Bundle.main
-    var appVersion: String {
+    /// App version string (from Bundle.main)
+    public var appVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     }
     
-    /// Default implementation for build number using Bundle.main
-    var buildNumber: String {
+    /// Build number string (from Bundle.main)
+    public var buildNumber: String {
         return Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
     }
     
-    /// Default implementation for app name using Bundle.main
-    var appName: String {
-        return Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "My App"
+    // MARK: - Initialization
+    
+    /// Creates a new AppMetaData instance
+    /// - Parameters:
+    ///   - appGroupIdentifier: App group identifier (required)
+    ///   - appID: App identifier (defaults to bundle identifier)
+    ///   - appName: App name (defaults to bundle display name)
+    ///   - appShareDescription: App share description (defaults to app name)
+    ///   - appInstagramUrl: Instagram URL (optional)
+    ///   - appTwitterUrl: Twitter URL (optional)
+    ///   - appWebsiteUrl: Website URL (optional)
+    ///   - appPrivacyPolicyUrl: Privacy policy URL (optional)
+    ///   - appEULAUrl: EULA URL (optional)
+    ///   - appSupportEmail: Support email (optional)
+    ///   - developerWebsite: Developer website URL (optional)
+    ///   - developerTwitterUrl: Developer Twitter URL (optional)
+    public init(
+        appGroupIdentifier: String,
+        appID: String? = nil,
+        appName: String? = nil,
+        appShareDescription: String? = nil,
+        appInstagramUrl: URL? = nil,
+        appTwitterUrl: URL? = nil,
+        appWebsiteUrl: URL? = nil,
+        appPrivacyPolicyUrl: URL? = nil,
+        appEULAUrl: URL? = nil,
+        appSupportEmail: String? = nil,
+        developerWebsite: URL? = nil,
+        developerTwitterUrl: URL? = nil
+    ) {
+        self.appGroupIdentifier = appGroupIdentifier
+        self.appID = appID ?? Bundle.main.bundleIdentifier
+        self.appName = appName ?? Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "My App"
+        self.appShareDescription = appShareDescription ?? self.appName
+        self.appInstagramUrl = appInstagramUrl
+        self.appTwitterUrl = appTwitterUrl
+        self.appWebsiteUrl = appWebsiteUrl
+        self.appPrivacyPolicyUrl = appPrivacyPolicyUrl
+        self.appEULAUrl = appEULAUrl
+        self.appSupportEmail = appSupportEmail
+        self.developerWebsite = developerWebsite
+        self.developerTwitterUrl = developerTwitterUrl
+    }
+}
+
+// MARK: - Convenience Initializers
+
+extension AppMetaData {
+    
+    /// Creates a basic AppMetaData with minimal required parameters
+    /// - Parameter appGroupIdentifier: App group identifier
+    /// - Returns: AppMetaData with sensible defaults from bundle
+    public static func basic(appGroupIdentifier: String) -> AppMetaData {
+        return AppMetaData(appGroupIdentifier: appGroupIdentifier)
+    }
+    
+    /// Creates a social media focused AppMetaData
+    /// - Parameters:
+    ///   - appGroupIdentifier: App group identifier
+    ///   - instagramUrl: Instagram URL
+    ///   - twitterUrl: Twitter URL
+    ///   - websiteUrl: Website URL
+    /// - Returns: AppMetaData configured for social media apps
+    public static func social(
+        appGroupIdentifier: String,
+        instagramUrl: URL? = nil,
+        twitterUrl: URL? = nil,
+        websiteUrl: URL? = nil
+    ) -> AppMetaData {
+        return AppMetaData(
+            appGroupIdentifier: appGroupIdentifier,
+            appInstagramUrl: instagramUrl,
+            appTwitterUrl: twitterUrl,
+            appWebsiteUrl: websiteUrl
+        )
+    }
+    
+    /// Creates a business focused AppMetaData
+    /// - Parameters:
+    ///   - appGroupIdentifier: App group identifier
+    ///   - websiteUrl: Website URL
+    ///   - privacyPolicyUrl: Privacy policy URL
+    ///   - eulaUrl: EULA URL
+    ///   - supportEmail: Support email
+    /// - Returns: AppMetaData configured for business apps
+    public static func business(
+        appGroupIdentifier: String,
+        websiteUrl: URL? = nil,
+        privacyPolicyUrl: URL? = nil,
+        eulaUrl: URL? = nil,
+        supportEmail: String? = nil
+    ) -> AppMetaData {
+        return AppMetaData(
+            appGroupIdentifier: appGroupIdentifier,
+            appWebsiteUrl: websiteUrl,
+            appPrivacyPolicyUrl: privacyPolicyUrl,
+            appEULAUrl: eulaUrl,
+            appSupportEmail: supportEmail
+        )
     }
 }
