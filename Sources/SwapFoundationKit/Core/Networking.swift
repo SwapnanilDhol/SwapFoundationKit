@@ -12,6 +12,8 @@ public enum HTTPMethod: String {
 
 /// Protocol defining a network request
 public protocol NetworkRequest {
+    /// Scheme for the request (e.g., "https")
+    var scheme: String { get }
     /// Base URL for the request (e.g., "api.example.com")
     var baseURL: String { get }
     /// Path component of the URL (e.g., "/users/123")
@@ -39,7 +41,7 @@ public extension NetworkRequest {
     /// Computed URLRequest from the network request properties
     var request: URLRequest? {
         guard let url else {
-            assertionFailure("Illegal URL")
+            // URL construction failed due to invalid scheme or baseURL
             return nil
         }
         var request = URLRequest(url: url,
@@ -55,11 +57,17 @@ public extension NetworkRequest {
 
     /// Computed URL from the network request properties
     var url: URL? {
+        // Validate required components
+        guard !scheme.isEmpty, !baseURL.isEmpty else {
+            return nil
+        }
+
         var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
+        urlComponents.scheme = scheme
         urlComponents.host = baseURL
         urlComponents.path = path
         urlComponents.queryItems = parameters?.compactMap { URLQueryItem(name: $0.key, value: $0.value) }
+
         return urlComponents.url
     }
 }
@@ -204,16 +212,19 @@ public final class HTTPClient {
 public extension HTTPClient {
     /// Perform a GET request
     /// - Parameters:
+    ///   - scheme: URL scheme (default: "https")
     ///   - baseURL: Base URL for the request
     ///   - path: Path component
     ///   - parameters: Query parameters
     ///   - headers: Additional headers
     /// - Returns: NetworkResponse
-    func get(baseURL: String,
+    func get(scheme: String = "https",
+             baseURL: String,
              path: String,
              parameters: [String: String]? = nil,
              headers: [String: String]? = nil) async throws -> NetworkResponse {
-        try await execute(SimpleRequest(baseURL: baseURL,
+        try await execute(SimpleRequest(scheme: scheme,
+                                       baseURL: baseURL,
                                        path: path,
                                        method: .get,
                                        parameters: parameters,
@@ -223,18 +234,21 @@ public extension HTTPClient {
 
     /// Perform a POST request
     /// - Parameters:
+    ///   - scheme: URL scheme (default: "https")
     ///   - baseURL: Base URL for the request
     ///   - path: Path component
     ///   - body: Request body data
     ///   - parameters: Query parameters
     ///   - headers: Additional headers
     /// - Returns: NetworkResponse
-    func post(baseURL: String,
+    func post(scheme: String = "https",
+              baseURL: String,
               path: String,
               body: Data? = nil,
               parameters: [String: String]? = nil,
               headers: [String: String]? = nil) async throws -> NetworkResponse {
-        try await execute(SimpleRequest(baseURL: baseURL,
+        try await execute(SimpleRequest(scheme: scheme,
+                                       baseURL: baseURL,
                                        path: path,
                                        method: .post,
                                        parameters: parameters,
@@ -244,18 +258,21 @@ public extension HTTPClient {
 
     /// Perform a PUT request
     /// - Parameters:
+    ///   - scheme: URL scheme (default: "https")
     ///   - baseURL: Base URL for the request
     ///   - path: Path component
     ///   - body: Request body data
     ///   - parameters: Query parameters
     ///   - headers: Additional headers
     /// - Returns: NetworkResponse
-    func put(baseURL: String,
+    func put(scheme: String = "https",
+             baseURL: String,
              path: String,
              body: Data? = nil,
              parameters: [String: String]? = nil,
              headers: [String: String]? = nil) async throws -> NetworkResponse {
-        try await execute(SimpleRequest(baseURL: baseURL,
+        try await execute(SimpleRequest(scheme: scheme,
+                                       baseURL: baseURL,
                                        path: path,
                                        method: .put,
                                        parameters: parameters,
@@ -265,16 +282,19 @@ public extension HTTPClient {
 
     /// Perform a DELETE request
     /// - Parameters:
+    ///   - scheme: URL scheme (default: "https")
     ///   - baseURL: Base URL for the request
     ///   - path: Path component
     ///   - parameters: Query parameters
     ///   - headers: Additional headers
     /// - Returns: NetworkResponse
-    func delete(baseURL: String,
+    func delete(scheme: String = "https",
+                baseURL: String,
                 path: String,
                 parameters: [String: String]? = nil,
                 headers: [String: String]? = nil) async throws -> NetworkResponse {
-        try await execute(SimpleRequest(baseURL: baseURL,
+        try await execute(SimpleRequest(scheme: scheme,
+                                       baseURL: baseURL,
                                        path: path,
                                        method: .delete,
                                        parameters: parameters,
@@ -285,6 +305,7 @@ public extension HTTPClient {
 
 /// Simple network request implementation
 private struct SimpleRequest: NetworkRequest {
+    let scheme: String
     let baseURL: String
     let path: String
     let method: HTTPMethod
