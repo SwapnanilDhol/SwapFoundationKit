@@ -1,191 +1,221 @@
-# Core Services
+# Networking Module
 
-The Core folder contains essential services that provide fundamental functionality for the SwapFoundationKit package. These services form the foundation for app development and handle critical operations like security, networking, configuration, and data backup.
+The Networking module provides a comprehensive HTTP client implementation with support for async/await, automatic JSON encoding/decoding, and flexible request configuration.
 
-## 🔐 Security Service
+## Features
 
-The `SecurityService` provides comprehensive security operations including encryption, keychain access, and secure storage.
+- ✅ Async/await support
+- ✅ Automatic JSON encoding/decoding
+- ✅ Flexible request configuration
+- ✅ Comprehensive error handling
+- ✅ URL building with query parameters
+- ✅ Default headers management
+- ✅ Certificate pinning support (configurable)
+- ✅ Timeout configuration
+- ✅ Cross-platform support (iOS/macOS)
 
-### Features
+## Quick Start
 
-- **🔒 AES Encryption** - 256-bit AES encryption for data security
-- **🔑 Keychain Integration** - Secure storage using iOS keychain
-- **🛡️ Hash Generation** - SHA256 hashing for data integrity
-- **🔐 Secure Storage** - Encrypted data storage with automatic key management
-
-### Quick Start
-
-```swift
-import SwapFoundationKit
-
-let securityService = SecurityService()
-
-// Encrypt sensitive data
-let sensitiveData = "password123".data(using: .utf8)!
-let encryptedData = try securityService.encrypt(sensitiveData)
-
-// Store securely in keychain
-try securityService.storeSecurely(encryptedData, forKey: "user_credentials")
-
-// Retrieve and decrypt
-let retrievedData = try securityService.retrieveSecurely(forKey: "user_credentials")
-let decryptedString = String(data: retrievedData, encoding: .utf8)
-
-// Generate hash
-let hash = securityService.sha256Hash("sensitive_string")
-```
-
-## 🌐 Network Service
-
-The `NetworkService` provides network operations, reachability monitoring, and HTTP utilities.
-
-### Features
-
-- **📡 Network Monitoring** - Real-time connectivity status
-- **🌐 HTTP Operations** - GET, POST, PUT, DELETE requests
-- **📱 Connection Types** - WiFi, cellular, ethernet detection
-- **📥 File Download** - Progress-based file downloads
-- **🔄 JSON Handling** - Automatic JSON encoding/decoding
-
-### Quick Start
+### 1. Enable Networking in Configuration
 
 ```swift
-import SwapFoundationKit
-
-let networkService = NetworkService()
-
-// Monitor network status
-if networkService.hasInternetConnection {
-    print("Connected via: \(networkService.currentConnectionType)")
-}
-
-// Perform HTTP requests
-let userData = try await networkService.get(
-    from: "https://api.example.com/users/123",
-    as: User.self
+let config = SwapFoundationKitConfiguration(
+    appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app"),
+    enableNetworking: true,  // Enable networking features
+    networkTimeout: 30.0     // 30 second timeout
 )
 
-// Download file with progress
-let destination = FileManager.default.temporaryDirectory.appendingPathComponent("file.pdf")
-let downloadedFile = try await networkService.downloadFile(
-    from: URL(string: "https://example.com/file.pdf")!,
-    to: destination
-) { progress in
-    print("Download progress: \(progress * 100)%")
+try await SwapFoundationKit.shared.start(with: config)
+```
+
+### 2. Make Network Requests
+
+```swift
+// Get HTTP client from framework
+guard let client = SwapFoundationKit.shared.networkClient else {
+    print("Networking not enabled")
+    return
+}
+
+// Execute a simple GET request
+let response = try await client.get(
+    baseURL: "api.example.com",
+    path: "/users",
+    parameters: ["limit": "10"]
+)
+
+// Decode JSON response
+let users: [User] = try await client.executeAndDecode(
+    GetUsersRequest(limit: 10)
+)
+```
+
+## Request Types
+
+### Using NetworkRequest Protocol
+
+```swift
+struct GetUsersRequest: NetworkRequest {
+    let limit: Int
+
+    var baseURL: String { "api.example.com" }
+    var path: String { "/users" }
+    var method: HTTPMethod { .get }
+    var parameters: [String: String]? { ["limit": "\(limit)"] }
+    var headers: [String: String]? { ["Authorization": "Bearer \(token)"] }
 }
 ```
 
-## ⚙️ Configuration Service
-
-The `ConfigurationService` manages app configuration, environment settings, and configuration values.
-
-### Features
-
-- **🌍 Environment Management** - Development, staging, production, testing
-- **📱 App Information** - Version, build number, bundle identifier
-- **🔧 Configuration Values** - Type-safe configuration access
-- **✅ Validation** - Configuration validation and error handling
-- **🔄 Dynamic Updates** - Runtime configuration changes
-
-### Quick Start
+### Using Convenience Methods
 
 ```swift
-import SwapFoundationKit
+// GET request
+let response = try await client.get(
+    baseURL: "api.example.com",
+    path: "/users/123"
+)
 
-let configService = ConfigurationService.shared
+// POST request with JSON body
+let userData = ["name": "John", "email": "john@example.com"]
+let jsonData = try JSONSerialization.data(withJSONObject: userData)
+let response = try await client.post(
+    baseURL: "api.example.com",
+    path: "/users",
+    body: jsonData
+)
 
-// Get current environment
-let environment = configService.getCurrentEnvironment()
-print("Running in: \(environment.displayName)")
+// PUT request
+let response = try await client.put(
+    baseURL: "api.example.com",
+    path: "/users/123",
+    body: updatedUserData
+)
 
-// Get configuration values
-let apiURL = try configService.getAPIBaseURL()
-let apiKey = try configService.getAPIKey()
-let maxRetries = configService.getMaxRetryCount(defaultValue: 3)
+// DELETE request
+let response = try await client.delete(
+    baseURL: "api.example.com",
+    path: "/users/123"
+)
+```
 
-// Environment-specific configuration
-if configService.isEnvironment(.production) {
-    // Use production settings
-    let timeout = configService.getNetworkTimeout()
+## Error Handling
+
+```swift
+do {
+    let response = try await client.execute(request)
+    print("Success: \(response.statusCode)")
+} catch NetworkError.invalidURL {
+    print("Invalid URL")
+} catch NetworkError.httpError(let statusCode, let data) {
+    print("HTTP Error: \(statusCode)")
+    if let data = data {
+        let errorMessage = String(data: data, encoding: .utf8)
+        print("Error details: \(errorMessage ?? "Unknown")")
+    }
+} catch NetworkError.timeout {
+    print("Request timed out")
+} catch NetworkError.noInternetConnection {
+    print("No internet connection")
+} catch {
+    print("Other error: \(error)")
 }
 ```
 
-## 🔒 Backup Service
+## Advanced Configuration
 
-The `BackupService` provides robust data backup and restore capabilities with automatic file management and error handling.
-
-### Features
-
-- **🔄 Automatic Backup** - Easy backup of any `Encodable` data
-- **📁 File Management** - Automatic cleanup of old backup files
-- **🛡️ Error Handling** - Comprehensive error handling with localized descriptions
-- **⚡ Performance** - Asynchronous backup operations with background processing
-- **📊 File Listing** - List and manage backup files by type
-
-### Quick Start
+### Custom HTTP Client
 
 ```swift
-import SwapFoundationKit
+let sessionConfig = URLSessionConfiguration.default
+sessionConfig.timeoutIntervalForRequest = 60.0
+sessionConfig.timeoutIntervalForResource = 300.0
 
-// Create backup service
-let backupService = BackupService()
+let customClient = HTTPClient(configuration: sessionConfig)
+customClient.defaultHeaders["Custom-Header"] = "Value"
 
-// Define your data model
-struct UserData: Codable {
+let config = SwapFoundationKitConfiguration(
+    appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app"),
+    enableNetworking: true,
+    customHTTPClient: customClient
+)
+```
+
+### Certificate Pinning
+
+```swift
+let config = SwapFoundationKitConfiguration(
+    appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app"),
+    enableNetworking: true,
+    enableCertificatePinning: true
+)
+// Note: Certificate pinning implementation would need additional setup
+```
+
+## JSON Encoding/Decoding
+
+### Encoding Objects to JSON
+
+```swift
+struct User: Codable {
+    let id: Int
     let name: String
     let email: String
-    let preferences: [String: String]
 }
 
-// Perform backup
-let userData = UserData(name: "John Doe", email: "john@example.com", preferences: [:])
+let user = User(id: 1, name: "John", email: "john@example.com")
+let jsonData = try user.toJSONData()
 
-do {
-    try await backupService.performBackup(userData, fileType: .data)
-    print("Backup completed successfully")
-} catch {
-    print("Backup failed: \(error.localizedDescription)")
-}
-
-// Restore from backup
-do {
-    let restoredData = try backupService.restoreBackup(UserData.self, fileType: .data)
-    print("Restored user: \(restoredData.name)")
-} catch {
-    print("Restore failed: \(error.localizedDescription)")
-}
-
-// List backup files
-let backupFiles = backupService.listBackupFiles(for: .data)
-print("Available backups: \(backupFiles.count)")
+let response = try await client.post(
+    baseURL: "api.example.com",
+    path: "/users",
+    body: jsonData
+)
 ```
 
-### File Management
-
-The service automatically manages backup files:
-
-- **Automatic Cleanup** - Keeps only the 10 most recent backups
-- **Organized Storage** - Creates separate directories for each file type
-- **Timestamped Names** - Files include creation timestamps for easy identification
-
-### Error Handling
-
-Comprehensive error handling with `BackupError`:
+### Decoding JSON Responses
 
 ```swift
-public enum BackupError: Error, LocalizedError {
-    case encodingFailed
-    case writeFailed
-    case directoryCreationFailed
-    case fileNotFound
-}
+let users: [User] = try await client.executeAndDecode(
+    GetUsersRequest()
+)
 ```
 
-### Use Cases
+## URL Building
 
-- **User Data Backup** - Save user preferences and settings
-- **App State Backup** - Backup app state for restoration
-- **Data Export** - Export data for external use
-- **Migration Support** - Backup before app updates
+```swift
+// Automatic URL building from request properties
+let request = GetUsersRequest(limit: 10)
+// URL: https://api.example.com/users?limit=10
 
-This core service provides a solid foundation for data persistence and backup operations in your applications.
+// Manual URL building with parameters
+let baseURL = URL(string: "https://api.example.com")!
+let urlWithParams = baseURL.appendingQueryParameters([
+    "limit": "10",
+    "offset": "0"
+])
+// URL: https://api.example.com?limit=10&offset=0
+```
+
+## Best Practices
+
+1. **Enable Networking**: Always set `enableNetworking: true` in configuration
+2. **Error Handling**: Always handle network errors appropriately
+3. **Timeouts**: Configure appropriate timeouts for your use case
+4. **Headers**: Use default headers for common values like authorization
+5. **JSON**: Use Codable for type-safe JSON handling
+6. **Testing**: Mock HTTPClient in tests for reliable testing
+
+## HTTP Methods Supported
+
+- `GET` - Retrieve data
+- `POST` - Create new resources
+- `PUT` - Update existing resources
+- `DELETE` - Delete resources
+- `PATCH` - Partial updates
+- `HEAD` - Get headers only
+
+## Response Types
+
+- `NetworkResponse` - Contains data, HTTP response, and request
+- `NetworkError` - Comprehensive error types for different failure scenarios
+- Decoded objects using `executeAndDecode<T>()` method

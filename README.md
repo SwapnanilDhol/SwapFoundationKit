@@ -4,6 +4,7 @@ A comprehensive Swift package providing essential utilities, extensions, and ser
 
 ## 🚀 Features
 
+- **🌐 Networking Module** - Modern HTTP client with async/await, JSON encoding/decoding, and comprehensive error handling
 - **📊 Analytics System** - Protocol-based analytics with Firebase, Mixpanel, and custom provider support
 - **🔄 ItemSync** - Data synchronization between main app, widgets, and Apple Watch
 - **💾 Generic Backup Service** - Flexible backup and restore functionality
@@ -139,6 +140,45 @@ let usdAmount = ExchangeRateManager.shared.convert(
 print("€100 = $\(usdAmount)")
 ```
 
+### Networking Module
+
+```swift
+import SwapFoundationKit
+
+// 🆕 NEW: Enable networking in configuration
+let config = SwapFoundationKitConfiguration(
+    appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app"),
+    enableNetworking: true,  // Enable networking features
+    networkTimeout: 30.0     // 30 second timeout
+)
+
+try await SwapFoundationKit.shared.start(with: config)
+
+// Get HTTP client
+guard let client = SwapFoundationKit.shared.networkClient else {
+    print("Networking not enabled")
+    return
+}
+
+// Define a network request
+struct GetUsersRequest: NetworkRequest {
+    var baseURL: String { "api.example.com" }
+    var path: String { "/users" }
+    var method: HTTPMethod { .get }
+    var parameters: [String: String]? { ["limit": "10"] }
+}
+
+// Execute request with automatic JSON decoding
+let users: [User] = try await client.executeAndDecode(GetUsersRequest())
+
+// Or use convenience methods
+let response = try await client.get(
+    baseURL: "api.example.com",
+    path: "/users",
+    parameters: ["limit": "10"]
+)
+```
+
 ### Date Utilities
 
 ```swift
@@ -193,6 +233,10 @@ Logger.error("Failed to load user data")
 ```
 
 ## 📚 Documentation
+
+### [Networking Module](Sources/SwapFoundationKit/Core/README.md)
+
+Modern HTTP client with async/await, JSON encoding/decoding, and comprehensive error handling.
 
 ### [Analytics System](Sources/SwapFoundationKit/Analytics/README.md)
 

@@ -9,9 +9,21 @@ public final class SwapFoundationKit {
     public static let shared = SwapFoundationKit()
     
     // MARK: - Properties
-    
+
     private var configuration: SwapFoundationKitConfiguration?
     private var isInitialized = false
+    private var httpClient: HTTPClient?
+
+    // MARK: - Public Accessors
+
+    /// Shared HTTP client instance for network requests
+    /// Only available if networking is enabled in configuration
+    public var networkClient: HTTPClient? {
+        guard isInitialized, let config = configuration, config.enableNetworking else {
+            return nil
+        }
+        return httpClient ?? HTTPClient.shared
+    }
     
     // MARK: - Initialization
     
@@ -53,17 +65,33 @@ public final class SwapFoundationKit {
         guard !config.appMetadata.appGroupIdentifier.isEmpty else {
             throw SwapFoundationKitError.invalidConfiguration("App group identifier cannot be empty")
         }
-        
+
         guard config.networkTimeout > 0 else {
             throw SwapFoundationKitError.invalidConfiguration("Network timeout must be greater than 0")
+        }
+
+        if config.enableNetworking, let _ = config.customHTTPClient {
+            // Validate custom HTTP client if provided
+            // Could add additional validation here if needed
         }
     }
     
     private func initializeServices() async throws {
         // Initialize core services based on configuration
-        // This can be expanded to initialize other services as needed
-        
-        // For now, we just validate that the configuration is valid
+
+        // Initialize HTTP client if networking is enabled
+        if let config = configuration, config.enableNetworking {
+            if let customClient = config.customHTTPClient {
+                self.httpClient = customClient
+            } else {
+                // Configure default HTTP client
+                let client = HTTPClient.shared
+                // Configure default headers if needed
+                client.defaultHeaders["User-Agent"] = "\(config.appMetadata.appName)/\(config.appMetadata.appVersion)"
+                self.httpClient = client
+            }
+        }
+
         // Additional service initialization can be added here
     }
 }

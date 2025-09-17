@@ -27,14 +27,20 @@ public struct SwapFoundationKitConfiguration {
     
     /// Whether to enable certificate pinning for network requests
     public let enableCertificatePinning: Bool
-    
+
+    /// Whether to enable networking features
+    public let enableNetworking: Bool
+
     // MARK: - Custom Services
-    
+
     /// Custom analytics logger implementation
     public let customAnalyticsLogger: AnalyticsLogger?
-    
+
     /// Custom file storage service implementation
     public let customStorageService: FileStorageService?
+
+    /// Custom HTTP client configuration
+    public let customHTTPClient: HTTPClient?
     
     // MARK: - Initialization
     
@@ -46,8 +52,10 @@ public struct SwapFoundationKitConfiguration {
     ///   - enableItemSync: Whether to enable item synchronization
     ///   - networkTimeout: Network timeout in seconds
     ///   - enableCertificatePinning: Whether to enable certificate pinning
+    ///   - enableNetworking: Whether to enable networking features
     ///   - customAnalyticsLogger: Custom analytics logger
     ///   - customStorageService: Custom storage service
+    ///   - customHTTPClient: Custom HTTP client
     public init(
         appMetadata: AppMetaData,
         enableWatchConnectivity: Bool = false,
@@ -55,8 +63,10 @@ public struct SwapFoundationKitConfiguration {
         enableItemSync: Bool = true,
         networkTimeout: TimeInterval = 30.0,
         enableCertificatePinning: Bool = false,
+        enableNetworking: Bool = true,
         customAnalyticsLogger: AnalyticsLogger? = nil,
-        customStorageService: FileStorageService? = nil
+        customStorageService: FileStorageService? = nil,
+        customHTTPClient: HTTPClient? = nil
     ) {
         self.appMetadata = appMetadata
         self.enableWatchConnectivity = enableWatchConnectivity
@@ -64,8 +74,10 @@ public struct SwapFoundationKitConfiguration {
         self.enableItemSync = enableItemSync
         self.networkTimeout = networkTimeout
         self.enableCertificatePinning = enableCertificatePinning
+        self.enableNetworking = enableNetworking
         self.customAnalyticsLogger = customAnalyticsLogger
         self.customStorageService = customStorageService
+        self.customHTTPClient = customHTTPClient
     }
 }
 
