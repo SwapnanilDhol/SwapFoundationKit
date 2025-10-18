@@ -12,4 +12,5 @@ jobs:
         run: |
           curl -X POST https://thermal-issues-irraxt144-swapnanildhols-projects.vercel.app/api/github-webhook \
             -H "Content-Type: application/json" \
+            -H "x-vercel-protection-bypass: ${{ secrets.VERCEL_BYPASS_TOKEN }}" \
             -d '{"action":"opened","issue":${{ toJSON(github.event.issue) }},"repository":{"full_name":"${{ github.repository }}"}}'
