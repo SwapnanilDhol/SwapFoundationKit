@@ -1,0 +1,15 @@
+name: Print GitHub Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  print-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Issue
+        run: |
+          curl -X POST https://thermal-issues-irraxt144-swapnanildhols-projects.vercel.app/api/github-webhook \
+            -H "Content-Type: application/json" \
+            -d '{"action":"opened","issue":${{ toJSON(github.event.issue) }},"repository":{"full_name":"${{ github.repository }}"}}'
