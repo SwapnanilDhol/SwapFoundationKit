@@ -319,3 +319,128 @@ public extension Date {
         return format.formatter.string(from: self)
     }
 }
+
+// MARK: - Date Additional Extensions
+
+public extension Date {
+    /// Returns the start of the month
+    var startOfMonth: Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: self)
+        return calendar.date(from: components) ?? self
+    }
+
+    /// Returns the end of the month
+    var endOfMonth: Date {
+        var components = DateComponents()
+        components.month = 1
+        components.second = -1
+        return Calendar.current.date(byAdding: components, to: startOfMonth) ?? self
+    }
+
+    /// Returns the start of the year
+    var startOfYear: Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year], from: self)
+        return calendar.date(from: components) ?? self
+    }
+
+    /// Returns the end of the year
+    var endOfYear: Date {
+        var components = DateComponents()
+        components.year = 1
+        components.second = -1
+        return Calendar.current.date(byAdding: components, to: startOfYear) ?? self
+    }
+
+    /// Checks if the date is between two dates (inclusive)
+    /// - Parameters:
+    ///   - start: The start date
+    ///   - end: The end date
+    /// - Returns: True if the date is between the start and end dates
+    func isBetween(_ start: Date, and end: Date) -> Bool {
+        self >= start && self <= end
+    }
+
+    /// Returns whether the date is on a weekend
+    var isWeekend: Bool {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: self)
+        return weekday == 1 || weekday == 7 // Sunday or Saturday
+    }
+
+    /// Returns the number of days in the month of this date
+    var daysInMonth: Int {
+        let calendar = Calendar.current
+        let range = calendar.range(of: .day, in: .month, for: self)
+        return range?.count ?? 30
+    }
+
+    /// Returns the number of working days (Monday-Friday) between this date and another date
+    /// - Parameter date: The end date
+    /// - Returns: The number of working days
+    func workingDays(until date: Date) -> Int {
+        let calendar = Calendar.current
+        var count = 0
+        var current = self
+
+        while current <= date {
+            if !current.isWeekend {
+                count += 1
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: current) else { break }
+            current = next
+        }
+
+        return count
+    }
+
+    /// Creates a date from year, month, and day components
+    /// - Parameters:
+    ///   - year: The year
+    ///   - month: The month (1-12)
+    ///   - day: The day (1-31)
+    /// - Returns: The date or nil if invalid
+    static func from(year: Int, month: Int, day: Int) -> Date? {
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        return Calendar.current.date(from: components)
+    }
+
+    /// Returns the timezone of the date
+    var timeZone: TimeZone {
+        Calendar.current.timeZone
+    }
+
+    /// Returns a formatted date string with the specified style
+    /// - Parameter style: The date formatter style
+    /// - Returns: The formatted string
+    func formatted(style: DateFormatter.Style) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = style
+        return formatter.string(from: self)
+    }
+
+    /// Returns the quarter of the year (1-4)
+    var quarter: Int {
+        let month = Calendar.current.component(.month, from: self)
+        return (month - 1) / 3 + 1
+    }
+
+    /// Returns whether the date is in the current year
+    var isInCurrentYear: Bool {
+        Calendar.current.isDate(self, equalTo: Date(), toGranularity: .year)
+    }
+
+    /// Returns whether the date is in the current month
+    var isInCurrentMonth: Bool {
+        Calendar.current.isDate(self, equalTo: Date(), toGranularity: .month)
+    }
+
+    /// Returns whether the date is in the current week
+    var isInCurrentWeek: Bool {
+        Calendar.current.isDate(self, equalTo: Date(), toGranularity: .weekOfYear)
+    }
+}

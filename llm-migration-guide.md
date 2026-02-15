@@ -330,6 +330,217 @@ Ensure CI/build is green before merging.
 
 ---
 
+## 10) New Helper Functions Available in SFK
+
+SFK now provides many helper utilities that can replace common local implementations:
+
+### FileManager Extensions
+```swift
+import SwapFoundationKit
+
+// Convenience directories
+let docsDir = FileManager.default.documentsDirectory
+let cachesDir = FileManager.default.cachesDirectory
+let tempDir = FileManager.default.temporaryDirectory
+
+// File operations
+let size = FileManager.default.fileSize(at: path)
+let formattedSize = FileManager.default.fileSizeFormatted(at: path)
+let dirSize = FileManager.default.directorySize(at: url)
+try FileManager.default.createDirectoryIfNeeded(at: url)
+FileManager.default.removeItemSafely(at: url)
+```
+
+### JSON Codable Helpers
+```swift
+import SwapFoundationKit
+
+// Encode/Decode
+let data = try JSONCodable.encode(myObject, prettyPrinted: true)
+let object = try JSONCodable.decode(MyType.self, from: data)
+
+// String encoding
+let jsonString = try JSONCodable.encodeToString(myObject)
+
+// Load from file
+let config = try JSONCodable.jsonFromFile("config", in: .main)
+```
+
+### URL Extensions
+```swift
+import SwapFoundationKit
+
+// Query parameters
+let params = myURL.queryParameters  // [String: String]?
+let newURL = myURL.appendingQueryItem(name: "key", value: "value")
+let cleanURL = myURL.removingQueryParameters()
+
+// Validation
+let isValid = URL.isValid("https://example.com")
+```
+
+### Device Information
+```swift
+import SwapFoundationKit
+
+let model = DeviceInfo.deviceModel       // "iPhone 14 Pro"
+let identifier = DeviceInfo.deviceModelIdentifier  // "iPhone15,2"
+let isSimulator = DeviceInfo.isSimulator
+let hasNotch = DeviceInfo.hasNotch
+let version = DeviceInfo.appVersion       // "1.0.0"
+let build = DeviceInfo.appBuildNumber     // "123"
+let isIPad = DeviceInfo.isIPad
+let screenSize = DeviceInfo.screenSize
+```
+
+### Throttler (complements existing Debouncer)
+```swift
+import SwapFoundationKit
+
+let throttler = Throttler(interval: 1.0)  // Execute once per second
+throttler.throttle {
+    // This runs immediately on first call,
+    // subsequent calls within 1 second are ignored
+}
+
+// Async version
+let asyncThrottler = AsyncThrottler(interval: 1.0)
+```
+
+### Result Extensions
+```swift
+import SwapFoundationKit
+
+let result: Result<String, Error> = .success("value")
+let isSuccess = result.isSuccess
+let isFailure = result.isFailure
+let value = result.getOrElse("default")
+let optional = result.getOrNil
+```
+
+### Collection Extensions (chunked)
+```swift
+import SwapFoundationKit
+
+let chunks = [1,2,3,4,5,6].chunked(into: 2)  // [[1,2], [3,4], [5,6]]
+```
+
+### CGTypes Extensions
+```swift
+import SwapFoundationKit
+
+let distance = point1.distance(to: point2)
+let aspectRatio = size.aspectRatio
+let fitted = size.fitted(into: boundingSize)
+let center = rect.center
+```
+
+### Additional String Extensions
+```swift
+import SwapFoundationKit
+
+// Regex
+let matches = "hello".matches(regex: "l+")
+let allMatches = "hello".matches(of: "l")
+
+// Validation
+let isURL = "https://example.com".isValidURL
+let isPhone = "+1234567890".isValidPhoneNumber
+let isCard = "4111111111111111".isValidCreditCard
+
+// Encoding
+let encoded = "hello".base64Encoded
+let decoded = "aGVsbG8=".base64Decoded
+let md5 = "hello".md5
+
+// Misc
+let stripped = "<p>hello</p>".htmlStripped
+let distance = "hello".levenshteinDistance(to: "world")
+let truncated = "long string".truncated(to: 10)  // "long str..."
+```
+
+### Additional Date Extensions
+```swift
+import SwapFoundationKit
+
+let startOfMonth = date.startOfMonth
+let endOfMonth = date.endOfMonth
+let startOfYear = date.startOfYear
+let isWeekend = date.isWeekend
+let daysInMonth = date.daysInMonth
+let workingDays = date.workingDays(until: otherDate)
+let quarter = date.quarter
+let isCurrentYear = date.isInCurrentYear
+
+// Create date
+let newDate = Date.from(year: 2025, month: 1, day: 15)
+```
+
+---
+
+## 11) Known Refactoring Opportunities in SFK (for contributors)
+
+When working on SFK itself, be aware of these refactoring opportunities:
+
+### Critical Issues
+
+1. **Duplicate NetworkError Definitions**
+   - Files: `NetworkService.swift` (lines 8-32) and `Networking.swift` (lines 95-125)
+   - Two different `NetworkError` enums with similar but not identical cases
+   - Recommendation: Consolidate into a single `NetworkError` enum
+
+### Code Duplication
+
+2. **DateFormatter Creation** (`Date+Extensions.swift`)
+   - `DateFormatter()` instantiated 17+ times
+   - Should use cached formatters or a shared formatter pool
+
+3. **Calendar.current Access** (`Date+Extensions.swift`)
+   - Accessed 18+ times throughout the file
+   - Should cache as a static property
+
+4. **UIColor Component Extraction** (`UIColor+.swift`)
+   - Pattern of getting RGBA components repeated 10+ times
+   - Should extract a helper method
+
+5. **Duplicate Type Conversion Logic** (`Bundle+InfoPlist.swift`)
+   - Type conversion switch statement duplicated in two methods
+
+### Large Files That Could Be Split
+
+6. **UIColor+.swift** (393 lines)
+   - Could split into: `UIColor+Hex.swift`, `UIColor+Components.swift`, `UIColor+Blending.swift`, `UIColor+Analysis.swift`
+
+7. **Date+Extensions.swift** (321 lines)
+   - Could split into: `DateFormatting.swift`, `DateComponents.swift`, `DateManipulation.swift`
+
+8. **String+.swift** (315 lines)
+   - Multiple extension blocks that could be reorganized
+
+9. **ConfigurationService.swift** (407 lines)
+   - Could extract convenience methods to a separate protocol
+
+### Naming Inconsistencies
+
+10. **String Validation Methods**
+    - `isNumeric` vs `isValidDecimal`
+    - `isValidEmail` vs `isEmail`
+    - `removingWhitespaces` vs `withoutWhitespace`
+    - `toInt` vs `intValue`
+    - Recommendation: Standardize naming conventions
+
+11. **HTTPClient vs NetworkService**
+    - Two networking abstractions with overlapping functionality
+    - Should clarify or consolidate
+
+### Magic Strings
+
+12. **Hardcoded URLs**
+    - `ExchangeRateManager.swift` line 24: ECB exchange rate URL
+    - `AppMetaData.swift`: Multiple hardcoded App Store URLs
+
+---
+
 ## End-state examples
 
 - View model with multiple haptics:
