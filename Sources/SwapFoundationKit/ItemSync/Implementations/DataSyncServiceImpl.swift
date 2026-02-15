@@ -134,8 +134,17 @@ public final class DataSyncServiceImpl: DataSyncService {
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(data)
-            try watchConnectivity.sendData(jsonData)
+            let payload = WatchSyncPayload(identifier: T.syncIdentifier, payload: jsonData)
+            let envelope = try encoder.encode(payload)
+            try watchConnectivity.sendData(envelope)
             syncSubject.send(.watchDataSent(T.syncIdentifier))
+        } catch let connectivityError as WatchConnectivityError {
+            if case .watchNotReachable = connectivityError {
+                return
+            }
+            let syncError = DataSyncError.watchConnectivityFailed(connectivityError)
+            syncSubject.send(.error(syncError))
+            throw syncError
         } catch {
             let syncError = DataSyncError.watchConnectivityFailed(error)
             syncSubject.send(.error(syncError))
@@ -144,8 +153,17 @@ public final class DataSyncServiceImpl: DataSyncService {
     }
     
     private func handleWatchData(_ data: Data) {
-        // This is a simplified implementation
-        // In a real app, you might want to decode the data and save it
-        syncSubject.send(.watchDataReceived("watch_data"))
+        do {
+            let payload = try JSONDecoder().decode(WatchSyncPayload.self, from: data)
+            syncSubject.send(.watchDataReceived(payload.identifier))
+        } catch {
+            let syncError = DataSyncError.watchConnectivityFailed(error)
+            syncSubject.send(.error(syncError))
+        }
+    }
+    
+    private struct WatchSyncPayload: Codable {
+        let identifier: String
+        let payload: Data
     }
 } 
