@@ -60,7 +60,7 @@ extension FileManager {
     /// Removes an item at the given URL safely, ignoring errors
     @discardableResult
     func removeItemSafely(at url: URL) -> Bool {
-        try? removeItem(at: url)
+        return (try? removeItem(at: url)) != nil
     }
 
     /// Checks if a file exists at the given URL
