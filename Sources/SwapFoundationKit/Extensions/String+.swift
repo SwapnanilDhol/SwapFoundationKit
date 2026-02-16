@@ -403,11 +403,6 @@ public extension String {
         return String(data: data, encoding: .utf8)
     }
 
-    /// Returns the MD5 hash of the string
-    var md5: String? {
-        data(using: .utf8)?.md5
-    }
-
     /// Calculates the Levenshtein distance to another string
     /// - Parameter other: The other string
     /// - Returns: The Levenshtein distance
