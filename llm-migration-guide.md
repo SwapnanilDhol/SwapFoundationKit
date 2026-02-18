@@ -476,6 +476,40 @@ let isCurrentYear = date.isInCurrentYear
 let newDate = Date.from(year: 2025, month: 1, day: 15)
 ```
 
+### ImageProcessor with Shared Storage
+```swift
+import SwapFoundationKit
+
+let imageProcessor = ImageProcessor.shared
+
+// In-memory caching (NSCache)
+imageProcessor.cacheImage(image, forKey: "profile")
+if let cached = imageProcessor.cachedImage(forKey: "profile") {
+    // Use cached image
+}
+
+// Configure shared app group storage for widget/extension access
+imageProcessor.configure(
+    shouldCacheToSharedStorage: true,
+    appGroupIdentifier: "group.com.yourapp.widget"
+)
+
+// Cache to shared storage (accessible by app extensions)
+try imageProcessor.cacheImageToSharedStorage(image, forKey: "profile", quality: 0.8)
+
+// Retrieve from shared storage
+if let sharedCached = imageProcessor.cachedImageFromSharedStorage(forKey: "profile") {
+    // Use shared cached image
+}
+
+// Remove from shared storage
+imageProcessor.removeCachedImageFromSharedStorage(forKey: "profile")
+
+// Clear caches
+imageProcessor.clearCache()                      // In-memory
+imageProcessor.clearSharedStorageCache()         // Shared storage
+```
+
 ---
 
 ## 11) Known Refactoring Opportunities in SFK (for contributors)

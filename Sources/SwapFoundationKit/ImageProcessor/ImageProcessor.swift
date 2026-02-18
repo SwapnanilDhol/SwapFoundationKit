@@ -7,14 +7,55 @@ import Foundation
 @MainActor
 public class ImageProcessor {
     public static let shared = ImageProcessor()
-    
+
     private let cache = NSCache<NSString, UIImage>()
     private let fileManager = FileManager.default
-    
+
+    // MARK: - Shared Storage Configuration
+
+    /// Whether to cache images to shared app group storage
+    public var shouldCacheToSharedStorage: Bool = false
+
+    /// The app group identifier used for shared storage
+    public private(set) var appGroupIdentifier: String?
+
+    /// The cache directory URL for shared storage
+    private var sharedCacheDirectoryURL: URL? {
+        guard let appGroupIdentifier = appGroupIdentifier,
+              let sharedContainerURL = fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) else {
+            return nil
+        }
+        return sharedContainerURL.appendingPathComponent("ImageCache")
+    }
+
     private init() {
         setupCache()
     }
-    
+
+    // MARK: - Configuration
+
+    /// Configures the image processor with shared storage settings
+    /// - Parameters:
+    ///   - shouldCacheToSharedStorage: Whether to enable caching to app group shared storage
+    ///   - appGroupIdentifier: The app group identifier for shared storage (required if shouldCacheToSharedStorage is true)
+    public func configure(shouldCacheToSharedStorage: Bool, appGroupIdentifier: String?) {
+        self.shouldCacheToSharedStorage = shouldCacheToSharedStorage
+
+        if shouldCacheToSharedStorage {
+            guard let appGroupIdentifier = appGroupIdentifier, !appGroupIdentifier.isEmpty else {
+                return
+            }
+            self.appGroupIdentifier = appGroupIdentifier
+
+            // Create the shared cache directory if it doesn't exist
+            if let cacheURL = sharedCacheDirectoryURL {
+                try? fileManager.createDirectory(at: cacheURL, withIntermediateDirectories: true, attributes: nil)
+            }
+        } else {
+            self.appGroupIdentifier = nil
+        }
+    }
+
     private func setupCache() {
         cache.countLimit = 100
         cache.totalCostLimit = 50 * 1024 * 1024 // 50MB
@@ -119,7 +160,83 @@ public class ImageProcessor {
     public func clearCache() {
         cache.removeAllObjects()
     }
-    
+
+    // MARK: - Shared Storage Caching
+
+    /// Caches an image to shared app group storage
+    /// - Parameters:
+    ///   - image: The image to cache
+    ///   - key: The cache key (used as filename)
+    ///   - quality: The compression quality (0.0 to 1.0)
+    /// - Throws: Error if caching to shared storage is not configured or fails
+    public func cacheImageToSharedStorage(_ image: UIImage, forKey key: String, quality: CGFloat = 0.8) throws {
+        guard shouldCacheToSharedStorage else {
+            throw ImageProcessorError.sharedStorageNotConfigured
+        }
+
+        guard let cacheDirectoryURL = sharedCacheDirectoryURL else {
+            throw ImageProcessorError.sharedStorageNotConfigured
+        }
+
+        // Create a safe filename from the key
+        let safeFileName = key.replacingOccurrences(of: "/", with: "-")
+        let fileURL = cacheDirectoryURL.appendingPathComponent(safeFileName)
+
+        guard let data = image.jpegData(compressionQuality: quality) else {
+            throw ImageProcessorError.compressionFailed
+        }
+
+        try data.write(to: fileURL)
+    }
+
+    /// Retrieves a cached image from shared app group storage
+    /// - Parameter key: The cache key
+    /// - Returns: The cached image if available
+    public func cachedImageFromSharedStorage(forKey key: String) -> UIImage? {
+        guard shouldCacheToSharedStorage else {
+            return nil
+        }
+
+        guard let cacheDirectoryURL = sharedCacheDirectoryURL else {
+            return nil
+        }
+
+        let safeFileName = key.replacingOccurrences(of: "/", with: "-")
+        let fileURL = cacheDirectoryURL.appendingPathComponent(safeFileName)
+
+        guard let data = try? Data(contentsOf: fileURL),
+              let image = UIImage(data: data) else {
+            return nil
+        }
+
+        return image
+    }
+
+    /// Removes a cached image from shared app group storage
+    /// - Parameter key: The cache key
+    public func removeCachedImageFromSharedStorage(forKey key: String) {
+        guard shouldCacheToSharedStorage,
+              let cacheDirectoryURL = sharedCacheDirectoryURL else {
+            return
+        }
+
+        let safeFileName = key.replacingOccurrences(of: "/", with: "-")
+        let fileURL = cacheDirectoryURL.appendingPathComponent(safeFileName)
+
+        try? fileManager.removeItem(at: fileURL)
+    }
+
+    /// Clears all cached images from shared app group storage
+    public func clearSharedStorageCache() {
+        guard shouldCacheToSharedStorage,
+              let cacheDirectoryURL = sharedCacheDirectoryURL else {
+            return
+        }
+
+        try? fileManager.removeItem(at: cacheDirectoryURL)
+        try? fileManager.createDirectory(at: cacheDirectoryURL, withIntermediateDirectories: true, attributes: nil)
+    }
+
     // MARK: - File Operations
     
     /// Saves an image to the documents directory
@@ -165,7 +282,8 @@ public enum ImageProcessorError: Error, LocalizedError {
     case documentsDirectoryNotFound
     case compressionFailed
     case loadFailed
-    
+    case sharedStorageNotConfigured
+
     public var errorDescription: String? {
         switch self {
         case .documentsDirectoryNotFound:
@@ -174,6 +292,8 @@ public enum ImageProcessorError: Error, LocalizedError {
             return "Failed to compress image"
         case .loadFailed:
             return "Failed to load image"
+        case .sharedStorageNotConfigured:
+            return "Shared storage is not configured. Call configure(shouldCacheToSharedStorage:appGroupIdentifier:) first"
         }
     }
 }

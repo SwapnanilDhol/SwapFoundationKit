@@ -426,11 +426,29 @@ if let blurredImage = imageProcessor.applyBlur(image, style: .light) {
     imageView.image = blurredImage
 }
 
-// Cache images
+// Cache images (in-memory NSCache)
 imageProcessor.cacheImage(image, forKey: "profile_image")
 if let cachedImage = imageProcessor.cachedImage(forKey: "profile_image") {
     imageView.image = cachedImage
 }
+
+// Configure shared app group storage for extensions
+imageProcessor.configure(
+    shouldCacheToSharedStorage: true,
+    appGroupIdentifier: "group.com.yourapp.widget"
+)
+
+// Cache images to shared app group (accessible by widgets/extensions)
+try imageProcessor.cacheImageToSharedStorage(image, forKey: "profile_image")
+
+// Retrieve from shared storage
+if let sharedCached = imageProcessor.cachedImageFromSharedStorage(forKey: "profile_image") {
+    imageView.image = sharedCached
+}
+
+// Clear caches
+imageProcessor.clearCache()                      // Clear in-memory cache
+imageProcessor.clearSharedStorageCache()         // Clear shared storage
 
 // Save/Load images
 let url = try imageProcessor.saveImage(image, filename: "profile.jpg", quality: 0.9)
@@ -441,7 +459,8 @@ let loadedImage = try imageProcessor.loadImage(filename: "profile.jpg")
 1. Find your custom image processing/caching classes
 2. Replace with `ImageProcessor.shared`
 3. Update all image operations
-4. Remove your custom image implementation
+4. For widget/extension sharing, configure with `configure(shouldCacheToSharedStorage:appGroupIdentifier:)`
+5. Remove your custom image implementation
 
 ---
 
