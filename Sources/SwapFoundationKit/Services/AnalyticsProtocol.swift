@@ -2,7 +2,14 @@ import Foundation
 
 /// Protocol for analytics tracking
 public protocol AnalyticsLogger {
+    func setup()
     func logEvent(event: AnalyticsEvent, additionalParameters: [String: String]?)
+}
+
+extension AnalyticsLogger {
+    func setup() {
+        // Default Implementation since a lot of loggers might be setup out of the box
+    }
 }
 
 /// Protocol for analytics events
@@ -29,6 +36,10 @@ public final class AnalyticsManager: @unchecked Sendable {
 
     public func addLogger(_ logger: any AnalyticsLogger) {
         loggers.append(logger)
+    }
+
+    public func start() {
+        loggers.forEach { $0.setup() }
     }
 
     public func logEvent(event: AnalyticsEvent, parameters: [String: String]? = nil) {
