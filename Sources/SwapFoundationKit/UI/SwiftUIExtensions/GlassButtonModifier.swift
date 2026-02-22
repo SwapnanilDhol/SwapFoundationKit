@@ -51,7 +51,7 @@ public struct GlassButtonModifier: ViewModifier {
     public func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
-        if #available(iOS 26, *), forceDisable == false {
+        if #available(iOS 26, *), !forceDisable {
             content
                 .glassEffect(.regular.tint(tint).interactive(), in: shape)
         } else {
@@ -115,7 +115,7 @@ public struct GlassCapsuleButtonModifier: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        if #available(iOS 26, *), forceDisable == false {
+        if #available(iOS 26, *), !forceDisable {
             content
                 .glassEffect(.regular.tint(tint).interactive(), in: Capsule())
         } else {
@@ -184,7 +184,7 @@ public struct GlassCircleButtonModifier: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        if #available(iOS 26, *), forceDisable == false {
+        if #available(iOS 26, *), !forceDisable {
             content
                 .glassEffect(.regular.tint(tint).interactive(), in: Circle())
         } else {
@@ -346,7 +346,7 @@ public struct GlassEffectContainer<Content: View>: View {
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
-        if #available(iOS 26, *), forceDisable == false {
+        if #available(iOS 26, *), !forceDisable {
             content
                 .background(
                     shape
