@@ -79,7 +79,7 @@ final class Throttler {
 final class AsyncThrottler {
     private let interval: TimeInterval
     private var lastExecutionTime: Date?
-    private let lock = NSLock()
+    private let stateQueue = DispatchQueue(label: "com.swapfoundationkit.async-throttler.state")
 
     /// Creates a new AsyncThrottler
     /// - Parameter interval: The minimum interval between executions in seconds
@@ -90,38 +90,39 @@ final class AsyncThrottler {
     /// Throttles the execution of an async closure
     /// - Parameter work: The async closure to execute
     func throttle<T>(_ work: @escaping () async throws -> T) async throws -> T? {
-        lock.lock()
-        defer { lock.unlock() }
-
-        let now = Date()
-
-        // Check if we should execute
-        if let lastTime = lastExecutionTime {
-            let timeSinceLastExecution = now.timeIntervalSince(lastTime)
-            if timeSinceLastExecution < interval {
-                return nil // Throttled
+        let shouldExecute = stateQueue.sync { () -> Bool in
+            let now = Date()
+            if let lastTime = lastExecutionTime {
+                let timeSinceLastExecution = now.timeIntervalSince(lastTime)
+                if timeSinceLastExecution < interval {
+                    return false
+                }
             }
+            lastExecutionTime = now
+            return true
         }
 
-        // Execute and update time
-        lastExecutionTime = now
+        guard shouldExecute else {
+            return nil // Throttled
+        }
+
         return try await work()
     }
 
     /// Forces execution regardless of throttling
     /// - Parameter work: The async closure to execute
     func forceThrottle<T>(_ work: @escaping () async throws -> T) async throws -> T {
-        lock.lock()
-        lastExecutionTime = Date()
-        lock.unlock()
+        stateQueue.sync {
+            lastExecutionTime = Date()
+        }
 
         return try await work()
     }
 
     /// Resets the throttler
     func reset() {
-        lock.lock()
-        defer { lock.unlock() }
-        lastExecutionTime = nil
+        stateQueue.sync {
+            lastExecutionTime = nil
+        }
     }
 }
