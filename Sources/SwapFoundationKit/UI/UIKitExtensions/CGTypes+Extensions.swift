@@ -1,5 +1,7 @@
 import CoreGraphics
+#if canImport(UIKit) && os(iOS)
 import UIKit
+#endif
 
 // MARK: - CGPoint+Extensions
 
@@ -147,6 +149,7 @@ extension CGVector {
 
 // MARK: - UIEdgeInsets+Extensions
 
+#if canImport(UIKit) && os(iOS)
 extension UIEdgeInsets {
     /// Creates uniform insets
     /// - Parameter value: The value for all edges
@@ -172,3 +175,4 @@ extension UIEdgeInsets {
         top + bottom
     }
 }
+#endif
