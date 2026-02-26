@@ -2,6 +2,44 @@ import SwiftUI
 
 // MARK: - Glass Button Modifiers
 
+internal struct GenericGlassButtonModifier<S: Shape>: ViewModifier {
+
+    let shape: S
+    let tint: Color
+    let isShadowEnabled: Bool
+    let forceDisable: Bool
+    let fallbackTopOpacity: CGFloat
+    let fallbackBottomOpacity: CGFloat
+    let fallbackStrokeOpacity: CGFloat
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *), !forceDisable {
+            content
+                .glassEffect(.regular.tint(tint).interactive(), in: shape)
+        } else {
+            content
+                .background(
+                    shape.fill(
+                        LinearGradient(
+                            colors: [tint.opacity(fallbackTopOpacity), tint.opacity(fallbackBottomOpacity)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                )
+                .overlay(
+                    shape.stroke(.white.opacity(fallbackStrokeOpacity), lineWidth: 0.6)
+                )
+                .shadow(
+                    color: isShadowEnabled ? tint.opacity(0.25) : .clear,
+                    radius: 12,
+                    x: 0,
+                    y: 6
+                )
+        }
+    }
+}
+
 /// A modifier that applies a glass-style rounded rectangle treatment to button surfaces.
 ///
 /// This modifier provides a modern glassmorphism effect that automatically adapts between
@@ -50,31 +88,17 @@ public struct GlassButtonModifier: ViewModifier {
 
     public func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-
-        if #available(iOS 26, *), !forceDisable {
-            content
-                .glassEffect(.regular.tint(tint).interactive(), in: shape)
-        } else {
-            content
-                .background(
-                    shape.fill(
-                        LinearGradient(
-                            colors: [tint.opacity(0.35), tint.opacity(0.12)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                )
-                .overlay(
-                    shape.stroke(.white.opacity(0.3), lineWidth: 0.6)
-                )
-                .shadow(
-                    color: isShadowEnabled ? tint.opacity(0.25) : .clear,
-                    radius: 12,
-                    x: 0,
-                    y: 6
-                )
-        }
+        return content.modifier(
+            GenericGlassButtonModifier(
+                shape: shape,
+                tint: tint,
+                isShadowEnabled: isShadowEnabled,
+                forceDisable: forceDisable,
+                fallbackTopOpacity: 0.35,
+                fallbackBottomOpacity: 0.12,
+                fallbackStrokeOpacity: 0.3
+            )
+        )
     }
 }
 
@@ -115,32 +139,17 @@ public struct GlassCapsuleButtonModifier: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        if #available(iOS 26, *), !forceDisable {
-            content
-                .glassEffect(.regular.tint(tint).interactive(), in: Capsule())
-        } else {
-            content
-                .background(
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [tint.opacity(0.32), tint.opacity(0.12)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(.white.opacity(0.28), lineWidth: 0.6)
-                )
-                .shadow(
-                    color: isShadowEnabled ? tint.opacity(0.25) : .clear,
-                    radius: 12,
-                    x: 0,
-                    y: 6
-                )
-        }
+        content.modifier(
+            GenericGlassButtonModifier(
+                shape: Capsule(),
+                tint: tint,
+                isShadowEnabled: isShadowEnabled,
+                forceDisable: forceDisable,
+                fallbackTopOpacity: 0.32,
+                fallbackBottomOpacity: 0.12,
+                fallbackStrokeOpacity: 0.28
+            )
+        )
     }
 }
 
@@ -184,32 +193,17 @@ public struct GlassCircleButtonModifier: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        if #available(iOS 26, *), !forceDisable {
-            content
-                .glassEffect(.regular.tint(tint).interactive(), in: Circle())
-        } else {
-            content
-                .background(
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [tint.opacity(0.32), tint.opacity(0.12)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                )
-                .overlay(
-                    Circle()
-                        .stroke(.white.opacity(0.28), lineWidth: 0.6)
-                )
-                .shadow(
-                    color: isShadowEnabled ? tint.opacity(0.25) : .clear,
-                    radius: 12,
-                    x: 0,
-                    y: 6
-                )
-        }
+        content.modifier(
+            GenericGlassButtonModifier(
+                shape: Circle(),
+                tint: tint,
+                isShadowEnabled: isShadowEnabled,
+                forceDisable: forceDisable,
+                fallbackTopOpacity: 0.32,
+                fallbackBottomOpacity: 0.12,
+                fallbackStrokeOpacity: 0.28
+            )
+        )
     }
 }
 
@@ -331,13 +325,13 @@ public struct GlassEffectContainer<Content: View>: View {
     ///   - content: A view builder that provides the content to display inside the container.
     public init(
         cornerRadius: CGFloat = 20,
-        tint: Color = Color(uiColor: .systemBackground),
+        tint: Color? = nil,
         isShadowEnabled: Bool = true,
         forceDisable: Bool = false,
         @ViewBuilder content: () -> Content
     ) {
         self.cornerRadius = cornerRadius
-        self.tint = tint
+        self.tint = tint ?? .defaultGlassContainerTint
         self.isShadowEnabled = isShadowEnabled
         self.forceDisable = forceDisable
         self.content = content()
@@ -346,7 +340,7 @@ public struct GlassEffectContainer<Content: View>: View {
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
-        if #available(iOS 26, *), !forceDisable {
+        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *), !forceDisable {
             content
                 .background(
                     shape
@@ -413,7 +407,7 @@ public struct GlassEffectContainer<Content: View>: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(
         LinearGradient(
-            colors: [Color(.systemGroupedBackground), Color(.secondarySystemBackground)],
+            colors: [Color.previewBackgroundStart, Color.previewBackgroundEnd],
             startPoint: .top,
             endPoint: .bottom
         )
@@ -450,7 +444,7 @@ public struct GlassEffectContainer<Content: View>: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(
         LinearGradient(
-            colors: [Color(.systemGroupedBackground), Color(.secondarySystemBackground)],
+            colors: [Color.previewBackgroundStart, Color.previewBackgroundEnd],
             startPoint: .top,
             endPoint: .bottom
         )
@@ -472,9 +466,24 @@ public struct GlassEffectContainer<Content: View>: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(
         LinearGradient(
-            colors: [Color(.systemGroupedBackground), Color(.secondarySystemBackground)],
+            colors: [Color.previewBackgroundStart, Color.previewBackgroundEnd],
             startPoint: .top,
             endPoint: .bottom
         )
     )
+}
+
+private extension Color {
+    static var defaultGlassContainerTint: Color {
+#if canImport(UIKit)
+        return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+        return Color(nsColor: .windowBackgroundColor)
+#else
+        return .white
+#endif
+    }
+
+    static var previewBackgroundStart: Color { .gray.opacity(0.25) }
+    static var previewBackgroundEnd: Color { .gray.opacity(0.1) }
 }

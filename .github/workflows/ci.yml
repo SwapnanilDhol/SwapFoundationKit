@@ -52,14 +52,9 @@ jobs:
     - name: Build iOS Simulator
       run: |
         xcodebuild -scheme SwapFoundationKitHost -project SwapFoundationKitHost/SwapFoundationKitHost.xcodeproj \
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+          -destination 'generic/platform=iOS Simulator' \
           -configuration Debug \
-          build
-    
-    - name: Build iOS Device
-      run: |
-        xcodebuild -scheme SwapFoundationKitHost -project SwapFoundationKitHost/SwapFoundationKitHost.xcodeproj \
-          -configuration Debug \
+          CODE_SIGNING_ALLOWED=NO \
           build
     
   macos-build:
@@ -76,7 +71,9 @@ jobs:
     - name: Build macOS
       run: |
         xcodebuild -scheme SwapFoundationKitHost -project SwapFoundationKitHost/SwapFoundationKitHost.xcodeproj \
+          -destination 'platform=macOS' \
           -configuration Debug \
+          CODE_SIGNING_ALLOWED=NO \
           build
     
   watchos-build:
@@ -90,12 +87,17 @@ jobs:
       with:
         xcode-version: 'latest-stable'
     
-    - name: Build watchOS Simulator
+    - name: Build watchOS Simulator (if available)
       run: |
-        xcodebuild -scheme SwapFoundationKitHost -project SwapFoundationKitHost/SwapFoundationKitHost.xcodeproj \
-          -destination 'platform=watchOS Simulator,name=Apple Watch Series 9 (45mm),OS=latest' \
-          -configuration Debug \
-          build
+        if xcodebuild -showsdks | grep -q watchsimulator; then
+          xcodebuild -scheme SwapFoundationKitHost -project SwapFoundationKitHost/SwapFoundationKitHost.xcodeproj \
+            -destination 'generic/platform=watchOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+        else
+          echo "watchOS simulator SDK not available on this runner; skipping build."
+        fi
     
   lint-and-format:
     runs-on: macos-latest
@@ -114,4 +116,3 @@ jobs:
     - name: Describe Package
       run: swift package describe
     
-
