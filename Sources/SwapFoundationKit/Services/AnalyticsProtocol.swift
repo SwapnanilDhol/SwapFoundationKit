@@ -31,6 +31,7 @@ public extension AnalyticsEvent {
 public final class AnalyticsManager: @unchecked Sendable {
     public static let shared = AnalyticsManager()
     private var loggers: [any AnalyticsLogger] = []
+    private var globalParameters: [String: String] = [:]
 
     private init() {}
 
@@ -42,10 +43,22 @@ public final class AnalyticsManager: @unchecked Sendable {
         loggers.forEach { $0.setup() }
     }
 
+    public func setGlobalParameters(_ parameters: [String: String]) {
+        globalParameters = parameters
+    }
+
+    public func clearGlobalParameters() {
+        globalParameters = [:]
+    }
+
     public func logEvent(event: AnalyticsEvent, parameters: [String: String]? = nil) {
-        // Merge event.parameters with additional parameters; additional overrides defaults
-        let base = event.parameters ?? [:]
-        let merged = parameters.map { base.merging($0) { _, new in new } } ?? base
+        // Merge precedence: event defaults < global parameters < call-site
+        let eventParameters = event.parameters ?? [:]
+        let callSiteParameters = parameters ?? [:]
+        let merged = eventParameters
+            .merging(globalParameters) { _, new in new }
+            .merging(callSiteParameters) { _, new in new }
+
         for logger in loggers {
             logger.logEvent(event: event, additionalParameters: merged.isEmpty ? nil : merged)
         }

@@ -205,11 +205,27 @@ class FirebaseAnalyticsLogger: AnalyticsLogger {
 // Setup (in AppDelegate or App struct)
 let analyticsManager = AnalyticsManager.shared
 analyticsManager.addLogger(FirebaseAnalyticsLogger())
+analyticsManager.setGlobalParameters([
+    "app_version": "1.0.0",
+    "build_number": "100",
+    "platform": "ios"
+])
 
 // Use throughout your app
 let event = AppAnalyticsEvent.userSignedIn(userId: "user123")
-AnalyticsManager.shared.logEvent(event: event, parameters: event.parameters)
+AnalyticsManager.shared.logEvent(event: event)
+AnalyticsManager.shared.logEvent(event: .viewScreen(screenName: "home"), parameters: ["source": "push"])
 ```
+
+Parameter merge precedence in `logEvent(event:parameters:)` is:
+1. `event.parameters` (lowest)
+2. global parameters (`setGlobalParameters`)
+3. call-site `parameters` argument (highest)
+
+Use `logEvent(event:)` for standard tracking with event defaults + global metadata.
+Use `logEvent(event:parameters:)` when you need per-call context or overrides.
+
+Use `clearGlobalParameters()` when you need to stop injecting shared metadata (for example, after logout).
 
 **Migration Steps:**
 1. Find your custom analytics manager/tracker
