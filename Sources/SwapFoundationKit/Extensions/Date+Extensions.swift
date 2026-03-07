@@ -223,14 +223,14 @@ public extension Date {
     }
 
     /// Returns the month and year string (e.g., "January 2024")
-    var monthAndYearString: String {
+    func monthAndYearString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
         return formatter.string(from: self)
     }
 
     /// Returns the short month and year string (e.g., "Jan 2024")
-    var shortMonthAndYearString: String {
+    func shortMonthAndYearString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM yyyy"
         return formatter.string(from: self)
