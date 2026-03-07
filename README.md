@@ -766,7 +766,112 @@ AppLinkOpener.openAppReviewPage(appID: "123456789")
 
 ---
 
-### 19. UIKit Extensions
+### 19. SFKButtons (SwiftUI Button Components)
+
+SwapFoundationKit provides a comprehensive SwiftUI button library with glassmorphism effects, multiple styles, loading states, and built-in haptic feedback.
+
+#### SFKPrimaryButton
+Full-width primary action button with glass effect and loading state.
+```swift
+import SwapFoundationKit
+
+SFKPrimaryButton(
+    title: "Add Transaction",
+    systemImage: "wand.and.stars",
+    tint: .blue
+) {
+    // action
+}
+
+// With loading state
+SFKPrimaryButton(
+    title: "Saving...",
+    tint: .green,
+    isLoading: true
+) { }
+```
+
+#### SFKSecondaryButton
+Card-styled secondary action button.
+```swift
+SFKSecondaryButton(title: "Cancel") { }
+```
+
+#### SFKInlineButton
+Compact inline button for toolbars and small UI contexts.
+```swift
+SFKInlineButton(title: "Edit", systemImage: "pencil") { }
+
+SFKInlineButton(
+    title: "Delete",
+    systemImage: "trash",
+    tint: .red,
+    style: .filled
+) { }
+
+// Plain style (no background)
+SFKInlineButton(title: "View All", style: .plain) { }
+```
+
+#### SFKPillButton & SFKClosePillButton
+Pill/capsule style buttons with optional glass effect.
+```swift
+SFKPillButton(title: "Close", systemImage: "xmark") { }
+
+SFKPillButton(
+    title: "Approve",
+    systemImage: "checkmark",
+    tint: .green,
+    pillStyle: .glass
+) { }
+
+// Convenience close button
+SFKClosePillButton { }
+```
+
+#### SFKToolbarButton
+Flexible toolbar button with custom label support.
+```swift
+// Simple usage
+SFKToolbarButton(title: "Save", systemImage: "checkmark") { }
+SFKToolbarButton(systemImage: "plus") { }
+
+// Custom label
+SFKToolbarButton {
+    // custom label content
+} label: {
+    HStack {
+        Image(systemName: "star.fill")
+        Text("Favorite")
+    }
+}
+```
+
+#### Glass Button Modifiers
+Apply glassmorphism effects to any view.
+```swift
+Button("Glass") { }
+    .glassButton(cornerRadius: 16, tint: .blue)
+
+Button("Capsule") { }
+    .glassCapsuleButton(tint: .mint)
+
+Button(action: {}) {
+    Image(systemName: "plus")
+        .font(.title2)
+}
+.glassCircleButton(tint: .blue)
+```
+
+**Migration Steps:**
+1. Find your custom button components (MTPrimaryButton, MTToolbarButton, etc.)
+2. Replace with corresponding SFKButton types from SwapFoundationKit
+3. Update button configurations to use new APIs (tint, style, etc.)
+4. Remove custom button implementations
+
+---
+
+### 20. UIKit Extensions
 
 **If your app has custom UIKit extensions, check if SwapFoundationKit provides equivalent functionality.**
 
@@ -877,6 +982,19 @@ struct MyApp: App {
 - **`NetworkService`** - Network operations and reachability
 - **`SecurityService`** - Encryption, keychain, secure storage
 - **`BackupService`** - Data backup and restore
+
+### UI Components
+- **`SFKPrimaryButton`** - Primary action button with glassmorphism, loading state, haptics
+- **`SFKSecondaryButton`** - Secondary action button with card styling
+- **`SFKInlineButton`** - Compact inline button with filled/plain styles
+- **`SFKPillButton`** - Pill/capsule style button with glass effect
+- **`SFKClosePillButton`** - Close/dismiss button convenience type
+- **`SFKToolbarButton`** - Flexible toolbar button with custom labels
+
+### Glass Button Modifiers
+- **`.glassButton()`** - Rounded rectangle glass effect
+- **`.glassCapsuleButton()`** - Capsule/pill glass effect
+- **`.glassCircleButton()`** - Circular glass effect
 
 ### Utilities
 - **`HapticsHelper`** - Haptic feedback manager

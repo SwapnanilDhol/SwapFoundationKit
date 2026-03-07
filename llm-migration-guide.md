@@ -10,6 +10,8 @@ Note: Prefer modern patterns (async/await, @MainActor where needed, dependency i
 - Analytics protocol surface: `AnalyticsEvent` (you define your app’s enum); simple fan-out to providers
 - App utilities: e.g., `AppLinkOpener`
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
+- SwiftUI Buttons: `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton` with built-in haptics and glassmorphism styles
+- Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
 
 ---
 
