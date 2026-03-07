@@ -221,7 +221,21 @@ public extension Date {
         formatter.dateFormat = "MMM"
         return formatter.string(from: self)
     }
-    
+
+    /// Returns the month and year string (e.g., "January 2024")
+    var monthAndYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: self)
+    }
+
+    /// Returns the short month and year string (e.g., "Jan 2024")
+    var shortMonthAndYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM yyyy"
+        return formatter.string(from: self)
+    }
+
     // MARK: - Date Calculations
     
     /// Returns true if the date is today
