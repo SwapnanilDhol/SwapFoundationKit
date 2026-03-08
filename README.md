@@ -871,7 +871,109 @@ Button(action: {}) {
 
 ---
 
-### 20. UIKit Extensions
+### 20. AlertPresenter / AlertController
+
+SwapFoundationKit provides comprehensive alert presentation helpers for both UIKit and SwiftUI.
+
+#### AlertController (SwiftUI-native)
+
+A `@MainActor` ObservableObject for declarative alert management in SwiftUI.
+
+```swift
+import SwapFoundationKit
+
+// Create controller
+@StateObject private var alertController = AlertController()
+
+// Show simple alert
+alertController.showAlert(
+    title: "Success",
+    message: "Operation completed",
+    actionTitle: "OK"
+)
+
+// Show confirmation dialog
+alertController.showConfirmation(
+    title: "Delete Item?",
+    message: "This action cannot be undone.",
+    confirmTitle: "Delete",
+    confirmStyle: .destructive,
+    onConfirm: { /* handle confirm */ },
+    onCancel: { /* handle cancel */ }
+)
+
+// Show text input
+alertController.showTextInput(
+    title: "Enter Name",
+    message: "Please enter your name",
+    placeholder: "Name",
+    keyboardType: .default,
+    onSubmit: { text in /* handle input */ }
+)
+
+// Attach to view
+var body: some View {
+    Button("Show Alert") {
+        alertController.showAlert(title: "Hello", message: "World")
+    }
+    .alert(alertController, textFieldValues: $textValues)
+}
+```
+
+#### AlertPresenter (UIKit-based, works from SwiftUI)
+
+Static methods for presenting alerts using UIKit.
+
+```swift
+import SwapFoundationKit
+
+// Simple alert
+AlertPresenter.showAlert(
+    title: "Hello",
+    message: "World"
+)
+
+// Confirmation dialog
+AlertPresenter.showConfirmation(
+    title: "Continue?",
+    message: "Are you sure?",
+    confirmTitle: "Yes",
+    onConfirm: { /* handle */ }
+)
+
+// Alert with multiple actions
+AlertPresenter.showAlert(
+    title: "Choose",
+    message: "Select an option",
+    actions: [
+        ("Option 1", .default) { },
+        ("Option 2", .default) { },
+        ("Cancel", .cancel) { }
+    ]
+)
+
+// Text input alert
+AlertPresenter.showTextInput(
+    title: "Enter Email",
+    message: "Please enter your email",
+    placeholder: "email@example.com",
+    keyboardType: .email,
+    onSubmit: { text in /* handle */ }
+)
+```
+
+#### Types
+
+- **`AlertAction`** - Represents an alert action with title, style, and handler
+- **`AlertActionStyle`** - `.default`, `.cancel`, `.destructive`
+- **`AlertTextField`** - Text field configuration with placeholder and keyboard type
+- **`KeyboardType`** - Platform-agnostic keyboard type (`.default`, `.email`, `.number`, `.phone`, `.url`)
+- **`AlertConfiguration`** - Complete alert configuration
+- **`AlertController`** - SwiftUI-native alert manager
+
+---
+
+### 21. UIKit Extensions
 
 **If your app has custom UIKit extensions, check if SwapFoundationKit provides equivalent functionality.**
 
@@ -1005,6 +1107,14 @@ struct MyApp: App {
 - **`Currency`** - Currency enum with symbols
 - **`AnalyticsManager`** - Protocol-based analytics system
 - **`AppLinkOpener`** - URL and app link opening
+
+### Alert Presentation
+- **`AlertController`** - SwiftUI-native ObservableObject for declarative alert management
+- **`AlertPresenter`** - Static methods for UIKit-based alert presentation
+- **`AlertAction`** - Represents an action in an alert
+- **`AlertActionStyle`** - Action style enum (`.default`, `.cancel`, `.destructive`)
+- **`AlertTextField`** - Text field configuration for alerts
+- **`KeyboardType`** - Platform-agnostic keyboard type enum
 
 ### Extensions
 - **`Date`** - Comprehensive date formatting and manipulation

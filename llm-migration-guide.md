@@ -12,6 +12,7 @@ Note: Prefer modern patterns (async/await, @MainActor where needed, dependency i
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
 - SwiftUI Buttons: `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton` with built-in haptics and glassmorphism styles
 - Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
+- Alert presentation: `AlertController` for SwiftUI-native declarative alerts, `AlertPresenter` for UIKit-based static methods, supporting multiple actions, text fields, and custom styles
 
 ---
 
