@@ -100,7 +100,7 @@ public enum KeyboardType: Equatable {
 #if canImport(UIKit) && os(iOS)
 extension AlertTextField {
     var uiKeyboardType: UIKeyboardType {
-        keyboardType ?? .default
+        keyboardType?.uiKeyboardType ?? .default
     }
 }
 #endif

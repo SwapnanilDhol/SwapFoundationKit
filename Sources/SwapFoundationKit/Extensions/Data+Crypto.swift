@@ -10,6 +10,9 @@
  *****************************************************************************/
 
 import Foundation
+#if canImport(CryptoKit)
+import CryptoKit
+#endif
 #if canImport(CommonCrypto)
 import CommonCrypto
 #endif
@@ -18,14 +21,16 @@ public extension Data {
     
     /// Returns the MD5 hash of the data
     var md5: String {
-        #if canImport(CommonCrypto)
+        #if canImport(CryptoKit)
+        let digest = Insecure.MD5.hash(data: self)
+        return digest.map { String(format: "%02hhx", $0) }.joined()
+        #elseif canImport(CommonCrypto)
         var hash = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
         withUnsafeBytes { buffer in
             _ = CC_MD5(buffer.baseAddress, CC_LONG(count), &hash)
         }
         return hash.map { String(format: "%02hhx", $0) }.joined()
         #else
-        // Fallback for platforms without CommonCrypto
         return ""
         #endif
     }

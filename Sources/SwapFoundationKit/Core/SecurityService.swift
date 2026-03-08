@@ -300,7 +300,6 @@ private enum AESEncryption {
     
     static func decrypt(_ data: Data, using key: Data) throws -> Data {
         let keySize = kCCKeySizeAES256
-        let blockSize = kCCBlockSizeAES128
         
         let decryptedLength = size_t(data.count)
         var decryptedData = [UInt8](repeating: 0, count: decryptedLength)

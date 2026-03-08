@@ -20,10 +20,8 @@ public enum DateFormat {
         
         switch self {
         case .iso8601:
-            let iso8601Formatter = ISO8601DateFormatter()
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            return dateFormatter
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            return formatter
         case .short:
             formatter.dateStyle = .short
             formatter.timeStyle = .none
