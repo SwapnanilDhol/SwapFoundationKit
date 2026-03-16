@@ -41,6 +41,9 @@ public struct SwapFoundationKitConfiguration {
 
     /// Custom HTTP client configuration
     public let customHTTPClient: HTTPClient?
+
+    /// Ads configuration for optional ad services
+    public let adsConfiguration: AdsConfiguration?
     
     // MARK: - Initialization
     
@@ -56,6 +59,7 @@ public struct SwapFoundationKitConfiguration {
     ///   - customAnalyticsLogger: Custom analytics logger
     ///   - customStorageService: Custom storage service
     ///   - customHTTPClient: Custom HTTP client
+    ///   - adsConfiguration: Optional ads configuration
     public init(
         appMetadata: AppMetaData,
         enableWatchConnectivity: Bool = false,
@@ -66,7 +70,8 @@ public struct SwapFoundationKitConfiguration {
         enableNetworking: Bool = true,
         customAnalyticsLogger: AnalyticsLogger? = nil,
         customStorageService: FileStorageService? = nil,
-        customHTTPClient: HTTPClient? = nil
+        customHTTPClient: HTTPClient? = nil,
+        adsConfiguration: AdsConfiguration? = nil
     ) {
         self.appMetadata = appMetadata
         self.enableWatchConnectivity = enableWatchConnectivity
@@ -78,6 +83,7 @@ public struct SwapFoundationKitConfiguration {
         self.customAnalyticsLogger = customAnalyticsLogger
         self.customStorageService = customStorageService
         self.customHTTPClient = customHTTPClient
+        self.adsConfiguration = adsConfiguration
     }
 }
 

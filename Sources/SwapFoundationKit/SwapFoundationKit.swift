@@ -24,6 +24,12 @@ public final class SwapFoundationKit {
         }
         return httpClient ?? HTTPClient.shared
     }
+
+    /// Shared ads manager instance when ads are configured
+    @MainActor
+    public var adsManager: AdsManager? {
+        AdsManager.shared.isConfigured ? AdsManager.shared : nil
+    }
     
     // MARK: - Initialization
     
@@ -92,7 +98,17 @@ public final class SwapFoundationKit {
             }
         }
 
+        if let adsConfiguration = configuration?.adsConfiguration {
+            await AdsManager.shared.start(with: adsConfiguration)
+        }
+
         // Additional service initialization can be added here
+    }
+
+    internal func resetForTesting() {
+        configuration = nil
+        isInitialized = false
+        httpClient = nil
     }
 }
 

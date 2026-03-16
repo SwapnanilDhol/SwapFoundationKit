@@ -6,9 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwapFoundationKit",
     platforms: [
-        .iOS(.v16),
-        .macOS(.v13),
-        .watchOS(.v8)
+        .iOS(.v16)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -16,11 +14,20 @@ let package = Package(
             name: "SwapFoundationKit",
             targets: ["SwapFoundationKit"]),
     ],
+    dependencies: [
+        .package(
+            url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+            exact: "12.9.0"
+        )
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "SwapFoundationKit"
+            name: "SwapFoundationKit",
+            dependencies: [
+                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
+            ]
         ),
         .testTarget(
             name: "SwapFoundationKitTests",
