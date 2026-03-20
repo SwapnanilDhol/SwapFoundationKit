@@ -6,6 +6,153 @@ A comprehensive Swift package providing essential utilities, extensions, and ser
 
 When integrating SwapFoundationKit into your app, you should **replace all redundant implementations** with the SDK's provided classes and utilities. This guide helps you identify what can be replaced and how to do it.
 
+### Host App Audit
+
+If you want an LLM or code-review agent to audit a host app for overlap with
+SwapFoundationKit, use `Docs/host-app-audit-catalog.yaml` as the source of truth
+and `AGENTS.md` as the workflow. The catalog only lists public API and marks each
+capability as `exact`, `heuristic`, or `manual` to keep audits useful instead of noisy.
+
+### Step-By-Step: Audit A Host App
+
+You do not need a `SKILL.md` to start. The minimum setup is:
+
+- the host app repository
+- this `SwapFoundationKit` repository
+- an agent that can read both
+
+#### 1. Keep both repos available locally
+
+If you already have both repos on disk, use those paths. Otherwise clone this repo somewhere convenient:
+
+```bash
+cd /path/to/workspace
+git clone https://github.com/SwapnanilDhol/SwapFoundationKit.git
+```
+
+For the examples below, assume:
+
+- host app path: `/path/to/HostApp`
+- SwapFoundationKit path: `/path/to/SwapFoundationKit`
+
+#### 2. Run a high-confidence audit first
+
+Start with the `exact` tier only. That gives you the least noisy report.
+
+Use this prompt with any coding agent:
+
+```text
+Use /path/to/SwapFoundationKit/AGENTS.md and /path/to/SwapFoundationKit/Docs/host-app-audit-catalog.yaml as the source of truth.
+
+Audit this host app for redundant implementations that already exist in SwapFoundationKit.
+
+Rules:
+- Start with audit_tier: exact only.
+- Classify each finding as replace, review, or keep.
+- Cite the host app file and the matching SwapFoundationKit file.
+- Do not suggest internal-only SFK helpers as replacements.
+- Focus on high-confidence overlaps first.
+
+Return:
+1. A short summary.
+2. A finding list grouped by replace / review / keep.
+3. A suggested migration order.
+```
+
+#### 3. Codex
+
+Install Codex if needed:
+
+```bash
+npm install -g @openai/codex
+codex login
+```
+
+Run Codex from the host app root:
+
+```bash
+cd /path/to/HostApp
+codex
+```
+
+Then paste the prompt above.
+
+For a read-only audit, stay in the default suggest mode. Only switch to edit modes after you agree with the findings.
+
+If you want Codex to help migrate after the audit:
+
+```bash
+cd /path/to/HostApp
+codex --auto-edit
+```
+
+Then ask it to replace one capability at a time, starting with the highest-confidence `replace` findings.
+
+#### 4. Claude Code
+
+Install Claude Code if needed:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Run Claude Code from the host app root:
+
+```bash
+cd /path/to/HostApp
+claude
+```
+
+Then paste the same prompt.
+
+If you prefer non-interactive output, Claude Code also supports a print mode:
+
+```bash
+claude -p "Use /path/to/SwapFoundationKit/AGENTS.md and /path/to/SwapFoundationKit/Docs/host-app-audit-catalog.yaml as the source of truth. Audit this host app for redundant implementations that already exist in SwapFoundationKit. Start with audit_tier: exact only. Classify each finding as replace, review, or keep. Cite the host app file and the matching SwapFoundationKit file. Do not suggest internal-only SFK helpers as replacements. Return a short summary, the findings, and a suggested migration order." --cwd /path/to/HostApp
+```
+
+#### 5. Expand to broader overlap checks
+
+Once the exact-tier report looks right, run a second prompt:
+
+```text
+Now run the heuristic tier from the audit catalog.
+
+Rules:
+- Keep false positives low.
+- Only flag overlaps that are realistically worth consolidating into SwapFoundationKit.
+- Separate likely wins from "review manually" items.
+```
+
+Use the `manual` tier last, mainly for generic extensions and utilities where naming overlap alone is not enough.
+
+#### 6. Turn the audit into migration work
+
+After the audit, use a follow-up prompt like this:
+
+```text
+Using the exact-tier findings only, create a migration plan for this host app.
+
+Return:
+1. The order to migrate capabilities.
+2. Risks or behavior changes to watch for.
+3. The search-and-replace patterns to use.
+4. The tests or smoke checks to run after each migration.
+```
+
+#### 7. Recommended workflow
+
+1. Run the `exact` tier.
+2. Review the `replace` findings manually.
+3. Migrate one capability at a time.
+4. Run app tests after each migration.
+5. Run the `heuristic` tier only after the obvious overlaps are removed.
+
+#### Notes
+
+- If your agent cannot read files outside the host app directory, either give it access to the SwapFoundationKit path or paste the contents of `AGENTS.md` and `Docs/host-app-audit-catalog.yaml` into the session.
+- Keep app-specific facades when they add domain behavior. In those cases, SwapFoundationKit should usually sit underneath the facade rather than replace it completely.
+
 ### ⚠️ Important Migration Principle
 
 **If your app already has an implementation for any of the features listed below, replace it with SwapFoundationKit's implementation by importing the library.** This modularizes your codebase and ensures consistency across your app ecosystem.

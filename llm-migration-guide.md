@@ -4,6 +4,10 @@ This guide is written for LLMs to perform a safe, repeatable migration of an iOS
 
 Note: Prefer modern patterns (async/await, @MainActor where needed, dependency injection for services, minimal globals).
 
+Start with `Docs/host-app-audit-catalog.yaml` before using this guide for an app audit. The
+catalog is curated against the package's public API, flags audit confidence, and helps avoid
+suggesting replacements for helpers that are internal or too generic to audit reliably.
+
 ### What SFK provides (commonly used in migrations)
 
 - Haptics: `HapticsHelper` with consistent impact/notification APIs

@@ -1,0 +1,500 @@
+version: 1
+module: SwapFoundationKit
+last_reviewed: 2026-03-20
+purpose: >
+  Source-of-truth inventory for host-app redundancy audits. Use this file before
+  the README examples when deciding whether an app-local abstraction should be
+  replaced by SwapFoundationKit.
+rules:
+  - Audit against public API only.
+  - Run exact-tier checks first, heuristic-tier checks second, and manual-tier checks last.
+  - Prefer false negatives over noisy false positives.
+  - Do not flag domain-specific wrappers when SFK only covers the low-level primitive.
+capabilities:
+  - id: haptics
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - HapticsHelper
+    public_symbols:
+      - HapticsHelper.lightImpact()
+      - HapticsHelper.mediumImpact()
+      - HapticsHelper.heavyImpact()
+      - HapticsHelper.successNotification()
+      - HapticsHelper.warningNotification()
+      - HapticsHelper.errorNotification()
+      - HapticsHelper.customImpact(intensity:)
+    host_search_terms:
+      - Haptic
+      - Feedback
+      - UIImpactFeedbackGenerator
+      - UINotificationFeedbackGenerator
+      - UISelectionFeedbackGenerator
+    suspicious_file_patterns:
+      - "*Haptic*"
+      - "*Feedback*"
+    keep_custom_when:
+      - The host app intentionally abstracts non-Apple feedback backends or cross-platform behavior.
+    source_files:
+      - Sources/SwapFoundationKit/Services/HapticsHelper.swift
+
+  - id: logging
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - Logger
+      - LogLevel
+    public_symbols:
+      - Logger.info(_:)
+      - Logger.debug(_:)
+      - Logger.warning(_:)
+      - Logger.error(_:)
+      - Logger.setSendAnalyticsOnError(_:)
+    host_search_terms:
+      - Logger
+      - LogManager
+      - LogService
+      - os_log
+      - OSLog
+      - printLog
+    suspicious_file_patterns:
+      - "*Logger*"
+      - "*Log*"
+    keep_custom_when:
+      - The host app needs a structured logging backend or remote log sink that SFK does not provide.
+    source_files:
+      - Sources/SwapFoundationKit/Services/Logger.swift
+
+  - id: analytics
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - AnalyticsManager
+      - AnalyticsEvent
+      - AnalyticsLogger
+      - DefaultAnalyticsEvent
+    public_symbols:
+      - AnalyticsManager.shared
+      - AnalyticsManager.addLogger(_:)
+      - AnalyticsManager.setGlobalParameters(_:)
+      - AnalyticsManager.logEvent(event:parameters:)
+    host_search_terms:
+      - AnalyticsManager
+      - AnalyticsService
+      - Telemetry
+      - trackEvent
+      - logEvent
+      - Mixpanel
+      - FirebaseAnalytics
+    suspicious_file_patterns:
+      - "*Analytics*"
+      - "*Telemetry*"
+      - "*Tracking*"
+    keep_custom_when:
+      - The host app uses a higher-level domain analytics facade and SFK should sit underneath it as the provider fan-out layer.
+    source_files:
+      - Sources/SwapFoundationKit/Services/AnalyticsProtocol.swift
+
+  - id: user_defaults
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - UserDefault
+      - UserDefaultKeyProtocol
+      - UserDefaults extensions
+    public_symbols:
+      - UserDefault
+      - UserDefaultKeyProtocol
+      - UserDefaults codable helpers
+      - AppStorage bridge helpers
+    host_search_terms:
+      - UserDefaultsManager
+      - PreferencesStore
+      - AppStorage
+      - @AppStorage
+      - DefaultsKey
+      - PropertyListEncoder
+    suspicious_file_patterns:
+      - "*UserDefault*"
+      - "*UserDefaults*"
+      - "*Preference*"
+      - "*SettingsStore*"
+    keep_custom_when:
+      - The host app needs migration, encryption, or cross-process semantics that go beyond type-safe defaults access.
+    source_files:
+      - Sources/SwapFoundationKit/Services/UserDefault.swift
+      - Sources/SwapFoundationKit/Services/UserDefaults+.swift
+
+  - id: networking
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - HTTPClient
+      - NetworkRequest
+      - NetworkService
+      - HTTPMethod
+      - NetworkResponse
+      - NetworkError
+    public_symbols:
+      - HTTPClient.execute(_:)
+      - HTTPClient.executeAndDecode(_:)
+      - NetworkService.get/post/put/delete
+      - NetworkRequest.request
+    host_search_terms:
+      - APIClient
+      - NetworkManager
+      - NetworkService
+      - URLSession
+      - Endpoint
+      - HTTPClient
+      - Alamofire
+    suspicious_file_patterns:
+      - "*APIClient*"
+      - "*Network*"
+      - "*Endpoint*"
+      - "*HTTP*"
+    keep_custom_when:
+      - The host app has auth-refresh, request-signing, or middleware requirements that should remain in an app-level facade above SFK.
+    source_files:
+      - Sources/SwapFoundationKit/Core/Networking.swift
+      - Sources/SwapFoundationKit/Core/NetworkService.swift
+      - Sources/SwapFoundationKit/SwapFoundationKit.swift
+
+  - id: security
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SecurityService
+      - Data crypto extensions
+    public_symbols:
+      - SecurityService.encrypt(_:)
+      - SecurityService.decrypt(_:)
+      - SecurityService.storeInKeychain(_:forKey:)
+      - SecurityService.retrieveFromKeychain(forKey:)
+      - SecurityService.sha256Hash(_:)
+    host_search_terms:
+      - Keychain
+      - SecureStore
+      - EncryptionService
+      - CryptoKit
+      - SHA256
+      - AES
+    suspicious_file_patterns:
+      - "*Security*"
+      - "*Keychain*"
+      - "*Crypto*"
+      - "*Encrypt*"
+    keep_custom_when:
+      - The host app must satisfy platform, compliance, or shared-secret rules that require its own security boundary.
+    source_files:
+      - Sources/SwapFoundationKit/Core/SecurityService.swift
+      - Sources/SwapFoundationKit/Extensions/Data+Crypto.swift
+
+  - id: backup
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - BackupService
+    public_symbols:
+      - BackupService.performBackup(_:fileType:)
+      - BackupService.restoreBackup(_:fileType:decoder:)
+      - BackupService.listBackupFiles(for:)
+    host_search_terms:
+      - BackupManager
+      - ExportService
+      - ImportService
+      - restoreBackup
+      - exportData
+    suspicious_file_patterns:
+      - "*Backup*"
+      - "*Export*"
+      - "*Import*"
+    keep_custom_when:
+      - The host app owns a domain-specific export format or cloud backup flow.
+    source_files:
+      - Sources/SwapFoundationKit/Core/BackupService.swift
+
+  - id: currency
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - Currency
+      - CurrencyRates
+      - ExchangeRateManager
+    public_symbols:
+      - ExchangeRateManager.start()
+      - ExchangeRateManager.convert(amount:from:to:)
+      - Currency.symbol
+    host_search_terms:
+      - CurrencyConverter
+      - ExchangeRate
+      - Forex
+      - currencySymbol
+      - NumberFormatter.currency
+    suspicious_file_patterns:
+      - "*Currency*"
+      - "*ExchangeRate*"
+      - "*Forex*"
+    keep_custom_when:
+      - The host app depends on a paid provider, custom cache policy, or accounting-specific rounding rules.
+    source_files:
+      - Sources/SwapFoundationKit/Currency/Currency.swift
+      - Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift
+
+  - id: image_processing
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - ImageProcessor
+    public_symbols:
+      - ImageProcessor.resize(_:to:quality:)
+      - ImageProcessor.roundCorners(_:radius:)
+      - ImageProcessor.toGrayscale(_:)
+      - ImageProcessor.applyBlur(_:style:)
+      - ImageProcessor.cacheImage(_:forKey:)
+    host_search_terms:
+      - ImageProcessor
+      - ImageCache
+      - resizeImage
+      - blurImage
+      - roundCorners
+      - grayscale
+    suspicious_file_patterns:
+      - "*ImageProcessor*"
+      - "*ImageCache*"
+      - "*ImageUtils*"
+    keep_custom_when:
+      - The host app relies on a third-party image pipeline with networking, decoding, and animated image support.
+    source_files:
+      - Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift
+
+  - id: debouncing
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - Debouncer
+    public_symbols:
+      - Debouncer.call(_:)
+    host_search_terms:
+      - Debouncer
+      - debounce
+      - DispatchWorkItem
+      - searchDelay
+    suspicious_file_patterns:
+      - "*Debouncer*"
+      - "*Search*"
+      - "*Throttle*"
+    keep_custom_when:
+      - The host app specifically needs throttling semantics; SFK's Throttler is currently internal and should not be used as a public replacement target.
+    source_files:
+      - Sources/SwapFoundationKit/Utilities/Debouncer.swift
+      - Sources/SwapFoundationKit/Utilities/Throttler.swift
+
+  - id: item_sync
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SyncableData
+      - DataSyncService
+      - FileStorageService
+      - ItemSyncServiceFactory
+      - AppGroupFileStorageService
+      - WatchConnectivityService
+    public_symbols:
+      - ItemSyncServiceFactory.create(appGroupIdentifier:)
+      - ItemSyncServiceFactory.createWithWatch(appGroupIdentifier:)
+      - DataSyncService.save(_:)
+      - DataSyncService.read(_:)
+      - DataSyncService.syncPublisher
+    host_search_terms:
+      - WidgetCenter.shared.reloadAllTimelines
+      - WatchConnectivity
+      - WCSession
+      - App Group
+      - SharedContainer
+      - SyncService
+    suspicious_file_patterns:
+      - "*Sync*"
+      - "*Widget*"
+      - "*Watch*"
+      - "*SharedStorage*"
+    keep_custom_when:
+      - The host app has domain orchestration around sync; migrate the persistence and transport pieces first, then keep a thin app-specific wrapper.
+    source_files:
+      - Sources/SwapFoundationKit/ItemSync/Core/SyncableData.swift
+      - Sources/SwapFoundationKit/ItemSync/Core/DataSyncService.swift
+      - Sources/SwapFoundationKit/ItemSync/ItemSyncServiceFactory.swift
+      - Sources/SwapFoundationKit/ItemSync/Implementations/DataSyncServiceImpl.swift
+      - Sources/SwapFoundationKit/ItemSync/Implementations/AppGroupFileStorageService.swift
+      - Sources/SwapFoundationKit/ItemSync/Implementations/WatchConnectivityServiceImpl.swift
+
+  - id: app_links_and_metadata
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - AppLinkOpener
+      - AppMetaData
+    public_symbols:
+      - AppLinkOpener.open(url:)
+      - AppLinkOpener.open(string:)
+      - AppLinkOpener.openAppStorePage(appID:)
+      - AppMetaData.openAppReviewPage()
+      - AppMetaData.openWebsite(_:)
+    host_search_terms:
+      - UIApplication.shared.open
+      - openURL
+      - AppStore URL
+      - review URL
+      - openSettingsURLString
+      - MFMailCompose
+    suspicious_file_patterns:
+      - "*Link*"
+      - "*Router*"
+      - "*DeepLink*"
+      - "*AppStore*"
+    keep_custom_when:
+      - The host app's router owns navigation policy and only delegates external URL handling to SFK.
+    source_files:
+      - Sources/SwapFoundationKit/Services/AppLinkOpener.swift
+      - Sources/SwapFoundationKit/Protocols/AppMetaData.swift
+
+  - id: alerts
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - AlertController
+      - AlertPresenter
+      - AlertConfiguration
+      - AlertAction
+      - AlertTextField
+    public_symbols:
+      - AlertController.showAlert(...)
+      - AlertController.showConfirmation(...)
+      - AlertController.showTextInput(...)
+      - AlertPresenter.showAlert(...)
+      - AlertPresenter.showConfirmation(...)
+      - AlertPresenter.showTextInput(...)
+    host_search_terms:
+      - UIAlertController
+      - AlertState
+      - AlertPresenter
+      - confirmationDialog
+      - text field alert
+    suspicious_file_patterns:
+      - "*Alert*"
+      - "*Dialog*"
+      - "*Prompt*"
+    keep_custom_when:
+      - The host app has custom design-system alert presentation that intentionally diverges from SFK's UI.
+    source_files:
+      - Sources/SwapFoundationKit/UI/AlertPresenter.swift
+
+  - id: ui_components
+    audit_tier: heuristic
+    confidence: medium
+    replace_with:
+      - SFKPrimaryButton
+      - SFKSecondaryButton
+      - SFKInlineButton
+      - SFKPillButton
+      - SFKToolbarButton
+      - glassButton modifiers
+      - UIKit convenience extensions
+    public_symbols:
+      - SFKPrimaryButton
+      - SFKSecondaryButton
+      - View.glassButton(...)
+      - UIView layout helpers
+      - UIApplication safe-area helpers
+    host_search_terms:
+      - PrimaryButton
+      - SecondaryButton
+      - PillButton
+      - ToolbarButton
+      - addPinnedSubview
+      - safeAreaInsets
+    suspicious_file_patterns:
+      - "*Button*"
+      - "*Layout*"
+      - "*UIView+*"
+      - "*UIApplication+*"
+    keep_custom_when:
+      - The host app already has a design system and should only adopt SFK components intentionally.
+    source_files:
+      - Sources/SwapFoundationKit/UI/SFKButtons.swift
+      - Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift
+      - Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Layout.swift
+      - Sources/SwapFoundationKit/UI/UIKitExtensions/UIViewController+.swift
+      - Sources/SwapFoundationKit/UI/UIKitExtensions/UINavigationController+.swift
+      - Sources/SwapFoundationKit/UI/UIApplication+.swift
+
+  - id: configuration
+    audit_tier: heuristic
+    confidence: medium
+    replace_with:
+      - SwapFoundationKit
+      - SwapFoundationKitConfiguration
+      - ConfigurationService
+    public_symbols:
+      - SwapFoundationKit.shared.start(with:)
+      - SwapFoundationKitConfiguration.basic(appMetadata:)
+      - ConfigurationService.shared
+    host_search_terms:
+      - AppConfiguration
+      - Environment
+      - BuildConfig
+      - InfoPlist
+      - ConfigService
+    suspicious_file_patterns:
+      - "*Config*"
+      - "*Environment*"
+      - "*BuildSettings*"
+    keep_custom_when:
+      - The host app maintains environment policy, feature flags, or secrets management above SFK.
+    source_files:
+      - Sources/SwapFoundationKit/SwapFoundationKit.swift
+      - Sources/SwapFoundationKit/SwapFoundationKitConfiguration.swift
+      - Sources/SwapFoundationKit/Core/ConfigurationService.swift
+
+  - id: generic_extensions
+    audit_tier: manual
+    confidence: low
+    replace_with:
+      - Date extensions
+      - String extensions
+      - Number extensions
+      - Collection extensions
+      - Bundle info helpers
+      - URL extensions
+      - FileManager extensions
+      - Result extensions
+    public_symbols:
+      - Date formatting helpers
+      - String sanitization and formatting helpers
+      - Number formatting helpers
+      - Collection chunking helpers
+      - Bundle.InfoPlistKey helpers
+    host_search_terms:
+      - extension Date
+      - extension String
+      - extension Double
+      - extension Bundle
+      - extension URL
+      - extension FileManager
+    suspicious_file_patterns:
+      - "*String+*"
+      - "*Date+*"
+      - "*Bundle+*"
+      - "*URL+*"
+      - "*Collection+*"
+    keep_custom_when:
+      - The host app's extensions are domain-specific, naming-specific, or intentionally narrower than the generic SFK helpers.
+    source_files:
+      - Sources/SwapFoundationKit/Extensions/Date+Extensions.swift
+      - Sources/SwapFoundationKit/Extensions/String+.swift
+      - Sources/SwapFoundationKit/Extensions/Number+.swift
+      - Sources/SwapFoundationKit/Extensions/Collection+.swift
+      - Sources/SwapFoundationKit/Extensions/Bundle+InfoPlist.swift
+      - Sources/SwapFoundationKit/Extensions/URL+Extensions.swift
+      - Sources/SwapFoundationKit/Extensions/FileManager+Extensions.swift
+      - Sources/SwapFoundationKit/Extensions/Result+Extensions.swift
