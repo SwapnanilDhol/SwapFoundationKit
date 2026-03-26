@@ -251,6 +251,37 @@ public extension UIColor {
         let blue = Int(components[2] * 255.0)
         return "rgb(\(red), \(green), \(blue))"
     }
+
+    /// Extracts RGB values from an rgb string.
+    /// - Parameter rgbString: String in format "rgb(r, g, b)"
+    /// - Returns: Tuple of (red, green, blue) values or nil if invalid
+    static func extractRGB(from rgbString: String) -> (Int, Int, Int)? {
+        let pattern = #"rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
+            return nil
+        }
+        let range = NSRange(rgbString.startIndex..., in: rgbString)
+        guard let match = regex.firstMatch(in: rgbString, options: [], range: range),
+              let rRange = Range(match.range(at: 1), in: rgbString),
+              let gRange = Range(match.range(at: 2), in: rgbString),
+              let bRange = Range(match.range(at: 3), in: rgbString),
+              let r = Int(rgbString[rRange]),
+              let g = Int(rgbString[gRange]),
+              let b = Int(rgbString[bRange]) else {
+            return nil
+        }
+        return (r, g, b)
+    }
+
+    /// Gets the brightness of a color from an rgb string.
+    /// - Parameter rgbString: String in format "rgb(r, g, b)"
+    /// - Returns: Brightness value between 0 and 1
+    static func brightness(from rgbString: String) -> Double {
+        guard let (r, g, b) = extractRGB(from: rgbString) else {
+            return 0.5
+        }
+        return (0.299 * Double(r) + 0.587 * Double(g) + 0.114 * Double(b)) / 255.0
+    }
 }
 #endif
 
@@ -388,6 +419,16 @@ public extension Color {
         let green = Int(components[1] * 255.0)
         let blue = Int(components[2] * 255.0)
         return "rgb(\(red), \(green), \(blue))"
+    }
+
+    /// Parses an rgb(r, g, b) string to SwiftUI Color.
+    /// - Parameter rgbString: String in format "rgb(r, g, b)"
+    /// - Returns: SwiftUI Color or nil if invalid
+    static func parse(_ rgbString: String) -> Color? {
+        guard let (r, g, b) = UIColor.extractRGB(from: rgbString) else {
+            return nil
+        }
+        return Color(red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255)
     }
 }
 #endif

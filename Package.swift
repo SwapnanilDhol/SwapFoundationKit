@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-            exact: "12.9.0"
+            exact: "13.1.0"
         )
     ],
     targets: [

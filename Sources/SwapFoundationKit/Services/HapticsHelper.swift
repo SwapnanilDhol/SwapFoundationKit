@@ -1,5 +1,5 @@
 /*****************************************************************************
- * FeedbackGenerators.swift
+ * HapticsHelper.swift
  * SwapFoundationKit
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.

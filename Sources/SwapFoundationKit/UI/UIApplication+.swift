@@ -1,3 +1,14 @@
+/*****************************************************************************
+ * UIApplication+.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
+
 import Foundation
 
 #if canImport(UIKit) && os(iOS)
@@ -10,9 +21,11 @@ public extension UIApplication {
     /// Returns the top-most view controller in the application.
     /// - Parameter rootViewController: The root view controller to start from. If nil, uses the first connected scene's root view controller.
     /// - Returns: The top-most view controller, or nil if not found.
-    static func topViewController(from rootViewController: UIViewController? = UIApplication.shared.connectedScenes
-        .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-        .first?.rootViewController) -> UIViewController? {
+    static func topViewController(
+        from rootViewController: UIViewController? = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first?.rootViewController
+    ) -> UIViewController? {
 
         guard let rootViewController = rootViewController else { return nil }
 
@@ -44,7 +57,7 @@ public extension UIApplication {
     ///   - title: The title of the alert.
     ///   - message: The message of the alert.
     ///   - actions: The actions to add to the alert.
-    public func presentAlert(title: String, message: String, actions: [UIAlertAction]) {
+    func presentAlert(title: String, message: String, actions: [UIAlertAction]) {
         guard let topViewController = UIApplication.topViewController() else { return }
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         actions.forEach { alertController.addAction($0) }
@@ -58,7 +71,7 @@ public extension UIApplication {
     ///   - actions: The actions to add to the sheet.
     ///   - sourceView: Optional source view for iPad popover presentation.
     ///   - sourceRect: Optional source rect for iPad popover presentation.
-    public func presentActionSheet(
+    func presentActionSheet(
         title: String,
         message: String? = nil,
         actions: [UIAlertAction],
@@ -92,7 +105,7 @@ public extension UIApplication {
     ///   - onConfirm: Closure to execute when confirmed.
     ///   - cancelTitle: The title of the cancel button. Default is "Cancel".
     ///   - onCancel: Optional closure to execute when cancelled.
-    public func presentConfirmation(
+    func presentConfirmation(
         title: String,
         message: String,
         confirmTitle: String = "Confirm",

@@ -1,9 +1,13 @@
-//
-//  BarcodeScannerConfiguration.swift
-//  SwapFoundationKit
-//
-//  Created by Swapnanil Dhol on 3/21/26.
-//
+/*****************************************************************************
+ * BarcodeScannerConfiguration.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
 
 import Foundation
 import Vision
