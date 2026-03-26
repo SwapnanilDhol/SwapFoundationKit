@@ -51,6 +51,38 @@ public extension UIApplication {
         topViewController.present(alertController, animated: true)
     }
 
+    /// Presents an action sheet on the top view controller.
+    /// - Parameters:
+    ///   - title: The title of the sheet.
+    ///   - message: The message of the sheet.
+    ///   - actions: The actions to add to the sheet.
+    ///   - sourceView: Optional source view for iPad popover presentation.
+    ///   - sourceRect: Optional source rect for iPad popover presentation.
+    public func presentActionSheet(
+        title: String,
+        message: String? = nil,
+        actions: [UIAlertAction],
+        sourceView: UIView? = nil,
+        sourceRect: CGRect? = nil
+    ) {
+        guard let topViewController = UIApplication.topViewController() else { return }
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        actions.forEach { alertController.addAction($0) }
+
+        if let popover = alertController.popoverPresentationController {
+            let resolvedSourceView = sourceView ?? topViewController.view
+            popover.sourceView = resolvedSourceView
+            popover.sourceRect = sourceRect ?? CGRect(
+                x: resolvedSourceView.bounds.midX,
+                y: resolvedSourceView.bounds.maxY - 1,
+                width: 1,
+                height: 1
+            )
+        }
+
+        topViewController.present(alertController, animated: true)
+    }
+
     /// Presents a confirmation dialog (alert) on the top view controller.
     /// - Parameters:
     ///   - title: The title of the alert.
