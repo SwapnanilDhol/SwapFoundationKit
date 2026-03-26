@@ -282,22 +282,20 @@ public struct AlertPresenter {
     public static func showActionSheet(
         title: String,
         message: String? = nil,
-        actions: [(title: String, style: UIAlertAction.Style, handler: () -> Void)],
+        actions: [AlertAction],
         sourceView: UIView? = nil,
         sourceRect: CGRect? = nil
     ) {
-        DispatchQueue.main.async {
-            let uiActions = actions.map { item in
-                UIAlertAction(title: item.title, style: item.style) { _ in item.handler() }
-            }
-            UIApplication.shared.presentActionSheet(
-                title: title,
-                message: message,
-                actions: uiActions,
-                sourceView: sourceView,
-                sourceRect: sourceRect
-            )
+        let uiActions = actions.map { item in
+            UIAlertAction(title: item.title, style: item.style.uiStyle) { _ in item.handler?() }
         }
+        UIApplication.shared.presentActionSheet(
+            title: title,
+            message: message,
+            actions: uiActions,
+            sourceView: sourceView,
+            sourceRect: sourceRect
+        )
     }
 
     /// Presents a confirmation dialog using UIKit (works from SwiftUI)
