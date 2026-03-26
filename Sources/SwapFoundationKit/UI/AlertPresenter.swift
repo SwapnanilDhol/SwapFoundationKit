@@ -279,6 +279,7 @@ public extension View {
 public struct AlertPresenter {
 
     /// Presents an action sheet using UIKit (works from SwiftUI)
+    @MainActor
     public static func showActionSheet(
         title: String,
         message: String? = nil,
