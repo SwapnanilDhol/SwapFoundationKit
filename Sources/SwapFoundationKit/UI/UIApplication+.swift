@@ -70,7 +70,7 @@ public extension UIApplication {
         actions.forEach { alertController.addAction($0) }
 
         if let popover = alertController.popoverPresentationController {
-            let resolvedSourceView = sourceView ?? topViewController.view
+            guard let resolvedSourceView = sourceView ?? topViewController.view else { return }
             popover.sourceView = resolvedSourceView
             popover.sourceRect = sourceRect ?? CGRect(
                 x: resolvedSourceView.bounds.midX,
