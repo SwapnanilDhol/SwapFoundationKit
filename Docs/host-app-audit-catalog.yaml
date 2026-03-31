@@ -252,6 +252,9 @@ capabilities:
       - ImageProcessor.toGrayscale(_:)
       - ImageProcessor.applyBlur(_:style:)
       - ImageProcessor.cacheImage(_:forKey:)
+      - ImageProcessor.cacheImage(from:targetSize:quality:)
+      - ImageProcessor.cachedImage(from:targetSize:)
+      - ImageProcessor.cacheKey(for:)
     host_search_terms:
       - ImageProcessor
       - ImageCache

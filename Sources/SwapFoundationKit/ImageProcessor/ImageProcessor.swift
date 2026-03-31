@@ -172,6 +172,79 @@ public class ImageProcessor {
         cache.removeAllObjects()
     }
 
+    /// Creates a stable cache key for a remote image URL.
+    /// - Parameter url: The remote image URL.
+    /// - Returns: A stable cache key derived from the URL.
+    public func cacheKey(for url: URL) -> String {
+        url.absoluteString
+    }
+
+    /// Retrieves a cached image for the specified remote URL.
+    ///
+    /// This checks both in-memory cache and shared app group storage when configured.
+    /// When `targetSize` is provided, the image is resized before being returned and
+    /// the size is incorporated into the underlying cache key.
+    ///
+    /// - Parameters:
+    ///   - url: The remote image URL used to derive the cache key.
+    ///   - targetSize: Optional target size to look up a resized variant.
+    /// - Returns: The cached image if available.
+    public func cachedImage(from url: URL, targetSize: CGSize? = nil) -> UIImage? {
+        let key = cacheKey(for: url, targetSize: targetSize)
+
+        if let memoryImage = cachedImage(forKey: key) {
+            return memoryImage
+        }
+
+        return cachedImageFromSharedStorage(forKey: key)
+    }
+
+    /// Downloads, processes, and caches a remote image.
+    ///
+    /// This stores the processed image in memory cache and, when shared storage is
+    /// configured, also persists it to the app group container for widgets/extensions.
+    ///
+    /// - Parameters:
+    ///   - url: The remote image URL to fetch.
+    ///   - targetSize: Optional target size to resize the image before caching.
+    ///   - quality: JPEG compression quality used for shared storage persistence.
+    /// - Returns: The processed image.
+    /// - Throws: `ImageProcessorError` if downloading or decoding fails.
+    @discardableResult
+    public func cacheImage(
+        from url: URL,
+        targetSize: CGSize? = nil,
+        quality: CGFloat = 0.8
+    ) async throws -> UIImage? {
+        if let cached = cachedImage(from: url, targetSize: targetSize) {
+            return cached
+        }
+
+        let key = cacheKey(for: url, targetSize: targetSize)
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+
+            guard let image = UIImage(data: data) else {
+                throw ImageProcessorError.invalidRemoteImageData
+            }
+
+            let processedImage = targetSize.flatMap { resize(image, to: $0, quality: quality) } ?? image
+
+            cacheImage(processedImage, forKey: key)
+
+            if shouldCacheToSharedStorage {
+                try cacheImageToSharedStorage(processedImage, forKey: key, quality: quality)
+            }
+
+            return processedImage
+        } catch let error as ImageProcessorError {
+            throw error
+        } catch {
+            throw ImageProcessorError.downloadFailed(error)
+        }
+    }
+
     // MARK: - Shared Storage Caching
 
     /// Caches an image to shared app group storage
@@ -286,6 +359,16 @@ public class ImageProcessor {
         
         return image
     }
+
+    private func cacheKey(for url: URL, targetSize: CGSize?) -> String {
+        guard let targetSize else {
+            return cacheKey(for: url)
+        }
+
+        let width = Int(targetSize.width.rounded())
+        let height = Int(targetSize.height.rounded())
+        return "\(cacheKey(for: url))::\(width)x\(height)"
+    }
 }
 
 // MARK: - ImageProcessor Errors
@@ -294,6 +377,8 @@ public enum ImageProcessorError: Error, LocalizedError {
     case compressionFailed
     case loadFailed
     case sharedStorageNotConfigured
+    case invalidRemoteImageData
+    case downloadFailed(Error)
 
     public var errorDescription: String? {
         switch self {
@@ -305,6 +390,10 @@ public enum ImageProcessorError: Error, LocalizedError {
             return "Failed to load image"
         case .sharedStorageNotConfigured:
             return "Shared storage is not configured. Call configure(shouldCacheToSharedStorage:appGroupIdentifier:) first"
+        case .invalidRemoteImageData:
+            return "Failed to decode remote image data"
+        case .downloadFailed(let error):
+            return "Failed to download remote image: \(error.localizedDescription)"
         }
     }
 }

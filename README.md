@@ -595,6 +595,24 @@ if let cachedImage = imageProcessor.cachedImage(forKey: "profile_image") {
     imageView.image = cachedImage
 }
 
+// Create stable cache keys for remote URLs
+let remoteKey = imageProcessor.cacheKey(for: URL(string: "https://example.com/avatar.jpg")!)
+
+// Download, resize, and cache remote images
+let avatarURL = URL(string: "https://example.com/avatar.jpg")!
+let avatar = try await imageProcessor.cacheImage(
+    from: avatarURL,
+    targetSize: CGSize(width: 150, height: 150)
+)
+
+// Retrieve cached remote images later
+if let cachedAvatar = imageProcessor.cachedImage(
+    from: avatarURL,
+    targetSize: CGSize(width: 150, height: 150)
+) {
+    imageView.image = cachedAvatar
+}
+
 // Configure shared app group storage for extensions
 imageProcessor.configure(
     shouldCacheToSharedStorage: true,
@@ -622,8 +640,9 @@ let loadedImage = try imageProcessor.loadImage(filename: "profile.jpg")
 1. Find your custom image processing/caching classes
 2. Replace with `ImageProcessor.shared`
 3. Update all image operations
-4. For widget/extension sharing, configure with `configure(shouldCacheToSharedStorage:appGroupIdentifier:)`
-5. Remove your custom image implementation
+4. For remote URL caching, use `cacheImage(from:targetSize:)` and `cachedImage(from:targetSize:)`
+5. For widget/extension sharing, configure with `configure(shouldCacheToSharedStorage:appGroupIdentifier:)`
+6. Remove your custom image implementation
 
 ---
 
