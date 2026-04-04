@@ -392,6 +392,92 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/UI/AlertPresenter.swift
 
+  - id: settings_ui
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SettingsItem
+      - SFKSettingsRow
+      - SFKSettingsLabel
+      - SFKSettingsToggle
+      - SFKSettingsToggleRow
+      - SFKSettingsDatePickerRow
+      - SFKSettingsTimePickerRow
+      - SFKSettingsInlineDatePicker
+      - SFKSettingsStepperRow
+      - SFKSettingsSliderRow
+      - SFKSettingsColorPickerRow
+      - SFKSettingsInlineColorPicker
+      - SFKSettingsLinkRow
+      - SFKSettingsDestructiveRow
+      - SFKSettingsConfirmationRow
+      - SFKSettingsScreen
+      - SFKSettingsSectionConfiguration
+      - SFKInformationSectionItem
+      - SFKDeveloperSectionItem
+      - SFKSettingsActionHandler
+      - SFKInformationSectionHandler
+      - SFKDeveloperSectionHandler
+    public_symbols:
+      - SettingsItem protocol
+      - SFKSettingsRow<Item: SettingsItem>
+      - SFKSettingsLabel
+      - SFKSettingsToggle
+      - SFKSettingsToggleRow<Item: SettingsItem>
+      - SFKSettingsDatePickerRow
+      - SFKSettingsTimePickerRow
+      - SFKSettingsInlineDatePicker
+      - SFKSettingsStepperRow
+      - SFKSettingsSliderRow
+      - SFKSettingsColorPickerRow
+      - SFKSettingsInlineColorPicker
+      - SFKSettingsLinkRow
+      - SFKSettingsDestructiveRow
+      - SFKSettingsConfirmationRow
+      - SFKSettingsScreen
+      - SFKSettingsSectionConfiguration
+      - SFKInformationSectionItem (all cases)
+      - SFKDeveloperSectionItem (all cases)
+      - SFKSettingsActionHandler
+    host_search_terms:
+      - SettingsView
+      - SettingsScreen
+      - SettingsItem protocol
+      - SettingsSection
+      - SettingsRow
+      - informationSectionItem
+      - developerSectionItem
+      - SettingsViewModel
+      - settingsRow
+      - DatePicker row
+      - Toggle row
+      - Stepper row
+      - Slider row
+      - ColorPicker row
+      - destructive row
+      - confirmation row
+    suspicious_file_patterns:
+      - "*Settings*"
+      - "*Setting*View*"
+      - "*Setting*Screen*"
+      - "*Setting*Row*"
+      - "*Setting*Item*"
+      - "*Setting*Section*"
+    keep_custom_when:
+      - The host app needs a pro banner, subscription-specific logic, or app-coordinator navigation that should remain in the app layer.
+    source_files:
+      - Sources/SwapFoundationKit/UI/Settings/SettingsItem.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsRow.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsScreen.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKInformationSectionItem.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKDeveloperSectionItem.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsActionHandler.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsToggle.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsDatePickerRow.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsStepperRow.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsColorPickerRow.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsLinkRow.swift
+
   - id: ui_components
     audit_tier: heuristic
     confidence: medium

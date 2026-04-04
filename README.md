@@ -1197,6 +1197,667 @@ if let resized = image.resized(targetSize: CGSize(width: 100, height: 100)) {
 3. Replace where functionality overlaps
 4. Remove redundant custom extensions
 
+### 22. Settings Screen UI
+
+SwapFoundationKit provides a comprehensive settings screen module for building iOS settings screens with minimal boilerplate. It includes a `SettingsItem` protocol, reusable row components for every use case, and a full settings screen builder.
+
+---
+
+## Row Components Overview
+
+| Row Type | Component | Use Case |
+|----------|-----------|----------|
+| Tappable | `SFKSettingsRow` | Navigation, actions |
+| Label | `SFKSettingsLabel` | Display-only |
+| Toggle | `SFKSettingsToggle` | Boolean on/off |
+| Date Picker | `SFKSettingsDatePickerRow` | Date/time selection |
+| Inline Date | `SFKSettingsInlineDatePicker` | Inline date picker |
+| Stepper | `SFKSettingsStepperRow` | Numeric +/- |
+| Slider | `SFKSettingsSliderRow` | Continuous values |
+| Color Picker | `SFKSettingsColorPickerRow` | Color selection |
+| Link | `SFKSettingsLinkRow` | Open URL |
+| Destructive | `SFKSettingsDestructiveRow` | Delete/reset |
+| Confirmation | `SFKSettingsConfirmationRow` | Confirm before action |
+
+---
+
+## SettingsItem Protocol
+
+Define custom settings items by conforming to `SettingsItem`:
+
+```swift
+enum MyAppSettingsItem: String, SettingsItem {
+    case notifications
+    case privacy
+    case about
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .notifications: return "bell.circle.fill"
+        case .privacy: return "lock.circle.fill"
+        case .about: return "info.circle.fill"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .notifications: return "Notifications"
+        case .privacy: return "Privacy"
+        case .about: return "About"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .notifications: return "Manage notification preferences"
+        case .privacy: return "Privacy settings and data"
+        case .about: return "App info and credits"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .notifications: return .blue
+        case .privacy: return .green
+        case .about: return .secondary
+        }
+    }
+}
+```
+
+---
+
+## Row Component Previews
+
+### SFKSettingsRow (Tappable)
+
+Basic tappable row with chevron:
+```swift
+SFKSettingsRow(
+    item: MySettingsItem.notifications,
+    action: { /* handle tap */ }
+)
+```
+
+With custom trailing content:
+```swift
+SFKSettingsRow(
+    item: versionItem,
+    showChevron: false,
+    action: {},
+    trailing: {
+        Text("1.0.0 (100)")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+    }
+)
+```
+
+### SFKSettingsLabel (Display-only)
+
+```swift
+SFKSettingsLabel(
+    title: "App Version",
+    subtitle: "Current installed version",
+    icon: "info.circle.fill",
+    tint: .secondary
+)
+```
+
+### SFKSettingsToggle (Boolean)
+
+```swift
+@AppStorage("notifications") private var notificationsEnabled = true
+
+SFKSettingsToggle(
+    title: "Push Notifications",
+    subtitle: "Receive push notifications",
+    icon: "bell.badge",
+    tint: .blue,
+    isOn: $notificationsEnabled
+)
+```
+
+### SFKSettingsToggleRow (SettingsItem-based)
+
+```swift
+enum MyToggleItem: SettingsItem {
+    case enabled
+    var id: String { "enabled" }
+    var icon: String { "power" }
+    var title: String { "Enabled" }
+    var subtitle: String { "Turn on/off feature" }
+    var tint: Color { .green }
+}
+
+SFKSettingsToggleRow(item: MyToggleItem(), isOn: $isEnabled)
+```
+
+### SFKSettingsDatePickerRow (Sheet-based)
+
+```swift
+@State private var reminderDate = Date()
+
+SFKSettingsDatePickerRow(
+    title: "Reminder Date",
+    subtitle: "When to send the reminder",
+    icon: "calendar",
+    tint: .orange,
+    selection: $reminderDate,
+    displayedComponents: [.date]  // or [.hourAndMinute] for time only
+)
+```
+
+### SFKSettingsTimePickerRow
+
+```swift
+@State private var alarmTime = Date()
+
+SFKSettingsTimePickerRow(
+    title: "Alarm Time",
+    subtitle: "When to trigger the alarm",
+    icon: "clock.fill",
+    tint: .red,
+    selection: $alarmTime
+)
+```
+
+### SFKSettingsInlineDatePicker
+
+```swift
+@State private var startDate = Date()
+
+SFKSettingsInlineDatePicker(
+    title: "Start Date",
+    icon: "calendar.badge.plus",
+    tint: .blue,
+    selection: $startDate,
+    displayedComponents: [.date]
+)
+```
+
+### SFKSettingsStepperRow (Numeric)
+
+```swift
+@State private var alertCount = 3
+
+SFKSettingsStepperRow(
+    title: "Number of Alerts",
+    subtitle: "How many times to remind",
+    icon: "bell.badge",
+    tint: .red,
+    value: $alertCount,
+    range: 1...10,
+    step: 1,
+    displayValue: { "\($0) times" }
+)
+```
+
+### SFKSettingsSliderRow (Continuous)
+
+```swift
+@State private var opacity: Double = 0.5
+
+SFKSettingsSliderRow(
+    title: "Image Opacity",
+    subtitle: "Adjust transparency",
+    icon: "circle.lefthalf.filled",
+    tint: .blue,
+    value: $opacity,
+    range: 0...1,
+    step: 0.01,
+    displayValue: { "\(Int($0 * 100))%" }
+)
+```
+
+### SFKSettingsColorPickerRow (Sheet-based)
+
+```swift
+@State private var themeColor = Color.blue
+
+SFKSettingsColorPickerRow(
+    title: "Theme Color",
+    subtitle: "Choose your preferred color",
+    icon: "paintpalette",
+    tint: .purple,
+    selection: $themeColor
+)
+```
+
+### SFKSettingsInlineColorPicker
+
+```swift
+@State private var accentColor = Color.purple
+
+SFKSettingsInlineColorPicker(
+    title: "Accent Color",
+    icon: "paintbrush.fill",
+    tint: .purple,
+    selection: $accentColor
+)
+```
+
+### SFKSettingsLinkRow (External URL)
+
+```swift
+SFKSettingsLinkRow(
+    title: "Privacy Policy",
+    subtitle: "Read our privacy policy",
+    icon: "hand.raised.fill",
+    tint: .blue,
+    url: URL(string: "https://example.com/privacy")!
+)
+```
+
+### SFKSettingsDestructiveRow (Dangerous Action)
+
+```swift
+SFKSettingsDestructiveRow(
+    title: "Delete Account",
+    subtitle: "Permanently delete your account and all data",
+    icon: "trash.fill",
+    action: {
+        // Handle deletion
+    }
+)
+```
+
+### SFKSettingsConfirmationRow (Confirm Dialog)
+
+```swift
+SFKSettingsConfirmationRow(
+    title: "Reset All Data",
+    subtitle: "Clear all app data and settings",
+    icon: "exclamationmark.triangle.fill",
+    tint: .orange,
+    confirmationTitle: "Reset Data?",
+    confirmationMessage: "This action cannot be undone. All your data will be permanently deleted.",
+    confirmTitle: "Reset",
+    confirmStyle: .destructive
+) {
+    // Reset data
+}
+```
+
+---
+
+## Complete Sample Settings Screen
+
+This example demonstrates a settings screen with **all row types**:
+
+```swift
+import SwiftUI
+import SwapFoundationKit
+
+struct MyAppSettingsView: View {
+    // Toggle state
+    @AppStorage("notifications") private var notificationsEnabled = true
+    @AppStorage("darkMode") private var darkModeEnabled = false
+
+    // Date/Time state
+    @State private var reminderDate = Date()
+    @State private var alarmTime = Date()
+
+    // Numeric state
+    @State private var alertCount = 3
+    @State private var opacity: Double = 0.75
+
+    // Color state
+    @State private var themeColor = Color.blue
+
+    // Picker state
+    @State private var selectedLanguage = "en"
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                // MARK: - Custom Header Section
+                Section {
+                    // Header content like a pro banner
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("MyApp Settings")
+                            .font(.title2.bold())
+                        Text("Customize your experience")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 8)
+                }
+
+                // MARK: - Toggle Section
+                Section {
+                    SFKSettingsToggle(
+                        title: "Push Notifications",
+                        subtitle: "Receive notifications for updates",
+                        icon: "bell.badge.fill",
+                        tint: .blue,
+                        isOn: $notificationsEnabled
+                    )
+
+                    SFKSettingsToggle(
+                        title: "Dark Mode",
+                        subtitle: "Use dark appearance",
+                        icon: "moon.fill",
+                        tint: .purple,
+                        isOn: $darkModeEnabled
+                    )
+                } header: {
+                    Text("Preferences")
+                }
+
+                // MARK: - Date/Time Pickers
+                Section {
+                    SFKSettingsDatePickerRow(
+                        title: "Reminder Date",
+                        subtitle: "When to send the reminder",
+                        icon: "calendar",
+                        tint: .orange,
+                        selection: $reminderDate,
+                        displayedComponents: [.date]
+                    )
+
+                    SFKSettingsTimePickerRow(
+                        title: "Alarm Time",
+                        subtitle: "When to trigger the alarm",
+                        icon: "clock.fill",
+                        tint: .red,
+                        selection: $alarmTime
+                    )
+
+                    SFKSettingsInlineDatePicker(
+                        title: "Start Date",
+                        icon: "calendar.badge.plus",
+                        tint: .green,
+                        selection: $reminderDate,
+                        displayedComponents: [.date]
+                    )
+                } header: {
+                    Text("Date & Time")
+                }
+
+                // MARK: - Numeric Controls
+                Section {
+                    SFKSettingsStepperRow(
+                        title: "Alert Count",
+                        subtitle: "Number of reminders",
+                        icon: "bell.badge",
+                        tint: .red,
+                        value: $alertCount,
+                        range: 1...10,
+                        step: 1,
+                        displayValue: { "\($0) times" }
+                    )
+
+                    SFKSettingsSliderRow(
+                        title: "Opacity",
+                        subtitle: "Adjust transparency",
+                        icon: "circle.lefthalf.filled",
+                        tint: .blue,
+                        value: $opacity,
+                        range: 0...1,
+                        step: 0.01,
+                        displayValue: { "\(Int($0 * 100))%" }
+                    )
+                } header: {
+                    Text("Adjustments")
+                }
+
+                // MARK: - Color Picker
+                Section {
+                    SFKSettingsColorPickerRow(
+                        title: "Theme Color",
+                        subtitle: "Choose app color",
+                        icon: "paintpalette.fill",
+                        tint: .purple,
+                        selection: $themeColor
+                    )
+
+                    SFKSettingsInlineColorPicker(
+                        title: "Accent Color",
+                        icon: "paintbrush.fill",
+                        tint: themeColor,
+                        selection: $themeColor
+                    )
+                } header: {
+                    Text("Appearance")
+                }
+
+                // MARK: - Standard Information Items
+                Section {
+                    ForEach(SFKInformationSectionItem.allCases, id: \.id) { item in
+                        SFKSettingsRow(item: item) {
+                            handleInfoItemTap(item)
+                        }
+                    }
+                } header: {
+                    Text("Information")
+                } footer: {
+                    Text("Thank you for using MyApp!")
+                }
+
+                // MARK: - Developer Section
+                Section {
+                    ForEach(SFKDeveloperSectionItem.allCases, id: \.id) { item in
+                        SFKSettingsRow(item: item) {
+                            handleDeveloperItemTap(item)
+                        }
+                    }
+                } header: {
+                    Text("Developer")
+                }
+
+                // MARK: - Link Row
+                Section {
+                    SFKSettingsLinkRow(
+                        title: "Documentation",
+                        subtitle: "Read the full documentation",
+                        icon: "book.fill",
+                        tint: .green,
+                        url: URL(string: "https://example.com/docs")!
+                    )
+                }
+
+                // MARK: - Destructive Actions
+                Section {
+                    SFKSettingsConfirmationRow(
+                        title: "Reset All Settings",
+                        subtitle: "Return all settings to default values",
+                        icon: "arrow.counterclockwise",
+                        tint: .orange,
+                        confirmationTitle: "Reset Settings?",
+                        confirmationMessage: "This will reset all your preferences to their default values.",
+                        confirmTitle: "Reset",
+                        confirmStyle: .destructive
+                    ) {
+                        resetSettings()
+                    }
+
+                    SFKSettingsDestructiveRow(
+                        title: "Delete Account",
+                        subtitle: "Permanently delete your account and all data",
+                        icon: "trash.fill",
+                        action: {
+                            deleteAccount()
+                        }
+                    )
+                } header: {
+                    Text("Danger Zone")
+                }
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    private func handleInfoItemTap(_ item: SFKInformationSectionItem) {
+        // Handle information items
+    }
+
+    private func handleDeveloperItemTap(_ item: SFKDeveloperSectionItem) {
+        // Handle developer items
+    }
+
+    private func resetSettings() {
+        // Reset all settings
+    }
+
+    private func deleteAccount() {
+        // Delete account
+    }
+}
+```
+
+---
+
+## Full Settings Screen with SFKSettingsScreen
+
+Alternatively, use `SFKSettingsScreen` for a structured approach:
+
+```swift
+import SwiftUI
+import SwapFoundationKit
+
+struct MySettingsView: View {
+    @State private var notificationsEnabled = true
+    @State private var reminderDate = Date()
+
+    private let actionHandler = SFKSettingsActionHandler(appID: "123456789")
+
+    var body: some View {
+        SFKSettingsScreen(
+            header: {
+                // Custom header like a pro banner
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("MyApp Pro")
+                        .font(.title2.bold())
+                    Text("Upgrade for premium features")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+            },
+            sections: [
+                // Preferences with toggle
+                SFKSettingsSectionConfiguration(
+                    title: "Preferences",
+                    items: []
+                ),
+
+                // Information section
+                SFKSettingsSectionConfiguration(
+                    title: "Information",
+                    items: SFKInformationSectionItem.allCases,
+                    footer: "Version 1.0.0 (100)"
+                ),
+
+                // Developer section
+                SFKSettingsSectionConfiguration(
+                    title: "Developer",
+                    items: SFKDeveloperSectionItem.allCases
+                )
+            ],
+            onItemTap: { item in
+                handleItemTap(item)
+            }
+        )
+    }
+
+    private func handleItemTap(_ item: any SettingsItem) {
+        if let infoItem = item as? SFKInformationSectionItem {
+            switch infoItem {
+            case .rateOnTheAppStore:
+                actionHandler.rateOnTheAppStore()
+            case .privacyPolicy:
+                actionHandler.openURLString("https://example.com/privacy")
+            case .termsAndConditions:
+                actionHandler.openURLString("https://example.com/terms")
+            default:
+                break
+            }
+        }
+    }
+}
+```
+
+---
+
+## Standard Section Items
+
+### SFKInformationSectionItem
+
+| Case | Icon | Title | Tint |
+|------|------|-------|------|
+| `.version` | `info.circle.fill` | Version | `.secondary` |
+| `.reportABug` | `ant.circle.fill` | Report a Bug | `.orange` |
+| `.rateOnTheAppStore` | `star.circle.fill` | Rate on the App Store | `.yellow` |
+| `.referToFriends` | `person.2.circle` | Refer to Friends | `.pink` |
+| `.privacyPolicy` | `globe` | Privacy Policy | `.blue` |
+| `.termsAndConditions` | `globe` | Terms and Conditions | `.blue` |
+
+### SFKDeveloperSectionItem
+
+| Case | Icon | Title | Tint |
+|------|------|-------|------|
+| `.website` | `globe` | Website | `.blue` |
+| `.twitter` | `heart.circle` | Twitter (X) | `.purple` |
+| `.anotherApp` | `heart.circle.fill` | View Another App | `.pink` |
+
+---
+
+## Action Handlers
+
+### SFKSettingsActionHandler
+
+```swift
+let handler = SFKSettingsActionHandler(appID: "123456789")
+
+handler.rateOnTheAppStore()
+
+handler.shareApp(
+    shareText: "Check out this great app!",
+    appURL: URL(string: "https://apps.apple.com/app/id123456789")!
+)
+
+handler.openURL(URL(string: "https://example.com")!)
+```
+
+### SFKInformationSectionHandler
+
+```swift
+let handler = SFKSettingsActionHandler(appID: "123456789")
+
+let infoHandler = SFKInformationSectionHandler(
+    handler: handler,
+    privacyPolicyURL: URL(string: "https://myapp.com/privacy"),
+    termsURL: URL(string: "https://myapp.com/terms")
+)
+
+// In your tap handler:
+if infoHandler.handle(item) {
+    // Item was handled (rate app, open URL, etc.)
+    // Return early
+}
+```
+
+### SFKDeveloperSectionHandler
+
+```swift
+let handler = SFKSettingsActionHandler(appID: "123456789")
+
+let devHandler = SFKDeveloperSectionHandler(
+    handler: handler,
+    websiteURL: URL(string: "https://myapp.com"),
+    twitterURL: URL(string: "https://twitter.com/myapp")
+)
+
+// In your tap handler:
+if devHandler.handle(item) {
+    // Item was handled
+}
+```
+
 ---
 
 ## 🚀 Quick Start
@@ -1281,6 +1942,30 @@ struct MyApp: App {
 - **`AlertActionStyle`** - Action style enum (`.default`, `.cancel`, `.destructive`)
 - **`AlertTextField`** - Text field configuration for alerts
 - **`KeyboardType`** - Platform-agnostic keyboard type enum
+
+### Settings UI
+- **`SettingsItem`** - Protocol defining a settings row contract
+- **`SFKSettingsRow`** - Tappable row with icon, title, subtitle, chevron, and custom trailing
+- **`SFKSettingsLabel`** - Display-only label row variant
+- **`SFKSettingsToggle`** - Toggle row with icon, title, subtitle (explicit properties)
+- **`SFKSettingsToggleRow`** - Toggle row with icon, title, subtitle (SettingsItem-based)
+- **`SFKSettingsDatePickerRow`** - Date/time picker presented in a sheet
+- **`SFKSettingsTimePickerRow`** - Time picker presented in a sheet
+- **`SFKSettingsInlineDatePicker`** - Date/time picker inline within form
+- **`SFKSettingsStepperRow`** - Numeric stepper row with +/- controls
+- **`SFKSettingsSliderRow`** - Slider row for continuous values
+- **`SFKSettingsColorPickerRow`** - Color picker presented in a sheet
+- **`SFKSettingsInlineColorPicker`** - Color picker inline within form
+- **`SFKSettingsLinkRow`** - Opens external URL
+- **`SFKSettingsDestructiveRow`** - Destructive action row (red styling)
+- **`SFKSettingsConfirmationRow`** - Row with confirmation dialog before action
+- **`SFKSettingsScreen`** - Full settings screen with sections, headers, and footers
+- **`SFKSettingsSectionConfiguration`** - Section configuration with title, items, and optional footer
+- **`SFKInformationSectionItem`** - Standard info section items (version, report bug, rate app, share, privacy, terms)
+- **`SFKDeveloperSectionItem`** - Developer section items (website, twitter, another app)
+- **`SFKSettingsActionHandler`** - Helper for rate app, share, open URLs
+- **`SFKInformationSectionHandler`** - Handler for SFKInformationSectionItem taps
+- **`SFKDeveloperSectionHandler`** - Handler for SFKDeveloperSectionItem taps
 
 ### Extensions
 - **`Date`** - Comprehensive date formatting and manipulation

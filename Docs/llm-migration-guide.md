@@ -17,6 +17,7 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - SwiftUI Buttons: `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton` with built-in haptics and glassmorphism styles
 - Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
 - Alert presentation: `AlertController` for SwiftUI-native declarative alerts, `AlertPresenter` for UIKit-based static methods, supporting multiple actions, text fields, and custom styles
+- Settings UI: `SettingsItem` protocol, `SFKSettingsRow`, `SFKSettingsScreen` for building reusable settings screens; `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for standard section items
 
 ---
 
