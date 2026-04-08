@@ -207,6 +207,7 @@ public final class AlertController: ObservableObject {
         title: String,
         message: String? = nil,
         placeholder: String? = nil,
+        prefilledText: String = "",
         confirmTitle: String = "OK",
         cancelTitle: String = "Cancel",
         keyboardType: KeyboardType? = nil,
@@ -215,6 +216,7 @@ public final class AlertController: ObservableObject {
     ) {
         let textField = AlertTextField(
             placeholder: placeholder,
+            text: prefilledText,
             keyboardType: keyboardType
         )
         let config = AlertConfiguration(
@@ -366,6 +368,7 @@ public struct AlertPresenter {
         title: String,
         message: String,
         placeholder: String? = nil,
+        prefilledText: String? = nil,
         keyboardType: UIKeyboardType = .default,
         submitTitle: String = "Submit",
         cancelTitle: String = "Cancel",
@@ -383,6 +386,7 @@ public struct AlertPresenter {
 
             alertController.addTextField { textField in
                 textField.placeholder = placeholder
+                textField.text = prefilledText
                 textField.keyboardType = keyboardType
             }
 
