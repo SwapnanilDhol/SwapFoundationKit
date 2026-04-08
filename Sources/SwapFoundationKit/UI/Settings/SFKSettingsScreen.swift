@@ -7,6 +7,29 @@
 
 import SwiftUI
 
+/// Configuration for a custom section within the settings screen.
+public struct SFKSettingsCustomSection: Identifiable {
+    public let id = UUID()
+    public let title: String
+    public let footer: String?
+    public let content: AnyView
+
+    /// Creates a custom section with arbitrary SwiftUI content.
+    /// - Parameters:
+    ///   - title: The section header title. Empty string hides the header.
+    ///   - footer: Optional footer text displayed below the section.
+    ///   - content: Arbitrary SwiftUI content rendered inside the section.
+    public init<Content: View>(
+        title: String = "",
+        footer: String? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.footer = footer
+        self.content = AnyView(content())
+    }
+}
+
 /// Configuration for an individual section within the settings screen.
 public struct SFKSettingsSectionConfiguration: Identifiable {
     public let id = UUID()
@@ -35,6 +58,9 @@ public typealias SFKSettingsItemAction = (any SettingsItem) -> Void
 
 /// A closure type for building custom trailing content for a settings row.
 public typealias SFKSettingsTrailingBuilder = (any SettingsItem) -> AnyView?
+
+/// A closure type for deciding whether a specific settings row should show a chevron.
+public typealias SFKSettingsChevronBuilder = (any SettingsItem) -> Bool
 
 /// A reusable settings screen component with form-based sections.
 ///
@@ -65,45 +91,63 @@ public typealias SFKSettingsTrailingBuilder = (any SettingsItem) -> AnyView?
 public struct SFKSettingsScreen: View {
 
     private let headerContent: AnyView?
+    private let customSections: [SFKSettingsCustomSection]
     private let sections: [SFKSettingsSectionConfiguration]
     private let onItemTap: SFKSettingsItemAction?
     private let rowTrailingBuilder: SFKSettingsTrailingBuilder?
-    private let showChevron: Bool
+    private let rowChevronBuilder: SFKSettingsChevronBuilder?
+    private let defaultShowChevron: Bool
 
     /// Creates a settings screen without a header.
     /// - Parameters:
+    ///   - customSections: Arbitrary sections rendered before standard item sections.
     ///   - sections: Configuration for each section.
-    ///   - showChevron: Whether to show chevrons on rows. Default is `true`.
+    ///   - showChevron: Default chevron visibility for rows. Default is `true`.
+    ///   - rowTrailingBuilder: Optional builder for row trailing content.
+    ///   - rowChevronBuilder: Optional builder for per-row chevron visibility.
     ///   - onItemTap: Handler called when a settings row is tapped.
     public init(
+        customSections: [SFKSettingsCustomSection] = [],
         sections: [SFKSettingsSectionConfiguration],
         showChevron: Bool = true,
+        rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
+        rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
         onItemTap: @escaping SFKSettingsItemAction
     ) {
         self.headerContent = nil
+        self.customSections = customSections
         self.sections = sections
-        self.showChevron = showChevron
+        self.defaultShowChevron = showChevron
         self.onItemTap = onItemTap
-        self.rowTrailingBuilder = nil
+        self.rowTrailingBuilder = rowTrailingBuilder
+        self.rowChevronBuilder = rowChevronBuilder
     }
 
     /// Creates a settings screen with a header view.
     /// - Parameters:
     ///   - header: Any view to display as the header (e.g., ProBannerView).
+    ///   - customSections: Arbitrary sections rendered before standard item sections.
     ///   - sections: Configuration for each section.
-    ///   - showChevron: Whether to show chevrons on rows. Default is `true`.
+    ///   - showChevron: Default chevron visibility for rows. Default is `true`.
+    ///   - rowTrailingBuilder: Optional builder for row trailing content.
+    ///   - rowChevronBuilder: Optional builder for per-row chevron visibility.
     ///   - onItemTap: Handler called when a settings row is tapped.
     public init<H: View>(
         header: H,
+        customSections: [SFKSettingsCustomSection] = [],
         sections: [SFKSettingsSectionConfiguration],
         showChevron: Bool = true,
+        rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
+        rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
         onItemTap: @escaping SFKSettingsItemAction
     ) {
         self.headerContent = AnyView(header)
+        self.customSections = customSections
         self.sections = sections
-        self.showChevron = showChevron
+        self.defaultShowChevron = showChevron
         self.onItemTap = onItemTap
-        self.rowTrailingBuilder = nil
+        self.rowTrailingBuilder = rowTrailingBuilder
+        self.rowChevronBuilder = rowChevronBuilder
     }
 
     public var body: some View {
@@ -114,6 +158,20 @@ public struct SFKSettingsScreen: View {
                 }
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
+            }
+
+            ForEach(customSections) { section in
+                Section {
+                    section.content
+                } header: {
+                    if !section.title.isEmpty {
+                        Text(section.title)
+                    }
+                } footer: {
+                    if let footer = section.footer {
+                        Text(footer)
+                    }
+                }
             }
 
             ForEach(sections) { section in
@@ -140,6 +198,7 @@ public struct SFKSettingsScreen: View {
     @ViewBuilder
     private func rowView(for item: any SettingsItem) -> some View {
         let trailing = rowTrailingBuilder?(item)
+        let showChevron = rowChevronBuilder?(item) ?? defaultShowChevron
         SFKSettingsRow(
             item: item,
             action: { onItemTap?(item) },

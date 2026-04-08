@@ -27,6 +27,7 @@ struct ContentView: View {
                 Section("UI & System") {
                     NavigationLink("Color / UIColor Examples", destination: ColorExamplesView())
                     NavigationLink("Haptics Examples", destination: HapticsExamplesView())
+                    NavigationLink("Settings Examples", destination: SettingsExamplesView())
                     NavigationLink("UIApplication Helpers", destination: UIApplicationHelpersExamplesView())
                     NavigationLink("Item Sharing Examples", destination: ItemDetailSourceExamplesView())
                     NavigationLink("App Link Opener Examples", destination: AppLinkOpenerExamplesView())
