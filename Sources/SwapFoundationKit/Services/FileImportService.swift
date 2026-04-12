@@ -11,7 +11,6 @@ public protocol FileImportDelegate: AnyObject {
 /// Service for importing files via UIDocumentPickerViewController.
 public final class FileImportService: NSObject {
     public static let shared = FileImportService()
-    private init() {}
 
     /// Presents a document picker filtered to the specified types.
     /// - Parameters:

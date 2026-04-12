@@ -20,7 +20,7 @@ public final class FileExportService {
         from presentingViewController: UIViewController
     ) {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        try? data.write(at: tempURL)
+        try? data.write(to: tempURL, options: .atomic)
 
         var activityItems: [Any] = [tempURL]
 
