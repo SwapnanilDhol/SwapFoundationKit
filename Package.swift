@@ -20,8 +20,8 @@ let package = Package(
             exact: "13.1.0"
         ),
         .package(
-            url: "https://github.com/scalableswift/Toast.git",
-            exact: "3.1.2"
+            url: "https://github.com/BastiaanJansen/Toast-Swift.git",
+            exact: "2.1.3"
         )
     ],
     targets: [
@@ -31,7 +31,7 @@ let package = Package(
             name: "SwapFoundationKit",
             dependencies: [
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
-                .product(name: "Toast", package: "Toast")
+                .product(name: "Toast", package: "Toast-Swift")
             ]
         ),
         .testTarget(

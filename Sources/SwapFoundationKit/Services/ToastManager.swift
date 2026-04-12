@@ -1,19 +1,18 @@
 import Foundation
 import UIKit
 import Toast
-import SwapFoundationKit
 
 /// Protocol for defining app-specific toast types.
 /// Conforming types provide title, subtitle, and style information
 /// that ToastManager uses to present toast notifications.
-public protocol ToastType: Sendable {
+public protocol SFKToastKind: Sendable {
     var title: String { get }
     var subtitle: String? { get }
-    var style: ToastStyle { get }
+    var style: SFKToastStyle { get }
     var image: UIImage? { get }
 }
 
-public enum ToastStyle: Sendable {
+public enum SFKToastStyle: Sendable {
     case success
     case error
     case warning
@@ -21,7 +20,7 @@ public enum ToastStyle: Sendable {
 }
 
 /// Styling configuration for toast presentations.
-public struct ToastConfiguration: Sendable {
+public struct SFKToastConfiguration: Sendable {
     public let autoHide: Bool
     public let displayTime: TimeInterval
     public let animationTime: TimeInterval
@@ -34,7 +33,7 @@ public struct ToastConfiguration: Sendable {
 }
 
 /// A generic toast manager that wraps the Toast library and exposes
-/// a type-safe API for showing toasts based on a `ToastType`.
+/// a type-safe API for showing toasts based on a `SFKToastKind`.
 @MainActor
 public final class ToastManager: Sendable {
     public static let shared = ToastManager()
@@ -42,29 +41,31 @@ public final class ToastManager: Sendable {
 
     /// Shows a toast for the given toast type.
     /// - Parameters:
-    ///   - toastType: The toast type conforming to `ToastType` providing content and style.
+    ///   - kind: The toast type conforming to `SFKToastKind` providing content and style.
     ///   - config: Optional configuration overriding the default.
-    public func show(toastType: some ToastType, config: ToastConfiguration? = nil) {
-        let configuration = config ?? defaultConfiguration
+    public func show(kind: some SFKToastKind, config: SFKToastConfiguration? = nil) {
+        let displayDuration = config?.displayTime ?? 2.5
+        let animationDuration = config?.animationTime ?? 0.2
+        let allowOverlap = config?.autoHide ?? true
+
         let toastConfig = ToastConfiguration(
-            autoHide: configuration.autoHide,
-            displayTime: configuration.displayTime,
-            animationTime: configuration.animationTime
+            dismissBy: [.time(time: displayDuration)],
+            animationTime: animationDuration,
+            allowToastOverlap: allowOverlap
         )
+        let viewConfig = ToastViewConfiguration()
+        let image = kind.image ?? defaultImage(for: kind.style)
         let toast = Toast.default(
-            image: toastType.image ?? defaultImage(for: toastType.style),
-            title: toastType.title,
-            subtitle: toastType.subtitle,
+            image: image!,
+            title: kind.title,
+            subtitle: kind.subtitle,
+            viewConfig: viewConfig,
             config: toastConfig
         )
-        toast.show(haptic: hapticType(for: toastType.style))
+        toast.show(haptic: hapticType(for: kind.style))
     }
 
-    private var defaultConfiguration: ToastConfiguration {
-        ToastConfiguration(autoHide: true, displayTime: 2.5, animationTime: 0.2)
-    }
-
-    private func defaultImage(for style: ToastStyle) -> UIImage? {
+    private func defaultImage(for style: SFKToastStyle) -> UIImage? {
         switch style {
         case .success:
             return UIImage(systemName: "checkmark.circle")
@@ -77,7 +78,7 @@ public final class ToastManager: Sendable {
         }
     }
 
-    private func hapticType(for style: ToastStyle) -> Toast.Haptic {
+    private func hapticType(for style: SFKToastStyle) -> UINotificationFeedbackGenerator.FeedbackType {
         switch style {
         case .success: return .success
         case .error: return .error
