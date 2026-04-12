@@ -20,6 +20,7 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Settings UI: `SettingsItem` protocol, `SFKSettingsRow`, `SFKSettingsScreen` for building reusable settings screens; `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for standard section items
 - Toast notifications: `ToastManager` wrapping the Toast library, with `ToastType` protocol for app-specific types, `ToastStyle` for styling, and `ToastConfiguration` for display options
 - File Export/Import: `FileExportService` for presenting `UIActivityViewController` with data, `FileImportService` for `UIDocumentPickerViewController` with custom `UTType` registration
+- Deeplink handling: `DeeplinkHandler` protocol with `DefaultDeeplinkHandler` implementation, `DeeplinkRoute` protocol for type-safe routes, `DeeplinkEvent` for Combine-based callbacks handling cold launch, resume, universal links, and Handoff
 
 ---
 
@@ -628,6 +629,103 @@ extension MyViewController: FileImportDelegate {
     func fileImportDidCancel() {
         // Handle cancellation
     }
+}
+```
+
+### Deeplink Handler
+```swift
+import SwapFoundationKit
+
+// Define your app's routes conforming to DeeplinkRoute
+enum AppRoute: DeeplinkRoute {
+    case product(id: String)
+    case profile(userId: String)
+    case cart
+
+    var path: String {
+        switch self {
+        case .product: return "/product"
+        case .profile: return "/profile"
+        case .cart: return "/cart"
+        }
+    }
+
+    var queryItems: [URLQueryItem] {
+        switch self {
+        case let .product(id): return [URLQueryItem(name: "id", value: id)]
+        case let .profile(userId): return [URLQueryItem(name: "userId", value: userId)]
+        case .cart: return []
+        }
+    }
+
+    static func parse(from url: URL) -> AppRoute? {
+        // Parse URL into route
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+        switch components.path {
+        case "/product":
+            if let id = components.queryItems?.first(where: { $0.name == "id" })?.value {
+                return .product(id: id)
+            }
+        case "/profile":
+            if let userId = components.queryItems?.first(where: { $0.name == "userId" })?.value {
+                return .profile(userId: userId)
+            }
+        case "/cart":
+            return .cart
+        default:
+            return nil
+        }
+        return nil
+    }
+}
+
+// Configure routes in SwapFoundationKitConfiguration
+let config = SwapFoundationKitConfiguration(
+    appMetadata: myAppMeta,
+    supportedRoutes: [AppRoute.self]
+)
+
+// Subscribe to deeplinks
+SwapFoundationKit.shared.deeplinkHandler?
+    .deeplinkPublisher
+    .receive(on: DispatchQueue.main)
+    .sink { event in
+        if let route = event.route as? AppRoute {
+            switch route {
+            case let .product(id):
+                coordinator.showProduct(id: id)
+            case let .profile(userId):
+                coordinator.showProfile(userId: userId)
+            case .cart:
+                coordinator.showCart()
+            }
+        } else {
+            // Fallback to raw URL handling
+            coordinator.handleRawDeeplink(url: event.url, source: event.source)
+        }
+    }
+    .store(in: &cancellables)
+
+// SceneDelegate integration:
+func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    if let url = connectionOptions.urlContexts.first?.url {
+        SwapFoundationKit.shared.deeplinkHandler?.handle(url: url, source: .coldLaunch)
+    }
+    if let userActivity = connectionOptions.userActivities.first {
+        SwapFoundationKit.shared.deeplinkHandler?.handle(userActivity: userActivity)
+    }
+}
+
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    if let url = URLContexts.first?.url {
+        SwapFoundationKit.shared.deeplinkHandler?.handle(url: url, source: .resume)
+    }
+}
+
+func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    SwapFoundationKit.shared.deeplinkHandler?.handle(userActivity: userActivity)
 }
 ```
 

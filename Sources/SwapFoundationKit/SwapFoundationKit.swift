@@ -41,7 +41,14 @@ public final class SwapFoundationKit {
     public var adsManager: AdsManager? {
         AdsManager.shared.isConfigured ? AdsManager.shared : nil
     }
-    
+
+    /// Shared deeplink handler instance for handling URLs and universal links.
+    /// Returns nil if the framework has not been initialized.
+    public var deeplinkHandler: DeeplinkHandler? {
+        guard isInitialized else { return nil }
+        return DefaultDeeplinkHandler.shared
+    }
+
     // MARK: - Initialization
     
     private init() {}
@@ -111,6 +118,13 @@ public final class SwapFoundationKit {
 
         if let adsConfiguration = configuration?.adsConfiguration {
             await AdsManager.shared.start(with: adsConfiguration)
+        }
+
+        // Configure deeplink handler with supported routes
+        if let routes = configuration?.supportedRoutes {
+            await MainActor.run {
+                DefaultDeeplinkHandler.shared.configure(with: routes)
+            }
         }
 
         // Additional service initialization can be added here
