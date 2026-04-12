@@ -545,6 +545,65 @@ capabilities:
       - Sources/SwapFoundationKit/SwapFoundationKitConfiguration.swift
       - Sources/SwapFoundationKit/Core/ConfigurationService.swift
 
+  - id: toast
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - ToastManager
+      - ToastType
+      - ToastStyle
+      - ToastConfiguration
+    public_symbols:
+      - ToastManager.shared.show(toastType:config:)
+      - ToastType protocol
+      - ToastStyle
+      - ToastConfiguration
+    host_search_terms:
+      - ToastManager
+      - ToastType
+      - Toast
+      - import Toast
+      - toast.show
+      - ToastConfiguration
+    suspicious_file_patterns:
+      - "*Toast*"
+      - "*NotificationBanner*"
+    keep_custom_when:
+      - The host app uses a design-system-specific toast UI that intentionally diverges from SFK's presentation.
+    source_files:
+      - Sources/SwapFoundationKit/Services/ToastManager.swift
+
+  - id: file_export_import
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - FileExportService
+      - FileImportService
+      - FileImportDelegate
+    public_symbols:
+      - FileExportService.shared.export(data:filename:utType:from:)
+      - FileExportService.shared.export(_:filename:encoder:from:)
+      - FileImportService.shared.importFile(contentTypes:from:delegate:)
+      - FileImportService.shared.registerCustomType(fileExtension:conformingTo:)
+      - FileImportDelegate
+    host_search_terms:
+      - UIDocumentPickerViewController
+      - UIActivityViewController
+      - UTType.types
+      - documentPicker
+      - exportSubscriptions
+      - importSubscriptions
+    suspicious_file_patterns:
+      - "*FileExport*"
+      - "*FileImport*"
+      - "*ImportExport*"
+      - "*DocumentPicker*"
+    keep_custom_when:
+      - The host app owns domain-specific file format handling or cloud import flows that go beyond generic document pick + share sheet.
+    source_files:
+      - Sources/SwapFoundationKit/Services/FileExportService.swift
+      - Sources/SwapFoundationKit/Services/FileImportService.swift
+
   - id: generic_extensions
     audit_tier: manual
     confidence: low

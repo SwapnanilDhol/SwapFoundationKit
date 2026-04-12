@@ -18,6 +18,10 @@ let package = Package(
         .package(
             url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
             exact: "13.1.0"
+        ),
+        .package(
+            url: "https://github.com/scalableswift/Toast.git",
+            exact: "3.1.2"
         )
     ],
     targets: [
@@ -26,7 +30,8 @@ let package = Package(
         .target(
             name: "SwapFoundationKit",
             dependencies: [
-                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
+                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
+                .product(name: "Toast", package: "Toast")
             ]
         ),
         .testTarget(

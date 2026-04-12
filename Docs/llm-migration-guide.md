@@ -18,6 +18,8 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
 - Alert presentation: `AlertController` for SwiftUI-native declarative alerts, `AlertPresenter` for UIKit-based static methods, supporting multiple actions, text fields, and custom styles
 - Settings UI: `SettingsItem` protocol, `SFKSettingsRow`, `SFKSettingsScreen` for building reusable settings screens; `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for standard section items
+- Toast notifications: `ToastManager` wrapping the Toast library, with `ToastType` protocol for app-specific types, `ToastStyle` for styling, and `ToastConfiguration` for display options
+- File Export/Import: `FileExportService` for presenting `UIActivityViewController` with data, `FileImportService` for `UIDocumentPickerViewController` with custom `UTType` registration
 
 ---
 
@@ -530,6 +532,103 @@ imageProcessor.removeCachedImageFromSharedStorage(forKey: "profile")
 // Clear caches
 imageProcessor.clearCache()                      // In-memory
 imageProcessor.clearSharedStorageCache()         // Shared storage
+```
+
+### Toast Notifications
+```swift
+import SwapFoundationKit
+
+// Define your app's toast types conforming to ToastType
+enum AppToastType: ToastType {
+    case itemAdded
+    case itemDeleted
+    case exportSuccess
+    case error(String)
+
+    var title: String {
+        switch self {
+        case .itemAdded: return "Added!"
+        case .itemDeleted: return "Deleted!"
+        case .exportSuccess: return "Exported!"
+        case .error: return "Error"
+        }
+    }
+
+    var subtitle: String? {
+        switch self {
+        case .itemAdded: return "Item has been added."
+        case .itemDeleted: return "Item removed."
+        case .exportSuccess: return "Export complete."
+        case .error(let msg): return msg
+        }
+    }
+
+    var style: ToastStyle {
+        switch self {
+        case .itemAdded, .itemDeleted, .exportSuccess: return .success
+        case .error: return .error
+        }
+    }
+
+    var image: UIImage? {
+        switch style {
+        case .success: return UIImage(systemName: "checkmark.circle")
+        case .error: return UIImage(systemName: "xmark.circle.fill")
+        case .warning: return UIImage(systemName: "exclamationmark.triangle")
+        case .informational: return UIImage(systemName: "info.circle")
+        }
+    }
+}
+
+// Show a toast
+ToastManager.shared.show(toastType: AppToastType.itemAdded)
+
+// With custom config
+ToastManager.shared.show(toastType: AppToastType.error("Something went wrong"), config: ToastConfiguration(displayTime: 4.0))
+```
+
+### File Export and Import
+```swift
+import SwapFoundationKit
+
+// Export: present a share sheet with JSON data
+let subscriptions: [SubscriptionProxy] = ...
+let encoder = JSONEncoder()
+encoder.dateEncodingStrategy = .iso8601
+try FileExportService.shared.export(
+    subscriptions,
+    filename: "subscriptions.json",
+    encoder: encoder,
+    from: presentingViewController
+)
+
+// Import: present a document picker and handle the result
+FileImportService.shared.importFile(
+    contentTypes: [.json],
+    from: presentingViewController,
+    delegate: self
+)
+
+// Register a custom file type
+let recurType = FileImportService.shared.registerCustomType(
+    fileExtension: "recur",
+    conformingTo: .json
+)
+FileImportService.shared.importFile(
+    contentTypes: [recurType],
+    from: presentingViewController,
+    delegate: self
+)
+
+// FileImportDelegate implementation
+extension MyViewController: FileImportDelegate {
+    func fileImportDidPick(data: Data, url: URL) {
+        // Parse data and import
+    }
+    func fileImportDidCancel() {
+        // Handle cancellation
+    }
+}
 ```
 
 ---
