@@ -550,14 +550,14 @@ capabilities:
     confidence: high
     replace_with:
       - ToastManager
-      - ToastType
-      - ToastStyle
-      - ToastConfiguration
+      - SFKToastKind
+      - SFKToastStyle
+      - SFKToastConfiguration
     public_symbols:
-      - ToastManager.shared.show(toastType:config:)
-      - ToastType protocol
-      - ToastStyle
-      - ToastConfiguration
+      - ToastManager.shared.show(kind:config:)
+      - SFKToastKind protocol
+      - SFKToastStyle
+      - SFKToastConfiguration
     host_search_terms:
       - ToastManager
       - ToastType

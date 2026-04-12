@@ -538,8 +538,8 @@ imageProcessor.clearSharedStorageCache()         // Shared storage
 ```swift
 import SwapFoundationKit
 
-// Define your app's toast types conforming to ToastType
-enum AppToastType: ToastType {
+// Define your app's toast types conforming to SFKToastKind
+enum AppToastType: SFKToastKind {
     case itemAdded
     case itemDeleted
     case exportSuccess
@@ -563,7 +563,7 @@ enum AppToastType: ToastType {
         }
     }
 
-    var style: ToastStyle {
+    var style: SFKToastStyle {
         switch self {
         case .itemAdded, .itemDeleted, .exportSuccess: return .success
         case .error: return .error
@@ -581,10 +581,10 @@ enum AppToastType: ToastType {
 }
 
 // Show a toast
-ToastManager.shared.show(toastType: AppToastType.itemAdded)
+ToastManager.shared.show(kind: AppToastType.itemAdded)
 
 // With custom config
-ToastManager.shared.show(toastType: AppToastType.error("Something went wrong"), config: ToastConfiguration(displayTime: 4.0))
+ToastManager.shared.show(kind: AppToastType.error("Something went wrong"), config: SFKToastConfiguration(displayTime: 4.0))
 ```
 
 ### File Export and Import
