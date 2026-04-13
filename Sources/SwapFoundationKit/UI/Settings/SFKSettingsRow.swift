@@ -101,17 +101,15 @@ public struct SFKSettingsRow: View {
 
     @ViewBuilder
     private var trailingContent: some View {
-        if let trailing = trailingView {
-            trailing
+        HStack(spacing: 8) {
+            if let trailing = trailingView {
+                trailing
+            }
             if showChevron {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.tertiary)
             }
-        } else if showChevron {
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.tertiary)
         }
     }
 }
