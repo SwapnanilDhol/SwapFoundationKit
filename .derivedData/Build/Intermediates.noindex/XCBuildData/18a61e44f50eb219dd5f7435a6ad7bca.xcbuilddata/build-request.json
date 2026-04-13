@@ -1,0 +1,66 @@
+{
+  "buildCommand" : {
+    "command" : "build",
+    "skipDependencies" : false,
+    "style" : "buildOnly"
+  },
+  "configuredTargets" : [
+    {
+      "guid" : "PACKAGE-PRODUCT:SwapFoundationKit"
+    }
+  ],
+  "containerPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit",
+  "continueBuildingAfterErrors" : false,
+  "dependencyScope" : "workspace",
+  "enableIndexBuildArena" : false,
+  "hideShellScriptEnvironment" : false,
+  "parameters" : {
+    "action" : "build",
+    "activeArchitecture" : "undefined_arch",
+    "activeRunDestination" : {
+      "disableOnlyActiveArch" : true,
+      "platform" : "iphonesimulator",
+      "sdk" : "iphonesimulator26.2",
+      "sdkVariant" : "iphonesimulator",
+      "supportedArchitectures" : [
+        "i386",
+        "x86_64"
+      ],
+      "targetArchitecture" : "undefined_arch"
+    },
+    "arenaInfo" : {
+      "buildIntermediatesPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex",
+      "buildProductsPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Products",
+      "derivedDataPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData",
+      "indexDataStoreFolderPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Index.noindex/DataStore",
+      "indexEnableDataStore" : true,
+      "indexPCHPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Index.noindex/PrecompiledHeaders",
+      "pchPath" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/PrecompiledHeaders"
+    },
+    "configurationName" : "Debug",
+    "overrides" : {
+      "commandLine" : {
+        "table" : {
+
+        }
+      },
+      "synthesized" : {
+        "table" : {
+          "ACTION" : "build",
+          "CLANG_COVERAGE_MAPPING" : "YES",
+          "CLANG_PROFILE_DATA_DIRECTORY" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/ProfileData",
+          "ENABLE_PREVIEWS" : "NO",
+          "ENABLE_XOJIT_PREVIEWS" : "YES",
+          "ONLY_ACTIVE_ARCH" : "YES",
+          "TOOLCHAINS" : "com.apple.dt.toolchain.Metal.32023.864 $(inherited)"
+        }
+      }
+    }
+  },
+  "schemeCommand" : "launch",
+  "showNonLoggedProgress" : true,
+  "useDryRun" : false,
+  "useImplicitDependencies" : true,
+  "useLegacyBuildLocations" : false,
+  "useParallelTargets" : true
+}

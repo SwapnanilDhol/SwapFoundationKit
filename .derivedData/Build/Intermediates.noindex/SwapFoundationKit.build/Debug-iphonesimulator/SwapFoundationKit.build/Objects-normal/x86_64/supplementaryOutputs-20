@@ -1,0 +1,44 @@
+{
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/UIKitExtensions/UINavigationController+.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UINavigationController+.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UINavigationController+.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UINavigationController+.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UINavigationController+.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UINavigationController+.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Hierarchy.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Hierarchy.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Hierarchy.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Hierarchy.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Hierarchy.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Hierarchy.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Layout.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Layout.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Layout.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Layout.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Layout.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIView+Layout.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/UIKitExtensions/UIViewController+.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIViewController+.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIViewController+.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIViewController+.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIViewController+.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/UIViewController+.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/Utilities/Debouncer.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Debouncer.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Debouncer.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Debouncer.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Debouncer.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Debouncer.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/Utilities/Throttler.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Throttler.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Throttler.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Throttler.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Throttler.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/x86_64/Throttler.swiftdeps"
+  }
+}

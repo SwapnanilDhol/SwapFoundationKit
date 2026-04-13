@@ -1,0 +1,44 @@
+{
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/SwapFoundationKitConfiguration.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SwapFoundationKitConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SwapFoundationKitConfiguration.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SwapFoundationKitConfiguration.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SwapFoundationKitConfiguration.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SwapFoundationKitConfiguration.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/AlertPresenter.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/AlertPresenter.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/AlertPresenter.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/AlertPresenter.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/AlertPresenter.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/AlertPresenter.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/BarcodeScanner/BarcodeScannerConfiguration.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerConfiguration.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerConfiguration.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerConfiguration.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerConfiguration.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/BarcodeScanner/BarcodeScannerScreen.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerScreen.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerScreen.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerScreen.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerScreen.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerScreen.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/BarcodeScanner/BarcodeScannerView.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerView.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerView.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerView.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerView.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/BarcodeScannerView.swiftdeps"
+  },
+  "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/UI/SFKButtons.swift" : {
+    "const-values" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SFKButtons.swiftconstvalues",
+    "dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SFKButtons.d",
+    "diagnostics" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SFKButtons.dia",
+    "object" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SFKButtons.o",
+    "swift-dependencies" : "/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/.derivedData/Build/Intermediates.noindex/SwapFoundationKit.build/Debug-iphonesimulator/SwapFoundationKit.build/Objects-normal/arm64/SFKButtons.swiftdeps"
+  }
+}

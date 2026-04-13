@@ -1,0 +1,29 @@
+2026-03-22 19:08:46.403 xcodebuild[35713:1924831]  DVTFilePathFSEvents: Failed to start fs event stream.
+2026-03-22 19:08:46.762 xcodebuild[35713:1924830] [MT] DVTDeveloperPaths: Failed to get length of DARWIN_USER_CACHE_DIR from confstr(3), error = Error Domain=NSPOSIXErrorDomain Code=5 "Input/output error". Using NSCachesDirectory instead.
+2026-03-22 19:08:47.221 xcodebuild[35713:1924832] CoreSimulatorService connection became invalid.  Simulator services will no longer be available.
+2026-03-22 19:08:47.222 xcodebuild[35713:1924882] Logging connecton invalid: <OS_xpc_error: <dictionary: 0x1ff4045d0> { count = 1, transaction: 0, voucher = 0x0, contents =
+	"XPCErrorDescription" => <string: 0x1ff404718> { string cache = 0x0, length = 18, contents = "Connection invalid" }
+}>
+2026-03-22 19:08:47.222 xcodebuild[35713:1924882] Error opening log file (/Users/swapnanildhol/Library/Logs/CoreSimulator/CoreSimulator.com.apple.dt.xcodebuild.log): Operation not permitted
+[-[SimServiceContext sendRequest:]:1739] ERROR : Unable to deliver request ({
+    "developer_dir" = "/Applications/Xcode-26.3.0.app/Contents/Developer";
+    request = "set_developer_dir";
+}) because we are not connected to CoreSimulatorService.
+Command line invocation:
+    /Applications/Xcode-26.3.0.app/Contents/Developer/usr/bin/xcodebuild -scheme SwapFoundationKit -destination "generic/platform=iOS Simulator" -derivedDataPath .derivedData build
+
+2026-03-22 19:08:47.274 xcodebuild[35713:1924830] [MT] DVTAssertions: Warning in DVTFrameworks/DVTFoundation/FileTypes/DVTFileDataTypeDetection.m:79
+Details:  detectedTypeIdentifier (com.apple.binary-property-list) does not conform to matchedTypeIdentifier in MagicFileDataTypeDetector extenson com.apple.property-list. When both are specified, this conformance is required unless overridden by setting allowNonInheritance. extension.identifier:Xcode.MagicFileDataTypeDetector.BinaryPlist
+Object:   <DVTFileDataTypeDetectionMagicCache: 0xa50716460>
+Method:   -initWithExtension:
+Thread:   <_NSMainThread: 0x1052ce4f0>{number = 1, name = main}
+Please file a bug at https://feedbackassistant.apple.com with this warning message and any useful information you can provide.
+2026-03-22 19:08:47.276 xcodebuild[35713:1924830] [MT] DVTAssertions: Warning in DVTFrameworks/DVTFoundation/FileTypes/DVTFileDataTypeDetection.m:79
+Details:  detectedTypeIdentifier (com.apple.xml-property-list) does not conform to matchedTypeIdentifier in MagicFileDataTypeDetector extenson com.apple.property-list. When both are specified, this conformance is required unless overridden by setting allowNonInheritance. extension.identifier:Xcode.MagicFileDataTypeDetector.XMLPlist
+Object:   <DVTFileDataTypeDetectionMagicCache: 0xa50717db0>
+Method:   -initWithExtension:
+Thread:   <_NSMainThread: 0x1052ce4f0>{number = 1, name = main}
+Please file a bug at https://feedbackassistant.apple.com with this warning message and any useful information you can provide.
+2026-03-22 19:08:47.279 xcodebuild[35713:1924830] Writing error result bundle to /var/folders/j2/2b4ch5qx51s8kw4kst3c1_yc0000gn/T/ResultBundle_2026-22-03_19-08-0047.xcresult
+xcodebuild: error: The directory /Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit does not contain an Xcode project, workspace or package.
+

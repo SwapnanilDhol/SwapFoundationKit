@@ -14,8 +14,65 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Analytics protocol surface: `AnalyticsEvent` (you define your app’s enum); simple fan-out to providers
 - App utilities: e.g., `AppLinkOpener`
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
-- SwiftUI Buttons: `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton` with built-in haptics and glassmorphism styles
+- SwiftUI Buttons: `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton`, `SFKCloseButton` with built-in haptics and glassmorphism styles
 - Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
+
+## 4a) Consistent Close/Dismiss UI Pattern
+
+Use `SFKCloseButton` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views. This ensures UI consistency across the app.
+
+```swift
+import SwapFoundationKit
+
+struct MyModalView: View {
+    let onClose: () -> Void
+
+    var body: some View {
+        VStack {
+            // Place in top-left or top-right corner
+            HStack {
+                SFKCloseButton(action: onClose)
+                Spacer()
+            }
+            .padding()
+
+            // modal content
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+```
+
+For onboarding flows specifically:
+
+```swift
+struct OnboardingScreen: View {
+    @ObservedObject var state: OnboardingState
+    let onDismiss: () -> Void
+
+    var body: some View {
+        ZStack {
+            // content
+
+            VStack {
+                HStack {
+                    SFKCloseButton(action: onDismiss)
+                    Spacer()
+                }
+                .padding()
+
+                Spacer()
+            }
+        }
+    }
+}
+```
+
+**Rules:**
+- Always use `SFKCloseButton` instead of custom close button implementations
+- Never create custom close buttons using text + icon combinations
+- For UIKit modal presentations, use `SwapProManager` or the appropriate dismiss method
+- The `SFKCloseButton` includes haptic feedback and glassmorphism styling automatically
 - Alert presentation: `AlertController` for SwiftUI-native declarative alerts, `AlertPresenter` for UIKit-based static methods, supporting multiple actions, text fields, and custom styles
 - Settings UI: `SettingsItem` protocol, `SFKSettingsRow`, `SFKSettingsScreen` for building reusable settings screens; `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for standard section items
 - Toast notifications: `ToastManager` wrapping the Toast library, with `ToastType` protocol for app-specific types, `ToastStyle` for styling, and `ToastConfiguration` for display options

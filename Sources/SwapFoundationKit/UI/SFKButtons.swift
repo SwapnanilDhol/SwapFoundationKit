@@ -418,6 +418,52 @@ public struct SFKClosePillButton: View {
     }
 }
 
+/// A glass-style close button with icon + text, recommended for modal sheets and onboarding flows.
+///
+/// Use this button instead of custom close implementations to maintain UI consistency across the app.
+/// The button uses `.glassCapsuleButton()` modifier and includes haptic feedback on tap.
+///
+/// ## Usage
+/// ```swift
+/// struct MyModalView: View {
+///     let onClose: () -> Void
+///
+///     var body: some View {
+///         VStack {
+///             SFKCloseButton(action: onClose)
+///             // modal content
+///         }
+///     }
+/// }
+/// ```
+public struct SFKCloseButton: View {
+    private let action: () -> Void
+
+    public init(action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: "xmark")
+                    .font(.footnote.weight(.bold))
+
+                Text("Close")
+                    .font(.footnote.weight(.semibold))
+            }
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .glassCapsuleButton(
+                tint: Color.white.opacity(0.22),
+                isShadowEnabled: true
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 /// A toolbar button with custom label support and haptic feedback.
 public struct SFKToolbarButton<Label: View>: View {
     private let isEnabled: Bool
@@ -570,6 +616,8 @@ public struct SFKToolbarButtonLabel: View {
         SFKPillButton(title: "Approve", systemImage: "checkmark", tint: .green, action: {})
 
         SFKClosePillButton(action: {})
+
+        SFKCloseButton(action: {})
 
         HStack(spacing: 16) {
             SFKToolbarButton(title: "Save", systemImage: "checkmark", action: {})
