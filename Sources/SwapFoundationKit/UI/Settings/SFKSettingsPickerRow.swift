@@ -120,7 +120,7 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .confirmationDialog(title, isPresented: $isPresented, titleVisibility: .visible) {
             ForEach(options) { option in
                 Button(option.label) {
@@ -220,7 +220,7 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 List {

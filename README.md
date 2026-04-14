@@ -513,11 +513,20 @@ struct UserData: Codable {
 let userData = UserData(users: users, settings: settings)
 try await backupService.performBackup(userData, fileType: .data)
 
-// Restore backup
+// Restore the newest on-device backup (same ordering as list: first = newest)
 let restoredData = try backupService.restoreBackup(UserData.self, fileType: .data)
 
-// List backup files
+// List backup files (newest first)
 let backupFiles = backupService.listBackupFiles(for: .data)
+```
+
+**On-disk layout:** each `FileType` writes under **`Documents/<rawValue>/`** (e.g. `Documents/data/`) as timestamped `*.backup` files containing **one JSON-encoded payload** (whatever generic you passed to `performBackup`). `restoreBackup` reads the **newest** file in that folder; it no longer uses a mismatched path relative to `performBackup`. Filenames use **second-level** timestamps, so two backups within the same clock second share one filename and the second write **replaces** the first.
+
+**Unit tests:** `BackupService` supports an optional documents root override so tests do not touch the real app sandbox:
+
+```swift
+let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+let backupService = BackupService(documentsDirectoryOverride: tempRoot)
 ```
 
 **Migration Steps:**
@@ -2021,11 +2030,16 @@ To use ItemSync with widgets, add App Groups capability to your app:
 
 ## 🧪 Testing
 
-The package includes comprehensive test coverage. Run tests with:
+The package includes test coverage for core utilities. This library targets **iOS** and depends on UIKit-based packages, so **`swift test` on macOS often fails** (UIKit is not available for the default macOS triple).
+
+Run tests from the package root with Xcode’s iOS Simulator destination, for example:
 
 ```bash
-swift test
+cd /path/to/SwapFoundationKit
+xcodebuild test -scheme SwapFoundationKit -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+
+If you open `Package.swift` in Xcode, you can also run the **SwapFoundationKit** test action from the UI.
 
 ### Mock Objects
 

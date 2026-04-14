@@ -82,7 +82,7 @@ public struct SFKSettingsLinkRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
     }
 
     private var iconContainer: some View {
@@ -170,7 +170,7 @@ public struct SFKSettingsDestructiveRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
     }
 }
 
@@ -265,7 +265,7 @@ public struct SFKSettingsConfirmationRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .confirmationDialog(confirmationTitle, isPresented: $showConfirmation, titleVisibility: .visible) {
             Button(confirmTitle, role: confirmStyle == .destructive ? .destructive : nil) {
                 onConfirm()

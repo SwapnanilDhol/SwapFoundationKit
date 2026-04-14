@@ -193,6 +193,10 @@ capabilities:
   - id: backup
     audit_tier: exact
     confidence: medium
+    capability_notes: >-
+      Backups live under Documents/<FileType.rawValue>/ as JSON .backup files.
+      restoreBackup decodes the newest file (same sort as listBackupFiles, first URL).
+      Optional BackupService(documentsDirectoryOverride:) exists for isolated tests.
     replace_with:
       - BackupService
     public_symbols:

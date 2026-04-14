@@ -78,6 +78,7 @@ struct OnboardingScreen: View {
 - Toast notifications: `ToastManager` wrapping the Toast library, with `ToastType` protocol for app-specific types, `ToastStyle` for styling, and `ToastConfiguration` for display options
 - File Export/Import: `FileExportService` for presenting `UIActivityViewController` with data, `FileImportService` for `UIDocumentPickerViewController` with custom `UTType` registration
 - Deeplink handling: `DeeplinkHandler` protocol with `DefaultDeeplinkHandler` implementation, `DeeplinkRoute` protocol for type-safe routes, `DeeplinkEvent` for Combine-based callbacks handling cold launch, resume, universal links, and Handoff
+- On-device JSON backups: `BackupService` — `performBackup` writes under `Documents/<FileType>/`; `restoreBackup` reads the **newest** backup (same order as `listBackupFiles(for:).first`). Use the same `Decodable` type (and `JSONDecoder` date strategy) as the `Encodable` payload you store. For tests, `BackupService(documentsDirectoryOverride: tempURL)` keeps files out of the real Documents folder.
 
 ---
 
@@ -474,6 +475,32 @@ throttler.throttle {
 // Async version
 let asyncThrottler = AsyncThrottler(interval: 1.0)
 ```
+
+### BackupService (on-device JSON backups)
+
+Use `BackupService` when the host app keeps timestamped JSON snapshots on disk (not CloudKit-specific).
+
+```swift
+import SwapFoundationKit
+
+let backups = BackupService()
+
+struct AppSnapshot: Codable, Sendable {
+    var version: Int
+    var items: [String]
+}
+
+try await backups.performBackup(AppSnapshot(version: 1, items: ["a"]), fileType: .data)
+
+// Loads the newest file under Documents/data/ (or documentsDirectoryOverride in tests)
+let latest = try backups.restoreBackup(AppSnapshot.self, fileType: .data)
+```
+
+Rules for LLM migrations:
+
+- Do not assume `restoreBackup` reads a fixed filename; it always resolves the **newest** file under `Documents/<FileType.rawValue>/` (matching `listBackupFiles`).
+- If the app wrapped payloads (e.g. encoded `Data` then backed up), decode the same type you passed to `performBackup` first, then decode inner models with a matching `JSONDecoder`.
+- Prefer `BackupService(documentsDirectoryOverride:)` in **tests** so backup files do not collide with dev data in Documents.
 
 ### Result Extensions
 ```swift

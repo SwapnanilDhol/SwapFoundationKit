@@ -93,7 +93,9 @@ public struct SFKSettingsColorPickerRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        // `.borderless` lets taps reach this button when the row is embedded in a `Form`/`List`
+        // (`.plain` is often eaten by the list selection gesture, so sheets never present).
+        .buttonStyle(.borderless)
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {
@@ -117,7 +119,8 @@ public struct SFKSettingsColorPickerRow: View {
                     }
                 }
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 }
@@ -169,6 +172,7 @@ public struct SFKSettingsInlineColorPicker: View {
 
             ColorPicker(title, selection: $selection, supportsOpacity: true)
                 .labelsHidden()
+                .buttonStyle(.borderless)
 
             Spacer()
         }

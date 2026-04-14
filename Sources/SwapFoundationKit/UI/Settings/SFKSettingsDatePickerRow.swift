@@ -80,6 +80,7 @@ public struct SFKSettingsDatePickerRow: View {
                 Text(formattedDate)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.trailing)
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
@@ -87,7 +88,7 @@ public struct SFKSettingsDatePickerRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {
@@ -111,7 +112,8 @@ public struct SFKSettingsDatePickerRow: View {
                     }
                 }
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -209,6 +211,7 @@ public struct SFKSettingsTimePickerRow: View {
                 Text(formattedTime)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.trailing)
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
@@ -216,7 +219,7 @@ public struct SFKSettingsTimePickerRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {
@@ -240,7 +243,9 @@ public struct SFKSettingsTimePickerRow: View {
                     }
                 }
             }
-            .presentationDetents([.medium])
+            // Wheel pickers need vertical room; `.medium` alone is often too cramped or blank.
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
 

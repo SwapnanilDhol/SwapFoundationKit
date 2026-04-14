@@ -69,7 +69,8 @@ public struct SFKSettingsRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        // Match sheet/navigation rows inside `Form`: `.plain` can fail to receive taps.
+        .buttonStyle(.borderless)
     }
 
     private var iconContainer: some View {
@@ -101,7 +102,7 @@ public struct SFKSettingsRow: View {
 
     @ViewBuilder
     private var trailingContent: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .center, spacing: 8) {
             if let trailing = trailingView {
                 trailing
             }
@@ -111,6 +112,7 @@ public struct SFKSettingsRow: View {
                     .foregroundStyle(.tertiary)
             }
         }
+        .multilineTextAlignment(.trailing)
     }
 }
 
