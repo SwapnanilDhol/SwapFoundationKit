@@ -35,6 +35,7 @@ public struct SFKProBannerView: View {
     public let onUpgradeTap: () -> Void
 
     @AppStorage("isProEnabled") private var isProEnabled = false
+    @Environment(\.colorScheme) private var colorScheme
 
     public init(
         proEnabledTitle: String,
@@ -66,13 +67,14 @@ public struct SFKProBannerView: View {
             if !isProEnabled {
                 SFKPrimaryButton(
                     title: upgradeButtonTitle,
-                    tint: .purple,
+                    style: upgradeButtonStyle,
                     action: onUpgradeTap
                 )
                 .frame(minHeight: 44)
                 .padding(.top, 8)
             }
         }
+        .padding(.horizontal, 8)
         .padding(.vertical, 8)
         .accessibilityIdentifier("proBannerView")
     }
@@ -83,6 +85,16 @@ public struct SFKProBannerView: View {
 
     private var subtitle: String {
         isProEnabled ? proEnabledSubtitle : proDisabledSubtitle
+    }
+
+    /// In dark mode, prefer a solid purple CTA for reliable contrast.
+    /// In light mode, keep the glass style.
+    private var upgradeButtonStyle: SFKPrimaryButtonStyle {
+        SFKPrimaryButtonStyle(
+            tint: .purple,
+            isGlass: colorScheme != .dark,
+            cornerRadius: 22
+        )
     }
 }
 
@@ -96,6 +108,7 @@ public struct SFKProBannerView: View {
     ) {
         print("Upgrade tapped")
     }
+    .preferredColorScheme(.dark)
 }
 
 #Preview("Pro Disabled") {
@@ -107,5 +120,6 @@ public struct SFKProBannerView: View {
     ) {
         print("Upgrade tapped")
     }
+    .preferredColorScheme(.dark)
 }
 #endif
