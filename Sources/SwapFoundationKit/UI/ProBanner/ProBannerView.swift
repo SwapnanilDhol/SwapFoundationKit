@@ -35,7 +35,6 @@ public struct SFKProBannerView: View {
     public let onUpgradeTap: () -> Void
 
     @AppStorage("isProEnabled") private var isProEnabled = false
-    @Environment(\.colorScheme) private var colorScheme
 
     public init(
         proEnabledTitle: String,
@@ -87,12 +86,11 @@ public struct SFKProBannerView: View {
         isProEnabled ? proEnabledSubtitle : proDisabledSubtitle
     }
 
-    /// In dark mode, prefer a solid purple CTA for reliable contrast.
-    /// In light mode, keep the glass style.
+    /// Keep a glass CTA style across color schemes.
     private var upgradeButtonStyle: SFKPrimaryButtonStyle {
         SFKPrimaryButtonStyle(
             tint: .purple,
-            isGlass: colorScheme != .dark,
+            isGlass: true,
             cornerRadius: 22
         )
     }
