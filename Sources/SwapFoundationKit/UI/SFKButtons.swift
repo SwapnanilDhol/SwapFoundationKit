@@ -168,9 +168,7 @@ public struct SFKPrimaryButton: View {
         .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
         .glassProminentButton(
             tint: style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
-            fallbackBackgroundColor: style.tint.opacity(
-                isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity
-            )
+            fallbackBackgroundColor: .clear
         )
     }
 
@@ -180,8 +178,24 @@ public struct SFKPrimaryButton: View {
 
     @ViewBuilder
     private var backgroundView: some View {
-        RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-            .fill(style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity))
+        if style.isGlass {
+            if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
+                // Native glass comes from `.glassProminentButton` at the button level.
+                RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                    .fill(.clear)
+            } else {
+                // Keep rich legacy glass rendering on older OS versions.
+                RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                    .glassButton(
+                        cornerRadius: style.cornerRadius,
+                        tint: style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
+                        isShadowEnabled: isEnabled
+                    )
+            }
+        } else {
+            RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                .fill(style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity))
+        }
     }
 }
 
