@@ -69,6 +69,18 @@ private final class ButtonHaptics {
 }
 #endif
 
+// MARK: - Visual Tokens
+
+private enum SFKButtonVisualTokens {
+    static let enabledOpacity: CGFloat = 1.0
+    static let disabledOpacity: CGFloat = 0.72
+    static let disabledForegroundOpacity: CGFloat = 0.7
+    static let inlineFilledBackgroundOpacity: CGFloat = 0.14
+    static let pillFallbackBackgroundOpacity: CGFloat = 0.18
+    static let closeButtonTintOpacity: CGFloat = 0.22
+    static let closeButtonFallbackBackgroundOpacity: CGFloat = 0.12
+}
+
 // MARK: - SFKButton Variants
 
 /// A primary action button with glassmorphism effect, loading state, and haptic feedback.
@@ -153,25 +165,25 @@ public struct SFKPrimaryButton: View {
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .disabled(!isEnabled || isLoading)
-        .opacity(isEnabled ? 1 : 0.72)
+        .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
+        .glassProminentButton(
+            tint: style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
+            fallbackBackgroundColor: .clear
+        )
     }
 
     private var foregroundColor: Color {
-        isEnabled ? .white : .white.opacity(0.7)
+        isEnabled ? .white : .white.opacity(SFKButtonVisualTokens.disabledForegroundOpacity)
     }
 
     @ViewBuilder
     private var backgroundView: some View {
         if style.isGlass {
             RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-                .glassButton(
-                    cornerRadius: style.cornerRadius,
-                    tint: style.tint.opacity(isEnabled ? 1.0 : 0.55),
-                    isShadowEnabled: isEnabled
-                )
+                .fill(.clear)
         } else {
             RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-                .fill(style.tint.opacity(isEnabled ? 1.0 : 0.55))
+                .fill(style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity))
         }
     }
 }
@@ -223,7 +235,11 @@ public struct SFKSecondaryButton: View {
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1 : 0.72)
+        .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
+        .glassProminentButton(
+            tint: style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
+            fallbackBackgroundColor: .clear
+        )
     }
 
     private var backgroundColor: some View {
@@ -292,7 +308,11 @@ public struct SFKInlineButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1 : 0.6)
+        .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
+        .glassProminentButton(
+            tint: tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
+            fallbackBackgroundColor: .clear
+        )
     }
 
     private var foregroundColor: Color {
@@ -304,7 +324,7 @@ public struct SFKInlineButton: View {
         switch style {
         case .filled:
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(tint.opacity(0.14))
+                .fill(tint.opacity(SFKButtonVisualTokens.inlineFilledBackgroundOpacity))
         case .plain:
             Color.clear
         }
@@ -354,7 +374,7 @@ public struct SFKPillButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1 : 0.6)
+        .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
     }
 
     @ViewBuilder
@@ -377,9 +397,9 @@ public struct SFKPillButton: View {
             baseLabel
                 .padding(.horizontal, 11)
                 .padding(.vertical, 8)
-                .glassCapsuleButton(
+                .glassProminentButton(
                     tint: tint,
-                    isShadowEnabled: false
+                    fallbackBackgroundColor: tint.opacity(SFKButtonVisualTokens.pillFallbackBackgroundOpacity)
                 )
         case .toolbar:
             baseLabel
@@ -421,7 +441,7 @@ public struct SFKClosePillButton: View {
 /// A glass-style close button with icon + text, recommended for modal sheets and onboarding flows.
 ///
 /// Use this button instead of custom close implementations to maintain UI consistency across the app.
-/// The button uses `.glassCapsuleButton()` modifier and includes haptic feedback on tap.
+/// The button uses `.glassProminentButton()` modifier and includes haptic feedback on tap.
 ///
 /// ## Usage
 /// ```swift
@@ -455,12 +475,12 @@ public struct SFKCloseButton: View {
             .foregroundStyle(.primary)
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
-            .glassCapsuleButton(
-                tint: Color.white.opacity(0.22),
-                isShadowEnabled: true
-            )
         }
         .buttonStyle(.plain)
+        .glassProminentButton(
+            tint: Color.white.opacity(SFKButtonVisualTokens.closeButtonTintOpacity),
+            fallbackBackgroundColor: Color.white.opacity(SFKButtonVisualTokens.closeButtonFallbackBackgroundOpacity)
+        )
     }
 }
 
@@ -493,6 +513,10 @@ public struct SFKToolbarButton<Label: View>: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+        .glassProminentButton(
+            tint: .secondary.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
+            fallbackBackgroundColor: .clear
+        )
     }
 
     /// Convenience initializer for simple toolbar buttons with title/image

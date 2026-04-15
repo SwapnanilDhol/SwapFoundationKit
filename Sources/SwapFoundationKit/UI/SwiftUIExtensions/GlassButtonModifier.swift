@@ -13,6 +13,35 @@ import SwiftUI
 
 // MARK: - Glass Button Modifiers
 
+/// A modifier that uses iOS 26's `.glassProminent` button style when available,
+/// and falls back to a simple background color treatment on earlier OS versions.
+public struct GlassProminentButtonModifier: ViewModifier {
+    /// Tint passed to `.tint(_:)` for iOS 26 glass prominent buttons.
+    public let tint: Color
+    /// Background color used as fallback on pre-iOS 26 platforms.
+    public let fallbackBackgroundColor: Color
+
+    public init(
+        tint: Color = .accentColor,
+        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18)
+    ) {
+        self.tint = tint
+        self.fallbackBackgroundColor = fallbackBackgroundColor
+    }
+
+    @ViewBuilder
+    public func body(content: Content) -> some View {
+        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
+            content
+                .buttonStyle(.glassProminent)
+                .tint(tint)
+        } else {
+            content
+                .background(fallbackBackgroundColor)
+        }
+    }
+}
+
 internal struct GenericGlassButtonModifier<S: Shape>: ViewModifier {
 
     let shape: S
@@ -221,6 +250,24 @@ public struct GlassCircleButtonModifier: ViewModifier {
 // MARK: - View Extension
 
 public extension View {
+    /// Applies iOS 26 `.glassProminent` button styling with a background color fallback.
+    ///
+    /// - Parameters:
+    ///   - tint: Tint used by `.glassProminent` on iOS 26+.
+    ///   - fallbackBackgroundColor: Background color used on earlier OS versions.
+    ///
+    /// - Returns: A view with glass prominent treatment applied.
+    func glassProminentButton(
+        tint: Color = .accentColor,
+        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18)
+    ) -> some View {
+        modifier(
+            GlassProminentButtonModifier(
+                tint: tint,
+                fallbackBackgroundColor: fallbackBackgroundColor
+            )
+        )
+    }
 
     /// Applies a glass-style rounded rectangle treatment suitable for buttons.
     ///
