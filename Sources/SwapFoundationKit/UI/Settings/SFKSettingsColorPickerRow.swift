@@ -74,8 +74,10 @@ public struct SFKSettingsColorPickerRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -93,9 +95,8 @@ public struct SFKSettingsColorPickerRow: View {
             }
             .contentShape(Rectangle())
         }
-        // `.borderless` lets taps reach this button when the row is embedded in a `Form`/`List`
-        // (`.plain` is often eaten by the list selection gesture, so sheets never present).
-        .buttonStyle(.borderless)
+        // Row-level button style keeps Form hit testing without tinting labels with the accent color.
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {
@@ -172,7 +173,7 @@ public struct SFKSettingsInlineColorPicker: View {
 
             ColorPicker(title, selection: $selection, supportsOpacity: true)
                 .labelsHidden()
-                .buttonStyle(.borderless)
+                .buttonStyle(SFKSettingsFormRowButtonStyle())
 
             Spacer()
         }

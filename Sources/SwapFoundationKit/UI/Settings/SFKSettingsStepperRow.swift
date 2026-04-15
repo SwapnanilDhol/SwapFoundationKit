@@ -76,8 +76,10 @@ public struct SFKSettingsStepperRow: View {
                 Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Spacer()
 
@@ -182,8 +184,10 @@ public struct SFKSettingsSliderRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 

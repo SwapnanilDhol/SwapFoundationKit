@@ -67,8 +67,10 @@ public struct SFKSettingsLinkRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -82,7 +84,7 @@ public struct SFKSettingsLinkRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
     }
 
     private var iconContainer: some View {
@@ -163,14 +165,16 @@ public struct SFKSettingsDestructiveRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
     }
 }
 
@@ -254,8 +258,10 @@ public struct SFKSettingsConfirmationRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -265,7 +271,7 @@ public struct SFKSettingsConfirmationRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
         .confirmationDialog(confirmationTitle, isPresented: $showConfirmation, titleVisibility: .visible) {
             Button(confirmTitle, role: confirmStyle == .destructive ? .destructive : nil) {
                 onConfirm()

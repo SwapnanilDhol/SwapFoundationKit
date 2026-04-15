@@ -105,8 +105,10 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -120,7 +122,7 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
         .confirmationDialog(title, isPresented: $isPresented, titleVisibility: .visible) {
             ForEach(options) { option in
                 Button(option.label) {
@@ -205,8 +207,10 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -220,7 +224,7 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 List {

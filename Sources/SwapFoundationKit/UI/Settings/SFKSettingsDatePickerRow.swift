@@ -72,8 +72,10 @@ public struct SFKSettingsDatePickerRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -88,7 +90,7 @@ public struct SFKSettingsDatePickerRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {
@@ -203,8 +205,10 @@ public struct SFKSettingsTimePickerRow: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
@@ -219,7 +223,7 @@ public struct SFKSettingsTimePickerRow: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {

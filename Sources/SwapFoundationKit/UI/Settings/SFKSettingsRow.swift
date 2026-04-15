@@ -69,8 +69,7 @@ public struct SFKSettingsRow: View {
             }
             .contentShape(Rectangle())
         }
-        // Match sheet/navigation rows inside `Form`: `.plain` can fail to receive taps.
-        .buttonStyle(.borderless)
+        .buttonStyle(SFKSettingsFormRowButtonStyle())
     }
 
     private var iconContainer: some View {
@@ -95,9 +94,11 @@ public struct SFKSettingsRow: View {
                 Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -105,6 +106,7 @@ public struct SFKSettingsRow: View {
         HStack(alignment: .center, spacing: 8) {
             if let trailing = trailingView {
                 trailing
+                    .multilineTextAlignment(.trailing)
             }
             if showChevron {
                 Image(systemName: "chevron.right")
@@ -112,7 +114,6 @@ public struct SFKSettingsRow: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .multilineTextAlignment(.trailing)
     }
 }
 
@@ -157,10 +158,10 @@ public struct SFKSettingsLabel: View {
                 Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

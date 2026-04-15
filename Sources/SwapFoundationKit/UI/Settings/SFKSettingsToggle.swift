@@ -77,11 +77,14 @@ public struct SFKSettingsToggle: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .toggleStyle(.switch)
+        .tint(tint)
     }
 }
 
@@ -139,11 +142,14 @@ public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
                     Text(item.subtitle)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .toggleStyle(.switch)
+        .tint(item.tint)
     }
 }
 
