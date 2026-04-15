@@ -66,8 +66,12 @@ public final class ItemSyncServiceFactory {
         #if os(iOS)
         if config.enableWatchConnectivity {
             let watchService = WatchConnectivityServiceImpl()
-            watchService.activate()
-            return DataSyncServiceImpl(storage: storage, watchConnectivity: watchService)
+            let watchSyncService = WatchSyncServiceImpl(
+                connectivityService: watchService,
+                options: config.watchSyncOptions
+            )
+            watchSyncService.activate()
+            return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
         }
         #endif
         
@@ -98,10 +102,22 @@ public final class ItemSyncServiceFactory {
         storage: FileStorageService,
         watchConnectivity: WatchConnectivityService
     ) -> DataSyncService {
-        return DataSyncServiceImpl(
-            storage: storage,
-            watchConnectivity: watchConnectivity
-        )
+        let watchSyncService = WatchSyncServiceImpl(connectivityService: watchConnectivity)
+        watchSyncService.activate()
+        return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
+    }
+
+    /// Creates a sync service with custom storage and WatchSync abstraction.
+    /// - Parameters:
+    ///   - storage: Custom file storage service
+    ///   - watchSyncService: Watch sync service abstraction
+    /// - Returns: Configured DataSyncService instance
+    public static func create(
+        storage: FileStorageService,
+        watchSyncService: WatchSyncService
+    ) -> DataSyncService {
+        watchSyncService.activate()
+        return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
     }
     
     #if os(iOS)
@@ -109,14 +125,24 @@ public final class ItemSyncServiceFactory {
     /// - Parameter appGroupIdentifier: Your app group identifier
     /// - Returns: Configured DataSyncService instance with Watch support
     public static func createWithWatch(appGroupIdentifier: String) -> DataSyncService {
+        createWithWatch(appGroupIdentifier: appGroupIdentifier, options: .default)
+    }
+
+    /// Creates a sync service with App Group storage and Watch connectivity options.
+    /// - Parameters:
+    ///   - appGroupIdentifier: Your app group identifier
+    ///   - options: Watch sync options controlling transport/fallback behavior
+    /// - Returns: Configured DataSyncService instance with Watch support
+    public static func createWithWatch(
+        appGroupIdentifier: String,
+        options: WatchSyncOptions
+    ) -> DataSyncService {
         let storage = AppGroupFileStorageService(appGroupIdentifier: appGroupIdentifier)
         let watchService = WatchConnectivityServiceImpl()
-        watchService.activate()
-        
-        return DataSyncServiceImpl(
-            storage: storage,
-            watchConnectivity: watchService
-        )
+        let watchSyncService = WatchSyncServiceImpl(connectivityService: watchService, options: options)
+        watchSyncService.activate()
+
+        return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
     }
     #endif
 } 

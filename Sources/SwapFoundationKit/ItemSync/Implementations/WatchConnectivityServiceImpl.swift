@@ -34,8 +34,11 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
     // MARK: - Properties
     
     private let session: WCSession
-    private let dataSubject = PassthroughSubject<Data, Never>()
-    private var cancellables = Set<AnyCancellable>()
+    private enum PayloadKey {
+        static let data = "data"
+    }
+
+    private let payloadSubject = PassthroughSubject<WatchConnectivityPayload, Never>()
     
     // MARK: - Initialization
     
@@ -59,24 +62,82 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
         return session.isReachable
     }
     
-    public func sendData(_ data: Data) throws {
+    public func sendData(
+        _ data: Data,
+        preferredTransport: WatchSyncTransport = .applicationContext,
+        fallbackTransports: [WatchSyncTransport] = [.userInfo, .messageData, .file],
+        maxInlinePayloadBytes: Int = 50_000
+    ) throws {
         guard session.activationState == .activated else {
             throw WatchConnectivityError.sessionNotActivated
         }
-        
-        guard session.isReachable else {
-            throw WatchConnectivityError.watchNotReachable
+
+        let transports = [preferredTransport] + fallbackTransports
+        var lastError: Error?
+
+        for transport in transports {
+            do {
+                try trySend(data, transport: transport, maxInlinePayloadBytes: maxInlinePayloadBytes)
+                return
+            } catch {
+                lastError = error
+            }
         }
-        
-        do {
-            try session.updateApplicationContext(["data": data])
-        } catch {
-            throw WatchConnectivityError.sendFailed(error)
+
+        if let lastError {
+            if let connectivityError = lastError as? WatchConnectivityError {
+                throw connectivityError
+            }
+            throw WatchConnectivityError.sendFailed(lastError)
+        }
+
+        throw WatchConnectivityError.sendFailed(NSError(
+            domain: "SwapFoundationKit.WatchConnectivityService",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "No transport available for watch payload delivery."]
+        ))
+    }
+
+    private func trySend(_ data: Data, transport: WatchSyncTransport, maxInlinePayloadBytes: Int) throws {
+        switch transport {
+        case .applicationContext:
+            do {
+                try session.updateApplicationContext([PayloadKey.data: data])
+            } catch {
+                throw WatchConnectivityError.sendFailed(error)
+            }
+        case .userInfo:
+            _ = session.transferUserInfo([PayloadKey.data: data])
+        case .messageData:
+            guard session.isReachable else {
+                throw WatchConnectivityError.watchNotReachable
+            }
+            session.sendMessageData(data, replyHandler: nil) { error in
+                Logger.error("WatchConnectivityService sendMessageData failed: \(error.localizedDescription)")
+            }
+        case .file:
+            let fileManager = FileManager.default
+            let tempDir = fileManager.temporaryDirectory
+            let fileURL = tempDir.appendingPathComponent(UUID().uuidString).appendingPathExtension("json")
+            do {
+                // File transfer is more resilient for large payloads or unreachable watch.
+                _ = maxInlinePayloadBytes // Maintains API symmetry with inline transports.
+                try data.write(to: fileURL, options: .atomic)
+                _ = session.transferFile(fileURL, metadata: nil)
+            } catch {
+                throw WatchConnectivityError.sendFailed(error)
+            }
         }
     }
-    
+
+    public var payloadReceivedPublisher: AnyPublisher<WatchConnectivityPayload, Never> {
+        payloadSubject.eraseToAnyPublisher()
+    }
+
     public var dataReceivedPublisher: AnyPublisher<Data, Never> {
-        dataSubject.eraseToAnyPublisher()
+        payloadReceivedPublisher
+            .map(\.data)
+            .eraseToAnyPublisher()
     }
 }
 
@@ -97,9 +158,22 @@ extension WatchConnectivityServiceImpl: WCSessionDelegate {
     }
     
     public func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
-        if let data = applicationContext["data"] as? Data {
-            dataSubject.send(data)
-        }
+        guard let data = applicationContext[PayloadKey.data] as? Data else { return }
+        payloadSubject.send(.init(data: data, transport: .applicationContext))
+    }
+
+    public func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        guard let data = userInfo[PayloadKey.data] as? Data else { return }
+        payloadSubject.send(.init(data: data, transport: .userInfo))
+    }
+
+    public func session(_ session: WCSession, didReceiveMessageData messageData: Data) {
+        payloadSubject.send(.init(data: messageData, transport: .messageData))
+    }
+
+    public func session(_ session: WCSession, didReceive file: WCSessionFile) {
+        guard let data = try? Data(contentsOf: file.fileURL) else { return }
+        payloadSubject.send(.init(data: data, transport: .file))
     }
 }
 #endif 

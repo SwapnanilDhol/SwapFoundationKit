@@ -24,6 +24,9 @@ public struct SwapFoundationKitConfiguration {
     
     /// Whether to enable Watch connectivity features
     public let enableWatchConnectivity: Bool
+
+    /// Configuration for Watch sync transport and decoding behavior.
+    public let watchSyncOptions: WatchSyncOptions
     
     /// Whether to enable analytics services
     public let enableAnalytics: Bool
@@ -65,6 +68,7 @@ public struct SwapFoundationKitConfiguration {
     /// - Parameters:
     ///   - appMetadata: App metadata information (must include appGroupIdentifier)
     ///   - enableWatchConnectivity: Whether to enable Watch connectivity
+    ///   - watchSyncOptions: Watch sync transport and fallback configuration
     ///   - enableAnalytics: Whether to enable analytics
     ///   - enableItemSync: Whether to enable item synchronization
     ///   - networkTimeout: Network timeout in seconds
@@ -78,6 +82,7 @@ public struct SwapFoundationKitConfiguration {
     public init(
         appMetadata: AppMetaData,
         enableWatchConnectivity: Bool = false,
+        watchSyncOptions: WatchSyncOptions = .default,
         enableAnalytics: Bool = true,
         enableItemSync: Bool = true,
         networkTimeout: TimeInterval = 30.0,
@@ -91,6 +96,7 @@ public struct SwapFoundationKitConfiguration {
     ) {
         self.appMetadata = appMetadata
         self.enableWatchConnectivity = enableWatchConnectivity
+        self.watchSyncOptions = watchSyncOptions
         self.enableAnalytics = enableAnalytics
         self.enableItemSync = enableItemSync
         self.networkTimeout = networkTimeout

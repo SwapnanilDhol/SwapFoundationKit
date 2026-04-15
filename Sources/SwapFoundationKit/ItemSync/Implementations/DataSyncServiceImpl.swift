@@ -24,9 +24,11 @@ import Combine
 ///
 /// // Create with Watch connectivity (iOS only)
 /// #if os(iOS)
+/// let watchConnectivity = WatchConnectivityServiceImpl()
+/// let watchSync = WatchSyncServiceImpl(connectivityService: watchConnectivity)
 /// let syncService = DataSyncServiceImpl(
 ///     storage: AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget"),
-///     watchConnectivity: WatchConnectivityService()
+///     watchSyncService: watchSync
 /// )
 /// #endif
 /// ```
@@ -35,7 +37,7 @@ public final class DataSyncServiceImpl: DataSyncService {
     // MARK: - Properties
     
     private let storage: FileStorageService
-    private let watchConnectivity: WatchConnectivityService?
+    private let watchSyncService: WatchSyncService?
     private let syncSubject = PassthroughSubject<SyncEvent, Never>()
     private var cancellables = Set<AnyCancellable>()
     
@@ -44,15 +46,28 @@ public final class DataSyncServiceImpl: DataSyncService {
     /// Creates a new data sync service
     /// - Parameters:
     ///   - storage: The file storage service to use
-    ///   - watchConnectivity: Optional Watch connectivity service (iOS only)
+    ///   - watchSyncService: Optional Watch sync abstraction (iOS only)
     public init(
         storage: FileStorageService,
-        watchConnectivity: WatchConnectivityService? = nil
+        watchSyncService: WatchSyncService? = nil
     ) {
         self.storage = storage
-        self.watchConnectivity = watchConnectivity
-        
-        setupWatchConnectivity()
+        self.watchSyncService = watchSyncService
+        setupWatchSync()
+    }
+
+    /// Backward-compatible initializer for callers still passing WatchConnectivityService directly.
+    public convenience init(
+        storage: FileStorageService,
+        watchConnectivity: WatchConnectivityService?
+    ) {
+        if let watchConnectivity {
+            let watchSyncService = WatchSyncServiceImpl(connectivityService: watchConnectivity)
+            self.init(storage: storage, watchSyncService: watchSyncService)
+            watchSyncService.activate()
+        } else {
+            self.init(storage: storage, watchSyncService: nil)
+        }
     }
     
     // MARK: - DataSyncService Implementation
@@ -66,8 +81,7 @@ public final class DataSyncServiceImpl: DataSyncService {
             syncSubject.send(.dataSaved(T.syncIdentifier))
             
             // Send to Watch if available and reachable
-            if let watchConnectivity = watchConnectivity,
-               watchConnectivity.isReachable {
+            if watchSyncService != nil {
                 try await sendToWatch(data)
             }
             
@@ -121,32 +135,24 @@ public final class DataSyncServiceImpl: DataSyncService {
     
     // MARK: - Private Methods
     
-    private func setupWatchConnectivity() {
-        guard let watchConnectivity = watchConnectivity else { return }
-        
-        // Listen for data received from Watch
-        watchConnectivity.dataReceivedPublisher
+    private func setupWatchSync() {
+        guard let watchSyncService = watchSyncService else { return }
+
+        watchSyncService.eventPublisher
             .sink { [weak self] data in
-                self?.handleWatchData(data)
+                self?.handleWatchEvent(data)
             }
             .store(in: &cancellables)
     }
     
     private func sendToWatch<T: SyncableData>(_ data: T) async throws {
-        guard let watchConnectivity = watchConnectivity else { return }
+        guard let watchSyncService = watchSyncService else { return }
         
         do {
-            let encoder = JSONEncoder()
-            let jsonData = try encoder.encode(data)
-            let payload = WatchSyncPayload(identifier: T.syncIdentifier, payload: jsonData)
-            let envelope = try encoder.encode(payload)
-            try watchConnectivity.sendData(envelope)
+            try await watchSyncService.send(data)
             syncSubject.send(.watchDataSent(T.syncIdentifier))
-        } catch let connectivityError as WatchConnectivityError {
-            if case .watchNotReachable = connectivityError {
-                return
-            }
-            let syncError = DataSyncError.watchConnectivityFailed(connectivityError)
+        } catch let watchError as WatchSyncError {
+            let syncError = DataSyncError.watchConnectivityFailed(watchError)
             syncSubject.send(.error(syncError))
             throw syncError
         } catch {
@@ -156,18 +162,21 @@ public final class DataSyncServiceImpl: DataSyncService {
         }
     }
     
-    private func handleWatchData(_ data: Data) {
-        do {
-            let payload = try JSONDecoder().decode(WatchSyncPayload.self, from: data)
-            syncSubject.send(.watchDataReceived(payload.identifier))
-        } catch {
-            let syncError = DataSyncError.watchConnectivityFailed(error)
+    private func handleWatchEvent(_ event: WatchSyncEvent) {
+        switch event {
+        case .received(let identifier, _):
+            syncSubject.send(.watchDataReceived(identifier))
+        case .error(let message):
+            let syncError = DataSyncError.watchConnectivityFailed(
+                NSError(
+                    domain: "SwapFoundationKit.WatchSync",
+                    code: -1,
+                    userInfo: [NSLocalizedDescriptionKey: message]
+                )
+            )
             syncSubject.send(.error(syncError))
+        default:
+            break
         }
     }
-    
-    private struct WatchSyncPayload: Codable {
-        let identifier: String
-        let payload: Data
-    }
-} 
+}

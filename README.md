@@ -880,9 +880,9 @@ print(array.isNotEmpty)          // true
 
 ---
 
-### 17. ItemSync / Data Synchronization
+### 17. ItemSync + WatchSync / Data Synchronization
 
-**If your app has custom data synchronization between app, widgets, and Watch, replace it with `ItemSync` from SwapFoundationKit.**
+**If your app has custom data synchronization between app, widgets, and Watch, replace it with `ItemSync` + `WatchSync` from SwapFoundationKit.**
 
 ```swift
 import SwapFoundationKit.ItemSync
@@ -904,9 +904,23 @@ try await syncService.save(userProfile)
 let profile = try await syncService.read(UserProfile.self)
 ```
 
+Watch transport can now be configured with `WatchSyncOptions`:
+
+```swift
+#if os(iOS)
+let syncService = ItemSyncServiceFactory.createWithWatch(
+    appGroupIdentifier: "group.com.yourapp.widget",
+    options: WatchSyncOptions(
+        preferredTransport: .applicationContext,
+        fallbackOrder: [.userInfo, .messageData, .file]
+    )
+)
+#endif
+```
+
 **Migration Steps:**
 1. Find your custom sync/sharing classes
-2. Replace with `ItemSyncServiceFactory.create()`
+2. Replace with `ItemSyncServiceFactory.create()` or `createWithWatch(..., options:)`
 3. Make your models conform to `SyncableData`
 4. Update all sync operations
 5. Remove your custom sync implementation
@@ -1887,6 +1901,10 @@ struct MyApp: App {
                 appVersion: "1.0.0"
             ),
             enableWatchConnectivity: true,
+            watchSyncOptions: WatchSyncOptions(
+                preferredTransport: .applicationContext,
+                fallbackOrder: [.userInfo, .messageData, .file]
+            ),
             enableAnalytics: true,
             enableItemSync: true,
             enableNetworking: true,
@@ -1992,6 +2010,9 @@ struct MyApp: App {
 
 ### Modules
 - **`ItemSync`** - Data synchronization between app, widgets, and Watch
+- **`WatchSyncService`** - Type-safe watch transport abstraction with envelope-based payloads
+- **`WatchSyncEnvelope`** - Canonical watch payload format (identifier + payload + version)
+- **`WatchSyncOptions`** - Transport preference/fallback configuration
 
 ---
 

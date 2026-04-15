@@ -36,13 +36,35 @@ public protocol WatchConnectivityService {
     /// Checks if the Watch is reachable
     var isReachable: Bool { get }
     
-    /// Sends data to the Watch
-    /// - Parameter data: The data to send
+    /// Sends data to the Watch.
+    /// - Parameters:
+    ///   - data: Payload bytes
+    ///   - preferredTransport: Preferred delivery strategy
+    ///   - fallbackTransports: Fallback transports when preferred send is not available
+    ///   - maxInlinePayloadBytes: Payload size threshold used to prefer file transport
     /// - Throws: WatchConnectivityError if the operation fails
-    func sendData(_ data: Data) throws
+    func sendData(
+        _ data: Data,
+        preferredTransport: WatchSyncTransport,
+        fallbackTransports: [WatchSyncTransport],
+        maxInlinePayloadBytes: Int
+    ) throws
     
-    /// Publisher that emits when data is received from the Watch
+    /// Publisher that emits normalized payloads received from the Watch.
+    var payloadReceivedPublisher: AnyPublisher<WatchConnectivityPayload, Never> { get }
+
+    /// Backward-compatible publisher emitting just payload data.
     var dataReceivedPublisher: AnyPublisher<Data, Never> { get }
+}
+
+public struct WatchConnectivityPayload: Sendable {
+    public let data: Data
+    public let transport: WatchSyncTransport
+
+    public init(data: Data, transport: WatchSyncTransport) {
+        self.data = data
+        self.transport = transport
+    }
 }
 
 // MARK: - Errors

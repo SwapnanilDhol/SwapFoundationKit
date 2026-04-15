@@ -105,7 +105,13 @@ enum AppSync {
     static let appGroupIdentifier = "group.YOUR.APP.GROUP"
     static let service: DataSyncService = {
         #if os(iOS)
-        return ItemSyncServiceFactory.createWithWatch(appGroupIdentifier: appGroupIdentifier)
+        return ItemSyncServiceFactory.createWithWatch(
+            appGroupIdentifier: appGroupIdentifier,
+            options: WatchSyncOptions(
+                preferredTransport: .applicationContext,
+                fallbackOrder: [.userInfo, .messageData, .file]
+            )
+        )
         #else
         return ItemSyncServiceFactory.create(appGroupIdentifier: appGroupIdentifier)
         #endif
@@ -148,6 +154,12 @@ Validation:
 - Grep confirms no strays:
   - `WidgetCenter.shared.reloadAllTimelines(` appears only in `AppSync.swift`
   - `import WidgetKit` appears only in `AppSync.swift` and widget targets
+
+Watch sync contract notes:
+
+- SFK now uses `WatchSyncEnvelope` (`identifier`, `payload`, `version`, `timestamp`) as the canonical watch wire format.
+- Prefer `WatchSyncService` / `ItemSyncServiceFactory.createWithWatch(..., options:)` over direct `WCSession` usage in app/watch targets.
+- If migrating older apps, allow one release cycle for legacy payload compatibility before removing app-local watch decoding code.
 
 ---
 
