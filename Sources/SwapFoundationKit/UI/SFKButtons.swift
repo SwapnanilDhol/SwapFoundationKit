@@ -168,7 +168,9 @@ public struct SFKPrimaryButton: View {
         .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
         .glassProminentButton(
             tint: style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
-            fallbackBackgroundColor: .clear
+            fallbackBackgroundColor: style.tint.opacity(
+                isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity
+            )
         )
     }
 
@@ -238,7 +240,9 @@ public struct SFKSecondaryButton: View {
         .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
         .glassProminentButton(
             tint: style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
-            fallbackBackgroundColor: .clear
+            fallbackBackgroundColor: Color.secondary.opacity(
+                isEnabled ? SFKButtonVisualTokens.inlineFilledBackgroundOpacity : SFKButtonVisualTokens.closeButtonFallbackBackgroundOpacity
+            )
         )
     }
 
@@ -311,7 +315,9 @@ public struct SFKInlineButton: View {
         .opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity)
         .glassProminentButton(
             tint: tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
-            fallbackBackgroundColor: .clear
+            fallbackBackgroundColor: style == .filled
+                ? tint.opacity(SFKButtonVisualTokens.inlineFilledBackgroundOpacity)
+                : Color.secondary.opacity(SFKButtonVisualTokens.closeButtonFallbackBackgroundOpacity)
         )
     }
 
@@ -515,7 +521,7 @@ public struct SFKToolbarButton<Label: View>: View {
         .disabled(!isEnabled)
         .glassProminentButton(
             tint: .secondary.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity),
-            fallbackBackgroundColor: .clear
+            fallbackBackgroundColor: Color.secondary.opacity(SFKButtonVisualTokens.closeButtonFallbackBackgroundOpacity)
         )
     }
 
