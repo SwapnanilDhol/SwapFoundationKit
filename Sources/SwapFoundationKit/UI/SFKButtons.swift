@@ -180,13 +180,8 @@ public struct SFKPrimaryButton: View {
 
     @ViewBuilder
     private var backgroundView: some View {
-        if style.isGlass {
-            RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-                .fill(.clear)
-        } else {
-            RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-                .fill(style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity))
-        }
+        RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+            .fill(style.tint.opacity(isEnabled ? SFKButtonVisualTokens.enabledOpacity : SFKButtonVisualTokens.disabledOpacity))
     }
 }
 
