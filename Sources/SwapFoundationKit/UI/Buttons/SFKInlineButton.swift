@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// An inline action button for compact UI contexts.
+@available(*, unavailable, message: "Use SFKButton(kind: .inline, ...) instead")
 public struct SFKInlineButton: View {
     public enum InlineStyle {
         case filled

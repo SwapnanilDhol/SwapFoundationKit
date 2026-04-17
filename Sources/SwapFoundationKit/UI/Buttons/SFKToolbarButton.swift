@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// A toolbar button with custom label support and haptic feedback.
+@available(*, unavailable, message: "Use SFKButton(kind: .toolbar, ...) instead")
 public struct SFKToolbarButton<Label: View>: View {
     private let isEnabled: Bool
     private let action: () -> Void
@@ -66,6 +67,7 @@ public struct SFKToolbarButton<Label: View>: View {
 }
 
 /// Label view for SFKToolbarButton.
+@available(*, unavailable, message: "Internal — do not use")
 public struct SFKToolbarButtonLabel: View {
     private let title: String?
     private let systemImage: String?

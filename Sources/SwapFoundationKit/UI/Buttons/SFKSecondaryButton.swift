@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// A secondary action button with card-like surface styling.
+@available(*, unavailable, message: "Use SFKButton(kind: .secondary, ...) instead")
 public struct SFKSecondaryButton: View {
     private let title: String
     private let systemImage: String?

@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// A pill/capsule style button with glass effect.
+@available(*, unavailable, message: "Use SFKButton(kind: .pill, ...) instead")
 public struct SFKPillButton: View {
     public enum PillStyle {
         case glass
@@ -54,6 +55,7 @@ public struct SFKPillButton: View {
 }
 
 /// A close/dismiss pill button.
+@available(*, unavailable, message: "Use SFKButton(kind: .close, title: \"\", ...) instead")
 public struct SFKClosePillButton: View {
     public enum CloseStyle {
         case glass

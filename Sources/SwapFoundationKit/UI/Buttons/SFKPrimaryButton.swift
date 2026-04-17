@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// A primary action button with glassmorphism effect, loading state, and haptic feedback.
+@available(*, unavailable, message: "Use SFKButton(kind: .primary, ...) instead")
 public struct SFKPrimaryButton: View {
     private let title: String
     private let systemImage: String?

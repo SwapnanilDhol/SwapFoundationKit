@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// A glass-style close button with icon + text.
+@available(*, unavailable, message: "Use SFKButton(kind: .close, title: \"\", ...) instead")
 public struct SFKCloseButton: View {
     private let action: () -> Void
 
