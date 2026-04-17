@@ -68,7 +68,8 @@ public struct SFKProBannerView: View {
                 .foregroundStyle(.secondary)
 
             if !isProEnabled {
-                SFKPrimaryButton(
+                SFKButton(
+                    kind: .primary,
                     title: upgradeButtonTitle,
                     systemImage: "sparkles",
                     tint: upgradeButtonFillColor,
