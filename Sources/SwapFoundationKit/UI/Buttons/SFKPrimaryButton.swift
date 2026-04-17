@@ -49,29 +49,3 @@ public struct SFKPrimaryButton: View {
         )
     }
 }
-
-#Preview("Primary Buttons") {
-    VStack(spacing: 16) {
-        SFKPrimaryButton(
-            title: "Add Transaction",
-            systemImage: "wand.and.stars",
-            tint: .red,
-            action: {}
-        )
-
-        SFKPrimaryButton(
-            title: "Record Transaction",
-            tint: .green,
-            action: {}
-        )
-
-        SFKPrimaryButton(
-            title: "Loading...",
-            tint: .blue,
-            isLoading: true,
-            action: {}
-        )
-    }
-    .padding()
-    .background(Color.gray.opacity(0.2))
-}

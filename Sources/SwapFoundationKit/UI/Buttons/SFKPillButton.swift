@@ -83,38 +83,3 @@ public struct SFKClosePillButton: View {
         )
     }
 }
-
-#Preview("Pill Buttons") {
-    VStack(spacing: 16) {
-        SFKPillButton(title: "Close", systemImage: "xmark", action: {})
-        SFKPillButton(title: "Approve", systemImage: "checkmark", tint: .green, action: {})
-        SFKClosePillButton(action: {})
-    }
-    .padding()
-    .background(Color.gray.opacity(0.2))
-}
-
-#Preview("Toolbar Pills In Navigation Bar") {
-    NavigationStack {
-        List {
-            Text("Pill button variants in a toolbar context.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .navigationTitle("Pill Buttons")
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                SFKClosePillButton(style: .toolbar, action: {})
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                SFKPillButton(
-                    title: "Filters",
-                    systemImage: "line.3.horizontal.decrease.circle",
-                    pillStyle: .toolbar,
-                    tint: .blue,
-                    action: {}
-                )
-            }
-        }
-    }
-}

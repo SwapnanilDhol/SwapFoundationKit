@@ -45,12 +45,3 @@ public struct SFKSecondaryButton: View {
         )
     }
 }
-
-#Preview("Secondary Buttons") {
-    VStack(spacing: 16) {
-        SFKSecondaryButton(title: "Cancel", action: {})
-        SFKSecondaryButton(title: "Disabled", isEnabled: false, action: {})
-    }
-    .padding()
-    .background(Color.gray.opacity(0.2))
-}

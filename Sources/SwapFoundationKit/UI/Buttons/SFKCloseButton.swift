@@ -24,11 +24,3 @@ public struct SFKCloseButton: View {
         SFKButton(kind: .close, title: "", action: action)
     }
 }
-
-#Preview("Close Button") {
-    VStack {
-        SFKCloseButton(action: {})
-    }
-    .padding()
-    .background(Color.gray.opacity(0.2))
-}

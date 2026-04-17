@@ -53,13 +53,3 @@ public struct SFKInlineButton: View {
         )
     }
 }
-
-#Preview("Inline Buttons") {
-    VStack(spacing: 16) {
-        SFKInlineButton(title: "Edit", systemImage: "pencil", action: {})
-        SFKInlineButton(title: "Delete", systemImage: "trash", tint: .red, action: {})
-        SFKInlineButton(title: "View All", style: .plain, action: {})
-    }
-    .padding()
-    .background(Color.gray.opacity(0.2))
-}

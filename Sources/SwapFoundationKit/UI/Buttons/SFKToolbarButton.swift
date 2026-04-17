@@ -107,31 +107,3 @@ public struct SFKToolbarButtonLabel: View {
         .fixedSize(horizontal: true, vertical: false)
     }
 }
-
-#Preview("Toolbar Buttons In Navigation Bar") {
-    NavigationStack {
-        List {
-            Text("Toolbar buttons should be previewed in a navigation bar context.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .navigationTitle("Button Demo")
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                SFKToolbarButton(systemImage: "plus", tint: .orange, action: {})
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                SFKToolbarButton(title: "Edit", tint: .blue, action: {})
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                SFKToolbarButton(
-                    title: "Done",
-                    systemImage: "checkmark",
-                    tint: .green,
-                    isEnabled: false,
-                    action: {}
-                )
-            }
-        }
-    }
-}
