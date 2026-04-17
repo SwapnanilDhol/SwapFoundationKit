@@ -959,12 +959,13 @@ AppLinkOpener.openAppReviewPage(appID: "123456789")
 
 SwapFoundationKit provides a comprehensive SwiftUI button library with glassmorphism effects, multiple styles, loading states, and built-in haptic feedback.
 
-#### SFKPrimaryButton
-Full-width primary action button with glass effect and loading state.
+#### SFKButton
+Single button API with enum-driven variants. On iOS 26+, button chrome uses `glassProminent`; on earlier OS versions it falls back to a solid background automatically.
 ```swift
 import SwapFoundationKit
 
-SFKPrimaryButton(
+SFKButton(
+    kind: .primary,
     title: "Add Transaction",
     systemImage: "wand.and.stars",
     tint: .blue
@@ -972,68 +973,56 @@ SFKPrimaryButton(
     // action
 }
 
-// With loading state
-SFKPrimaryButton(
+SFKButton(
+    kind: .secondary,
+    title: "Cancel"
+) { }
+
+SFKButton(
+    kind: .inline,
+    title: "Edit",
+    systemImage: "pencil"
+) { }
+
+SFKButton(
+    kind: .pill,
+    title: "Approve",
+    systemImage: "checkmark",
+    tint: .green
+) { }
+
+SFKButton(
+    kind: .toolbar,
+    title: "Save",
+    systemImage: "checkmark"
+) { }
+
+SFKButton(
+    kind: .close,
+    title: ""
+) { }
+
+// Loading state for primary actions
+SFKButton(
+    kind: .primary,
     title: "Saving...",
     tint: .green,
     isLoading: true
 ) { }
 ```
 
-#### SFKSecondaryButton
-Card-styled secondary action button.
+The convenience wrappers `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, and `SFKToolbarButton` still exist, but `SFKButton(kind: ...)` is the simplest API and the recommended one.
+
+You can also override the shared button tokens from the host app:
 ```swift
-SFKSecondaryButton(title: "Cancel") { }
-```
-
-#### SFKInlineButton
-Compact inline button for toolbars and small UI contexts.
-```swift
-SFKInlineButton(title: "Edit", systemImage: "pencil") { }
-
-SFKInlineButton(
-    title: "Delete",
-    systemImage: "trash",
-    tint: .red,
-    style: .filled
-) { }
-
-// Plain style (no background)
-SFKInlineButton(title: "View All", style: .plain) { }
-```
-
-#### SFKPillButton & SFKClosePillButton
-Pill/capsule style buttons with optional glass effect.
-```swift
-SFKPillButton(title: "Close", systemImage: "xmark") { }
-
-SFKPillButton(
-    title: "Approve",
-    systemImage: "checkmark",
-    tint: .green,
-    pillStyle: .glass
-) { }
-
-// Convenience close button
-SFKClosePillButton { }
-```
-
-#### SFKToolbarButton
-Flexible toolbar button with custom label support.
-```swift
-// Simple usage
-SFKToolbarButton(title: "Save", systemImage: "checkmark") { }
-SFKToolbarButton(systemImage: "plus") { }
-
-// Custom label
-SFKToolbarButton {
-    // custom label content
-} label: {
-    HStack {
-        Image(systemName: "star.fill")
-        Text("Favorite")
-    }
-}
+SFKButtonVisualTokens.current.primaryCornerRadius = 18
+SFKButtonVisualTokens.current.secondaryCornerRadius = 18
+SFKButtonVisualTokens.current.inlineCornerRadius = 12
+SFKButtonVisualTokens.current.primaryForegroundColor = Color(
+    uiColor: UIColor(red: 2, green: 2, blue: 2, alpha: 1)
+)
+SFKButtonVisualTokens.current.tintedForegroundColor = .primary
+SFKButtonVisualTokens.current.toolbarForegroundColor = .primary
 ```
 
 #### Glass Button Modifiers
@@ -1054,8 +1043,8 @@ Button(action: {}) {
 
 **Migration Steps:**
 1. Find your custom button components (MTPrimaryButton, MTToolbarButton, etc.)
-2. Replace with corresponding SFKButton types from SwapFoundationKit
-3. Update button configurations to use new APIs (tint, style, etc.)
+2. Prefer replacing them with `SFKButton(kind: ...)`
+3. Use `SFKButtonVisualTokens.current` from the host app for corner-radius and foreground overrides
 4. Remove custom button implementations
 
 ---
@@ -1940,12 +1929,14 @@ struct MyApp: App {
 - **`BackupService`** - Data backup and restore
 
 ### UI Components
-- **`SFKPrimaryButton`** - Primary action button with glassmorphism, loading state, haptics
-- **`SFKSecondaryButton`** - Secondary action button with card styling
-- **`SFKInlineButton`** - Compact inline button with filled/plain styles
-- **`SFKPillButton`** - Pill/capsule style button with glass effect
-- **`SFKClosePillButton`** - Close/dismiss button convenience type
-- **`SFKToolbarButton`** - Flexible toolbar button with custom labels
+- **`SFKButton`** - Unified enum-driven button API for primary, secondary, inline, pill, toolbar, and close variants
+- **`SFKButtonVisualTokens`** - Host-app override point for shared button corner radii and foreground colors
+- **`SFKPrimaryButton`** - Compatibility wrapper for primary actions
+- **`SFKSecondaryButton`** - Compatibility wrapper for secondary actions
+- **`SFKInlineButton`** - Compatibility wrapper for inline actions
+- **`SFKPillButton`** - Compatibility wrapper for pill/capsule actions
+- **`SFKClosePillButton`** - Compatibility wrapper for close/dismiss pill actions
+- **`SFKToolbarButton`** - Compatibility wrapper for toolbar actions and custom labels
 
 ### Glass Button Modifiers
 - **`.glassButton()`** - Rounded rectangle glass effect
