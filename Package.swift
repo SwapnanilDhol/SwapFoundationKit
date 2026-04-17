@@ -30,6 +30,5 @@ let package = Package(
             name: "SwapFoundationKitTests",
             dependencies: ["SwapFoundationKit"]
         ),
-    ],
-    version: "3.0.0"
+    ]
 )
