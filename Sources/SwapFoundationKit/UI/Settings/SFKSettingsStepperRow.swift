@@ -65,12 +65,12 @@ public struct SFKSettingsStepperRow: View {
     }
 
     public var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             iconContainer
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.body.weight(.semibold))
+                    .font(.body)
                     .foregroundStyle(.primary)
 
                 Text(subtitle)
@@ -104,14 +104,14 @@ public struct SFKSettingsStepperRow: View {
 
     private var iconContainer: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(tint.opacity(0.14))
 
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.caption.bold())
                 .foregroundStyle(tint)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 28, height: 28)
     }
 }
 
@@ -173,12 +173,12 @@ public struct SFKSettingsSliderRow: View {
 
     public var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 iconContainer
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
@@ -206,14 +206,14 @@ public struct SFKSettingsSliderRow: View {
 
     private var iconContainer: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(tint.opacity(0.14))
 
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.caption.bold())
                 .foregroundStyle(tint)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 28, height: 28)
     }
 }
 

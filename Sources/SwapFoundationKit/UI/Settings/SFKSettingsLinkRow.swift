@@ -56,12 +56,12 @@ public struct SFKSettingsLinkRow: View {
         Button {
             openURL()
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 iconContainer
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
@@ -75,11 +75,11 @@ public struct SFKSettingsLinkRow: View {
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
             }
             .contentShape(Rectangle())
@@ -89,14 +89,14 @@ public struct SFKSettingsLinkRow: View {
 
     private var iconContainer: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(tint.opacity(0.14))
 
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.caption.bold())
                 .foregroundStyle(tint)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 28, height: 28)
     }
 
     private func openURL() {
@@ -146,20 +146,20 @@ public struct SFKSettingsDestructiveRow: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(Color.red.opacity(0.14))
 
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.caption.bold())
                         .foregroundStyle(.red)
                 }
-                .frame(width: 36, height: 36)
+                .frame(width: 28, height: 28)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.red)
 
                     Text(subtitle)
@@ -247,12 +247,12 @@ public struct SFKSettingsConfirmationRow: View {
         Button {
             showConfirmation = true
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 iconContainer
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
@@ -266,7 +266,7 @@ public struct SFKSettingsConfirmationRow: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
             }
             .contentShape(Rectangle())
@@ -284,14 +284,14 @@ public struct SFKSettingsConfirmationRow: View {
 
     private var iconContainer: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(tint.opacity(0.14))
 
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.caption.bold())
                 .foregroundStyle(tint)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 28, height: 28)
     }
 }
 

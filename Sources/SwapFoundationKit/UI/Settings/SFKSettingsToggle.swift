@@ -58,20 +58,20 @@ public struct SFKSettingsToggle: View {
 
     public var body: some View {
         Toggle(isOn: $isOn) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(tint.opacity(0.14))
 
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.caption.bold())
                         .foregroundStyle(tint)
                 }
-                .frame(width: 36, height: 36)
+                .frame(width: 28, height: 28)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
@@ -123,20 +123,20 @@ public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
 
     public var body: some View {
         Toggle(isOn: $isOn) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(item.tint.opacity(0.14))
 
                     Image(systemName: item.icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.caption.bold())
                         .foregroundStyle(item.tint)
                 }
-                .frame(width: 36, height: 36)
+                .frame(width: 28, height: 28)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(item.subtitle)

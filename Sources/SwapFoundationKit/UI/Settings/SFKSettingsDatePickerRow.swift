@@ -61,12 +61,12 @@ public struct SFKSettingsDatePickerRow: View {
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 iconContainer
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
@@ -85,7 +85,7 @@ public struct SFKSettingsDatePickerRow: View {
                     .multilineTextAlignment(.trailing)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
             }
             .contentShape(Rectangle())
@@ -121,14 +121,14 @@ public struct SFKSettingsDatePickerRow: View {
 
     private var iconContainer: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(tint.opacity(0.14))
 
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.caption.bold())
                 .foregroundStyle(tint)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 28, height: 28)
     }
 
     private var formattedDate: String {
@@ -194,12 +194,12 @@ public struct SFKSettingsTimePickerRow: View {
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 iconContainer
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
 
                     Text(subtitle)
@@ -218,7 +218,7 @@ public struct SFKSettingsTimePickerRow: View {
                     .multilineTextAlignment(.trailing)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
             }
             .contentShape(Rectangle())
@@ -255,14 +255,14 @@ public struct SFKSettingsTimePickerRow: View {
 
     private var iconContainer: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(tint.opacity(0.14))
 
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.caption.bold())
                 .foregroundStyle(tint)
         }
-        .frame(width: 36, height: 36)
+        .frame(width: 28, height: 28)
     }
 
     private var formattedTime: String {
@@ -309,16 +309,16 @@ public struct SFKSettingsInlineDatePicker: View {
     }
 
     public var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 6)
                     .fill(tint.opacity(0.14))
 
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.caption.bold())
                     .foregroundStyle(tint)
             }
-            .frame(width: 36, height: 36)
+            .frame(width: 28, height: 28)
 
             DatePicker(
                 title,
