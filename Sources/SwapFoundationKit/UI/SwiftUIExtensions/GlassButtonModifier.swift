@@ -20,13 +20,17 @@ public struct GlassProminentButtonModifier: ViewModifier {
     public let tint: Color
     /// Background color used as fallback on pre-iOS 26 platforms.
     public let fallbackBackgroundColor: Color
+    /// Adds a subtle tint overlay on iOS 26+ to make color accents more visible.
+    public let showsTintOverlay: Bool
 
     public init(
         tint: Color = .accentColor,
-        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18)
+        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18),
+        showsTintOverlay: Bool = true
     ) {
         self.tint = tint
         self.fallbackBackgroundColor = fallbackBackgroundColor
+        self.showsTintOverlay = showsTintOverlay
     }
 
     @ViewBuilder
@@ -35,6 +39,7 @@ public struct GlassProminentButtonModifier: ViewModifier {
             content
                 .buttonStyle(.glassProminent)
                 .tint(tint)
+                .background(showsTintOverlay ? tint.opacity(0.20) : Color.clear)
         } else {
             content
                 .background(fallbackBackgroundColor)
@@ -255,16 +260,19 @@ public extension View {
     /// - Parameters:
     ///   - tint: Tint used by `.glassProminent` on iOS 26+.
     ///   - fallbackBackgroundColor: Background color used on earlier OS versions.
+    ///   - showsTintOverlay: Adds a faint color layer on iOS 26+.
     ///
     /// - Returns: A view with glass prominent treatment applied.
     func glassProminentButton(
         tint: Color = .accentColor,
-        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18)
+        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18),
+        showsTintOverlay: Bool = true
     ) -> some View {
         modifier(
             GlassProminentButtonModifier(
                 tint: tint,
-                fallbackBackgroundColor: fallbackBackgroundColor
+                fallbackBackgroundColor: fallbackBackgroundColor,
+                showsTintOverlay: showsTintOverlay
             )
         )
     }

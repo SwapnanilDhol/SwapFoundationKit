@@ -27,28 +27,32 @@ import SwiftUI
 /// ```
 public struct SFKProBannerView: View {
 
+    public let isProEnabled: Bool
     public let proEnabledTitle: String
     public let proEnabledSubtitle: String
     public let proDisabledTitle: String
     public let proDisabledSubtitle: String
     public let upgradeButtonTitle: String
+    public let upgradeButtonFillColor: Color
     public let onUpgradeTap: () -> Void
 
-    @AppStorage("isProEnabled") private var isProEnabled = false
-
     public init(
+        isProEnabled: Bool,
         proEnabledTitle: String,
         proEnabledSubtitle: String,
         proDisabledTitle: String,
         proDisabledSubtitle: String,
-        upgradeButtonTitle: String = "Upgrade Now",
+        upgradeButtonTitle: String = "Upgrade Now".localized,
+        upgradeButtonFillColor: Color = .purple,
         onUpgradeTap: @escaping () -> Void
     ) {
+        self.isProEnabled = isProEnabled
         self.proEnabledTitle = proEnabledTitle
         self.proEnabledSubtitle = proEnabledSubtitle
         self.proDisabledTitle = proDisabledTitle
         self.proDisabledSubtitle = proDisabledSubtitle
         self.upgradeButtonTitle = upgradeButtonTitle
+        self.upgradeButtonFillColor = upgradeButtonFillColor
         self.onUpgradeTap = onUpgradeTap
     }
 
@@ -66,14 +70,14 @@ public struct SFKProBannerView: View {
             if !isProEnabled {
                 SFKPrimaryButton(
                     title: upgradeButtonTitle,
-                    style: upgradeButtonStyle,
+                    systemImage: "sparkles",
+                    tint: upgradeButtonFillColor,
                     action: onUpgradeTap
                 )
-                .frame(minHeight: 44)
-                .padding(.top, 8)
+                .padding(.vertical)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal)
         .padding(.vertical, 8)
         .accessibilityIdentifier("proBannerView")
     }
@@ -85,20 +89,12 @@ public struct SFKProBannerView: View {
     private var subtitle: String {
         isProEnabled ? proEnabledSubtitle : proDisabledSubtitle
     }
-
-    /// Keep a glass CTA style across color schemes.
-    private var upgradeButtonStyle: SFKPrimaryButtonStyle {
-        SFKPrimaryButtonStyle(
-            tint: .purple,
-            isGlass: true,
-            cornerRadius: 22
-        )
-    }
 }
 
 #if DEBUG
 #Preview("Pro Enabled") {
     SFKProBannerView(
+        isProEnabled: true,
         proEnabledTitle: "Thank you for upgrading!",
         proEnabledSubtitle: "Your support means the world!",
         proDisabledTitle: "Upgrade to Pro!",
@@ -111,10 +107,12 @@ public struct SFKProBannerView: View {
 
 #Preview("Pro Disabled") {
     SFKProBannerView(
+        isProEnabled: false,
         proEnabledTitle: "Thank you for upgrading!",
         proEnabledSubtitle: "Your support means the world!",
         proDisabledTitle: "Upgrade to Pro!",
-        proDisabledSubtitle: "Unlock all premium features."
+        proDisabledSubtitle: "Unlock all premium features.",
+        upgradeButtonFillColor: .orange
     ) {
         print("Upgrade tapped")
     }

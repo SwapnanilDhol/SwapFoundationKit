@@ -14,12 +14,13 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Analytics protocol surface: `AnalyticsEvent` (you define your app’s enum); simple fan-out to providers
 - App utilities: e.g., `AppLinkOpener`
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
-- SwiftUI Buttons: `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton`, `SFKCloseButton` with built-in haptics and glassmorphism styles
+- SwiftUI Buttons: `SFKButton(kind: ...)` as the primary API, plus compatibility wrappers like `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton`, and `SFKCloseButton`
+- Button visual configurators: `SFKButtonVisualTokens.current` for host-app overrides such as corner radii and foreground colors
 - Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
 
 ## 4a) Consistent Close/Dismiss UI Pattern
 
-Use `SFKCloseButton` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views. This ensures UI consistency across the app.
+Prefer `SFKButton(kind: .close, title: "")` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views. `SFKCloseButton` remains available as a convenience wrapper, but the enum-driven `SFKButton` API is the recommended migration target.
 
 ```swift
 import SwapFoundationKit
@@ -31,7 +32,7 @@ struct MyModalView: View {
         VStack {
             // Place in top-left or top-right corner
             HStack {
-                SFKCloseButton(action: onClose)
+                SFKButton(kind: .close, title: "", action: onClose)
                 Spacer()
             }
             .padding()
@@ -56,7 +57,7 @@ struct OnboardingScreen: View {
 
             VStack {
                 HStack {
-                    SFKCloseButton(action: onDismiss)
+                    SFKButton(kind: .close, title: "", action: onDismiss)
                     Spacer()
                 }
                 .padding()
@@ -69,10 +70,11 @@ struct OnboardingScreen: View {
 ```
 
 **Rules:**
-- Always use `SFKCloseButton` instead of custom close button implementations
+- Prefer `SFKButton(kind: .close, title: "")` instead of custom close button implementations
+- `SFKCloseButton` is acceptable as a compatibility wrapper, but new migrations should favor the unified `SFKButton` API
 - Never create custom close buttons using text + icon combinations
 - For UIKit modal presentations, use `SwapProManager` or the appropriate dismiss method
-- The `SFKCloseButton` includes haptic feedback and glassmorphism styling automatically
+- The close-button variants include haptic feedback and the same built-in button styling automatically
 - Alert presentation: `AlertController` for SwiftUI-native declarative alerts, `AlertPresenter` for UIKit-based static methods, supporting multiple actions, text fields, and custom styles
 - Settings UI: `SettingsItem` protocol, `SFKSettingsRow`, `SFKSettingsScreen` for building reusable settings screens; `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for standard section items
 - Toast notifications: `ToastManager` wrapping the Toast library, with `ToastType` protocol for app-specific types, `ToastStyle` for styling, and `ToastConfiguration` for display options
@@ -200,6 +202,75 @@ Validation:
 - No occurrences of `HapticsHelper.shared`
 - No `HapticsHelper().success()` (should be `successNotification()`)
 - Files with multiple calls have `private let hapticsHelper = HapticsHelper()`
+
+---
+
+## 3a) Migrate SwiftUI buttons to `SFKButton(kind: ...)`
+
+Use `SFKButton(kind: ...)` as the default migration target for SwiftUI buttons. It centralizes haptics, iOS 26 `glassProminent` styling, pre-iOS 26 fallback surfaces, and shared visual tokens.
+
+Preferred mappings:
+
+- Full-width primary CTA -> `SFKButton(kind: .primary, ...)`
+- Full-width secondary action -> `SFKButton(kind: .secondary, ...)`
+- Filled inline chip -> `SFKButton(kind: .inline, ...)`
+- Plain inline text action -> `SFKButton(kind: .inlinePlain, ...)`
+- Pill/capsule action -> `SFKButton(kind: .pill, ...)`
+- Navigation bar / toolbar action -> `SFKButton(kind: .toolbar, ...)`
+- Dismiss / close action -> `SFKButton(kind: .close, title: "", ...)`
+
+Examples:
+
+```swift
+import SwapFoundationKit
+
+SFKButton(
+    kind: .primary,
+    title: "Add Transaction",
+    systemImage: "wand.and.stars",
+    tint: .blue
+) {
+    // action
+}
+
+SFKButton(kind: .secondary, title: "Cancel") { }
+SFKButton(kind: .inline, title: "Edit", systemImage: "pencil") { }
+SFKButton(kind: .inlinePlain, title: "View All") { }
+SFKButton(kind: .pill, title: "Approve", systemImage: "checkmark", tint: .green) { }
+SFKButton(kind: .toolbar, title: "Save", systemImage: "checkmark") { }
+SFKButton(kind: .close, title: "") { }
+```
+
+Loading state:
+
+```swift
+SFKButton(
+    kind: .primary,
+    title: "Saving...",
+    tint: .green,
+    isLoading: true
+) { }
+```
+
+Host-app visual overrides:
+
+```swift
+SFKButtonVisualTokens.current.primaryCornerRadius = 18
+SFKButtonVisualTokens.current.secondaryCornerRadius = 18
+SFKButtonVisualTokens.current.inlineCornerRadius = 12
+SFKButtonVisualTokens.current.primaryForegroundColor = Color(
+    uiColor: UIColor(red: 2, green: 2, blue: 2, alpha: 1)
+)
+SFKButtonVisualTokens.current.tintedForegroundColor = .primary
+SFKButtonVisualTokens.current.toolbarForegroundColor = .primary
+```
+
+Migration rules:
+
+- Prefer `SFKButton(kind: ...)` over the older wrapper types in new migrations
+- Wrapper types like `SFKPrimaryButton` and `SFKToolbarButton` are still available for incremental adoption
+- Use `tint` to color the button surface, not necessarily the text
+- When a tinted glass button needs legible text, use the shared tokens instead of forcing the label to match the tint
 
 ---
 

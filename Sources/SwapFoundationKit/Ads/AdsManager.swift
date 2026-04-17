@@ -9,7 +9,7 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-#if canImport(UIKit) && canImport(GoogleMobileAds)
+#if !TARGET_INTERFACE_BUILDER && canImport(UIKit) && canImport(GoogleMobileAds)
 import SwiftUI
 import UIKit
 
