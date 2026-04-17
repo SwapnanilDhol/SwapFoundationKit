@@ -76,7 +76,7 @@ public final class AdsManager {
         )
     }
 
-    internal func makeBannerViewController() -> UIViewController {
+    public func makeBannerViewController() -> UIViewController {
         guard
             let configuration,
             let provider,
