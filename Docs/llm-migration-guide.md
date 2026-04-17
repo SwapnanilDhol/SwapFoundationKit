@@ -14,13 +14,13 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Analytics protocol surface: `AnalyticsEvent` (you define your app’s enum); simple fan-out to providers
 - App utilities: e.g., `AppLinkOpener`
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
-- SwiftUI Buttons: `SFKButton(kind: ...)` as the primary API, plus compatibility wrappers like `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton`, and `SFKCloseButton`
+- SwiftUI Buttons: `SFKButton(kind: ...)` as the **only** API. Legacy wrappers (`SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton`, `SFKCloseButton`, `SFKClosePillButton`) are all marked `@available(*, unavailable)` as of v3.0.0 — they no longer compile.
 - Button visual configurators: `SFKButtonVisualTokens.current` for host-app overrides such as corner radii and foreground colors
 - Glass button modifiers: `.glassButton()`, `.glassCapsuleButton()`, `.glassCircleButton()` for any view
 
 ## 4a) Consistent Close/Dismiss UI Pattern
 
-Prefer `SFKButton(kind: .close, title: "")` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views. `SFKCloseButton` remains available as a convenience wrapper, but the enum-driven `SFKButton` API is the recommended migration target.
+Prefer `SFKButton(kind: .close, title: "")` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views.
 
 ```swift
 import SwapFoundationKit
@@ -267,8 +267,7 @@ SFKButtonVisualTokens.current.toolbarForegroundColor = .primary
 
 Migration rules:
 
-- Prefer `SFKButton(kind: ...)` over the older wrapper types in new migrations
-- Wrapper types like `SFKPrimaryButton` and `SFKToolbarButton` are still available for incremental adoption
+- Use `SFKButton(kind: ...)` exclusively. Legacy wrappers (`SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, `SFKToolbarButton`, `SFKCloseButton`, `SFKClosePillButton`) are **unavailable** as of v3.0.0 — they produce compile errors.
 - Use `tint` to color the button surface, not necessarily the text
 - When a tinted glass button needs legible text, use the shared tokens instead of forcing the label to match the tint
 
