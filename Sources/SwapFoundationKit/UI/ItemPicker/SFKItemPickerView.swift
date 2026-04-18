@@ -46,12 +46,15 @@ public struct SFKItemPickerView: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack {
+                LazyVStack(spacing: 8) {
                     ForEach(viewModel.items, id: \.pickerID) { item in
                         itemRow(for: item)
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
             }
+            .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle(viewModel.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -115,9 +118,14 @@ public struct SFKItemPickerView: View {
                         .fontWeight(.bold)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+            )
         }
-        .foregroundStyle(.primary)
+        .buttonStyle(.plain)
     }
 
     private func handleSelection(_ item: any SFKPickableItem) {
