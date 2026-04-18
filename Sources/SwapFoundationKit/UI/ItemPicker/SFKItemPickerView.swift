@@ -32,7 +32,7 @@ public struct SFKItemPickerView: View {
     @ObservedObject public var viewModel: SFKItemPickerViewModel
     @Environment(\.dismiss) private var dismiss
 
-    /// Returns the display title for an item. Required.
+    /// Returns the display title for an item.
     public var itemTitle: ((any SFKPickableItem) -> String)?
     /// Returns the display icon/symbol for an item.
     public var itemIcon: ((any SFKPickableItem) -> String)?
@@ -129,4 +129,53 @@ public struct SFKItemPickerView: View {
             viewModel.toggleSelection(for: item.pickerID)
         }
     }
+}
+
+// MARK: - Preview Helpers
+
+/// Sample conforming type for previews and testing
+public struct SamplePickableItem: SFKPickableItem, Identifiable {
+    public let id: String
+    public let title: String
+    public let icon: String
+
+    public var pickerID: String { id }
+    public var pickerSymbol: String { icon }
+    public var pickerDescription: String { title }
+
+    public init(id: String, title: String, icon: String) {
+        self.id = id
+        self.title = title
+        self.icon = icon
+    }
+}
+
+#Preview("Single Select") {
+    let items = [
+        SamplePickableItem(id: "1", title: "Apple", icon: "🍎"),
+        SamplePickableItem(id: "2", title: "Banana", icon: "🍌"),
+        SamplePickableItem(id: "3", title: "Cherry", icon: "🍒"),
+        SamplePickableItem(id: "4", title: "Date", icon: "🫐")
+    ]
+    let viewModel = SFKItemPickerViewModel(
+        title: "Select Fruit",
+        items: items,
+        selectionMode: .single
+    )
+    SFKItemPickerView(viewModel: viewModel)
+}
+
+#Preview("Multi Select") {
+    let items = [
+        SamplePickableItem(id: "1", title: "Swift", icon: "swift"),
+        SamplePickableItem(id: "2", title: "SwiftUI", icon: "swiftui"),
+        SamplePickableItem(id: "3", title: "Xcode", icon: "xcode"),
+        SamplePickableItem(id: "4", title: "Combine", icon: "combine")
+    ]
+    let viewModel = SFKItemPickerViewModel(
+        title: "Select Skills",
+        items: items,
+        selectionMode: .multi
+    )
+    SFKItemPickerView(viewModel: viewModel)
 }
