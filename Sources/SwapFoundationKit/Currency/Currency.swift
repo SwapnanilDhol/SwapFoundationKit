@@ -11,7 +11,7 @@
 
 import SwiftUI
 
-public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
+public enum Currency: String, CaseIterable, Hashable, Codable, Sendable, SFKPickableItem {
 
     case AUD
     case INR

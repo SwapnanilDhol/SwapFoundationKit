@@ -87,7 +87,7 @@ public struct SFKSettingsRow: View {
     private var labelStack: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.body)
+                .font(.body.weight(.medium))
                 .foregroundStyle(.primary)
 
             if !subtitle.isEmpty {
@@ -152,7 +152,7 @@ public struct SFKSettingsLabel: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.body)
+                    .font(.body.weight(.medium))
                     .foregroundStyle(.primary)
 
                 Text(subtitle)
