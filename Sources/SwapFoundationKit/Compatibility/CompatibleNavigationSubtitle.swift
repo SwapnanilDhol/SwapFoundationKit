@@ -27,7 +27,7 @@ public struct SFKNavigationSubtitle: ViewModifier {
 
 public extension View {
     /// Applies `navigationSubtitle` on iOS 26+; silent no-op on earlier versions.
-    func sfkNavigationSubtitle(_ subtitle: String) -> some View {
+    func compatibleNavigationSubtitle(_ subtitle: String) -> some View {
         modifier(SFKNavigationSubtitle(subtitle))
     }
 }
@@ -36,7 +36,8 @@ public extension View {
     NavigationStack {
         Text("Hello!")
             .font(.headline)
+            .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Navigation Title")
-            .sfkNavigationSubtitle("This is a subtitle")
+            .compatibleNavigationSubtitle("This is a subtitle")
     }
 }

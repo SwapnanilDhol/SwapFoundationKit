@@ -13,71 +13,81 @@ import SwiftUI
 
 /// A generic picker view for selecting items from a list.
 ///
-/// Supports single-select and multi-select modes.
+/// Supports single-select and multi-select modes. State is managed by
+/// `SFKItemPickerViewModel` — pass a `@StateObject` vm to this view.
 ///
 /// ## Usage
 /// ```swift
-/// SFKItemPickerView(
-///     pageTitle: "Select Currency",
+/// @StateObject private var pickerVM = SFKItemPickerViewModel(
 ///     items: Currency.allCases,
-///     selectedItems: [selectedCurrency],
-///     selectionType: .single,
-///     onSelect: { currency in
-///         // handle selection
-///     },
-///     onDismiss: {
-///         // dismiss picker
-///     }
+///     selectionType: .multi,
+///     initialSelection: [Currency.USD]
 /// )
+///
+/// .sheet {
+///     SFKItemPickerView(
+///         pageTitle: "Select Currency",
+///         viewModel: pickerVM,
+///         onDismiss: { }
+///     )
+/// }
+///
+/// // Read selection:
+/// let selected = pickerVM.selectedItems
 /// ```
 public struct SFKItemPickerView: View {
 
     let pageTitle: String
-    let items: [any SFKPickableItem]
-    let selectedItems: [any SFKPickableItem]
-    let selectionType: SFKItemPickerSelectionMode
+    let pageSubtitle: String
+    @ObservedObject var viewModel: SFKItemPickerViewModel
     let onSelect: ((any SFKPickableItem) -> Void)?
     let onDismiss: (() -> Void)?
 
     public init(
         pageTitle: String,
-        items: [any SFKPickableItem],
-        selectedItems: [any SFKPickableItem] = [],
-        selectionType: SFKItemPickerSelectionMode = .single,
+        pageSubtitle: String = "",
+        viewModel: SFKItemPickerViewModel,
         onSelect: ((any SFKPickableItem) -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) {
         self.pageTitle = pageTitle
-        self.items = items
-        self.selectedItems = selectedItems
-        self.selectionType = selectionType
+        self.viewModel = viewModel
         self.onSelect = onSelect
         self.onDismiss = onDismiss
+
+        if pageSubtitle.isEmpty {
+            switch viewModel.selectionType {
+            case .single:
+                self.pageSubtitle = "Tap to Select".localized
+            case .multi:
+                self.pageSubtitle = "Select Multiple".localized
+            }
+        } else {
+            self.pageSubtitle = pageSubtitle
+        }
     }
 
     public var body: some View {
         NavigationStack {
-            List(items, id: \.pickableItemId) { item in
+            List(viewModel.items, id: \.pickableItemId) { item in
                 SFKItemPickerRow(
                     item: item,
-                    selectionType: selectionType,
-                    isSelected: selectedItems.contains(where: { $0.pickableItemId == item.pickableItemId }),
+                    selectionType: viewModel.selectionType,
+                    isSelected: viewModel.isSelected(item),
                     didSelect: { selectedItem in
+                        viewModel.handleSelection(of: selectedItem)
                         onSelect?(selectedItem)
-                        if selectionType == .single {
-                            onDismiss?()
-                        }
                     }
                 )
             }
             .navigationTitle(pageTitle)
             .navigationBarTitleDisplayMode(.inline)
-            .sfkNavigationSubtitle("Select Multiple")
+            .compatibleNavigationSubtitle(resolvedSubtitle)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     SFKButton(
                         kind: .close,
-                        title: "Close".localized,
+                        title: "",
                         systemImage: "xmark",
                         action: {
                             onDismiss?()
@@ -87,36 +97,41 @@ public struct SFKItemPickerView: View {
             }
         }
     }
+
+    private var resolvedSubtitle: String {
+        if viewModel.selectionType == .multi && !viewModel.selectedItems.isEmpty {
+            return "\(viewModel.selectedItems.count) Selected"
+        }
+        return pageSubtitle
+    }
 }
 
 // MARK: - Previews
 
 #Preview("Single Select - Currency") {
+    @Previewable @StateObject var vm = SFKItemPickerViewModel(
+        items: Array(Currency.allCases.prefix(10)),
+        selectionType: .single,
+        initialSelection: [Currency.USD]
+    )
     SFKItemPickerView(
         pageTitle: "Select Currency",
-        items: Array(Currency.allCases.prefix(10)),
-        selectedItems: [Currency.USD],
-        selectionType: .single,
-        onSelect: { item in
-            print("Selected: \(item.id)")
-        },
-        onDismiss: {
-            print("Dismissed")
-        }
+        viewModel: vm,
+        onSelect: { _ in },
+        onDismiss: { }
     )
 }
 
 #Preview("Multi Select - Currency") {
+    @Previewable @StateObject var vm = SFKItemPickerViewModel(
+        items: Array(Currency.allCases.prefix(10)),
+        selectionType: .multi,
+        initialSelection: [Currency.USD, Currency.EUR]
+    )
     SFKItemPickerView(
         pageTitle: "Select Currencies",
-        items: Array(Currency.allCases.prefix(10)),
-        selectedItems: [Currency.USD, Currency.EUR],
-        selectionType: .multi,
-        onSelect: { item in
-            print("Toggled: \(item.id)")
-        },
-        onDismiss: {
-            print("Dismissed")
-        }
+        viewModel: vm,
+        onSelect: nil,
+        onDismiss: { }
     )
 }
