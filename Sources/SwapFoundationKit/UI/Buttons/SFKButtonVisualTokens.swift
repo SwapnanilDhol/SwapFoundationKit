@@ -23,27 +23,28 @@ import UIKit
 /// SFKButtonVisualTokens.current.inlineCornerRadius = 12
 /// ```
 public struct SFKButtonVisualTokens: Sendable {
-    
-    public var buttonLabelHeight: CGFloat
-    
+
+    // MARK: - Corner Radii
     public var primaryCornerRadius: CGFloat
     public var secondaryCornerRadius: CGFloat
     public var inlineCornerRadius: CGFloat
 
+    // MARK: - Foreground Colors
     public var primaryForegroundColor: Color
     public var tintedForegroundColor: Color
     public var toolbarForegroundColor: Color
 
+    // MARK: - Opacity
     public var enabledOpacity: CGFloat
     public var disabledOpacity: CGFloat
     public var disabledForegroundOpacity: CGFloat
+
+    // MARK: - Background Opacity (fallback, non-glass mode)
     public var inlineFilledBackgroundOpacity: CGFloat
-    public var pillFallbackBackgroundOpacity: CGFloat
-    public var closeButtonTintOpacity: CGFloat
-    public var closeButtonFallbackBackgroundOpacity: CGFloat
+    public var pillBackgroundOpacity: CGFloat
+    public var closeButtonBackgroundOpacity: CGFloat
 
     public init(
-        buttonLabelHeight: CGFloat = 56,
         primaryCornerRadius: CGFloat = 22,
         secondaryCornerRadius: CGFloat = 22,
         inlineCornerRadius: CGFloat = 10,
@@ -54,11 +55,9 @@ public struct SFKButtonVisualTokens: Sendable {
         disabledOpacity: CGFloat = 0.72,
         disabledForegroundOpacity: CGFloat = 0.7,
         inlineFilledBackgroundOpacity: CGFloat = 0.14,
-        pillFallbackBackgroundOpacity: CGFloat = 0.18,
-        closeButtonTintOpacity: CGFloat = 0.22,
-        closeButtonFallbackBackgroundOpacity: CGFloat = 0.12
+        pillBackgroundOpacity: CGFloat = 0.18,
+        closeButtonBackgroundOpacity: CGFloat = 0.12
     ) {
-        self.buttonLabelHeight = 56
         self.primaryCornerRadius = primaryCornerRadius
         self.secondaryCornerRadius = secondaryCornerRadius
         self.inlineCornerRadius = inlineCornerRadius
@@ -69,19 +68,18 @@ public struct SFKButtonVisualTokens: Sendable {
         self.disabledOpacity = disabledOpacity
         self.disabledForegroundOpacity = disabledForegroundOpacity
         self.inlineFilledBackgroundOpacity = inlineFilledBackgroundOpacity
-        self.pillFallbackBackgroundOpacity = pillFallbackBackgroundOpacity
-        self.closeButtonTintOpacity = closeButtonTintOpacity
-        self.closeButtonFallbackBackgroundOpacity = closeButtonFallbackBackgroundOpacity
+        self.pillBackgroundOpacity = pillBackgroundOpacity
+        self.closeButtonBackgroundOpacity = closeButtonBackgroundOpacity
     }
 
     /// Global tokens used by SFK buttons. Override from the host app to restyle buttons.
     public static var current = SFKButtonVisualTokens()
 
     public static var defaultPrimaryForegroundColor: Color {
-#if canImport(UIKit)
+        #if canImport(UIKit)
         Color(uiColor: UIColor(red: 2, green: 2, blue: 2, alpha: 1))
-#else
+        #else
         .white
-#endif
+        #endif
     }
 }

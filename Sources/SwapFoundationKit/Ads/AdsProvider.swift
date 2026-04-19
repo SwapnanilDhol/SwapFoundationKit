@@ -9,7 +9,7 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-#if !TARGET_INTERFACE_BUILDER && canImport(UIKit) && canImport(GoogleMobileAds)
+#if !targetEnvironment(simulator) && canImport(UIKit) && canImport(GoogleMobileAds)
 import UIKit
 
 @MainActor

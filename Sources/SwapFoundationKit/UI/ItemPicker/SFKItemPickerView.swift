@@ -72,6 +72,7 @@ public struct SFKItemPickerView: View {
             }
             .navigationTitle(pageTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .sfkNavigationSubtitle("Select Multiple")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     SFKButton(

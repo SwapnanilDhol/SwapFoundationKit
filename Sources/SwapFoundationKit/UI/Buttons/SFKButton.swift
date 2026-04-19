@@ -131,8 +131,8 @@ public struct SFKButton<Label: View>: View {
         } label: {
             label()
                 .frame(maxWidth: labelMaxWidth)
-                .frame(height: labelHeight)
                 .contentShape(Rectangle())
+                .padding(.vertical, 12)
         }
         .frame(maxWidth: buttonMaxWidth)
         .disabled(!isEnabled || isLoading)
@@ -177,7 +177,7 @@ public struct SFKButton<Label: View>: View {
 
     private var glassTint: Color {
         if kind == .close {
-            return Color.white.opacity(tokens.closeButtonTintOpacity)
+            return Color.white.opacity(tokens.closeButtonBackgroundOpacity)
         }
 
         return resolvedTint.opacity(
@@ -205,15 +205,15 @@ public struct SFKButton<Label: View>: View {
 
         case .pill:
             Capsule()
-                .fill(glassTint.opacity(tokens.pillFallbackBackgroundOpacity))
+                .fill(glassTint.opacity(tokens.pillBackgroundOpacity))
 
         case .toolbar:
             Capsule()
-                .fill(glassTint.opacity(tokens.closeButtonFallbackBackgroundOpacity))
+                .fill(glassTint.opacity(tokens.closeButtonBackgroundOpacity))
 
         case .close:
             Capsule()
-                .fill(Color.white.opacity(tokens.closeButtonFallbackBackgroundOpacity))
+                .fill(Color.white.opacity(tokens.closeButtonBackgroundOpacity))
         }
     }
 
@@ -225,15 +225,6 @@ public struct SFKButton<Label: View>: View {
 #else
         Color.secondary.opacity(tokens.inlineFilledBackgroundOpacity)
 #endif
-    }
-
-    private var labelHeight: CGFloat? {
-        switch kind {
-        case .primary, .secondary:
-            tokens.buttonLabelHeight
-        case .inline, .inlinePlain, .pill, .toolbar, .close:
-            nil
-        }
     }
 
     private var labelMaxWidth: CGFloat? {
@@ -359,7 +350,7 @@ public struct SFKButtonDefaultLabel: View {
         case .primary, .secondary:
             0
         case .inline, .inlinePlain:
-            8
+            0
         case .pill:
             8
         case .toolbar:

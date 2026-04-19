@@ -116,9 +116,14 @@ public final class SwapFoundationKit {
             }
         }
 
-        if let adsConfiguration = configuration?.adsConfiguration {
+        // Skip Ads SDK on simulator (GoogleAds SDK doesn't support simulator builds)
+#if !targetEnvironment(simulator)
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            // Do not initialize ads during preview rendering
+        } else if let adsConfiguration = configuration?.adsConfiguration {
             await AdsManager.shared.start(with: adsConfiguration)
         }
+#endif
 
         // Configure deeplink handler with supported routes
         if let routes = configuration?.supportedRoutes {
