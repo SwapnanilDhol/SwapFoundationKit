@@ -12,9 +12,6 @@
 import Foundation
 import Combine
 
-import Foundation
-import Combine
-
 /// ViewModel for `SFKItemPickerView`. Manages selection state internally,
 /// publishes `selectedItems`, and notifies `delegate` on every change.
 ///
