@@ -62,7 +62,24 @@ public final class ToastManager: Sendable {
             viewConfig: viewConfig,
             config: toastConfig
         )
-        toast.show(haptic: hapticType(for: kind.style))
+
+        // Present from the key window's root VC to avoid UIHostingController subview restriction
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = windowScene.keyWindow?.rootViewController else {
+            return
+        }
+
+        // Find the topmost presented VC to present from
+        var topVC = rootVC
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+
+        toast.show(
+            presentingViewController: topVC,
+            sourceView: topVC.view,
+            haptic: hapticType(for: kind.style)
+        )
     }
 
     private func defaultImage(for style: SFKToastStyle) -> UIImage? {
