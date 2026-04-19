@@ -1209,7 +1209,97 @@ if let resized = image.resized(targetSize: CGSize(width: 100, height: 100)) {
 3. Replace where functionality overlaps
 4. Remove redundant custom extensions
 
-### 22. Settings Screen UI
+### 22. SFKItemPickerView (Generic Item Picker)
+
+A generic picker view for selecting items from a list, with single-select and multi-select modes, haptics, and flexible icon rendering.
+
+#### Protocols
+
+**`SFKPickableItem`** — protocol for items displayed in the picker:
+```swift
+public protocol SFKPickableItem: Identifiable, Hashable {
+    var pickableItemId: String { get }
+    var pickableItemIconKind: SFKPickableItemIconKind { get }
+    var pickableItemTitle: String { get }
+    var pickableItemSubtitle: String? { get }
+}
+```
+
+**`SFKPickableItemIconKind`** — icon display modes:
+```swift
+public enum SFKPickableItemIconKind {
+    case iconImage(uiImage: UIImage)
+    case systemIcon(symbolName: String)
+    case text(text: String)
+    case none
+}
+```
+
+**`SFKItemPickerSelectionMode`**:
+```swift
+public enum SFKItemPickerSelectionMode: Sendable {
+    case single
+    case multi
+}
+```
+
+#### Usage
+
+```swift
+import SwapFoundationKit
+
+// Single-select picker
+.sheet {
+    SFKItemPickerView(
+        pageTitle: "Select Currency",
+        items: Currency.allCases,
+        selectedItems: [selectedCurrency],
+        selectionType: .single,
+        onSelect: { currency in
+            selectedCurrency = currency
+        },
+        onDismiss: { /* dismiss */ }
+    )
+}
+
+// Multi-select picker
+.sheet {
+    SFKItemPickerView(
+        pageTitle: "Select Currencies",
+        items: Currency.allCases,
+        selectedItems: selectedCurrencies,
+        selectionType: .multi,
+        onSelect: { currency in
+            toggleSelection(currency)
+        },
+        onDismiss: { /* dismiss */ }
+    )
+}
+```
+
+#### Conforming to SFKPickableItem
+
+Always use a dedicated extension:
+
+```swift
+extension MyType: SFKPickableItem {
+    public var pickableItemId: String { id }
+
+    public var pickableItemIconKind: SFKPickableItemIconKind {
+        .systemIcon(symbolName: "star.fill")
+    }
+
+    public var pickableItemTitle: String { name }
+
+    public var pickableItemSubtitle: String? { nil }
+}
+```
+
+`Currency` already conforms to `SFKPickableItem` via an extension at the bottom of `Currency.swift`.
+
+---
+
+### 23. Settings Screen UI
 
 SwapFoundationKit provides a comprehensive settings screen module for building iOS settings screens with minimal boilerplate. It includes a `SettingsItem` protocol, reusable row components for every use case, and a full settings screen builder.
 
@@ -1984,6 +2074,13 @@ struct MyApp: App {
 - **`SFKSettingsActionHandler`** - Helper for rate app, share, open URLs
 - **`SFKInformationSectionHandler`** - Handler for SFKInformationSectionItem taps
 - **`SFKDeveloperSectionHandler`** - Handler for SFKDeveloperSectionItem taps
+
+### Item Picker
+- **`SFKPickableItem`** - Protocol for items displayed in the picker
+- **`SFKPickableItemIconKind`** - Icon display modes (`.iconImage`, `.systemIcon`, `.text`, `.none`)
+- **`SFKItemPickerSelectionMode`** - Selection mode enum (`.single`, `.multi`)
+- **`SFKItemPickerView`** - Generic picker view with NavigationStack and close button
+- **`SFKItemPickerRow`** - Individual row with icon, title, subtitle, checkmark, and haptics
 
 ### Extensions
 - **`Date`** - Comprehensive date formatting and manipulation

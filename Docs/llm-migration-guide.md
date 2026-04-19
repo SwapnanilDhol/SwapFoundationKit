@@ -22,6 +22,109 @@ suggesting replacements for helpers that are internal or too generic to audit re
 
 Prefer `SFKButton(kind: .close, title: "")` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views.
 
+## 4b) Item Picker (`SFKItemPickerView`)
+
+A generic picker view for selecting items from a list, with support for single-select and multi-select modes.
+
+### Protocols
+
+**`SFKPickableItem`** — protocol for items displayed and selected in the picker:
+```swift
+public protocol SFKPickableItem: Identifiable, Hashable {
+    var pickableItemId: String { get }
+    var pickableItemIconKind: SFKPickableItemIconKind { get }
+    var pickableItemTitle: String { get }
+    var pickableItemSubtitle: String? { get }
+}
+```
+
+**`SFKPickableItemIconKind`** — enum for icon display modes:
+```swift
+public enum SFKPickableItemIconKind {
+    case iconImage(uiImage: UIImage)
+    case systemIcon(symbolName: String)
+    case text(text: String)
+    case none
+}
+```
+
+**`SFKItemPickerSelectionMode`** — selection mode:
+```swift
+public enum SFKPickableItemSelectionMode: Sendable {
+    case single
+    case multi
+}
+```
+
+### Usage
+
+```swift
+import SwapFoundationKit
+
+// Present as a sheet
+.sheet {
+    SFKItemPickerView(
+        pageTitle: "Select Currency",
+        items: Currency.allCases,
+        selectedItems: [selectedCurrency],
+        selectionType: .single,
+        onSelect: { currency in
+            selectedCurrency = currency
+        },
+        onDismiss: {
+            presentationMode.wrappedValue.dismiss()
+        }
+    )
+}
+
+// Multi-select example
+.sheet {
+    SFKItemPickerView(
+        pageTitle: "Select Currencies",
+        items: Currency.allCases,
+        selectedItems: selectedCurrencies,
+        selectionType: .multi,
+        onSelect: { currency in
+            toggleSelection(currency)
+        },
+        onDismiss: {
+            presentationMode.wrappedValue.dismiss()
+        }
+    )
+}
+```
+
+### Making a Type Conform to `SFKPickableItem`
+
+Conformance should be in a dedicated extension:
+
+```swift
+extension Currency: SFKPickableItem {
+    public var pickableItemId: String { rawValue }
+
+    public var pickableItemIconKind: SFKPickableItemIconKind {
+        .systemIcon(symbolName: currencySymbol)
+    }
+
+    public var pickableItemTitle: String { rawValue }
+
+    public var pickableItemSubtitle: String? {
+        "\(description)" // Use string interpolation to get human-readable name
+    }
+}
+```
+
+### Components
+
+- **`SFKItemPickerView`** — main picker view with NavigationStack, close button, and list
+- **`SFKItemPickerRow`** — individual row with icon, title, subtitle, and checkmark; includes haptic feedback on selection
+
+### Rules
+
+- Always put `SFKPickableItem` conformance in its own `extension` (not in the type declaration)
+- Use `"\(description)"` for `LocalizedStringResource` or `LocalizedStringKey` to get the human-readable string
+- `Currency` already conforms to `SFKPickableItem` via extension at the bottom of `Currency.swift`
+
 ```swift
 import SwapFoundationKit
 

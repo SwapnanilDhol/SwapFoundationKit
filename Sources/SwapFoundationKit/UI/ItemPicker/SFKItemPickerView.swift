@@ -13,177 +13,109 @@ import SwiftUI
 
 /// A generic picker view for selecting items from a list.
 ///
-/// Supports single-select and multi-select modes. Provide display values
-/// via the closure callbacks.
+/// Supports single-select and multi-select modes.
 ///
 /// ## Usage
 /// ```swift
-/// let viewModel = SFKItemPickerViewModel(
-///     title: "Select Currency",
+/// SFKItemPickerView(
+///     pageTitle: "Select Currency",
 ///     items: Currency.allCases,
-///     selectionMode: .single
+///     selectedItems: [selectedCurrency],
+///     selectionType: .single,
+///     onSelect: { currency in
+///         // handle selection
+///     },
+///     onDismiss: {
+///         // dismiss picker
+///     }
 /// )
-///
-/// SFKItemPickerView(viewModel: viewModel)
-///     .itemTitle { currency in currency.description.stringKey ?? currency.rawValue }
-///     .itemIcon { currency in currency.symbol }
 /// ```
 public struct SFKItemPickerView: View {
-    @ObservedObject public var viewModel: SFKItemPickerViewModel
-    @Environment(\.dismiss) private var dismiss
 
-    /// Returns the display title for an item.
-    public var itemTitle: ((any SFKPickableItem) -> String)?
-    /// Returns the display icon/symbol for an item.
-    public var itemIcon: ((any SFKPickableItem) -> String)?
-    /// Returns the display subtitle for an item.
-    public var itemSubtitle: ((any SFKPickableItem) -> String)?
+    let pageTitle: String
+    let items: [any SFKPickableItem]
+    let selectedItems: [any SFKPickableItem]
+    let selectionType: SFKItemPickerSelectionMode
+    let onSelect: ((any SFKPickableItem) -> Void)?
+    let onDismiss: (() -> Void)?
 
-    public init(viewModel: SFKItemPickerViewModel) {
-        self.viewModel = viewModel
+    public init(
+        pageTitle: String,
+        items: [any SFKPickableItem],
+        selectedItems: [any SFKPickableItem] = [],
+        selectionType: SFKItemPickerSelectionMode = .single,
+        onSelect: ((any SFKPickableItem) -> Void)? = nil,
+        onDismiss: (() -> Void)? = nil
+    ) {
+        self.pageTitle = pageTitle
+        self.items = items
+        self.selectedItems = selectedItems
+        self.selectionType = selectionType
+        self.onSelect = onSelect
+        self.onDismiss = onDismiss
     }
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(viewModel.items, id: \.pickerID) { item in
-                        itemRow(for: item)
+            List(items, id: \.pickableItemId) { item in
+                SFKItemPickerRow(
+                    item: item,
+                    selectionType: selectionType,
+                    isSelected: selectedItems.contains(where: { $0.pickableItemId == item.pickableItemId }),
+                    didSelect: { selectedItem in
+                        onSelect?(selectedItem)
+                        if selectionType == .single {
+                            onDismiss?()
+                        }
                     }
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
+                )
             }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle(viewModel.title)
+            .navigationTitle(pageTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        viewModel.delegate?.itemPickerDidDismiss(viewModel)
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.footnote.weight(.bold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 28, height: 28)
-                            .background(Capsule().fill(Color.white.opacity(0.12)))
-                    }
-                }
-
-                if viewModel.selectionMode == .multi {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Done") {
-                            viewModel.confirmSelection()
-                            dismiss()
+                    SFKButton(
+                        kind: .close,
+                        title: "Close".localized,
+                        systemImage: "xmark",
+                        action: {
+                            onDismiss?()
                         }
-                        .disabled(viewModel.selectedItemIDs.isEmpty)
-                    }
+                    )
                 }
             }
         }
     }
+}
 
-    @ViewBuilder
-    private func itemRow(for item: any SFKPickableItem) -> some View {
-        let isSelected = viewModel.isSelected(item.pickerID)
+// MARK: - Previews
 
-        Button {
-            handleSelection(item)
-        } label: {
-            HStack(spacing: 12) {
-                if let icon = itemIcon?(item) {
-                    Text(icon)
-                        .font(.title3)
-                        .frame(width: 40)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(itemTitle?(item) ?? item.pickerID)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-
-                    if let subtitle = itemSubtitle?(item) {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer()
-
-                if isSelected {
-                    Image(systemName: viewModel.selectionMode == .multi ? "checkmark.circle.fill" : "checkmark")
-                        .foregroundStyle(.blue)
-                        .fontWeight(.bold)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
-            )
+#Preview("Single Select - Currency") {
+    SFKItemPickerView(
+        pageTitle: "Select Currency",
+        items: Array(Currency.allCases.prefix(10)),
+        selectedItems: [Currency.USD],
+        selectionType: .single,
+        onSelect: { item in
+            print("Selected: \(item.id)")
+        },
+        onDismiss: {
+            print("Dismissed")
         }
-        .buttonStyle(.plain)
-    }
+    )
+}
 
-    private func handleSelection(_ item: any SFKPickableItem) {
-        switch viewModel.selectionMode {
-        case .single:
-            viewModel.selectItem(item)
-            dismiss()
-        case .multi:
-            viewModel.toggleSelection(for: item.pickerID)
+#Preview("Multi Select - Currency") {
+    SFKItemPickerView(
+        pageTitle: "Select Currencies",
+        items: Array(Currency.allCases.prefix(10)),
+        selectedItems: [Currency.USD, Currency.EUR],
+        selectionType: .multi,
+        onSelect: { item in
+            print("Toggled: \(item.id)")
+        },
+        onDismiss: {
+            print("Dismissed")
         }
-    }
-}
-
-// MARK: - Preview Helpers
-
-/// Sample conforming type for previews and testing
-public struct SamplePickableItem: SFKPickableItem, Identifiable {
-    public let id: String
-    public let title: String
-    public let icon: String
-
-    public var pickerID: String { id }
-    public var pickerSymbol: String { icon }
-    public var pickerDescription: String { title }
-
-    public init(id: String, title: String, icon: String) {
-        self.id = id
-        self.title = title
-        self.icon = icon
-    }
-}
-
-#Preview("Single Select") {
-    let items = [
-        SamplePickableItem(id: "1", title: "Apple", icon: "🍎"),
-        SamplePickableItem(id: "2", title: "Banana", icon: "🍌"),
-        SamplePickableItem(id: "3", title: "Cherry", icon: "🍒"),
-        SamplePickableItem(id: "4", title: "Date", icon: "🫐")
-    ]
-    let viewModel = SFKItemPickerViewModel(
-        title: "Select Fruit",
-        items: items,
-        selectionMode: .single
     )
-    SFKItemPickerView(viewModel: viewModel)
-}
-
-#Preview("Multi Select") {
-    let items = [
-        SamplePickableItem(id: "1", title: "Swift", icon: "swift"),
-        SamplePickableItem(id: "2", title: "SwiftUI", icon: "swiftui"),
-        SamplePickableItem(id: "3", title: "Xcode", icon: "xcode"),
-        SamplePickableItem(id: "4", title: "Combine", icon: "combine")
-    ]
-    let viewModel = SFKItemPickerViewModel(
-        title: "Select Skills",
-        items: items,
-        selectionMode: .multi
-    )
-    SFKItemPickerView(viewModel: viewModel)
 }

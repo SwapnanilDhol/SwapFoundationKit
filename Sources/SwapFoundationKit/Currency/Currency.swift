@@ -11,7 +11,9 @@
 
 import SwiftUI
 
-public enum Currency: String, CaseIterable, Hashable, Codable, Sendable, SFKPickableItem {
+public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
+
+    public var id: String { rawValue }
 
     case AUD
     case INR
@@ -51,7 +53,7 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable, SFKPick
     case ARS
     case LKR
 
-    public var description: LocalizedStringKey {
+    public var description: LocalizedStringResource {
         switch self {
         case .EUR:
             return "Euro"
@@ -334,4 +336,20 @@ extension Currency {
         .ARS: 950.0,
         .LKR: 330.0
     ])
+}
+
+// MARK: - SFKPickableItem Conformance
+
+extension Currency: SFKPickableItem {
+    public var pickableItemId: String { rawValue }
+
+    public var pickableItemIconKind: SFKPickableItemIconKind {
+        .text(text: symbol)
+    }
+
+    public var pickableItemTitle: String { rawValue }
+
+    public var pickableItemSubtitle: String? {
+        description.key
+    }
 }
