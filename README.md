@@ -957,94 +957,68 @@ AppLinkOpener.openAppReviewPage(appID: "123456789")
 
 ### 19. SFKButtons (SwiftUI Button Components)
 
-SwapFoundationKit provides a comprehensive SwiftUI button library with glassmorphism effects, multiple styles, loading states, and built-in haptic feedback.
+SwapFoundationKit provides a focused SwiftUI button API built around a reusable configurator.
 
 #### SFKButton
-Single button API with enum-driven variants. On iOS 26+, button chrome uses `glassProminent`; on earlier OS versions it falls back to a solid background automatically.
+`SFKButton` can be created either from explicit line-item values or from an `SFKButtonConfigurator`.
 ```swift
 import SwapFoundationKit
 
 SFKButton(
-    kind: .primary,
-    title: "Add Transaction",
-    systemImage: "wand.and.stars",
-    tint: .blue
+    "Add Transaction",
+    leadingIconName: "wand.and.stars",
+    subtitle: "Recommended",
+    color: .blue
 ) {
     // action
 }
 
-SFKButton(
-    kind: .secondary,
-    title: "Cancel"
-) { }
+var close = SFKButtonConfigurator.close
+close.title = "Close"
 
-SFKButton(
-    kind: .inline,
-    title: "Edit",
-    systemImage: "pencil"
-) { }
-
-SFKButton(
-    kind: .pill,
-    title: "Approve",
-    systemImage: "checkmark",
-    tint: .green
-) { }
-
-SFKButton(
-    kind: .toolbar,
-    title: "Save",
-    systemImage: "checkmark"
-) { }
-
-SFKButton(
-    kind: .close,
-    title: ""
-) { }
-
-// Loading state for primary actions
-SFKButton(
-    kind: .primary,
-    title: "Saving...",
-    tint: .green,
-    isLoading: true
-) { }
+SFKButton(configuration: close) {
+    // dismiss
+}
 ```
 
-The convenience wrappers `SFKPrimaryButton`, `SFKSecondaryButton`, `SFKInlineButton`, `SFKPillButton`, and `SFKToolbarButton` still exist, but `SFKButton(kind: ...)` is the simplest API and the recommended one.
+Sizing is driven by the button's padding values rather than a fixed minimum height, which makes
+compact and full-width variants easier to express through configuration alone.
 
-You can also override the shared button tokens from the host app:
+Loading state is built in:
 ```swift
-SFKButtonVisualTokens.current.primaryCornerRadius = 18
-SFKButtonVisualTokens.current.secondaryCornerRadius = 18
-SFKButtonVisualTokens.current.inlineCornerRadius = 12
-SFKButtonVisualTokens.current.primaryForegroundColor = Color(
-    uiColor: UIColor(red: 2, green: 2, blue: 2, alpha: 1)
-)
-SFKButtonVisualTokens.current.tintedForegroundColor = .primary
-SFKButtonVisualTokens.current.toolbarForegroundColor = .primary
+SFKButton(
+    "Saving",
+    leadingIconName: "arrow.triangle.2.circlepath",
+    isLoading: true,
+    color: .green
+) {
+    // taps are ignored while loading
+}
 ```
 
-#### Glass Button Modifiers
-Apply glassmorphism effects to any view.
+When `isLoading` is `true`, the button disables interaction, swaps its label for a spinner, and
+shrinks out of full-width mode so loading states feel more compact by default.
+
+#### Glass Compatibility Wrappers
+Apply compatibility wrappers around SwiftUI's native Liquid Glass APIs.
 ```swift
 Button("Glass") { }
-    .glassButton(cornerRadius: 16, tint: .blue)
+    .glassCompat(color: .blue)
 
-Button("Capsule") { }
-    .glassCapsuleButton(tint: .mint)
+Button("Prominent") { }
+    .glassProminentCompat(color: .mint)
 
 Button(action: {}) {
     Image(systemName: "plus")
         .font(.title2)
 }
-.glassCircleButton(tint: .blue)
+.glassEffectCompat(style: .regular, color: .blue, isInteractive: true, in: Circle())
 ```
 
 **Migration Steps:**
 1. Find your custom button components (MTPrimaryButton, MTToolbarButton, etc.)
-2. Prefer replacing them with `SFKButton(kind: ...)`
-3. Use `SFKButtonVisualTokens.current` from the host app for corner-radius and foreground overrides
+2. Prefer replacing them with `SFKButton(...)` or `SFKButton(configuration: ...)`
+3. Use `SFKButtonConfigurator` presets and overrides for reusable button styles, loading states, and compact variants
 4. Remove custom button implementations
 
 ---
@@ -2019,19 +1993,13 @@ struct MyApp: App {
 - **`BackupService`** - Data backup and restore
 
 ### UI Components
-- **`SFKButton`** - Unified enum-driven button API for primary, secondary, inline, pill, toolbar, and close variants
-- **`SFKButtonVisualTokens`** - Host-app override point for shared button corner radii and foreground colors
-- **`SFKPrimaryButton`** - Compatibility wrapper for primary actions
-- **`SFKSecondaryButton`** - Compatibility wrapper for secondary actions
-- **`SFKInlineButton`** - Compatibility wrapper for inline actions
-- **`SFKPillButton`** - Compatibility wrapper for pill/capsule actions
-- **`SFKClosePillButton`** - Compatibility wrapper for close/dismiss pill actions
-- **`SFKToolbarButton`** - Compatibility wrapper for toolbar actions and custom labels
+- **`SFKButton`** - Configurable button view with line-item and configurator-based initializers
+- **`SFKButtonConfigurator`** - Reusable button configuration model with presets such as `.primary` and `.close`, plus loading and chrome options
 
-### Glass Button Modifiers
-- **`.glassButton()`** - Rounded rectangle glass effect
-- **`.glassCapsuleButton()`** - Capsule/pill glass effect
-- **`.glassCircleButton()`** - Circular glass effect
+### Glass Compatibility Wrappers
+- **`.glassProminentCompat()`** - Compatibility wrapper for SwiftUI's `.glassProminent` button style
+- **`.glassCompat()`** - Compatibility wrapper for SwiftUI's `.glass` button style
+- **`.glassEffectCompat()`** - Compatibility wrapper for SwiftUI's `glassEffect(_:in:)`
 
 ### Utilities
 - **`HapticsHelper`** - Haptic feedback manager

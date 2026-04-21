@@ -85,14 +85,9 @@ public struct SFKItemPickerView: View {
             .compatibleNavigationSubtitle(resolvedSubtitle)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    SFKButton(
-                        kind: .close,
-                        title: "",
-                        systemImage: "xmark",
-                        action: {
-                            onDismiss?()
-                        }
-                    )
+                    SFKButton(configuration: .close, action: {
+                        onDismiss?()
+                    })
                 }
             }
         }

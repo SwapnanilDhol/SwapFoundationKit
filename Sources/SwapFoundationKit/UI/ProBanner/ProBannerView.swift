@@ -69,10 +69,9 @@ public struct SFKProBannerView: View {
 
             if !isProEnabled {
                 SFKButton(
-                    kind: .primary,
-                    title: upgradeButtonTitle,
-                    systemImage: "sparkles",
-                    tint: upgradeButtonFillColor,
+                    upgradeButtonTitle,
+                    leadingIconName: "sparkles",
+                    color: upgradeButtonFillColor,
                     action: onUpgradeTap
                 )
                 .padding(.vertical)

@@ -11,486 +11,358 @@
 
 import SwiftUI
 
-public enum SFKButtonKind {
-    case primary
-    case secondary
-    case inline
-    case inlinePlain
-    case pill
-    case toolbar
-    case close
-}
-
-public struct SFKButton<Label: View>: View {
-    private let kind: SFKButtonKind
-    private let tint: Color?
-    private let isEnabled: Bool
-    private let isLoading: Bool
-    private let forceLegacyStyle: Bool
+/// A configurable SwiftUI button for SwapFoundationKit.
+///
+/// `SFKButton` supports two usage styles:
+/// - pass line-item values directly through the main initializer
+/// - build and reuse a `SFKButtonConfigurator`
+///
+/// Height is determined by the configured padding values. When loading, the button disables taps,
+/// swaps its label for a spinner, and collapses out of full-width layout.
+///
+/// Example:
+/// ```swift
+/// SFKButton(
+///     "Continue",
+///     leadingIconName: "arrow.right",
+///     subtitle: "Recommended",
+///     color: .blue
+/// ) {
+///     continueFlow()
+/// }
+///
+/// var close = SFKButtonConfigurator.close
+/// close.title = "Close"
+///
+/// SFKButton(configuration: close) {
+///     dismiss()
+/// }
+/// ```
+public struct SFKButton: View {
+    private let hapticsHelper = HapticsHelper()
+    private let configuration: SFKButtonConfigurator
     private let action: () -> Void
-    @ViewBuilder private let label: () -> Label
-    private let haptics = ButtonHaptics.shared
 
+    /// Creates a button by specifying each configuration value directly.
     public init(
-        kind: SFKButtonKind,
-        tint: Color? = nil,
-        isEnabled: Bool = true,
+        _ title: String? = nil,
+        leadingIconName: String? = nil,
+        subtitle: String? = nil,
         isLoading: Bool = false,
-        action: @escaping () -> Void,
-        @ViewBuilder label: @escaping () -> Label
-    ) {
-        self.kind = kind
-        self.tint = tint
-        self.isEnabled = isEnabled
-        self.isLoading = isLoading
-        self.forceLegacyStyle = false
-        self.action = action
-        self.label = label
-    }
-
-    public init(
-        kind: SFKButtonKind,
-        title: String,
-        systemImage: String? = nil,
-        tint: Color? = nil,
-        isEnabled: Bool = true,
-        isLoading: Bool = false,
+        fullWidth: Bool = true,
+        titleColor: Color = .white,
+        subtitleColor: Color = Color.white.opacity(0.8),
+        color: Color = .blue,
+        spacing: CGFloat = 8,
+        horizontalPadding: CGFloat = 16,
+        verticalPadding: CGFloat = 12,
+        titleFont: Font = .headline.weight(.semibold),
+        subtitleFont: Font = .subheadline,
+        iconFont: Font = .headline.weight(.semibold),
+        textAlignment: HorizontalAlignment = .center,
+        titleLineLimit: Int = 1,
+        subtitleLineLimit: Int = 1,
+        chrome: SFKButtonChrome = .glassProminent,
+        hapticStyle: SFKButtonHapticStyle? = .medium,
         action: @escaping () -> Void
-    ) where Label == SFKButtonDefaultLabel {
-        self.kind = kind
-        self.tint = tint
-        self.isEnabled = isEnabled
-        self.isLoading = isLoading
-        self.forceLegacyStyle = false
-        self.action = action
-        self.label = {
-            SFKButtonDefaultLabel(
-                kind: kind,
-                title: title,
-                systemImage: systemImage,
-                tint: tint,
-                isEnabled: isEnabled,
-                isLoading: isLoading
-            )
-        }
-    }
-
-#if DEBUG
-    public init(
-        kind: SFKButtonKind,
-        tint: Color? = nil,
-        isEnabled: Bool = true,
-        isLoading: Bool = false,
-        forceLegacyStyle: Bool,
-        action: @escaping () -> Void,
-        @ViewBuilder label: @escaping () -> Label
     ) {
-        self.kind = kind
-        self.tint = tint
-        self.isEnabled = isEnabled
-        self.isLoading = isLoading
-        self.forceLegacyStyle = forceLegacyStyle
+        self.configuration = SFKButtonConfigurator(
+            leadingIconName: leadingIconName,
+            title: title,
+            subtitle: subtitle,
+            isLoading: isLoading,
+            fullWidth: fullWidth,
+            titleColor: titleColor,
+            subtitleColor: subtitleColor,
+            color: color,
+            spacing: spacing,
+            horizontalPadding: horizontalPadding,
+            verticalPadding: verticalPadding,
+            titleFont: titleFont,
+            subtitleFont: subtitleFont,
+            iconFont: iconFont,
+            textAlignment: textAlignment,
+            titleLineLimit: titleLineLimit,
+            subtitleLineLimit: subtitleLineLimit,
+            chrome: chrome,
+            hapticStyle: hapticStyle
+        )
         self.action = action
-        self.label = label
     }
 
+    /// Creates a button from an existing `SFKButtonConfigurator`.
     public init(
-        kind: SFKButtonKind,
-        title: String,
-        systemImage: String? = nil,
-        tint: Color? = nil,
-        isEnabled: Bool = true,
-        isLoading: Bool = false,
-        forceLegacyStyle: Bool,
+        configuration: SFKButtonConfigurator,
         action: @escaping () -> Void
-    ) where Label == SFKButtonDefaultLabel {
-        self.kind = kind
-        self.tint = tint
-        self.isEnabled = isEnabled
-        self.isLoading = isLoading
-        self.forceLegacyStyle = forceLegacyStyle
+    ) {
+        self.configuration = configuration
         self.action = action
-        self.label = {
-            SFKButtonDefaultLabel(
-                kind: kind,
-                title: title,
-                systemImage: systemImage,
-                tint: tint,
-                isEnabled: isEnabled,
-                isLoading: isLoading
-            )
-        }
     }
-#endif
 
     public var body: some View {
         let button = Button {
-            guard isEnabled, !isLoading else { return }
-            haptics.mediumImpact()
+            guard !configuration.isLoading else { return }
+            triggerHapticIfNeeded()
             action()
         } label: {
-            label()
-                .frame(maxWidth: labelMaxWidth)
-                .contentShape(Rectangle())
-                .padding(.vertical, 12)
+            buttonLabel
+            .padding(.horizontal, configuration.horizontalPadding)
+            .padding(.vertical, configuration.verticalPadding)
+            .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
+            .foregroundStyle(configuration.titleColor)
+            .contentShape(Rectangle())
         }
-        .frame(maxWidth: buttonMaxWidth)
-        .disabled(!isEnabled || isLoading)
-        .opacity(isEnabled ? tokens.enabledOpacity : tokens.disabledOpacity)
+        .disabled(configuration.isLoading)
+        .animation(.spring(response: 0.28, dampingFraction: 0.82), value: configuration.isLoading)
 
-        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *),
-           usesGlassProminentStyle,
-           !forceLegacyStyle {
-            button
-                .buttonStyle(.glassProminent)
-                .tint(glassTint)
-        } else {
-            button
-                .buttonStyle(.plain)
-                .background(fallbackBackground)
-        }
-    }
-
-    private var usesGlassProminentStyle: Bool {
-        switch kind {
-        case .inlinePlain:
-            false
-        case .primary, .secondary, .inline, .pill, .toolbar, .close:
-            true
-        }
-    }
-
-    private var tokens: SFKButtonVisualTokens {
-        .current
-    }
-
-    private var resolvedTint: Color {
-        switch kind {
-        case .primary, .inline, .inlinePlain:
-            tint ?? .accentColor
-        case .secondary, .pill, .toolbar:
-            tint ?? .secondary
-        case .close:
-            .white
-        }
-    }
-
-    private var glassTint: Color {
-        if kind == .close {
-            return Color.white.opacity(tokens.closeButtonBackgroundOpacity)
-        }
-
-        return resolvedTint.opacity(
-            isEnabled ? tokens.enabledOpacity : tokens.disabledOpacity
-        )
+        styledButton(button)
     }
 
     @ViewBuilder
-    private var fallbackBackground: some View {
-        switch kind {
-        case .primary:
-            RoundedRectangle(cornerRadius: tokens.primaryCornerRadius, style: .continuous)
-                .fill(glassTint)
+    private var buttonLabel: some View {
+        if configuration.isLoading {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .tint(configuration.titleColor)
+        } else {
+            HStack(spacing: configuration.spacing) {
+                if let leadingIconName = configuration.leadingIconName {
+                    Image(systemName: leadingIconName)
+                        .font(configuration.iconFont)
+                }
 
-        case .secondary:
-            RoundedRectangle(cornerRadius: tokens.secondaryCornerRadius, style: .continuous)
-                .fill(secondaryFallbackBackgroundColor)
+                if hasTextContent {
+                    VStack(alignment: configuration.textAlignment, spacing: 2) {
+                        if let title = configuration.title, !title.isEmpty {
+                            Text(title)
+                                .font(configuration.titleFont)
+                                .lineLimit(configuration.titleLineLimit)
+                        }
 
-        case .inline:
-            RoundedRectangle(cornerRadius: tokens.inlineCornerRadius, style: .continuous)
-                .fill(glassTint.opacity(tokens.inlineFilledBackgroundOpacity))
-
-        case .inlinePlain:
-            Color.clear
-
-        case .pill:
-            Capsule()
-                .fill(glassTint.opacity(tokens.pillBackgroundOpacity))
-
-        case .toolbar:
-            Capsule()
-                .fill(glassTint.opacity(tokens.closeButtonBackgroundOpacity))
-
-        case .close:
-            Capsule()
-                .fill(Color.white.opacity(tokens.closeButtonBackgroundOpacity))
+                        if let subtitle = configuration.subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(configuration.subtitleFont)
+                                .foregroundStyle(configuration.subtitleColor)
+                                .lineLimit(configuration.subtitleLineLimit)
+                        }
+                    }
+                }
+            }
         }
     }
 
-    private var secondaryFallbackBackgroundColor: Color {
-#if canImport(UIKit) && os(iOS)
-        Color(uiColor: .secondarySystemGroupedBackground)
-#elseif canImport(AppKit)
-        Color(nsColor: .windowBackgroundColor)
-#else
-        Color.secondary.opacity(tokens.inlineFilledBackgroundOpacity)
-#endif
+    private var hasTextContent: Bool {
+        let hasTitle = configuration.title?.isEmpty == false
+        let hasSubtitle = configuration.subtitle?.isEmpty == false
+        return hasTitle || hasSubtitle
     }
 
-    private var labelMaxWidth: CGFloat? {
-        switch kind {
-        case .primary, .secondary:
-            .infinity
-        case .inline, .inlinePlain, .pill, .toolbar, .close:
-            nil
-        }
+    private var shouldUseFullWidth: Bool {
+        configuration.fullWidth && !configuration.isLoading
     }
 
-    private var buttonMaxWidth: CGFloat? {
-        switch kind {
-        case .primary, .secondary:
-            .infinity
-        case .inline, .inlinePlain, .pill, .toolbar, .close:
-            nil
+    private func triggerHapticIfNeeded() {
+        switch configuration.hapticStyle {
+        case .light:
+            hapticsHelper.lightImpact()
+        case .medium:
+            hapticsHelper.mediumImpact()
+        case .heavy:
+            hapticsHelper.heavyImpact()
+        case nil:
+            break
         }
     }
 }
 
-public struct SFKButtonDefaultLabel: View {
-    private let kind: SFKButtonKind
-    private let title: String
-    private let systemImage: String?
-    private let tint: Color?
-    private let isEnabled: Bool
-    private let isLoading: Bool
+private extension SFKButton {
+    @ViewBuilder
+    func styledButton<Content: View>(_ content: Content) -> some View {
+        switch configuration.chrome {
+        case .glassProminent:
+            content.glassProminentCompat(color: configuration.color)
 
-    public init(
-        kind: SFKButtonKind,
-        title: String,
-        systemImage: String?,
-        tint: Color?,
-        isEnabled: Bool,
-        isLoading: Bool
-    ) {
-        self.kind = kind
-        self.title = title
-        self.systemImage = systemImage
-        self.tint = tint
-        self.isEnabled = isEnabled
-        self.isLoading = isLoading
-    }
+        case .glass:
+            content.glassCompat(color: configuration.color)
 
-    public var body: some View {
-        HStack(spacing: spacing) {
-            if isLoading {
-                ProgressView()
-                    .tint(foregroundColor)
-            } else if let resolvedSystemImage {
-                Image(systemName: resolvedSystemImage)
-                    .font(iconFont)
+        case let .glassEffect(style, shape, isInteractive):
+            switch shape {
+            case let .roundedRectangle(cornerRadius):
+                content.glassEffectCompat(
+                    style: style,
+                    color: configuration.color,
+                    isInteractive: isInteractive,
+                    in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                )
+            case .capsule:
+                content.glassEffectCompat(
+                    style: style,
+                    color: configuration.color,
+                    isInteractive: isInteractive,
+                    in: Capsule()
+                )
+            case .circle:
+                content.glassEffectCompat(
+                    style: style,
+                    color: configuration.color,
+                    isInteractive: isInteractive,
+                    in: Circle()
+                )
             }
 
-            if !resolvedTitle.isEmpty {
-                Text(resolvedTitle)
-                    .font(textFont)
-                    .lineLimit(1)
-            }
-        }
-        .fixedSize(horizontal: isCompactKind, vertical: false)
-        .padding(.horizontal, horizontalPadding)
-        .padding(.vertical, verticalPadding)
-        .foregroundStyle(foregroundColor)
-    }
-
-    private var tokens: SFKButtonVisualTokens {
-        .current
-    }
-
-    private var resolvedTitle: String {
-        if kind == .close, title.isEmpty {
-            return "Close"
-        }
-        return title
-    }
-
-    private var resolvedSystemImage: String? {
-        if kind == .close, systemImage == nil {
-            return "xmark"
-        }
-        return systemImage
-    }
-
-    private var isCompactKind: Bool {
-        switch kind {
-        case .primary, .secondary:
-            false
-        case .inline, .inlinePlain, .pill, .toolbar, .close:
-            true
-        }
-    }
-
-    private var spacing: CGFloat {
-        switch kind {
-        case .primary, .secondary:
-            10
-        case .inline, .inlinePlain:
-            6
-        case .pill, .toolbar, .close:
-            8
-        }
-    }
-
-    private var horizontalPadding: CGFloat {
-        switch kind {
-        case .primary, .secondary:
-            0
-        case .inline, .inlinePlain:
-            12
-        case .pill:
-            11
-        case .toolbar:
-            6
-        case .close:
-            12
-        }
-    }
-
-    private var verticalPadding: CGFloat {
-        switch kind {
-        case .primary, .secondary:
-            0
-        case .inline, .inlinePlain:
-            0
-        case .pill:
-            8
-        case .toolbar:
-            4
-        case .close:
-            9
-        }
-    }
-
-    private var textFont: Font {
-        switch kind {
-        case .primary, .secondary:
-            .headline.weight(.semibold)
-        case .inline, .inlinePlain:
-            .subheadline.weight(.semibold)
-        case .pill, .toolbar, .close:
-            .footnote.weight(.semibold)
-        }
-    }
-
-    private var iconFont: Font {
-        switch kind {
-        case .primary, .secondary:
-            .headline
-        case .inline, .inlinePlain:
-            .caption.weight(.semibold)
-        case .pill, .toolbar, .close:
-            .footnote.weight(.bold)
-        }
-    }
-
-    private var foregroundColor: Color {
-        switch kind {
-        case .primary:
-            isEnabled ? tokens.primaryForegroundColor : tokens.primaryForegroundColor.opacity(tokens.disabledForegroundOpacity)
-        case .secondary, .pill, .close:
-            isEnabled ? .primary : .secondary
-        case .inline:
-            isEnabled ? tokens.tintedForegroundColor : .secondary
-        case .inlinePlain:
-            isEnabled ? (tint ?? .accentColor) : .secondary
-        case .toolbar:
-            isEnabled ? tokens.toolbarForegroundColor : .secondary
+        case .plain:
+            content
         }
     }
 }
 
-#Preview("Button Kinds") {
-    VStack(spacing: 16) {
-        SFKButton(
-            kind: .primary,
-            title: "Add Transaction",
-            systemImage: "wand.and.stars",
-            tint: .red,
-            action: {}
+#Preview("SFKButton Gallery") {
+    var closeConfig = SFKButtonConfigurator.close
+    closeConfig.title = "Close"
+
+    var closeIconOnlyConfig = SFKButtonConfigurator.close
+
+    var successConfig = SFKButtonConfigurator.primary
+    successConfig.leadingIconName = "checkmark.circle.fill"
+    successConfig.title = "Save Changes"
+    successConfig.subtitle = "Everything is ready to sync"
+    successConfig.color = .green
+
+    var warningConfig = SFKButtonConfigurator.primary
+    warningConfig.leadingIconName = "exclamationmark.triangle.fill"
+    warningConfig.title = "Review Permissions"
+    warningConfig.subtitle = "Camera access is required"
+    warningConfig.color = .orange
+
+    var loadingConfig = SFKButtonConfigurator.primary
+    loadingConfig.title = "Saving"
+    loadingConfig.leadingIconName = "arrow.triangle.2.circlepath"
+    loadingConfig.isLoading = true
+    loadingConfig.hapticStyle = nil
+
+    var toolbarLikeConfig = SFKButtonConfigurator(
+        leadingIconName: "slider.horizontal.3",
+        title: "Filters",
+        isLoading: false,
+        fullWidth: false,
+        titleColor: .primary,
+        subtitleColor: .secondary,
+        color: .white.opacity(0.14),
+        spacing: 6,
+        horizontalPadding: 12,
+        verticalPadding: 8,
+        titleFont: .footnote.weight(.semibold),
+        subtitleFont: .caption,
+        iconFont: .footnote.weight(.semibold),
+        chrome: .glass,
+        hapticStyle: .light
+    )
+
+    var compactPlainConfig = SFKButtonConfigurator(
+        leadingIconName: "doc.text.magnifyingglass",
+        title: "Details",
+        isLoading: false,
+        fullWidth: false,
+        titleColor: .primary,
+        subtitleColor: .secondary,
+        color: .clear,
+        spacing: 6,
+        horizontalPadding: 10,
+        verticalPadding: 6,
+        titleFont: .footnote.weight(.semibold),
+        subtitleFont: .caption2,
+        iconFont: .footnote.weight(.semibold),
+        chrome: .plain,
+        hapticStyle: .light
+    )
+
+    var circularIconConfig = SFKButtonConfigurator(
+        leadingIconName: "plus",
+        title: nil,
+        subtitle: nil,
+        isLoading: false,
+        fullWidth: false,
+        titleColor: .white,
+        subtitleColor: .white,
+        color: .purple,
+        spacing: 0,
+        horizontalPadding: 14,
+        verticalPadding: 14,
+        titleFont: .headline,
+        subtitleFont: .caption,
+        iconFont: .headline.weight(.bold),
+        chrome: .glassEffect(style: .regular, shape: .circle, isInteractive: true),
+        hapticStyle: .medium
+    )
+
+    return ScrollView {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Prominent")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+                SFKButton("Continue") {
+                }
+
+                SFKButton(
+                    "Back Up Now",
+                    leadingIconName: "icloud.and.arrow.up",
+                    subtitle: "Recommended before updating"
+                ) {
+                }
+
+                SFKButton(configuration: successConfig) {
+                }
+
+                SFKButton(configuration: warningConfig) {
+                }
+
+                SFKButton(configuration: loadingConfig) {
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Compact")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 12) {
+                    SFKButton(configuration: toolbarLikeConfig) {
+                    }
+
+                    SFKButton(configuration: compactPlainConfig) {
+                    }
+
+                    SFKButton(configuration: circularIconConfig) {
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Close")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 12) {
+                    SFKButton(configuration: closeConfig) {
+                    }
+
+                    SFKButton(configuration: closeIconOnlyConfig) {
+                    }
+                }
+            }
+        }
+        .padding(24)
+    }
+    .background(
+        LinearGradient(
+            colors: [
+                Color.black.opacity(0.04),
+                Color.blue.opacity(0.08)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
         )
-        SFKButton(kind: .secondary, title: "Cancel", action: {})
-        HStack {
-            SFKButton(kind: .inline, title: "Edit", systemImage: "pencil", action: {})
-            SFKButton(kind: .inlinePlain, title: "View All", action: {})
-        }
-        HStack {
-            SFKButton(kind: .pill, title: "Approve", systemImage: "checkmark", tint: .green, action: {})
-            SFKButton(kind: .close, title: "", action: {})
-        }
-    }
-    .padding()
-}
-
-#Preview("Toolbar Buttons In Navigation Bar") {
-    NavigationStack {
-        List {
-            Text("Buttons should be previewed in a navigation bar context.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .navigationTitle("Button Demo")
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                SFKButton(kind: .toolbar, title: "", systemImage: "plus", tint: .orange, action: {})
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                SFKButton(kind: .toolbar, title: "Edit", tint: .blue, action: {})
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                SFKButton(kind: .close, title: "", action: {})
-            }
-        }
-    }
-}
-
-#Preview("Legacy Fallback Buttons") {
-    VStack(spacing: 16) {
-        SFKButton(
-            kind: .primary,
-            title: "Add Transaction",
-            systemImage: "wand.and.stars",
-            tint: .red,
-            forceLegacyStyle: true,
-            action: {}
-        )
-        SFKButton(
-            kind: .secondary,
-            title: "Cancel",
-            forceLegacyStyle: true,
-            action: {}
-        )
-        HStack {
-            SFKButton(
-                kind: .inline,
-                title: "Edit",
-                systemImage: "pencil",
-                tint: .blue,
-                forceLegacyStyle: true,
-                action: {}
-            )
-            SFKButton(
-                kind: .inlinePlain,
-                title: "View All",
-                tint: .blue,
-                forceLegacyStyle: true,
-                action: {}
-            )
-        }
-        HStack {
-            SFKButton(
-                kind: .pill,
-                title: "Approve",
-                systemImage: "checkmark",
-                tint: .green,
-                forceLegacyStyle: true,
-                action: {}
-            )
-            SFKButton(
-                kind: .close,
-                title: "",
-                forceLegacyStyle: true,
-                action: {}
-            )
-        }
-    }
-    .padding()
+    )
 }

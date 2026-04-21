@@ -11,26 +11,20 @@
 
 import SwiftUI
 
-// MARK: - Glass Button Modifiers
+public enum GlassEffectCompatStyle: Sendable {
+    case regular
+    case clear
+    case identity
+}
 
-/// A modifier that uses iOS 26's `.glassProminent` button style when available,
-/// and falls back to a simple background color treatment on earlier OS versions.
-public struct GlassProminentButtonModifier: ViewModifier {
-    /// Tint passed to `.tint(_:)` for iOS 26 glass prominent buttons.
-    public let tint: Color
-    /// Background color used as fallback on pre-iOS 26 platforms.
-    public let fallbackBackgroundColor: Color
-    /// Adds a subtle tint overlay on iOS 26+ to make color accents more visible.
-    public let showsTintOverlay: Bool
+/// A compatibility wrapper around SwiftUI's `.glassProminent` button style.
+public struct GlassProminentCompatModifier: ViewModifier {
+    public let color: Color
 
     public init(
-        tint: Color = .accentColor,
-        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18),
-        showsTintOverlay: Bool = true
+        color: Color = .accentColor
     ) {
-        self.tint = tint
-        self.fallbackBackgroundColor = fallbackBackgroundColor
-        self.showsTintOverlay = showsTintOverlay
+        self.color = color
     }
 
     @ViewBuilder
@@ -38,518 +32,152 @@ public struct GlassProminentButtonModifier: ViewModifier {
         if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
             content
                 .buttonStyle(.glassProminent)
-                .tint(tint)
-                .background(showsTintOverlay ? tint.opacity(0.20) : Color.clear)
+                .tint(color)
         } else {
             content
-                .background(fallbackBackgroundColor)
+                .background(color)
         }
     }
 }
 
-internal struct GenericGlassButtonModifier<S: Shape>: ViewModifier {
+/// A compatibility wrapper around SwiftUI's `.glass` button style.
+public struct GlassCompatModifier: ViewModifier {
+    public let color: Color
 
-    let shape: S
-    let tint: Color
-    let isShadowEnabled: Bool
-    let forceDisable: Bool
-    let fallbackTopOpacity: CGFloat
-    let fallbackBottomOpacity: CGFloat
-    let fallbackStrokeOpacity: CGFloat
+    public init(
+        color: Color = .accentColor
+    ) {
+        self.color = color
+    }
 
-    func body(content: Content) -> some View {
-        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *), !forceDisable {
+    @ViewBuilder
+    public func body(content: Content) -> some View {
+        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
             content
-                .glassEffect(.regular.tint(tint).interactive(), in: shape)
+                .buttonStyle(.glass)
+                .tint(color)
         } else {
             content
-                .background(
-                    shape.fill(
-                        LinearGradient(
-                            colors: [tint.opacity(fallbackTopOpacity), tint.opacity(fallbackBottomOpacity)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                )
-                .overlay(
-                    shape.stroke(.white.opacity(fallbackStrokeOpacity), lineWidth: 0.6)
-                )
-                .shadow(
-                    color: isShadowEnabled ? tint.opacity(0.25) : .clear,
-                    radius: 12,
-                    x: 0,
-                    y: 6
-                )
+                .background(color)
         }
     }
 }
 
-/// A modifier that applies a glass-style rounded rectangle treatment to button surfaces.
-///
-/// This modifier provides a modern glassmorphism effect that automatically adapts between
-/// iOS 26's native `glassEffect` and a custom gradient fallback for older iOS versions.
-///
-/// ## Usage
-/// ```swift
-/// Button("Tap Me") { }
-///     .glassButton(cornerRadius: 16, tint: .blue)
-/// ```
-///
-/// - Note: On iOS 26+, uses native `glassEffect` with interactive tint. On earlier versions,
-///   uses a custom gradient with shadow for visual consistency.
-public struct GlassButtonModifier: ViewModifier {
+/// A compatibility wrapper around SwiftUI's `glassEffect(_:in:)` modifier.
+public struct GlassEffectCompatModifier<S: Shape>: ViewModifier {
+    public let style: GlassEffectCompatStyle
+    public let color: Color
+    public let isInteractive: Bool
+    public let shape: S
 
-    /// The corner radius for the rounded rectangle shape.
-    public let cornerRadius: CGFloat
-
-    /// The tint color applied to the glass effect and shadow.
-    public let tint: Color
-
-    /// Whether to enable the drop shadow effect.
-    public let isShadowEnabled: Bool
-
-    /// Forces the fallback gradient style, bypassing the iOS 26 glass effect.
-    public let forceDisable: Bool
-
-    /// Creates a glass button modifier with customizable appearance.
-    ///
-    /// - Parameters:
-    ///   - cornerRadius: The corner radius of the button. Defaults to `16`.
-    ///   - tint: The tint color for the glass effect. Defaults to `.blue`.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
     public init(
-        cornerRadius: CGFloat = 16,
-        tint: Color = .blue,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false
+        style: GlassEffectCompatStyle = .regular,
+        color: Color = .white.opacity(0.18),
+        isInteractive: Bool = false,
+        shape: S
     ) {
-        self.cornerRadius = cornerRadius
-        self.tint = tint
-        self.isShadowEnabled = isShadowEnabled
-        self.forceDisable = forceDisable
+        self.style = style
+        self.color = color
+        self.isInteractive = isInteractive
+        self.shape = shape
     }
 
+    @ViewBuilder
     public func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        return content.modifier(
-            GenericGlassButtonModifier(
-                shape: shape,
-                tint: tint,
-                isShadowEnabled: isShadowEnabled,
-                forceDisable: forceDisable,
-                fallbackTopOpacity: 0.35,
-                fallbackBottomOpacity: 0.12,
-                fallbackStrokeOpacity: 0.3
-            )
-        )
+        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
+            content
+                .glassEffect(resolvedGlass, in: shape)
+        } else {
+            content
+                .background(shape.fill(color))
+        }
+    }
+
+    @available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *)
+    private var resolvedGlass: Glass {
+        let baseGlass: Glass = switch style {
+        case .regular:
+            .regular
+        case .clear:
+            .clear
+        case .identity:
+            .identity
+        }
+
+        return baseGlass
+            .tint(color)
+            .interactive(isInteractive)
     }
 }
-
-/// A modifier that applies a glass-style capsule (pill) treatment to button surfaces.
-///
-/// Provides a rounded capsule shape with glassmorphism effect, ideal for pill-shaped action buttons.
-///
-/// ## Usage
-/// ```swift
-/// Button("Continue") { }
-///     .glassCapsuleButton(tint: .green)
-/// ```
-public struct GlassCapsuleButtonModifier: ViewModifier {
-
-    /// The tint color applied to the glass effect and shadow.
-    public let tint: Color
-
-    /// Whether to enable the drop shadow effect.
-    public let isShadowEnabled: Bool
-
-    /// Forces the fallback gradient style, bypassing the iOS 26 glass effect.
-    public let forceDisable: Bool
-
-    /// Creates a glass capsule button modifier.
-    ///
-    /// - Parameters:
-    ///   - tint: The tint color for the glass effect. Defaults to `.mint`.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
-    public init(
-        tint: Color = .mint,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false
-    ) {
-        self.tint = tint
-        self.isShadowEnabled = isShadowEnabled
-        self.forceDisable = forceDisable
-    }
-
-    public func body(content: Content) -> some View {
-        content.modifier(
-            GenericGlassButtonModifier(
-                shape: Capsule(),
-                tint: tint,
-                isShadowEnabled: isShadowEnabled,
-                forceDisable: forceDisable,
-                fallbackTopOpacity: 0.32,
-                fallbackBottomOpacity: 0.12,
-                fallbackStrokeOpacity: 0.28
-            )
-        )
-    }
-}
-
-/// A modifier that applies a glass-style circular treatment to button surfaces.
-///
-/// Provides a circular shape with glassmorphism effect, perfect for FAB-style or icon buttons.
-///
-/// ## Usage
-/// ```swift
-/// Button(action: { }) {
-///     Image(systemName: "plus")
-///         .font(.title2)
-/// }
-/// .glassCircleButton(tint: .blue)
-/// ```
-public struct GlassCircleButtonModifier: ViewModifier {
-
-    /// The tint color applied to the glass effect and shadow.
-    public let tint: Color
-
-    /// Whether to enable the drop shadow effect.
-    public let isShadowEnabled: Bool
-
-    /// Forces the fallback gradient style, bypassing the iOS 26 glass effect.
-    public let forceDisable: Bool
-
-    /// Creates a glass circle button modifier.
-    ///
-    /// - Parameters:
-    ///   - tint: The tint color for the glass effect. Defaults to `.mint`.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
-    public init(
-        tint: Color = .mint,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false
-    ) {
-        self.tint = tint
-        self.isShadowEnabled = isShadowEnabled
-        self.forceDisable = forceDisable
-    }
-
-    public func body(content: Content) -> some View {
-        content.modifier(
-            GenericGlassButtonModifier(
-                shape: Circle(),
-                tint: tint,
-                isShadowEnabled: isShadowEnabled,
-                forceDisable: forceDisable,
-                fallbackTopOpacity: 0.32,
-                fallbackBottomOpacity: 0.12,
-                fallbackStrokeOpacity: 0.28
-            )
-        )
-    }
-}
-
-// MARK: - View Extension
 
 public extension View {
-    /// Applies iOS 26 `.glassProminent` button styling with a background color fallback.
-    ///
-    /// - Parameters:
-    ///   - tint: Tint used by `.glassProminent` on iOS 26+.
-    ///   - fallbackBackgroundColor: Background color used on earlier OS versions.
-    ///   - showsTintOverlay: Adds a faint color layer on iOS 26+.
-    ///
-    /// - Returns: A view with glass prominent treatment applied.
-    func glassProminentButton(
-        tint: Color = .accentColor,
-        fallbackBackgroundColor: Color = Color.accentColor.opacity(0.18),
-        showsTintOverlay: Bool = true
+    /// Applies SwiftUI's `.glassProminent` button style with a pre-iOS 26 fallback background.
+    func glassProminentCompat(
+        color: Color = .accentColor
     ) -> some View {
         modifier(
-            GlassProminentButtonModifier(
-                tint: tint,
-                fallbackBackgroundColor: fallbackBackgroundColor,
-                showsTintOverlay: showsTintOverlay
+            GlassProminentCompatModifier(
+                color: color
             )
         )
     }
 
-    /// Applies a glass-style rounded rectangle treatment suitable for buttons.
-    ///
-    /// - Parameters:
-    ///   - cornerRadius: The corner radius of the button. Defaults to `16`.
-    ///   - tint: The tint color for the glass effect. Defaults to `.blue`.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
-    ///
-    /// - Returns: A view with the glass button modifier applied.
-    func glassButton(
-        cornerRadius: CGFloat = 16,
-        tint: Color = .blue,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false
+    /// Applies SwiftUI's `.glass` button style with a pre-iOS 26 fallback background.
+    func glassCompat(
+        color: Color = .accentColor
     ) -> some View {
         modifier(
-            GlassButtonModifier(
-                cornerRadius: cornerRadius,
-                tint: tint,
-                isShadowEnabled: isShadowEnabled,
-                forceDisable: forceDisable
+            GlassCompatModifier(
+                color: color
             )
         )
     }
 
-    /// Applies a glass-style capsule (pill) treatment suitable for pill buttons.
-    ///
-    /// - Parameters:
-    ///   - tint: The tint color for the glass effect. Defaults to `.mint`.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
-    ///
-    /// - Returns: A view with the glass capsule button modifier applied.
-    func glassCapsuleButton(
-        tint: Color = .mint,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false
+    /// Applies SwiftUI's `glassEffect(_:in:)` modifier with a pre-iOS 26 fallback shape fill.
+    func glassEffectCompat<S: Shape>(
+        style: GlassEffectCompatStyle = .regular,
+        color: Color = .white.opacity(0.18),
+        isInteractive: Bool = false,
+        in shape: S
     ) -> some View {
         modifier(
-            GlassCapsuleButtonModifier(
-                tint: tint,
-                isShadowEnabled: isShadowEnabled,
-                forceDisable: forceDisable
-            )
-        )
-    }
-
-    /// Applies a glass-style circle treatment suitable for circular buttons.
-    ///
-    /// - Parameters:
-    ///   - tint: The tint color for the glass effect. Defaults to `.mint`.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
-    ///
-    /// - Returns: A view with the glass circle button modifier applied.
-    func glassCircleButton(
-        tint: Color = .mint,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false
-    ) -> some View {
-        modifier(
-            GlassCircleButtonModifier(
-                tint: tint,
-                isShadowEnabled: isShadowEnabled,
-                forceDisable: forceDisable
+            GlassEffectCompatModifier(
+                style: style,
+                color: color,
+                isInteractive: isInteractive,
+                shape: shape
             )
         )
     }
 }
 
-// MARK: - Glass Effect Container
-
-/// A container view that applies a glass-style background treatment to its content.
-///
-/// This container provides a glassmorphism background effect that automatically adapts
-/// between iOS 26's native `glassEffect` and a custom gradient fallback for older versions.
-///
-/// ## Usage
-/// ```swift
-/// GlassEffectContainer(cornerRadius: 20, tint: .white) {
-///     Text("Glass Content")
-///         .padding()
-/// }
-/// ```
-///
-/// - Note: The container applies the glass effect to the background while preserving
-///   the content's original appearance.
-public struct GlassEffectContainer<Content: View>: View {
-
-    /// The corner radius for the container shape.
-    public let cornerRadius: CGFloat
-
-    /// The tint color applied to the glass effect.
-    public let tint: Color
-
-    /// Whether to enable the drop shadow effect.
-    public let isShadowEnabled: Bool
-
-    /// Forces the fallback gradient style, bypassing the iOS 26 glass effect.
-    public let forceDisable: Bool
-
-    /// The content to display inside the glass container.
-    public let content: Content
-
-    /// Creates a glass effect container.
-    ///
-    /// - Parameters:
-    ///   - cornerRadius: The corner radius of the container. Defaults to `20`.
-    ///   - tint: The tint color for the glass effect. Defaults to system background.
-    ///   - isShadowEnabled: Whether to display the drop shadow. Defaults to `true`.
-    ///   - forceDisable: Forces the use of the fallback gradient style. Defaults to `false`.
-    ///   - content: A view builder that provides the content to display inside the container.
-    public init(
-        cornerRadius: CGFloat = 20,
-        tint: Color? = nil,
-        isShadowEnabled: Bool = true,
-        forceDisable: Bool = false,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.cornerRadius = cornerRadius
-        self.tint = tint ?? .defaultGlassContainerTint
-        self.isShadowEnabled = isShadowEnabled
-        self.forceDisable = forceDisable
-        self.content = content()
-    }
-
-    public var body: some View {
-        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-
-        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *), !forceDisable {
-            content
-                .background(
-                    shape
-                        .fill(.regularMaterial)
-                        .glassEffect(.regular.tint(tint).interactive(), in: shape)
-                )
-        } else {
-            content
-                .background(
-                    shape.fill(
-                        LinearGradient(
-                            colors: [tint.opacity(0.85), tint.opacity(0.65)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                )
-                .overlay(
-                    shape.stroke(.white.opacity(0.4), lineWidth: 0.6)
-                )
-                .shadow(
-                    color: isShadowEnabled ? .black.opacity(0.08) : .clear,
-                    radius: 12,
-                    x: 0,
-                    y: 4
-                )
-        }
-    }
-}
-
-// MARK: - Previews
-
-#Preview("Glass Buttons") {
+#Preview("Glass Button Compat") {
     VStack(spacing: 16) {
-        Button("Add Transaction") {}
-            .font(.headline)
-            .foregroundStyle(.white)
+        Button("Continue") {}
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
-            .glassButton(cornerRadius: 18, tint: .blue)
+            .glassProminentCompat(color: .blue)
 
-        Button("Approve") {}
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.white)
+        Button("Maybe Later") {}
             .padding(.horizontal, 22)
             .padding(.vertical, 10)
-            .glassCapsuleButton(tint: .green)
-
-        Button("Skip") {}
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 22)
-            .padding(.vertical, 10)
-            .glassCapsuleButton(tint: .orange)
-
-        Button("Learn More") {}
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .glassButton(cornerRadius: 14, tint: .purple)
+            .glassCompat(color: .orange)
     }
     .padding(24)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(
-        LinearGradient(
-            colors: [Color.previewBackgroundStart, Color.previewBackgroundEnd],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    )
 }
 
-#Preview("Glass Circle Buttons") {
+#Preview("Glass Effect Compat") {
     HStack(spacing: 20) {
-        Button(action: {}) {
-            Image(systemName: "plus")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
-        }
-        .glassCircleButton(tint: .blue)
+        Text("A")
+            .font(.headline.weight(.bold))
+            .frame(width: 56, height: 56)
+            .glassEffectCompat(style: .regular, color: .blue, isInteractive: true, in: Circle())
 
-        Button(action: {}) {
-            Image(systemName: "heart.fill")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 48, height: 48)
-        }
-        .glassCircleButton(tint: .red)
-
-        Button(action: {}) {
-            Image(systemName: "star.fill")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 40, height: 40)
-        }
-        .glassCircleButton(tint: .yellow)
-    }
-    .padding(32)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(
-        LinearGradient(
-            colors: [Color.previewBackgroundStart, Color.previewBackgroundEnd],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    )
-}
-
-#Preview("Glass Effect Container") {
-    GlassEffectContainer(cornerRadius: 20, tint: .white) {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Glass Card")
-                .font(.headline)
-            Text("This is a glassmorphism container that adapts to iOS versions.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .padding()
+        Text("B")
+            .font(.headline.weight(.bold))
+            .frame(height: 44)
+            .padding(.horizontal, 18)
+            .glassEffectCompat(style: .regular, color: .green, isInteractive: true, in: Capsule())
     }
     .padding(24)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(
-        LinearGradient(
-            colors: [Color.previewBackgroundStart, Color.previewBackgroundEnd],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    )
-}
-
-private extension Color {
-    static var defaultGlassContainerTint: Color {
-#if canImport(UIKit)
-        return Color(uiColor: .systemBackground)
-#elseif canImport(AppKit)
-        return Color(nsColor: .windowBackgroundColor)
-#else
-        return .white
-#endif
-    }
-
-    static var previewBackgroundStart: Color { .gray.opacity(0.25) }
-    static var previewBackgroundEnd: Color { .gray.opacity(0.1) }
 }
