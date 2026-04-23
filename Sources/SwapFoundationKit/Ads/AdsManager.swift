@@ -55,10 +55,14 @@ public final class AdsManager {
         }
     }
 
+    /// Deprecated: Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking.
+    @available(*, deprecated, message: "Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad tracking")
     public func presentInterstitial() async -> AdPresentationResult {
         await present(.interstitial)
     }
 
+    /// Deprecated: Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking.
+    @available(*, deprecated, message: "Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking")
     public func presentRewarded() async -> AdPresentationResult {
         await present(.rewarded)
     }
@@ -76,6 +80,8 @@ public final class AdsManager {
         )
     }
 
+    /// Deprecated: Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking.
+    @available(*, deprecated, message: "Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad tracking")
     public func makeBannerViewController() -> UIViewController {
         guard
             let configuration,
@@ -104,6 +110,7 @@ public final class AdsManager {
 
 private final class EmptyBannerViewController: UIViewController { }
 
+/// Banner ad view that uses AdsManager to render ads.
 public struct AdaptiveBannerAdView: UIViewControllerRepresentable {
     public init() {}
 
@@ -114,6 +121,9 @@ public struct AdaptiveBannerAdView: UIViewControllerRepresentable {
     public func updateUIViewController(_ uiViewController: UIViewController, context: Context) { }
 }
 #else
+import SwiftUI
+import UIKit
+
 @MainActor
 public final class AdsManager {
     public static let shared = AdsManager()
@@ -124,12 +134,31 @@ public final class AdsManager {
 
     public func preload(_ placements: Set<AdPlacement>) { }
 
+    /// Deprecated: Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking.
+    @available(*, deprecated, message: "Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking")
     public func presentInterstitial() async -> AdPresentationResult { .failed }
 
+    /// Deprecated: Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking.
+    @available(*, deprecated, message: "Use SwapProKitAdMob's swapProLoadAndTrack() methods for RevenueCat ad revenue tracking")
     public func presentRewarded() async -> AdPresentationResult { .failed }
+
+    public func makeBannerViewController() -> UIViewController {
+        UIViewController()
+    }
 
     internal func resetForTesting() { }
 
     internal func setProviderFactoryForTesting(_ providerFactory: Any?) { }
+}
+
+/// Banner ad view placeholder for simulator or when GoogleMobileAds is unavailable.
+public struct AdaptiveBannerAdView: UIViewControllerRepresentable {
+    public init() {}
+
+    public func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    public func updateUIViewController(_ uiViewController: UIViewController, context: Context) { }
 }
 #endif
