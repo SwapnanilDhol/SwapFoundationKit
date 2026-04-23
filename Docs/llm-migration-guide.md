@@ -184,6 +184,7 @@ struct OnboardingScreen: View {
 - File Export/Import: `FileExportService` for presenting `UIActivityViewController` with data, `FileImportService` for `UIDocumentPickerViewController` with custom `UTType` registration
 - Deeplink handling: `DeeplinkHandler` protocol with `DefaultDeeplinkHandler` implementation, `DeeplinkRoute` protocol for type-safe routes, `DeeplinkEvent` for Combine-based callbacks handling cold launch, resume, universal links, and Handoff
 - On-device JSON backups: `BackupService` — `performBackup` writes under `Documents/<FileType>/`; `restoreBackup` reads the **newest** backup (same order as `listBackupFiles(for:).first`). Use the same `Decodable` type (and `JSONDecoder` date strategy) as the `Encodable` payload you store. For tests, `BackupService(documentsDirectoryOverride: tempURL)` keeps files out of the real Documents folder.
+- Update available banner: `SFKUpdateAvailableBannerView` — shows a non-intrusive banner when an update is available; tap opens App Store. Use with `UpdateAvailableKit` (`UpdateAvailableManager.shared.result`) for reactive version checking, or pass `newVersion: String?` directly.
 
 ---
 
@@ -1096,3 +1097,315 @@ Task { await AppSync.initialSync() }
 ```
 
 If you follow the above steps precisely, an LLM can safely migrate most codebases to use SwapFoundationKit with minimal developer intervention.
+
+---
+
+## 12) Ad Integration Architecture (Wrapper-Only)
+
+The correct architecture for ad integration keeps GoogleMobileAds types isolated in kit packages. App targets should **never** import GoogleMobileAds or SwapProKitAdMob directly.
+
+### Architecture
+
+```
+App Target
+├── SwapProKit
+│   └── SwapFoundationKit → GoogleMobileAds (transitive)
+└── SwapProKitAdMob (wrapper only — no ad types leak to app)
+    ├── SwapProKit
+    └── RevenueCatAdMob (ad revenue tracking)
+
+App target should use:
+├── AdsManager (SwapFoundationKit) — SDK init and wrapper
+├── AdaptiveBannerAdView (SwapFoundationKit) — banner display
+└── AdsConfiguration / AdUnitConfiguration (SwapFoundationKit) — config
+```
+
+### Why Wrapper-Only
+
+1. **Module visibility**: GoogleMobileAds is a transitive dependency of SwapFoundationKit. `canImport(GoogleMobileAds)` in app targets is unreliable across build configs.
+2. **RevenueCat tracking**: SwapProKitAdMob's `swapProLoadAndTrack()` methods handle RevenueCat attribution. These are called from within SwapFoundationKit's provider layer.
+3. **CI reliability**: Avoids conditional compilation (`#if canImport(...)`) that silently disables code.
+
+### Correct Usage
+
+**AppDelegate — SDK setup:**
+```swift
+import SwapFoundationKit
+
+private func setupAds() {
+    Task { @MainActor in
+        await AdsManager.shared.start(
+            with: AdsConfiguration(
+                provider: .google(GoogleAdsConfiguration()),
+                adUnits: AdUnitConfiguration(
+                    banner: "ca-app-pub-xxxxxxx/banner",
+                    interstitial: "ca-app-pub-xxxxxxx/interstitial",
+                    rewarded: "ca-app-pub-xxxxxxx/rewarded"
+                ),
+                preloadOnStart: [.interstitial],
+                isEligibleToShowAds: {
+                    !ProManager.shared.isProEnabled
+                },
+                presentingViewController: {
+                    UIApplication.topViewController()
+                },
+                eventHandler: { event in
+                    switch event {
+                    case .impression(.banner):
+                        AppAnalyticsManager.shared.logEvent(event: .didRecordBannerAdImpressions)
+                    case .click(.banner):
+                        AppAnalyticsManager.shared.logEvent(event: .didRecordBannerAdClick)
+                    // ... handle other events
+                    }
+                }
+            )
+        )
+    }
+}
+```
+
+**Views — Banner display:**
+```swift
+import SwapFoundationKit
+
+struct MyView: View {
+    var body: some View {
+        VStack {
+            AdaptiveBannerAdView()
+                .frame(height: 80)
+        }
+    }
+}
+```
+
+### What NOT To Do
+
+- Do NOT import `GoogleMobileAds` directly in app target
+- Do NOT import `SwapProKitAdMob` directly in app target (unless using RevenueCatAdMob SPI)
+- Do NOT use `#if canImport(SwapProKitAdMob)` guards — AdsManager handles unavailability
+- Do NOT create inline `UIViewControllerRepresentable` wrappers for BannerView
+
+### RevenueCat Ad Attribution
+
+RevenueCatAdMob integration is handled automatically through SwapProKitAdMob's `swapProLoadAndTrack()` extensions. These are called from within SwapFoundationKit's GoogleAdsProvider when ads load. No app target code needs to directly interact with RevenueCatAdMob.
+
+### Simulator Behavior
+
+Ads do not load on simulator. `AdaptiveBannerAdView` falls back to an empty view when GoogleMobileAds is unavailable. `AdsManager.start()` returns early on simulator — no crash, no action needed.
+
+### Validation
+
+- Build succeeds in both Debug and Release
+- Archive succeeds
+- Banner renders on physical device (not simulator)
+- RevenueCat dashboard shows ad revenue attribution (check sandbox data)
+
+---
+
+## 14) Update Available Banner (`SFKUpdateAvailableBannerView`)
+
+`SFKUpdateAvailableBannerView` shows a non-intrusive banner at the top of the screen when a new app version is available. Tapping the banner opens an App Store confirmation sheet.
+
+Requires `UpdateAvailableKit` as a dependency for reactive version checking (optional — you can also pass the version string directly).
+
+### Quick Start
+
+**Basic usage with version string:**
+```swift
+import SwapFoundationKit
+
+VStack {
+    Spacer()
+    SFKUpdateAvailableBannerView(
+        newVersion: "2.1.0",
+        appStoreID: "123456789"
+    )
+}
+```
+
+**With callbacks:**
+```swift
+SFKUpdateAvailableBannerView(
+    newVersion: "2.1.0",
+    appStoreID: "123456789",
+    onTap: {
+        // Custom tap action before sheet opens
+    },
+    onDismiss: {
+        // User dismissed the sheet without updating
+    }
+)
+```
+
+**Custom theme:**
+```swift
+SFKUpdateAvailableBannerView(
+    newVersion: "3.0.0",
+    theme: UpdateAvailableBannerTheme(
+        backgroundColor: .orange.opacity(0.15),
+        titleColor: .orange,
+        iconName: "star.fill",
+        buttonTitle: "Get Update",
+        buttonColor: .orange
+    ),
+    appStoreID: "123456789"
+)
+```
+
+### Reactive Usage with `UpdateAvailableKit`
+
+Use `UpdateAvailableManager.shared` to check for updates and drive the banner reactively.
+
+**Setup at app launch:**
+```swift
+import SwapFoundationKit
+import UpdateAvailableKit
+
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .onAppear {
+                    UpdateAvailableManager.shared.start()
+                }
+        }
+    }
+}
+```
+
+**Connecting `UpdateAvailableManager` to `SFKUpdateAvailableBannerView`:**
+
+```swift
+import SwiftUI
+import SwapFoundationKit
+import UpdateAvailableKit
+
+struct ContentView: View {
+    @ObservedObject private var updateManager = UpdateAvailableManager.shared
+
+    @State private var bannerState: UpdateBannerState = .none
+
+    var body: some View {
+        VStack {
+            Spacer()
+            SFKUpdateAvailableBannerView(
+                state: $bannerState,
+                appStoreID: "123456789"
+            )
+        }
+        .onAppear {
+            syncBannerState()
+        }
+        .onChange(of: updateManager.result) { _, _ in
+            syncBannerState()
+        }
+    }
+
+    private func syncBannerState() {
+        switch updateManager.result {
+        case .updateAvailable(let newVersion):
+            bannerState = .available(newVersion: newVersion)
+        case .noUpdatesAvailable:
+            bannerState = .none
+        }
+    }
+}
+```
+
+**Or using the simpler initializer with a derived binding:**
+```swift
+struct ContentView: View {
+    @ObservedObject private var updateManager = UpdateAvailableManager.shared
+
+    var body: some View {
+        VStack {
+            Spacer()
+            SFKUpdateAvailableBannerView(
+                newVersion: updateManager.newVersion,
+                appStoreID: "123456789",
+                onDismiss: {
+                    // Optionally clear the banner on dismiss
+                }
+            )
+        }
+        .onAppear {
+            updateManager.start()
+        }
+    }
+}
+```
+
+### Banner State Enum
+
+```swift
+public enum UpdateBannerState: Equatable {
+    case none
+    case available(newVersion: String)
+}
+```
+
+### Theme Configuration
+
+```swift
+public struct UpdateAvailableBannerTheme: Sendable {
+    public let backgroundColor: Color
+    public let titleColor: Color
+    public let subtitleColor: Color
+    public let iconName: String
+    public let buttonTitle: String
+    public let buttonColor: Color
+    public let buttonTitleColor: Color
+
+    public init(
+        backgroundColor: Color = Color.purple.opacity(0.12),
+        titleColor: Color = .purple,
+        subtitleColor: Color = .secondary,
+        iconName: String = "arrow.down.app.fill",
+        buttonTitle: String = "Update Now",
+        buttonColor: Color = .purple,
+        buttonTitleColor: Color = .white
+    ) { ... }
+
+    public static let `default` = UpdateAvailableBannerTheme()
+}
+```
+
+### `UpdateAvailableManager` API
+
+```swift
+public final class UpdateAvailableManager: ObservableObject {
+    public static let shared = UpdateAvailableManager()
+
+    @Published public private(set) var result: UpdateAvailableResult
+
+    public func configure(with: UpdateAvailableConfiguration)
+    @MainActor public func start()
+}
+
+// Result enum
+public enum UpdateAvailableResult: Equatable {
+    case noUpdatesAvailable
+    case updateAvailable(newVersion: String)
+}
+
+// Configuration
+public struct UpdateAvailableConfiguration {
+    public var bundleID: String?
+    public var cacheDuration: TimeInterval  // default: 3600 (1 hour)
+}
+```
+
+### Hiding the Banner
+
+The banner is hidden when `newVersion` is `nil` or `state` is `.none`. To temporarily hide:
+
+```swift
+@State private var bannerState: UpdateBannerState = .none
+
+// Hide
+bannerState = .none
+
+// Show
+bannerState = .available(newVersion: "2.1.0")
+```
