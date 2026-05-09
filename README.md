@@ -45,6 +45,38 @@ dependencies: [
 
 ---
 
+## GitHub / CI Usage
+
+Consume `SwapFoundationKit` from GitHub in committed code and CI:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "1.0.0")
+]
+```
+
+The committed default package graph in this repository is intentionally remote-safe:
+
+- `Package.swift` uses remote GitHub URLs only
+- `Package.resolved` pins remote source-control dependencies only
+- No committed `.package(path:)` entries or local filesystem overrides should be added to the default package graph
+
+If you are updating this package for shared consumption by apps such as `SwapProKit` or `PassMaker`, keep that remote-safe default intact so GitHub builds and downstream package resolution continue to work.
+
+---
+
+## Optional Local Development
+
+For local iteration, keep any local-only workflow outside committed package manifests:
+
+- In a consuming app, use Xcode's local package checkout/override flow temporarily while developing against a local `SwapFoundationKit` clone
+- Revert the consuming app back to the GitHub package URL before committing
+- Do not commit `.package(path: ...)`, absolute filesystem paths, or machine-specific overrides to `Package.swift` / `Package.resolved`
+
+This lets you develop locally without breaking CI or remote consumers.
+
+---
+
 ## Quick Start
 
 Initialize the framework in your `App` struct:
