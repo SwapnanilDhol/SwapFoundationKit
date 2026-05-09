@@ -11,6 +11,29 @@
 
 import Foundation
 
+public enum NetworkLogLevel: String, Sendable, CaseIterable {
+    case none
+    case error
+    case warning
+    case info
+    case debug
+
+    fileprivate func allows(_ level: LogLevel) -> Bool {
+        switch self {
+        case .none:
+            return false
+        case .error:
+            return level >= .error
+        case .warning:
+            return level >= .warning
+        case .info:
+            return level >= .info
+        case .debug:
+            return true
+        }
+    }
+}
+
 /// HTTP methods supported by the networking module
 public enum HTTPMethod: String {
     case get = "GET"
@@ -75,11 +98,31 @@ public extension NetworkRequest {
 
         var urlComponents = URLComponents()
         urlComponents.scheme = scheme
-        urlComponents.host = baseURL
-        urlComponents.path = path
+        let normalizedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let baseURLComponents = URLComponents(string: "\(scheme)://\(normalizedBaseURL)")
+
+        if let host = baseURLComponents?.host {
+            urlComponents.host = host
+            urlComponents.port = baseURLComponents?.port
+            let basePath = baseURLComponents?.path ?? ""
+            urlComponents.path = Self.normalizedPath(basePath: basePath, requestPath: path)
+        } else {
+            urlComponents.host = normalizedBaseURL
+            urlComponents.path = Self.normalizedPath(basePath: "", requestPath: path)
+        }
         urlComponents.queryItems = parameters?.compactMap { URLQueryItem(name: $0.key, value: $0.value) }
 
         return urlComponents.url
+    }
+
+    private static func normalizedPath(basePath: String, requestPath: String) -> String {
+        let sanitizedBasePath = basePath == "/" ? "" : basePath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let sanitizedRequestPath = requestPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+
+        let pathComponents = [sanitizedBasePath, sanitizedRequestPath]
+            .filter { !$0.isEmpty }
+
+        return "/" + pathComponents.joined(separator: "/")
     }
 }
 
@@ -135,6 +178,8 @@ public enum NetworkError: Error, LocalizedError {
     }
 }
 
+public typealias HTTPClientError = NetworkError
+
 /// HTTP client for executing network requests
 public final class HTTPClient {
     /// Shared singleton instance
@@ -149,6 +194,9 @@ public final class HTTPClient {
         "Accept": "application/json"
     ]
 
+    /// Controls how verbosely the client logs request and response details.
+    public var networkLogLevel: NetworkLogLevel = .none
+
     /// Initialize with custom URLSession configuration
     public init(configuration: URLSessionConfiguration = .default) {
         self.session = URLSession(configuration: configuration)
@@ -160,6 +208,7 @@ public final class HTTPClient {
     /// - Throws: NetworkError if the request fails
     public func execute(_ request: NetworkRequest) async throws -> NetworkResponse {
         guard let urlRequest = request.request else {
+            log(.error, "Failed to create URLRequest for \(request.method.rawValue) \(request.baseURL)\(request.path)")
             throw NetworkError.invalidURL
         }
 
@@ -170,22 +219,30 @@ public final class HTTPClient {
             allHeaders.merge(requestHeaders) { (_, new) in new }
         }
         finalRequest.allHTTPHeaderFields = allHeaders
+        logRequest(finalRequest)
 
         do {
             let (data, response) = try await session.data(for: finalRequest)
 
             guard let httpResponse = response as? HTTPURLResponse else {
+                log(.error, "Received non-HTTP response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
                 throw NetworkError.invalidResponse
             }
 
             let networkResponse = NetworkResponse(data: data, response: httpResponse, request: finalRequest)
+            logResponse(networkResponse)
 
             guard networkResponse.isSuccessful else {
+                log(
+                    .error,
+                    "Request failed with HTTP \(httpResponse.statusCode) for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")\(formattedBodySuffix(data))"
+                )
                 throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: data)
             }
 
             return networkResponse
         } catch let error as URLError {
+            log(.error, "Transport error for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
             switch error.code {
             case .timedOut:
                 throw NetworkError.timeout
@@ -196,7 +253,10 @@ public final class HTTPClient {
             default:
                 throw NetworkError.requestFailed(error)
             }
+        } catch let error as NetworkError {
+            throw error
         } catch {
+            log(.error, "Unexpected request failure for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
             throw NetworkError.requestFailed(error)
         }
     }
@@ -216,6 +276,104 @@ public final class HTTPClient {
         } catch {
             throw NetworkError.decodingError(error)
         }
+    }
+}
+
+private extension HTTPClient {
+    func log(_ level: LogLevel, _ message: String) {
+        guard networkLogLevel.allows(level) else { return }
+
+        switch level {
+        case .debug:
+            Logger.debug(message, context: "Network")
+        case .info:
+            Logger.info(message, context: "Network")
+        case .warning:
+            Logger.warning(message, context: "Network")
+        case .error:
+            Logger.error(message, context: "Network")
+        }
+    }
+
+    func logRequest(_ request: URLRequest) {
+        let method = request.httpMethod ?? "REQUEST"
+        let url = request.url?.absoluteString ?? "unknown URL"
+        log(.info, "→ \(method) \(url)")
+
+        if networkLogLevel.allows(.debug) {
+            let headerSummary = sanitizedHeaders(request.allHTTPHeaderFields)
+            log(.debug, "Headers: \(headerSummary)")
+            log(.debug, "Cache policy: \(String(describing: request.cachePolicy)), timeout: \(request.timeoutInterval)s")
+
+            if let body = request.httpBody, !body.isEmpty {
+                log(.debug, "Body: \(formattedBody(body))")
+            }
+        }
+    }
+
+    func logResponse(_ response: NetworkResponse) {
+        let method = response.request.httpMethod ?? "REQUEST"
+        let url = response.request.url?.absoluteString ?? "unknown URL"
+        let status = response.statusCode
+        let responseSize = ByteCountFormatter.string(fromByteCount: Int64(response.data.count), countStyle: .file)
+
+        let level: LogLevel = response.isSuccessful ? .info : .warning
+        log(level, "← \(status) \(method) \(url) [\(responseSize)]")
+
+        if networkLogLevel.allows(.debug) {
+            let headerSummary = sanitizedResponseHeaders(response.response.allHeaderFields)
+            log(.debug, "Response headers: \(headerSummary)")
+
+            if !response.data.isEmpty {
+                log(.debug, "Response body: \(formattedBody(response.data))")
+            }
+        }
+    }
+
+    func sanitizedHeaders(_ headers: [String: String]?) -> String {
+        guard let headers, !headers.isEmpty else {
+            return "none"
+        }
+
+        let redactedKeys: Set<String> = ["authorization", "cookie", "set-cookie", "x-api-key", "proxy-authorization"]
+        let sanitized = headers
+            .map { key, value in
+                let safeValue = redactedKeys.contains(key.lowercased()) ? "<redacted>" : value
+                return "\(key)=\(safeValue)"
+            }
+            .sorted()
+
+        return sanitized.joined(separator: ", ")
+    }
+
+    func sanitizedResponseHeaders(_ headers: [AnyHashable: Any]) -> String {
+        guard !headers.isEmpty else {
+            return "none"
+        }
+
+        let stringHeaders = headers.reduce(into: [String: String]()) { partialResult, item in
+            guard let key = item.key as? String else { return }
+            partialResult[key] = String(describing: item.value)
+        }
+
+        return sanitizedHeaders(stringHeaders)
+    }
+
+    func formattedBody(_ data: Data, maxLength: Int = 2_048) -> String {
+        guard !data.isEmpty else { return "<empty>" }
+
+        let preview = String(decoding: data.prefix(maxLength), as: UTF8.self)
+        if data.count > maxLength {
+            return "\(preview)… [truncated \(data.count - maxLength) bytes]"
+        }
+        return preview
+    }
+
+    func formattedBodySuffix(_ data: Data) -> String {
+        guard networkLogLevel.allows(.debug), !data.isEmpty else {
+            return ""
+        }
+        return " | body: \(formattedBody(data, maxLength: 512))"
     }
 }
 

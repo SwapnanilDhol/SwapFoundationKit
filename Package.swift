@@ -22,6 +22,10 @@ let package = Package(
             url: "https://github.com/BastiaanJansen/Toast-Swift.git",
             exact: "2.1.3"
         ),
+        .package(
+            url: "https://github.com/SwapnanilDhol/UpdateAvailableKit",
+            from: "2.0.0"
+        ),
             ],
     targets: [
         .target(
@@ -29,6 +33,7 @@ let package = Package(
             dependencies: [
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
                 .product(name: "Toast", package: "Toast-Swift"),
+                .product(name: "UpdateAvailableKit", package: "UpdateAvailableKit"),
                             ]
         ),
         .testTarget(

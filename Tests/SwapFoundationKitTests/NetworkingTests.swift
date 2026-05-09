@@ -18,6 +18,7 @@ final class NetworkingTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        SwapFoundationKit.shared.resetForTesting()
 
         // Create mock session configuration
         let config = URLSessionConfiguration.ephemeral
@@ -31,6 +32,7 @@ final class NetworkingTests: XCTestCase {
         client = nil
         mockSession = nil
         MockURLProtocol.mockResponse = nil
+        SwapFoundationKit.shared.resetForTesting()
         try await super.tearDown()
     }
 
@@ -110,6 +112,27 @@ final class NetworkingTests: XCTestCase {
         // Then
         XCTAssertNotNil(url)
         XCTAssertEqual(url?.absoluteString, "https://api.example.com/health")
+    }
+
+    func testNetworkRequestURLBuildingWithPortAndNormalizedPath() {
+        // Given
+        struct TestRequest: NetworkRequest {
+            var scheme: String { "http" }
+            var baseURL: String { "localhost:8080" }
+            var path: String { "api/test" }
+            var method: HTTPMethod { .get }
+            var parameters: [String: String]? { nil }
+            var headers: [String: String]? { nil }
+            var body: Data? { nil }
+        }
+
+        let request = TestRequest()
+
+        // When
+        let url = request.url
+
+        // Then
+        XCTAssertEqual(url?.absoluteString, "http://localhost:8080/api/test")
     }
 
     // MARK: - HTTP Method Tests
@@ -608,7 +631,8 @@ final class NetworkingTests: XCTestCase {
         // Given
         let config = SwapFoundationKitConfiguration(
             appMetadata: AppMetaData(appGroupIdentifier: "group.test.networking"),
-            enableNetworking: true
+            enableNetworking: true,
+            networkLogLevel: .debug
         )
 
         // When
@@ -616,6 +640,7 @@ final class NetworkingTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(SwapFoundationKit.shared.networkClient)
+        XCTAssertEqual(SwapFoundationKit.shared.networkClient?.networkLogLevel, .debug)
 
         // Cleanup
         // Note: In a real scenario, you might want to reset the framework state

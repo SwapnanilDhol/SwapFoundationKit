@@ -48,6 +48,7 @@ private enum AppExtrasItem: String, CaseIterable, SettingsItem {
 struct SettingsExamplesView: View {
     @State private var notificationsEnabled = true
     @State private var lastSyncDate = Date.now
+    @State private var updateBannerVersion: String?
 
     private let sections: [SFKSettingsSectionConfiguration] = [
         SFKSettingsSectionConfiguration(
@@ -68,9 +69,6 @@ struct SettingsExamplesView: View {
         SFKSettingsScreen(
             header: header,
             customSections: [
-                SFKSettingsCustomSection {
-                    updateBanner
-                },
                 SFKSettingsCustomSection(title: "Quick Controls") {
                     SFKSettingsToggle(
                         title: "Push Notifications",
@@ -82,6 +80,12 @@ struct SettingsExamplesView: View {
                 }
             ],
             sections: sections,
+            updateBannerVersion: $updateBannerVersion,
+            updateBannerAppStoreID: "123456789",
+            onUpdateBannerTap: {
+                // Example hook for analytics side-effects.
+                print("Update banner tapped")
+            },
             rowTrailingBuilder: trailingView(for:),
             rowChevronBuilder: showChevron(for:),
             onItemTap: handleTap(_:)
@@ -97,29 +101,6 @@ struct SettingsExamplesView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 8)
-    }
-
-    private var updateBanner: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "sparkles.rectangle.stack.fill")
-                .font(.title2)
-                .foregroundStyle(.white)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("New Version Available")
-                    .font(.headline.weight(.heavy))
-                    .foregroundStyle(.white)
-                Text("Custom sections can now render banners and action cards above standard settings rows.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.9))
-            }
-
-            Spacer()
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange)
-        .clipShape(.rect(cornerRadius: 16))
     }
 
     private func trailingView(for item: any SettingsItem) -> AnyView? {

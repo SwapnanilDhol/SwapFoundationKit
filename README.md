@@ -1,48 +1,108 @@
 # SwapFoundationKit
 
-A comprehensive Swift package providing essential utilities, extensions, and services for iOS, macOS, and watchOS development. Built with modern Swift features and designed for developer productivity.
+A comprehensive Swift package providing essential utilities, extensions, UI components, and services for iOS development. Built with modern Swift features and designed for developer productivity and cross-app consistency.
 
-## 🎯 Migration Guide: Replacing Redundant Implementations
+## Quick Navigation
 
-When integrating SwapFoundationKit into your app, you should **replace all redundant implementations** with the SDK's provided classes and utilities. This guide helps you identify what can be replaced and how to do it.
+| Section | Description |
+|---------|-------------|
+| [Requirements](#requirements) | Platform and tooling requirements |
+| [Installation](#installation) | SPM setup instructions |
+| [Quick Start](#quick-start) | Framework initialization |
+| [Host App Audit](#host-app-audit) | How to audit your app for redundant implementations |
+| [Capabilities Checklist](#capabilities-checklist) | Every capability as a migration checklist item |
+| [API Reference](#api-reference) | Complete API summary |
+| [Architecture](#architecture) | Design principles |
+| [Testing](#testing) | How to run tests |
+| [Support](#support) | Issues, discussions, contact |
 
-### Host App Audit
+---
 
-If you want an LLM or code-review agent to audit a host app for overlap with
-SwapFoundationKit, use `Docs/host-app-audit-catalog.yaml` as the source of truth
-and `AGENTS.md` as the workflow. The catalog only lists public API and marks each
-capability as `exact`, `heuristic`, or `manual` to keep audits useful instead of noisy.
+## Requirements
 
-### Step-By-Step: Audit A Host App
+- **iOS**: 17.0+
+- **Swift**: 5.9+
+- **Xcode**: 15.0+
+- **Dependencies**: Google Mobile Ads (13.1.0), Toast-Swift (2.1.3), UpdateAvailableKit (2.0.0+)
 
-You do not need a `SKILL.md` to start. The minimum setup is:
+---
 
-- the host app repository
-- this `SwapFoundationKit` repository
-- an agent that can read both
+## Installation
 
-#### 1. Keep both repos available locally
+### Swift Package Manager
 
-If you already have both repos on disk, use those paths. Otherwise clone this repo somewhere convenient:
+1. In Xcode: **File** → **Add Package Dependencies**
+2. Enter: `https://github.com/SwapnanilDhol/SwapFoundationKit`
+3. Select version and click **Add Package**
 
-```bash
-cd /path/to/workspace
-git clone https://github.com/SwapnanilDhol/SwapFoundationKit.git
+Or in `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "1.0.0")
+]
 ```
 
-For the examples below, assume:
+---
 
-- host app path: `/path/to/HostApp`
-- SwapFoundationKit path: `/path/to/SwapFoundationKit`
+## Quick Start
 
-#### 2. Run a high-confidence audit first
+Initialize the framework in your `App` struct:
 
-Start with the `exact` tier only. That gives you the least noisy report.
+```swift
+import SwapFoundationKit
 
-Use this prompt with any coding agent:
+@main
+struct MyApp: App {
+    init() {
+        let config = SwapFoundationKitConfiguration(
+            appMetadata: AppMetaData(
+                appGroupIdentifier: "group.com.yourapp.widget",
+                appName: "MyApp",
+                appVersion: "1.0.0"
+            ),
+            enableWatchConnectivity: true,
+            watchSyncOptions: WatchSyncOptions(
+                preferredTransport: .applicationContext,
+                fallbackOrder: [.userInfo, .messageData, .file]
+            ),
+            enableAnalytics: true,
+            enableItemSync: true,
+            enableNetworking: true,
+            networkTimeout: 30.0,
+            networkLogLevel: .info
+        )
+
+        Task {
+            try? await SwapFoundationKit.shared.start(with: config)
+            await ExchangeRateManager.shared.start()
+        }
+    }
+
+    var body: some Scene {
+        WindowGroup { ContentView() }
+    }
+}
+```
+
+---
+
+## Host App Audit
+
+If you want an LLM or code-review agent to audit a host app for overlap with SwapFoundationKit, use `Docs/host-app-audit-catalog.yaml` as the source of truth. The catalog lists every public capability and marks each as `exact`, `heuristic`, or `manual` to keep audits useful instead of noisy.
+
+### Audit Workflow
+
+1. **Start with `exact` tier only** — least noisy, highest confidence.
+2. **Review `replace` findings** and migrate one capability at a time.
+3. **Run app tests** after each migration.
+4. **Expand to `heuristic` tier** after obvious overlaps are removed.
+5. **Use `manual` tier last** for generic extensions where naming overlap alone is not enough.
+
+### Agent Prompt
 
 ```text
-Use /path/to/SwapFoundationKit/AGENTS.md and /path/to/SwapFoundationKit/Docs/host-app-audit-catalog.yaml as the source of truth.
+Use /path/to/SwapFoundationKit/Docs/host-app-audit-catalog.yaml as the source of truth.
 
 Audit this host app for redundant implementations that already exist in SwapFoundationKit.
 
@@ -59,148 +119,37 @@ Return:
 3. A suggested migration order.
 ```
 
-#### 3. Codex
-
-Install Codex if needed:
-
-```bash
-npm install -g @openai/codex
-codex login
-```
-
-Run Codex from the host app root:
-
-```bash
-cd /path/to/HostApp
-codex
-```
-
-Then paste the prompt above.
-
-For a read-only audit, stay in the default suggest mode. Only switch to edit modes after you agree with the findings.
-
-If you want Codex to help migrate after the audit:
-
-```bash
-cd /path/to/HostApp
-codex --auto-edit
-```
-
-Then ask it to replace one capability at a time, starting with the highest-confidence `replace` findings.
-
-#### 4. Claude Code
-
-Install Claude Code if needed:
-
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-
-Run Claude Code from the host app root:
-
-```bash
-cd /path/to/HostApp
-claude
-```
-
-Then paste the same prompt.
-
-If you prefer non-interactive output, Claude Code also supports a print mode:
-
-```bash
-claude -p "Use /path/to/SwapFoundationKit/AGENTS.md and /path/to/SwapFoundationKit/Docs/host-app-audit-catalog.yaml as the source of truth. Audit this host app for redundant implementations that already exist in SwapFoundationKit. Start with audit_tier: exact only. Classify each finding as replace, review, or keep. Cite the host app file and the matching SwapFoundationKit file. Do not suggest internal-only SFK helpers as replacements. Return a short summary, the findings, and a suggested migration order." --cwd /path/to/HostApp
-```
-
-#### 5. Expand to broader overlap checks
-
-Once the exact-tier report looks right, run a second prompt:
-
-```text
-Now run the heuristic tier from the audit catalog.
-
-Rules:
-- Keep false positives low.
-- Only flag overlaps that are realistically worth consolidating into SwapFoundationKit.
-- Separate likely wins from "review manually" items.
-```
-
-Use the `manual` tier last, mainly for generic extensions and utilities where naming overlap alone is not enough.
-
-#### 6. Turn the audit into migration work
-
-After the audit, use a follow-up prompt like this:
-
-```text
-Using the exact-tier findings only, create a migration plan for this host app.
-
-Return:
-1. The order to migrate capabilities.
-2. Risks or behavior changes to watch for.
-3. The search-and-replace patterns to use.
-4. The tests or smoke checks to run after each migration.
-```
-
-#### 7. Recommended workflow
-
-1. Run the `exact` tier.
-2. Review the `replace` findings manually.
-3. Migrate one capability at a time.
-4. Run app tests after each migration.
-5. Run the `heuristic` tier only after the obvious overlaps are removed.
-
-#### Notes
-
-- If your agent cannot read files outside the host app directory, either give it access to the SwapFoundationKit path or paste the contents of `AGENTS.md` and `Docs/host-app-audit-catalog.yaml` into the session.
-- Keep app-specific facades when they add domain behavior. In those cases, SwapFoundationKit should usually sit underneath the facade rather than replace it completely.
-
-### ⚠️ Important Migration Principle
-
-**If your app already has an implementation for any of the features listed below, replace it with SwapFoundationKit's implementation by importing the library.** This modularizes your codebase and ensures consistency across your app ecosystem.
+See `Docs/AGENTS.md` for the full LLM agent workflow documentation.
 
 ---
 
-## 📋 Requirements
+## Capabilities Checklist
 
-- **iOS**: 16.0+
-- **macOS**: 16.0+
-- **watchOS**: 6.0+
-- **Swift**: 5.9+
-- **Xcode**: 15.0+
+**Migration principle**: If your app already has an implementation for any capability below, replace it with SwapFoundationKit's implementation. This modularizes your codebase and ensures consistency across your app ecosystem.
 
-## 📦 Installation
-
-### Swift Package Manager
-
-Add SwapFoundationKit to your project in Xcode:
-
-1. Go to **File** → **Add Package Dependencies**
-2. Enter the repository URL: `https://github.com/SwapnanilDhol/SwapFoundationKit`
-3. Select the version you want to use
-4. Click **Add Package**
-
-Or add it to your `Package.swift`:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "1.0.0")
-]
-```
+Each item below is a self-contained migration unit. Work through them in order, starting with `exact` tier items.
 
 ---
 
-## 🔄 Components to Replace
+### 1. Haptics Manager
 
-### 1. Haptics Manager / Feedback Generator
+**Tier**: `exact` · **Confidence**: high
 
-**If your app has a haptics manager class, replace it with `HapticsHelper` from SwapFoundationKit.**
+Replace custom haptics/feedback classes with `HapticsHelper`.
+
+**Source**: `Sources/SwapFoundationKit/Services/HapticsHelper.swift`
+
+**Search your app for**: `Haptic`, `Feedback`, `UIImpactFeedbackGenerator`, `UINotificationFeedbackGenerator`, `UISelectionFeedbackGenerator`
+
+**Suspicious file patterns**: `*Haptic*`, `*Feedback*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
 
-// Replace your custom haptics manager with:
 let haptics = HapticsHelper()
 
-// Use it throughout your app:
 haptics.lightImpact()
 haptics.mediumImpact()
 haptics.heavyImpact()
@@ -210,45 +159,153 @@ haptics.errorNotification()
 haptics.customImpact(intensity: 0.8)
 ```
 
-**Migration Steps:**
-1. Search for your custom haptics/feedback classes
-2. Replace all instances with `HapticsHelper()`
-3. Update method calls to match `HapticsHelper` API
-4. Remove your custom implementation
+**Migration steps**:
+1. Search for custom haptics/feedback classes.
+2. Replace all instances with `HapticsHelper()`.
+3. Update method calls to match the API above.
+4. Remove your custom implementation.
+
+**Keep custom when**: The host app intentionally abstracts non-Apple feedback backends or cross-platform behavior.
 
 ---
 
 ### 2. Logger / Logging System
 
-**If your app has a custom logger class, replace it with `Logger` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: high
+
+Replace custom logger classes with `Logger`.
+
+**Source**: `Sources/SwapFoundationKit/Services/Logger.swift`
+
+**Search your app for**: `Logger`, `LogManager`, `LogService`, `os_log`, `OSLog`, `printLog`
+
+**Suspicious file patterns**: `*Logger*`, `*Log*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
 
-// Replace your custom logger with:
 Logger.info("User signed in successfully")
 Logger.debug("Processing request...")
 Logger.warning("API rate limit approaching")
 Logger.error("Failed to load user data")
 
-// Configure logging level
+// Configure global logging level
 Logger.minimumLevel = .info
 
 // Enable automatic analytics integration for errors
 await Logger.setSendAnalyticsOnError(true)
 ```
 
-**Migration Steps:**
-1. Find all references to your custom logger
-2. Replace with `Logger.info()`, `Logger.debug()`, `Logger.warning()`, `Logger.error()`
-3. Remove your custom logger implementation
-4. The SDK's logger automatically integrates with analytics when configured
+**Migration steps**:
+1. Find all references to your custom logger.
+2. Replace with `Logger.info()`, `Logger.debug()`, `Logger.warning()`, `Logger.error()`.
+3. Remove your custom logger implementation.
+4. The SDK's logger automatically integrates with analytics when configured.
+
+**Keep custom when**: The host app needs a structured logging backend or remote log sink that SFK does not provide.
 
 ---
 
-### 3. UserDefaults Wrapper / Type-Safe UserDefaults
+### 3. Analytics Manager / Event Tracking
 
-**If your app has a UserDefaults wrapper or type-safe UserDefaults implementation, replace it with `UserDefault` property wrapper from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: high
+
+Replace custom analytics managers with `AnalyticsManager` and its protocol-based fan-out system.
+
+**Source**: `Sources/SwapFoundationKit/Services/AnalyticsProtocol.swift`
+
+**Search your app for**: `AnalyticsManager`, `AnalyticsService`, `Telemetry`, `trackEvent`, `logEvent`, `Mixpanel`, `FirebaseAnalytics`
+
+**Suspicious file patterns**: `*Analytics*`, `*Telemetry*`, `*Tracking*`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+// Define your analytics events
+enum AppEvent: AnalyticsEvent {
+    case userSignedIn(userId: String)
+    case purchase(amount: Double, currency: String)
+    case viewScreen(screenName: String)
+
+    var rawValue: String {
+        switch self {
+        case .userSignedIn: return "user_signed_in"
+        case .purchase: return "purchase"
+        case .viewScreen: return "view_screen"
+        }
+    }
+
+    var parameters: [String: String]? {
+        switch self {
+        case .userSignedIn(let userId):
+            return ["user_id": userId]
+        case .purchase(let amount, let currency):
+            return ["amount": String(amount), "currency": currency]
+        case .viewScreen(let screenName):
+            return ["screen_name": screenName]
+        }
+    }
+}
+
+// Create a logger (e.g., Firebase)
+class FirebaseAnalyticsLogger: AnalyticsLogger {
+    func logEvent(event: AnalyticsEvent, additionalParameters: [String: String]?) {
+        var params: [String: Any] = [:]
+        if let p = additionalParameters {
+            for (key, value) in p { params[key] = value }
+        }
+        // Analytics.logEvent(event.rawValue, parameters: params)
+    }
+}
+
+// Setup
+let analyticsManager = AnalyticsManager.shared
+analyticsManager.addLogger(FirebaseAnalyticsLogger())
+analyticsManager.setGlobalParameters([
+    "app_version": "1.0.0",
+    "platform": "ios"
+])
+
+// Use throughout your app
+AnalyticsManager.shared.logEvent(event: AppEvent.userSignedIn(userId: "user123"))
+AnalyticsManager.shared.logEvent(event: .viewScreen(screenName: "home"), parameters: ["source": "push"])
+```
+
+**Parameter merge precedence** in `logEvent(event:parameters:)`:
+1. `event.parameters` (lowest)
+2. Global parameters (`setGlobalParameters`)
+3. Call-site `parameters` argument (highest)
+
+Use `clearGlobalParameters()` when you need to stop injecting shared metadata (e.g., after logout).
+
+**Migration steps**:
+1. Find your custom analytics manager/tracker.
+2. Create event enums conforming to `AnalyticsEvent`.
+3. Create logger classes conforming to `AnalyticsLogger`.
+4. Replace all analytics calls with `AnalyticsManager.shared.logEvent()`.
+5. Remove your custom analytics implementation.
+
+**Keep custom when**: The host app uses a higher-level domain analytics facade; SFK should sit underneath it as the provider fan-out layer.
+
+---
+
+### 4. UserDefaults Wrapper / Type-Safe UserDefaults
+
+**Tier**: `exact` · **Confidence**: high
+
+Replace UserDefaults wrappers with `@UserDefault` property wrapper.
+
+**Sources**: `Sources/SwapFoundationKit/Services/UserDefault.swift`, `Sources/SwapFoundationKit/Services/UserDefaults+.swift`
+
+**Search your app for**: `UserDefaultsManager`, `PreferencesStore`, `@AppStorage`, `DefaultsKey`, `PropertyListEncoder`
+
+**Suspicious file patterns**: `*UserDefault*`, `*UserDefaults*`, `*Preference*`, `*SettingsStore*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -258,7 +315,7 @@ enum AppKeys: UserDefaultKeyProtocol {
     case userId
     case isFirstLaunch
     case theme
-    
+
     var keyString: String {
         switch self {
         case .userId: return "user_id"
@@ -272,10 +329,10 @@ enum AppKeys: UserDefaultKeyProtocol {
 class SettingsViewModel {
     @UserDefault(AppKeys.userId, default: "")
     var userId: String
-    
+
     @UserDefault(AppKeys.isFirstLaunch, default: true)
     var isFirstLaunch: Bool
-    
+
     @UserDefault(AppKeys.theme, default: "light")
     var theme: String
 }
@@ -284,7 +341,7 @@ class SettingsViewModel {
 struct SettingsView: View {
     @UserDefault(AppKeys.theme, default: "light")
     var theme: String
-    
+
     var body: some View {
         Picker("Theme", selection: $theme) {
             Text("Light").tag("light")
@@ -294,100 +351,29 @@ struct SettingsView: View {
 }
 ```
 
-**Migration Steps:**
-1. Identify your UserDefaults wrapper/helper classes
-2. Create a key enum conforming to `UserDefaultKeyProtocol`
-3. Replace property declarations with `@UserDefault` wrapper
-4. Remove your custom UserDefaults implementation
+**Migration steps**:
+1. Identify your UserDefaults wrapper/helper classes.
+2. Create a key enum conforming to `UserDefaultKeyProtocol`.
+3. Replace property declarations with `@UserDefault` wrapper.
+4. Remove your custom UserDefaults implementation.
 
----
-
-### 4. Analytics Manager / Event Tracking
-
-**If your app has an analytics manager or event tracking system, replace it with `AnalyticsManager` from SwapFoundationKit.**
-
-```swift
-import SwapFoundationKit
-
-// Define your analytics events
-enum AppAnalyticsEvent: AnalyticsEvent {
-    case userSignedIn(userId: String)
-    case purchase(amount: Double, currency: String)
-    case viewScreen(screenName: String)
-    
-    var rawValue: String {
-        switch self {
-        case .userSignedIn: return "user_signed_in"
-        case .purchase: return "purchase"
-        case .viewScreen: return "view_screen"
-        }
-    }
-    
-    var parameters: [String: String]? {
-        switch self {
-        case .userSignedIn(let userId):
-            return ["user_id": userId]
-        case .purchase(let amount, let currency):
-            return ["amount": String(amount), "currency": currency]
-        case .viewScreen(let screenName):
-            return ["screen_name": screenName]
-        }
-    }
-}
-
-// Create your analytics logger (e.g., Firebase)
-class FirebaseAnalyticsLogger: AnalyticsLogger {
-    func logEvent(event: AnalyticsEvent, additionalParameters: [String: String]?) {
-        // Your Firebase implementation
-        var firebaseParams: [String: Any] = [:]
-        if let parameters = additionalParameters {
-            for (key, value) in parameters {
-                firebaseParams[key] = value
-            }
-        }
-        // Analytics.logEvent(event.rawValue, parameters: firebaseParams)
-    }
-}
-
-// Setup (in AppDelegate or App struct)
-let analyticsManager = AnalyticsManager.shared
-analyticsManager.addLogger(FirebaseAnalyticsLogger())
-analyticsManager.setGlobalParameters([
-    "app_version": "1.0.0",
-    "build_number": "100",
-    "platform": "ios"
-])
-
-// Use throughout your app
-let event = AppAnalyticsEvent.userSignedIn(userId: "user123")
-AnalyticsManager.shared.logEvent(event: event)
-AnalyticsManager.shared.logEvent(event: .viewScreen(screenName: "home"), parameters: ["source": "push"])
-```
-
-Parameter merge precedence in `logEvent(event:parameters:)` is:
-1. `event.parameters` (lowest)
-2. global parameters (`setGlobalParameters`)
-3. call-site `parameters` argument (highest)
-
-Use `logEvent(event:)` for standard tracking with event defaults + global metadata.
-Use `logEvent(event:parameters:)` when you need per-call context or overrides.
-
-Use `clearGlobalParameters()` when you need to stop injecting shared metadata (for example, after logout).
-
-**Migration Steps:**
-1. Find your custom analytics manager/tracker
-2. Create event enums conforming to `AnalyticsEvent`
-3. Create logger classes conforming to `AnalyticsLogger`
-4. Replace all analytics calls with `AnalyticsManager.shared.logEvent()`
-5. Remove your custom analytics implementation
+**Keep custom when**: The host app needs migration, encryption, or cross-process semantics that go beyond type-safe defaults access.
 
 ---
 
 ### 5. Network Client / HTTP Client / API Service
 
-**If your app has a custom network client, HTTP client, or API service, replace it with `HTTPClient` or `NetworkService` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: high
 
-#### Option 1: Using HTTPClient (Modern async/await)
+Replace custom network clients with `HTTPClient` (modern async/await) or `NetworkService` (reachability + basic HTTP).
+
+**Sources**: `Sources/SwapFoundationKit/Core/Networking.swift`, `Sources/SwapFoundationKit/Core/NetworkService.swift`
+
+**Search your app for**: `APIClient`, `NetworkManager`, `NetworkService`, `URLSession`, `Endpoint`, `HTTPClient`, `Alamofire`
+
+**Suspicious file patterns**: `*APIClient*`, `*Network*`, `*Endpoint*`, `*HTTP*`
+
+#### Option A: HTTPClient (Modern async/await)
 
 ```swift
 import SwapFoundationKit
@@ -396,15 +382,14 @@ import SwapFoundationKit
 let config = SwapFoundationKitConfiguration(
     appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app"),
     enableNetworking: true,
-    networkTimeout: 30.0
+    networkTimeout: 30.0,
+    networkLogLevel: .debug
 )
 
 try await SwapFoundationKit.shared.start(with: config)
 
 // Get the HTTP client
-guard let client = SwapFoundationKit.shared.networkClient else {
-    return
-}
+guard let client = SwapFoundationKit.shared.networkClient else { return }
 
 // Define network requests
 struct GetUsersRequest: NetworkRequest {
@@ -424,9 +409,12 @@ let response = try await client.get(
     path: "/users",
     parameters: ["limit": "10"]
 )
+
+// Network logs use SFK's built-in Logger
+// `.debug` dumps request/response headers and bodies with sensitive headers redacted
 ```
 
-#### Option 2: Using NetworkService (Reachability + Basic HTTP)
+#### Option B: NetworkService (Reachability + Basic HTTP)
 
 ```swift
 import SwapFoundationKit
@@ -449,17 +437,29 @@ let data = try await networkService.get(from: url)
 let user: User = try await networkService.get(from: url, as: User.self)
 ```
 
-**Migration Steps:**
-1. Identify your custom network/API client classes
-2. Replace with `HTTPClient` for modern async/await or `NetworkService` for reachability
-3. Update all network calls to use the new API
-4. Remove your custom network implementation
+**Migration steps**:
+1. Identify your custom network/API client classes.
+2. Replace with `HTTPClient` for modern async/await or `NetworkService` for reachability.
+3. Update all network calls to use the new API.
+4. Remove your custom network implementation.
+
+**Keep custom when**: The host app has auth-refresh, request-signing, or middleware requirements that should remain in an app-level facade above SFK.
 
 ---
 
 ### 6. Security Service / Encryption / Keychain Manager
 
-**If your app has a security service, encryption utility, or keychain manager, replace it with `SecurityService` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: high
+
+Replace custom security/encryption/keychain classes with `SecurityService`.
+
+**Sources**: `Sources/SwapFoundationKit/Core/SecurityService.swift`, `Sources/SwapFoundationKit/Extensions/Data+Crypto.swift`
+
+**Search your app for**: `Keychain`, `SecureStore`, `EncryptionService`, `CryptoKit`, `SHA256`, `AES`
+
+**Suspicious file patterns**: `*Security*`, `*Keychain*`, `*Crypto*`, `*Encrypt*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -487,17 +487,29 @@ let hash = securityService.sha256Hash(data)
 let stringHash = securityService.sha256Hash("string to hash")
 ```
 
-**Migration Steps:**
-1. Find your custom security/encryption/keychain classes
-2. Replace with `SecurityService()`
-3. Update all security operations to use the new API
-4. Remove your custom security implementation
+**Migration steps**:
+1. Find your custom security/encryption/keychain classes.
+2. Replace with `SecurityService()`.
+3. Update all security operations to use the new API.
+4. Remove your custom security implementation.
+
+**Keep custom when**: The host app must satisfy platform, compliance, or shared-secret rules that require its own security boundary.
 
 ---
 
 ### 7. Backup Service / Data Export
 
-**If your app has a backup or data export service, replace it with `BackupService` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: medium
+
+Replace custom backup/export services with `BackupService`.
+
+**Source**: `Sources/SwapFoundationKit/Core/BackupService.swift`
+
+**Search your app for**: `BackupManager`, `ExportService`, `ImportService`, `restoreBackup`, `exportData`
+
+**Suspicious file patterns**: `*Backup*`, `*Export*`, `*Import*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -513,33 +525,45 @@ struct UserData: Codable {
 let userData = UserData(users: users, settings: settings)
 try await backupService.performBackup(userData, fileType: .data)
 
-// Restore the newest on-device backup (same ordering as list: first = newest)
+// Restore the newest on-device backup
 let restoredData = try backupService.restoreBackup(UserData.self, fileType: .data)
 
 // List backup files (newest first)
 let backupFiles = backupService.listBackupFiles(for: .data)
 ```
 
-**On-disk layout:** each `FileType` writes under **`Documents/<rawValue>/`** (e.g. `Documents/data/`) as timestamped `*.backup` files containing **one JSON-encoded payload** (whatever generic you passed to `performBackup`). `restoreBackup` reads the **newest** file in that folder; it no longer uses a mismatched path relative to `performBackup`. Filenames use **second-level** timestamps, so two backups within the same clock second share one filename and the second write **replaces** the first.
+**On-disk layout**: Each `FileType` writes under `Documents/<rawValue>/` (e.g., `Documents/data/`) as timestamped `*.backup` files containing one JSON-encoded payload. `restoreBackup` reads the newest file in that folder. Filenames use second-level timestamps, so two backups within the same clock second share one filename and the second write replaces the first.
 
-**Unit tests:** `BackupService` supports an optional documents root override so tests do not touch the real app sandbox:
+**Unit tests**: `BackupService` supports an optional documents root override:
 
 ```swift
 let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
 let backupService = BackupService(documentsDirectoryOverride: tempRoot)
 ```
 
-**Migration Steps:**
-1. Find your custom backup/export classes
-2. Replace with `BackupService()`
-3. Update backup/restore calls
-4. Remove your custom backup implementation
+**Migration steps**:
+1. Find your custom backup/export classes.
+2. Replace with `BackupService()`.
+3. Update backup/restore calls.
+4. Remove your custom backup implementation.
+
+**Keep custom when**: The host app owns a domain-specific export format or cloud backup flow.
 
 ---
 
 ### 8. Currency Converter / Exchange Rate Manager
 
-**If your app has a currency converter or exchange rate manager, replace it with `ExchangeRateManager` and `Currency` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: medium
+
+Replace custom currency/exchange rate classes with `ExchangeRateManager` and `Currency`.
+
+**Sources**: `Sources/SwapFoundationKit/Currency/Currency.swift`, `Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift`
+
+**Search your app for**: `CurrencyConverter`, `ExchangeRate`, `Forex`, `currencySymbol`, `NumberFormatter.currency`
+
+**Suspicious file patterns**: `*Currency*`, `*ExchangeRate*`, `*Forex*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -556,22 +580,34 @@ let usdAmount = ExchangeRateManager.shared.convert(
 
 // Use Currency enum
 let currency: Currency = .USD
-print(currency.symbol) // 🇺🇸
-print(currency.currencySymbol) // $
-print(currency.description) // "US Dollar"
+print(currency.symbol)          // 🇺🇸
+print(currency.currencySymbol)  // $
+print(currency.description)     // "US Dollar"
 ```
 
-**Migration Steps:**
-1. Find your custom currency/exchange rate classes
-2. Replace with `ExchangeRateManager.shared` and `Currency` enum
-3. Update all currency operations
-4. Remove your custom currency implementation
+**Migration steps**:
+1. Find your custom currency/exchange rate classes.
+2. Replace with `ExchangeRateManager.shared` and `Currency` enum.
+3. Update all currency operations.
+4. Remove your custom currency implementation.
+
+**Keep custom when**: The host app depends on a paid provider, custom cache policy, or accounting-specific rounding rules.
 
 ---
 
 ### 9. Image Processor / Image Utilities
 
-**If your app has an image processor, image cache, or image manipulation utilities, replace it with `ImageProcessor` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: medium
+
+Replace custom image processing/caching classes with `ImageProcessor`.
+
+**Source**: `Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift`
+
+**Search your app for**: `ImageProcessor`, `ImageCache`, `resizeImage`, `blurImage`, `roundCorners`, `grayscale`
+
+**Suspicious file patterns**: `*ImageProcessor*`, `*ImageCache*`, `*ImageUtils*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -645,19 +681,31 @@ let url = try imageProcessor.saveImage(image, filename: "profile.jpg", quality: 
 let loadedImage = try imageProcessor.loadImage(filename: "profile.jpg")
 ```
 
-**Migration Steps:**
-1. Find your custom image processing/caching classes
-2. Replace with `ImageProcessor.shared`
-3. Update all image operations
-4. For remote URL caching, use `cacheImage(from:targetSize:)` and `cachedImage(from:targetSize:)`
-5. For widget/extension sharing, configure with `configure(shouldCacheToSharedStorage:appGroupIdentifier:)`
-6. Remove your custom image implementation
+**Migration steps**:
+1. Find your custom image processing/caching classes.
+2. Replace with `ImageProcessor.shared`.
+3. Update all image operations.
+4. For remote URL caching, use `cacheImage(from:targetSize:)` and `cachedImage(from:targetSize:)`.
+5. For widget/extension sharing, configure with `configure(shouldCacheToSharedStorage:appGroupIdentifier:)`.
+6. Remove your custom image implementation.
+
+**Keep custom when**: The host app relies on a third-party image pipeline with networking, decoding, and animated image support.
 
 ---
 
 ### 10. Debouncer / Throttler
 
-**If your app has a debouncer or throttler utility, replace it with `Debouncer` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: medium
+
+Replace custom debouncer/throttler classes with `Debouncer`.
+
+**Sources**: `Sources/SwapFoundationKit/Utilities/Debouncer.swift`, `Sources/SwapFoundationKit/Utilities/Throttler.swift`
+
+**Search your app for**: `Debouncer`, `debounce`, `DispatchWorkItem`, `searchDelay`
+
+**Suspicious file patterns**: `*Debouncer*`, `*Search*`, `*Throttle*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -670,17 +718,29 @@ debouncer.call {
 }
 ```
 
-**Migration Steps:**
-1. Find your custom debouncer/throttler classes
-2. Replace with `Debouncer(delay:)`
-3. Update all debounced operations
-4. Remove your custom debouncer implementation
+**Migration steps**:
+1. Find your custom debouncer/throttler classes.
+2. Replace with `Debouncer(delay:)`.
+3. Update all debounced operations.
+4. Remove your custom debouncer implementation.
+
+**Keep custom when**: The host app specifically needs throttling semantics; SFK's `Throttler` is currently internal and should not be used as a public replacement target.
 
 ---
 
 ### 11. Date Utilities / Date Formatters
 
-**If your app has custom date utilities or formatters, replace them with `Date` extensions from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom date utilities with `Date` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/Date+Extensions.swift`
+
+**Search your app for**: `extension Date`, date formatter helpers, relative time formatters
+
+**Suspicious file patterns**: `*Date+*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -716,19 +776,36 @@ let nextMonth = date.adding(months: 1)
 
 // Custom formatting
 let formatted = date.string(format: "EEE, MMM d @ h:mm a")
+
+// Creation
+let specificDate = Date.from(year: 2024, month: 1, day: 15)
 ```
 
-**Migration Steps:**
-1. Find your custom date utility/formatter classes
-2. Replace with `Date` extension methods
-3. Update all date operations
-4. Remove your custom date implementation
+**Additional APIs**: `startOfMonth`, `endOfMonth`, `startOfYear`, `isWeekend`, `daysInMonth`, `workingDays(until:)`, `quarter`, `isInCurrentYear`
+
+**Migration steps**:
+1. Find your custom date utility/formatter classes.
+2. Replace with `Date` extension methods.
+3. Update all date operations.
+4. Remove your custom date implementation.
+
+**Keep custom when**: The host app's extensions are domain-specific, naming-specific, or intentionally narrower than the generic SFK helpers.
 
 ---
 
 ### 12. String Utilities / String Extensions
 
-**If your app has custom string utilities or extensions, replace them with `String` extensions from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom string utilities with `String` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/String+.swift`
+
+**Search your app for**: `extension String`, string validation, sanitization helpers
+
+**Suspicious file patterns**: `*String+*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -742,45 +819,69 @@ print(string.isNumeric)          // false
 print(string.isValidEmail)       // false
 print(string.isAlphabetic)       // false
 print(string.isAlphanumeric)     // false
+print(string.isValidURL)         // false
+print(string.isValidPhoneNumber) // false
+print(string.isValidCreditCard)  // false
+print(string.isValidDecimal)     // false
 
 // Manipulation
 print(string.trimmed)            // "Hello World"
 print(string.capitalizedFirst)   // "  hello World  "
 print(string.removingWhitespaces) // "HelloWorld"
+print(string.withoutWhitespace)   // "HelloWorld"
 print(string.truncated(to: 5))    // "Hell..."
+print(string.htmlStripped)        // Strip HTML tags
+print(string.levenshteinDistance(to: "other")) // Int
 
 // Conversion
 print(string.toInt)               // nil
 print(string.toDouble)            // nil
 print(string.boolValue)           // nil
-print(string.url)                 // nil
+print(string.intValue)            // nil
+print(string.url)                 // URL?
 print(string.data)                // Data?
 
 // Security
 print(string.sanitized)           // Safe for display
 print(string.fileNameSafe)        // Safe for file names
-
-// Hashing
 print(string.md5)                 // MD5 hash
 print(string.sha1)                // SHA1 hash
-print(string.sha256)               // SHA256 hash
+print(string.sha256)              // SHA256 hash
+print(string.base64Encoded)       // Base64 string
+print(string.base64Decoded)       // Decoded string
+
+// Regex
+print(string.matches(regex: "\\d+")) // Bool
+print(string.matches(of: "\\d+"))    // [Match]
 
 // Localization
 print(string.localized)            // Localized string
 print(string.localizedFormat("arg1", "arg2"))
 ```
 
-**Migration Steps:**
-1. Find your custom string utility classes
-2. Replace with `String` extension properties/methods
-3. Update all string operations
-4. Remove your custom string implementation
+**Migration steps**:
+1. Find your custom string utility classes.
+2. Replace with `String` extension properties/methods.
+3. Update all string operations.
+4. Remove your custom string implementation.
+
+**Keep custom when**: The host app's extensions are domain-specific or naming-specific.
 
 ---
 
 ### 13. Number Formatting / Number Utilities
 
-**If your app has custom number formatting utilities, replace them with number extensions from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom number formatting with `Double`/`Float` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/Number+.swift`
+
+**Search your app for**: `extension Double`, `extension Float`, number formatter helpers
+
+**Suspicious file patterns**: `*Number+*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -789,23 +890,33 @@ let number: Double = 1234.56
 
 // Clean formatting
 print(number.clean)               // "1,234.56"
-print(number.wordRepresentation) // "one thousand two hundred thirty-four point five six"
+print(number.wordRepresentation)  // "one thousand two hundred thirty-four point five six"
 
 let floatNumber: Float = 100.0
 print(floatNumber.clean)          // "100"
 ```
 
-**Migration Steps:**
-1. Find your custom number formatting classes
-2. Replace with `Double`/`Float` extension properties
-3. Update all number formatting
-4. Remove your custom number implementation
+**Migration steps**:
+1. Find your custom number formatting classes.
+2. Replace with `Double`/`Float` extension properties.
+3. Update all number formatting.
+4. Remove your custom number implementation.
 
 ---
 
 ### 14. Data Crypto / Hashing Utilities
 
-**If your app has custom crypto or hashing utilities, replace them with `Data` extensions from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom crypto/hashing utilities with `Data` extensions.
+
+**Sources**: `Sources/SwapFoundationKit/Extensions/Data+Crypto.swift`
+
+**Search your app for**: `extension Data`, MD5/SHA hashing on Data
+
+**Suspicious file patterns**: `*Crypto*`, `*Hash*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -813,22 +924,32 @@ import SwapFoundationKit
 let data = "Hello World".data(using: .utf8)!
 
 // Hashing
-print(data.md5)                   // MD5 hash string
-print(data.sha1)                  // SHA1 hash string
-print(data.sha256)                // SHA256 hash string
+print(data.md5)     // MD5 hash string
+print(data.sha1)    // SHA1 hash string
+print(data.sha256)  // SHA256 hash string
 ```
 
-**Migration Steps:**
-1. Find your custom crypto/hashing classes
-2. Replace with `Data` extension properties
-3. Update all hashing operations
-4. Remove your custom crypto implementation
+**Migration steps**:
+1. Find your custom crypto/hashing classes.
+2. Replace with `Data` extension properties.
+3. Update all hashing operations.
+4. Remove your custom crypto implementation.
 
 ---
 
 ### 15. Bundle / Info.plist Access
 
-**If your app has custom Info.plist access utilities, replace them with `Bundle` extensions from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom Info.plist access utilities with `Bundle` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/Bundle+InfoPlist.swift`
+
+**Search your app for**: `extension Bundle`, Info.plist key accessors
+
+**Suspicious file patterns**: `*Bundle+*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -837,11 +958,11 @@ let bundle = Bundle.main
 
 // Access Info.plist values
 print(bundle.appName)                      // App name
-print(bundle.displayName)                 // Display name
-print(bundle.bundleIdentifier)            // Bundle ID
-print(bundle.releaseVersionNumber)        // Version
-print(bundle.buildVersionNumber)          // Build number
-print(bundle.urlSchemes)                  // URL schemes array
+print(bundle.displayName)                  // Display name
+print(bundle.bundleIdentifier)             // Bundle ID
+print(bundle.releaseVersionNumber)         // Version
+print(bundle.buildVersionNumber)           // Build number
+print(bundle.urlSchemes)                   // URL schemes array
 
 // Generic access
 let customValue: String = bundle.infoPlistValue(
@@ -850,17 +971,27 @@ let customValue: String = bundle.infoPlistValue(
 )
 ```
 
-**Migration Steps:**
-1. Find your custom Info.plist access classes
-2. Replace with `Bundle` extension properties
-3. Update all Info.plist access
-4. Remove your custom bundle implementation
+**Migration steps**:
+1. Find your custom Info.plist access classes.
+2. Replace with `Bundle` extension properties.
+3. Update all Info.plist access.
+4. Remove your custom bundle implementation.
 
 ---
 
 ### 16. Collection Utilities
 
-**If your app has custom collection utilities, replace them with `Collection` extensions from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom collection utilities with `Collection` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/Collection+.swift`
+
+**Search your app for**: `extension Collection`, `extension Array`, safe subscript helpers
+
+**Suspicious file patterns**: `*Collection+*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -868,21 +999,167 @@ import SwapFoundationKit
 let array = [1, 2, 3, 4, 5]
 
 // Safe subscript
-print(array[safe: 10])           // nil (instead of crash)
-print(array.isNotEmpty)          // true
+print(array[safe: 10])    // nil (instead of crash)
+print(array.isNotEmpty)   // true
+
+// Chunking
+let chunks = array.chunked(into: 2) // [[1, 2], [3, 4], [5]]
 ```
 
-**Migration Steps:**
-1. Find your custom collection utility classes
-2. Replace with `Collection` extension properties
-3. Update all collection operations
-4. Remove your custom collection implementation
+**Migration steps**:
+1. Find your custom collection utility classes.
+2. Replace with `Collection` extension properties.
+3. Update all collection operations.
+4. Remove your custom collection implementation.
 
 ---
 
-### 17. ItemSync + WatchSync / Data Synchronization
+### 17. URL Extensions
 
-**If your app has custom data synchronization between app, widgets, and Watch, replace it with `ItemSync` + `WatchSync` from SwapFoundationKit.**
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom URL utilities with `URL` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/URL+Extensions.swift`
+
+**Search your app for**: `extension URL`, query parameter helpers
+
+**Suspicious file patterns**: `*URL+*`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+let url = URL(string: "https://example.com/path?foo=bar&baz=qux")!
+
+// Query parameters
+print(url.queryParameters) // ["foo": "bar", "baz": "qux"]
+
+// Append query item
+let newURL = url.appendingQueryItem(name: "new", value: "value")
+
+// Remove query parameters
+let cleanURL = url.removingQueryParameters()
+
+// Validate URL string
+print(URL.isValid("https://example.com")) // true
+```
+
+**Migration steps**:
+1. Find your custom URL utility classes.
+2. Replace with `URL` extension properties/methods.
+3. Update all URL operations.
+4. Remove your custom URL implementation.
+
+---
+
+### 18. FileManager Extensions
+
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom file manager utilities with `FileManager` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/FileManager+Extensions.swift`
+
+**Search your app for**: `extension FileManager`, directory path helpers, file size calculators
+
+**Suspicious file patterns**: `*FileManager+*`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+let fm = FileManager.default
+
+// Directory paths
+print(fm.documentsDirectory)  // URL
+print(fm.cachesDirectory)     // URL
+print(fm.temporaryDirectory)  // URL
+
+// File size
+print(fm.fileSize(at: url))           // Int64
+print(fm.fileSizeFormatted(at: url))  // "2.5 MB"
+print(fm.directorySize(at: url))      // Int64
+
+// Directory management
+try fm.createDirectoryIfNeeded(at: url)
+try fm.removeItemSafely(at: url)
+```
+
+**Migration steps**:
+1. Find your custom FileManager utility classes.
+2. Replace with `FileManager` extension properties/methods.
+3. Update all file operations.
+4. Remove your custom FileManager implementation.
+
+---
+
+### 19. Result Extensions
+
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom Result utilities with `Result` extensions.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/Result+Extensions.swift`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+let result: Result<String, Error> = .success("Hello")
+
+print(result.isSuccess)   // true
+print(result.isFailure)   // false
+print(result.getOrElse("default"))  // "Hello"
+print(result.getOrNil)    // "Hello"?
+```
+
+---
+
+### 20. JSON Codable Helpers
+
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom JSON encoding/decoding helpers with `JSONCodable`.
+
+**Source**: `Sources/SwapFoundationKit/Extensions/JSON+Codable.swift`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+// Encode
+let data = try JSONCodable.encode(myObject, prettyPrinted: true)
+let jsonString = try JSONCodable.encodeToString(myObject)
+
+// Decode
+let decoded: MyType = try JSONCodable.decode(MyType.self, from: data)
+
+// From file
+let fromFile: MyType = try JSONCodable.jsonFromFile("data.json", in: .mainBundle)
+```
+
+---
+
+### 21. ItemSync + WatchSync / Data Synchronization
+
+**Tier**: `exact` · **Confidence**: high
+
+Replace custom data synchronization between app, widgets, and Watch with `ItemSync` + `WatchSync`.
+
+**Sources**:
+- `Sources/SwapFoundationKit/ItemSync/` (core + implementations)
+- `Sources/SwapFoundationKit/WatchSync/` (transport abstraction)
+
+**Search your app for**: `WidgetCenter.shared.reloadAllTimelines`, `WatchConnectivity`, `WCSession`, `App Group`, `SharedContainer`, `SyncService`
+
+**Suspicious file patterns**: `*Sync*`, `*Widget*`, `*Watch*`, `*SharedStorage*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit.ItemSync
@@ -895,7 +1172,7 @@ struct UserProfile: SyncableData {
 }
 
 // Create sync service (after SwapFoundationKit.shared.start())
-let syncService = ItemSyncServiceFactory.create()
+let syncService = ItemSyncServiceFactory.create(appGroupIdentifier: "group.com.yourapp.widget")
 
 // Save data (automatically syncs to widgets/extensions)
 try await syncService.save(userProfile)
@@ -904,7 +1181,7 @@ try await syncService.save(userProfile)
 let profile = try await syncService.read(UserProfile.self)
 ```
 
-Watch transport can now be configured with `WatchSyncOptions`:
+**Watch transport** can be configured with `WatchSyncOptions`:
 
 ```swift
 #if os(iOS)
@@ -918,18 +1195,38 @@ let syncService = ItemSyncServiceFactory.createWithWatch(
 #endif
 ```
 
-**Migration Steps:**
-1. Find your custom sync/sharing classes
-2. Replace with `ItemSyncServiceFactory.create()` or `createWithWatch(..., options:)`
-3. Make your models conform to `SyncableData`
-4. Update all sync operations
-5. Remove your custom sync implementation
+**WatchSync core types**:
+- `WatchSyncService` — type-safe watch transport protocol
+- `WatchSyncTransport` — `.applicationContext`, `.userInfo`, `.messageData`, `.file`
+- `WatchSyncEnvelope` — canonical wire format (`identifier`, `payload`, `version`, `timestamp`)
+- `WatchSyncOptions` — `preferredTransport`, `fallbackOrder`
+- `WatchSyncEvent` — watch sync events
+- `WatchSyncError` — error cases
+
+**Migration steps**:
+1. Find your custom sync/sharing classes.
+2. Replace with `ItemSyncServiceFactory.create()` or `createWithWatch(..., options:)`.
+3. Make your models conform to `SyncableData`.
+4. Update all sync operations.
+5. Remove your custom sync implementation.
+
+**Keep custom when**: The host app has domain orchestration around sync; migrate the persistence and transport pieces first, then keep a thin app-specific wrapper.
 
 ---
 
-### 18. App Link Opener / URL Utilities
+### 22. App Link Opener / URL Utilities
 
-**If your app has a URL opener or app link utility, replace it with `AppLinkOpener` from SwapFoundationKit.**
+**Tier**: `exact` · **Confidence**: medium
+
+Replace custom URL opener/link utilities with `AppLinkOpener`.
+
+**Sources**: `Sources/SwapFoundationKit/Services/AppLinkOpener.swift`, `Sources/SwapFoundationKit/Protocols/AppMetaData.swift`
+
+**Search your app for**: `UIApplication.shared.open`, `openURL`, `AppStore URL`, `review URL`, `openSettingsURLString`, `MFMailCompose`
+
+**Suspicious file patterns**: `*Link*`, `*Router*`, `*DeepLink*`, `*AppStore*`
+
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -947,23 +1244,349 @@ AppLinkOpener.openAppStorePage(appID: "123456789")
 AppLinkOpener.openAppReviewPage(appID: "123456789")
 ```
 
-**Migration Steps:**
-1. Find your custom URL/link opener classes
-2. Replace with `AppLinkOpener` static methods
-3. Update all URL opening operations
-4. Remove your custom URL opener implementation
+**AppMetaData** provides additional helpers:
+
+```swift
+let metadata: AppMetaData = ...
+metadata.openAppReviewPage()
+metadata.openWebsite("https://example.com")
+```
+
+**Migration steps**:
+1. Find your custom URL/link opener classes.
+2. Replace with `AppLinkOpener` static methods.
+3. Update all URL opening operations.
+4. Remove your custom URL opener implementation.
+
+**Keep custom when**: The host app's router owns navigation policy and only delegates external URL handling to SFK.
 
 ---
 
-### 19. SFKButtons (SwiftUI Button Components)
+### 23. Deeplink Handler
 
-SwapFoundationKit provides a focused SwiftUI button API built around a reusable configurator.
+**Tier**: `heuristic` · **Confidence**: medium
 
-#### SFKButton
-`SFKButton` can be created either from explicit line-item values or from an `SFKButtonConfigurator`.
+Replace custom deeplink handling with `DeeplinkHandler`.
+
+**Sources**:
+- `Sources/SwapFoundationKit/Services/DeeplinkHandler/DeeplinkHandler.swift`
+- `Sources/SwapFoundationKit/Services/DeeplinkHandler/DeeplinkEvent.swift`
+- `Sources/SwapFoundationKit/Services/DeeplinkHandler/DeeplinkRoute.swift`
+
+**API**:
+
 ```swift
 import SwapFoundationKit
 
+// Define routes
+enum AppRoute: DeeplinkRoute {
+    case settings
+    case profile(userId: String)
+
+    var path: String {
+        switch self {
+        case .settings: return "/settings"
+        case .profile: return "/profile"
+        }
+    }
+
+    var queryItems: [URLQueryItem] {
+        switch self {
+        case .profile(let userId):
+            return [URLQueryItem(name: "id", value: userId)]
+        default: return []
+        }
+    }
+
+    static func parse(from url: URL) -> Self? {
+        // Parse URL and return matching route
+        return nil
+    }
+}
+
+// Handle deeplinks
+let handler = DefaultDeeplinkHandler(supportedRoutes: [AppRoute.self])
+
+// Combine publisher for reactive handling
+handler.deeplinkPublisher
+    .sink { event in
+        switch event.route {
+        case .settings: // navigate to settings
+        case .profile(let userId): // navigate to profile
+        }
+    }
+    .store(in: &cancellables)
+```
+
+**DeeplinkEvent** provides: `url`, `source` (cold launch, resume, universal link, Handoff), `route`.
+
+---
+
+### 24. Toast Notifications
+
+**Tier**: `exact` · **Confidence**: high
+
+Replace custom toast/notification banner classes with `ToastManager`.
+
+**Source**: `Sources/SwapFoundationKit/Services/ToastManager.swift`
+
+**Search your app for**: `ToastManager`, `ToastType`, `Toast`, `import Toast`, `toast.show`, `ToastConfiguration`, `NotificationBanner`
+
+**Suspicious file patterns**: `*Toast*`, `*NotificationBanner*`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+// Define your toast kind
+enum AppToast: SFKToastKind {
+    case saved
+    case deleted
+    case error(String)
+
+    var title: String {
+        switch self {
+        case .saved: return "Saved"
+        case .deleted: return "Deleted"
+        case .error(let msg): return "Error"
+        }
+    }
+
+    var subtitle: String? {
+        switch self {
+        case .error(let msg): return msg
+        default: return nil
+        }
+    }
+
+    var style: SFKToastStyle {
+        switch self {
+        case .saved, .deleted: return .success
+        case .error: return .error
+        }
+    }
+
+    var image: UIImage? { nil }
+}
+
+// Show toast
+ToastManager.shared.show(kind: AppToast.saved, config: SFKToastConfiguration(displayTime: 2.0))
+```
+
+**Migration steps**:
+1. Find your custom toast/notification banner classes.
+2. Create toast kinds conforming to `SFKToastKind`.
+3. Replace all toast calls with `ToastManager.shared.show(kind:config:)`.
+4. Remove your custom toast implementation.
+
+**Keep custom when**: The host app uses a design-system-specific toast UI that intentionally diverges from SFK's presentation.
+
+---
+
+### 25. File Export / Import
+
+**Tier**: `exact` · **Confidence**: high
+
+Replace custom file export/import classes with `FileExportService` and `FileImportService`.
+
+**Sources**: `Sources/SwapFoundationKit/Services/FileExportService.swift`, `Sources/SwapFoundationKit/Services/FileImportService.swift`
+
+**Search your app for**: `UIDocumentPickerViewController`, `UIActivityViewController`, `UTType.types`, `documentPicker`, `exportSubscriptions`, `importSubscriptions`
+
+**Suspicious file patterns**: `*FileExport*`, `*FileImport*`, `*ImportExport*`, `*DocumentPicker*`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+import UniformTypeIdentifiers
+
+// Export data
+FileExportService.shared.export(
+    data: jsonData,
+    filename: "export.json",
+    utType: UTType.json,
+    from: viewController
+)
+
+// Export encodable object directly
+FileExportService.shared.export(
+    myObject,
+    filename: "data.json",
+    encoder: JSONEncoder(),
+    from: viewController
+)
+
+// Import file
+FileImportService.shared.importFile(
+    contentTypes: [UTType.json],
+    from: viewController,
+    delegate: self
+)
+
+// Register custom file type
+let customType = FileImportService.shared.registerCustomType(
+    fileExtension: "myapp",
+    conformingTo: UTType.data
+)
+```
+
+**FileImportDelegate**:
+
+```swift
+extension MyViewController: FileImportDelegate {
+    func fileImportDidPick(data: Data, url: URL) {
+        // Handle imported file
+    }
+
+    func fileImportDidCancel() {
+        // Handle cancellation
+    }
+}
+```
+
+**Migration steps**:
+1. Find your custom file export/import classes.
+2. Replace with `FileExportService.shared` and `FileImportService.shared`.
+3. Update all export/import operations.
+4. Remove your custom implementation.
+
+**Keep custom when**: The host app owns domain-specific file format handling or cloud import flows that go beyond generic document pick + share sheet.
+
+---
+
+### 26. Device Info
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace custom device info utilities with `DeviceInfo`.
+
+**Source**: `Sources/SwapFoundationKit/Services/DeviceInfo.swift`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+print(DeviceInfo.deviceModel)           // "iPhone 14 Pro"
+print(DeviceInfo.deviceModelIdentifier) // "iPhone15,2"
+print(DeviceInfo.isSimulator)           // true/false
+print(DeviceInfo.hasNotch)              // true/false
+print(DeviceInfo.appVersion)            // "1.0.0"
+print(DeviceInfo.appBuildNumber)        // "123"
+print(DeviceInfo.isIPad)                // true/false
+print(DeviceInfo.screenSize)            // CGSize
+```
+
+---
+
+### 27. Pasteboard Service
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace custom pasteboard/clipboard utilities with `PasteboardService`.
+
+**Source**: `Sources/SwapFoundationKit/Services/PasteboardService.swift`
+
+**Protocol**: `PasteboardCopyRepresentable` — for types that can be copied to pasteboard.
+
+---
+
+### 28. Location Search Service
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace custom location search utilities with `LocationSearchService`.
+
+**Source**: `Sources/SwapFoundationKit/Services/LocationSearchService.swift`
+
+MapKit-based location search service.
+
+---
+
+### 29. Update Availability Service
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Check for app updates with `SFKUpdateAvailabilityService`.
+
+**Source**: `Sources/SwapFoundationKit/Services/UpdateAvailability/SFKUpdateAvailabilityService.swift`
+
+Integrates with `UpdateAvailableKit` for version checking.
+
+---
+
+### 30. App Store Search
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Search the App Store with `AppStoreSearchResult`.
+
+**Source**: `Sources/SwapFoundationKit/Services/AppStoreSearch/AppStoreSearchResult.swift`
+
+---
+
+### 31. Photo Picker
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace custom photo picker implementations with `PhotoPicker`.
+
+**Source**: `Sources/SwapFoundationKit/UI/PhotoPicker.swift`
+
+---
+
+### 32. Barcode Scanner
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace custom barcode scanner implementations with `BarcodeScannerView`.
+
+**Sources**: `Sources/SwapFoundationKit/UI/BarcodeScanner/`
+
+**Components**: `BarcodeScannerView`, `BarcodeScannerScreen`, `BarcodeScannerConfiguration`.
+
+---
+
+### 33. Pro Banner
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Display pro/upgrade banners with `ProBannerView`.
+
+**Source**: `Sources/SwapFoundationKit/UI/ProBanner/ProBannerView.swift`
+
+---
+
+### 34. Aura Glow Background
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Add atmospheric glow backgrounds with `SFKAuraGlowBackground`.
+
+**Source**: `Sources/SwapFoundationKit/UI/Effects/SFKAuraGlowBackground.swift`
+
+---
+
+### 35. SFKButton / Button Components
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace custom button components with `SFKButton` and `SFKButtonConfigurator`.
+
+**Sources**: `Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift`, `Sources/SwapFoundationKit/UI/Buttons/SFKButtonConfigurator.swift`
+
+**Search your app for**: `PrimaryButton`, `SecondaryButton`, `PillButton`, `ToolbarButton`
+
+**Suspicious file patterns**: `*Button*`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+// Direct creation
 SFKButton(
     "Add Transaction",
     leadingIconName: "wand.and.stars",
@@ -973,19 +1596,15 @@ SFKButton(
     // action
 }
 
+// Using configurator
 var close = SFKButtonConfigurator.close
 close.title = "Close"
 
 SFKButton(configuration: close) {
     // dismiss
 }
-```
 
-Sizing is driven by the button's padding values rather than a fixed minimum height, which makes
-compact and full-width variants easier to express through configuration alone.
-
-Loading state is built in:
-```swift
+// Loading state
 SFKButton(
     "Saving",
     leadingIconName: "arrow.triangle.2.circlepath",
@@ -996,12 +1615,37 @@ SFKButton(
 }
 ```
 
-When `isLoading` is `true`, the button disables interaction, swaps its label for a spinner, and
-shrinks out of full-width mode so loading states feel more compact by default.
+Sizing is driven by the button's padding values rather than a fixed minimum height. When `isLoading` is `true`, the button disables interaction, swaps its label for a spinner, and shrinks out of full-width mode.
 
-#### Glass Compatibility Wrappers
+**Configurator presets**: `.primary`, `.close`
+
+**Chrome styles**: `.glassProminent`, `.glass`, `.glassEffect(style:shape:isInteractive:)`, `.plain`
+
+**Haptic styles**: `.light`, `.medium`, `.heavy`
+
+**Migration steps**:
+1. Find your custom button components.
+2. Prefer replacing them with `SFKButton(...)` or `SFKButton(configuration: ...)`.
+3. Use `SFKButtonConfigurator` presets and overrides for reusable button styles, loading states, and compact variants.
+4. Remove custom button implementations.
+
+**Keep custom when**: The host app already has a design system and should only adopt SFK components intentionally.
+
+---
+
+### 36. Glass Compatibility Wrappers
+
+**Tier**: `heuristic` · **Confidence**: medium
+
 Apply compatibility wrappers around SwiftUI's native Liquid Glass APIs.
+
+**Source**: `Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift`
+
+**API**:
+
 ```swift
+import SwapFoundationKit
+
 Button("Glass") { }
     .glassCompat(color: .blue)
 
@@ -1009,27 +1653,31 @@ Button("Prominent") { }
     .glassProminentCompat(color: .mint)
 
 Button(action: {}) {
-    Image(systemName: "plus")
-        .font(.title2)
+    Image(systemName: "plus").font(.title2)
 }
 .glassEffectCompat(style: .regular, color: .blue, isInteractive: true, in: Circle())
 ```
 
-**Migration Steps:**
-1. Find your custom button components (MTPrimaryButton, MTToolbarButton, etc.)
-2. Prefer replacing them with `SFKButton(...)` or `SFKButton(configuration: ...)`
-3. Use `SFKButtonConfigurator` presets and overrides for reusable button styles, loading states, and compact variants
-4. Remove custom button implementations
+**Modifiers**:
+- `.glassCompat(color:)` — pre-iOS 26 fallback to background fill
+- `.glassProminentCompat(color:)` — pre-iOS 26 fallback to background fill
+- `.glassEffectCompat(style:color:isInteractive:in:)` — pre-iOS 26 fallback to shape fill
 
 ---
 
-### 20. AlertPresenter / AlertController
+### 37. AlertPresenter / AlertController
 
-SwapFoundationKit provides comprehensive alert presentation helpers for both UIKit and SwiftUI.
+**Tier**: `exact` · **Confidence**: medium
+
+Replace custom alert presentation with `AlertController` (SwiftUI-native) or `AlertPresenter` (UIKit-based).
+
+**Source**: `Sources/SwapFoundationKit/UI/AlertPresenter.swift`
+
+**Search your app for**: `UIAlertController`, `AlertState`, `AlertPresenter`, `confirmationDialog`, `text field alert`
+
+**Suspicious file patterns**: `*Alert*`, `*Dialog*`, `*Prompt*`
 
 #### AlertController (SwiftUI-native)
-
-A `@MainActor` ObservableObject for declarative alert management in SwiftUI.
 
 ```swift
 import SwapFoundationKit
@@ -1074,16 +1722,11 @@ var body: some View {
 
 #### AlertPresenter (UIKit-based, works from SwiftUI)
 
-Static methods for presenting alerts using UIKit.
-
 ```swift
 import SwapFoundationKit
 
 // Simple alert
-AlertPresenter.showAlert(
-    title: "Hello",
-    message: "World"
-)
+AlertPresenter.showAlert(title: "Hello", message: "World")
 
 // Confirmation dialog
 AlertPresenter.showConfirmation(
@@ -1114,110 +1757,27 @@ AlertPresenter.showTextInput(
 )
 ```
 
-#### Types
+**Types**: `AlertAction`, `AlertActionStyle` (`.default`, `.cancel`, `.destructive`), `AlertTextField`, `KeyboardType` (`.default`, `.email`, `.number`, `.phone`, `.url`), `AlertConfiguration`.
 
-- **`AlertAction`** - Represents an alert action with title, style, and handler
-- **`AlertActionStyle`** - `.default`, `.cancel`, `.destructive`
-- **`AlertTextField`** - Text field configuration with placeholder and keyboard type
-- **`KeyboardType`** - Platform-agnostic keyboard type (`.default`, `.email`, `.number`, `.phone`, `.url`)
-- **`AlertConfiguration`** - Complete alert configuration
-- **`AlertController`** - SwiftUI-native alert manager
+**Migration steps**:
+1. Find your custom alert presentation code.
+2. Replace with `AlertController` for SwiftUI or `AlertPresenter` for UIKit.
+3. Update all alert calls.
+4. Remove your custom alert implementation.
+
+**Keep custom when**: The host app has custom design-system alert presentation that intentionally diverges from SFK's UI.
 
 ---
 
-### 21. UIKit Extensions
+### 38. SFKItemPickerView (Generic Item Picker)
 
-**If your app has custom UIKit extensions, check if SwapFoundationKit provides equivalent functionality.**
+**Tier**: `heuristic` · **Confidence**: medium
 
-#### UIColor Extensions
-```swift
-import SwapFoundationKit
+Replace custom picker implementations with `SFKItemPickerView`.
 
-// Hex colors
-let color = UIColor(hex: "#FF0000")
-print(color.hexString())         // "#FF0000"
+**Sources**: `Sources/SwapFoundationKit/UI/ItemPicker/`
 
-// Color components
-print(color.redComponent)        // Red component
-print(color.greenComponent)      // Green component
-print(color.blueComponent)      // Blue component
-print(color.alphaComponent)      // Alpha component
-
-// Color manipulation
-let lighter = color.lighter(by: 0.2)
-let darker = color.darker(by: 0.2)
-let random = UIColor.random
-```
-
-#### UIView Extensions
-```swift
-import SwapFoundationKit
-
-// Add multiple subviews
-view.addSubviews(view1, view2, view3)
-
-// Remove all subviews
-view.removeAllSubviews()
-
-// Find subviews
-let buttons = view.allSubViewsOf(type: UIButton.self)
-
-// Layout constraints
-view.anchor(top: parentView.topAnchor, leading: parentView.leadingAnchor, 
-            bottom: parentView.bottomAnchor, trailing: parentView.trailingAnchor)
-```
-
-#### UIImage Extensions
-```swift
-import SwapFoundationKit
-
-// Resize image
-if let resized = image.resized(targetSize: CGSize(width: 100, height: 100)) {
-    imageView.image = resized
-}
-```
-
-**Migration Steps:**
-1. Review your custom UIKit extensions
-2. Compare with SwapFoundationKit's extensions
-3. Replace where functionality overlaps
-4. Remove redundant custom extensions
-
-### 22. SFKItemPickerView (Generic Item Picker)
-
-A generic picker view for selecting items from a list, with single-select and multi-select modes, haptics, and flexible icon rendering.
-
-#### Protocols
-
-**`SFKPickableItem`** — protocol for items displayed in the picker:
-```swift
-public protocol SFKPickableItem: Identifiable, Hashable {
-    var pickableItemId: String { get }
-    var pickableItemIconKind: SFKPickableItemIconKind { get }
-    var pickableItemTitle: String { get }
-    var pickableItemSubtitle: String? { get }
-}
-```
-
-**`SFKPickableItemIconKind`** — icon display modes:
-```swift
-public enum SFKPickableItemIconKind {
-    case iconImage(uiImage: UIImage)
-    case systemIcon(symbolName: String)
-    case text(text: String)
-    case none
-}
-```
-
-**`SFKItemPickerSelectionMode`**:
-```swift
-public enum SFKItemPickerSelectionMode: Sendable {
-    case single
-    case multi
-}
-```
-
-#### Usage
+**API**:
 
 ```swift
 import SwapFoundationKit
@@ -1251,11 +1811,10 @@ import SwapFoundationKit
 }
 ```
 
-#### Conforming to SFKPickableItem
-
-Always use a dedicated extension:
+**Protocols**:
 
 ```swift
+// Conform your types to SFKPickableItem (always via extension)
 extension MyType: SFKPickableItem {
     public var pickableItemId: String { id }
 
@@ -1269,39 +1828,31 @@ extension MyType: SFKPickableItem {
 }
 ```
 
-`Currency` already conforms to `SFKPickableItem` via an extension at the bottom of `Currency.swift`.
+**Icon kinds**: `.iconImage(uiImage:)`, `.systemIcon(symbolName:)`, `.text(text:)`, `.none`
+
+**Selection modes**: `.single`, `.multi`
+
+`Currency` already conforms to `SFKPickableItem` via an extension.
 
 ---
 
-### 23. Settings Screen UI
+### 39. Settings Screen UI
 
-SwapFoundationKit provides a comprehensive settings screen module for building iOS settings screens with minimal boilerplate. It includes a `SettingsItem` protocol, reusable row components for every use case, and a full settings screen builder.
+**Tier**: `exact` · **Confidence**: high
 
----
+Replace custom settings screen implementations with the SFK settings module.
 
-## Row Components Overview
+**Sources**: `Sources/SwapFoundationKit/UI/Settings/` (14 files)
 
-| Row Type | Component | Use Case |
-|----------|-----------|----------|
-| Tappable | `SFKSettingsRow` | Navigation, actions |
-| Label | `SFKSettingsLabel` | Display-only |
-| Toggle | `SFKSettingsToggle` | Boolean on/off |
-| Date Picker | `SFKSettingsDatePickerRow` | Date/time selection |
-| Inline Date | `SFKSettingsInlineDatePicker` | Inline date picker |
-| Stepper | `SFKSettingsStepperRow` | Numeric +/- |
-| Slider | `SFKSettingsSliderRow` | Continuous values |
-| Color Picker | `SFKSettingsColorPickerRow` | Color selection |
-| Link | `SFKSettingsLinkRow` | Open URL |
-| Destructive | `SFKSettingsDestructiveRow` | Delete/reset |
-| Confirmation | `SFKSettingsConfirmationRow` | Confirm before action |
+**Search your app for**: `SettingsView`, `SettingsScreen`, `SettingsItem protocol`, `SettingsSection`, `SettingsRow`, `informationSectionItem`, `developerSectionItem`, `SettingsViewModel`, `settingsRow`, `DatePicker row`, `Toggle row`, `Stepper row`, `Slider row`, `ColorPicker row`, `destructive row`, `confirmation row`
 
----
+**Suspicious file patterns**: `*Settings*`, `*Setting*View*`, `*Setting*Screen*`, `*Setting*Row*`, `*Setting*Item*`, `*Setting*Section*`
 
-## SettingsItem Protocol
-
-Define custom settings items by conforming to `SettingsItem`:
+#### SettingsItem Protocol
 
 ```swift
+import SwapFoundationKit
+
 enum MyAppSettingsItem: String, SettingsItem {
     case notifications
     case privacy
@@ -1343,453 +1894,27 @@ enum MyAppSettingsItem: String, SettingsItem {
 }
 ```
 
----
-
-## Row Component Previews
-
-### SFKSettingsRow (Tappable)
-
-Basic tappable row with chevron:
-```swift
-SFKSettingsRow(
-    item: MySettingsItem.notifications,
-    action: { /* handle tap */ }
-)
-```
-
-With custom trailing content:
-```swift
-SFKSettingsRow(
-    item: versionItem,
-    showChevron: false,
-    action: {},
-    trailing: {
-        Text("1.0.0 (100)")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-    }
-)
-```
-
-### SFKSettingsLabel (Display-only)
-
-```swift
-SFKSettingsLabel(
-    title: "App Version",
-    subtitle: "Current installed version",
-    icon: "info.circle.fill",
-    tint: .secondary
-)
-```
-
-### SFKSettingsToggle (Boolean)
-
-```swift
-@AppStorage("notifications") private var notificationsEnabled = true
-
-SFKSettingsToggle(
-    title: "Push Notifications",
-    subtitle: "Receive push notifications",
-    icon: "bell.badge",
-    tint: .blue,
-    isOn: $notificationsEnabled
-)
-```
-
-### SFKSettingsToggleRow (SettingsItem-based)
-
-```swift
-enum MyToggleItem: SettingsItem {
-    case enabled
-    var id: String { "enabled" }
-    var icon: String { "power" }
-    var title: String { "Enabled" }
-    var subtitle: String { "Turn on/off feature" }
-    var tint: Color { .green }
-}
-
-SFKSettingsToggleRow(item: MyToggleItem(), isOn: $isEnabled)
-```
-
-### SFKSettingsDatePickerRow (Sheet-based)
-
-```swift
-@State private var reminderDate = Date()
-
-SFKSettingsDatePickerRow(
-    title: "Reminder Date",
-    subtitle: "When to send the reminder",
-    icon: "calendar",
-    tint: .orange,
-    selection: $reminderDate,
-    displayedComponents: [.date]  // or [.hourAndMinute] for time only
-)
-```
-
-### SFKSettingsTimePickerRow
-
-```swift
-@State private var alarmTime = Date()
-
-SFKSettingsTimePickerRow(
-    title: "Alarm Time",
-    subtitle: "When to trigger the alarm",
-    icon: "clock.fill",
-    tint: .red,
-    selection: $alarmTime
-)
-```
-
-### SFKSettingsInlineDatePicker
-
-```swift
-@State private var startDate = Date()
-
-SFKSettingsInlineDatePicker(
-    title: "Start Date",
-    icon: "calendar.badge.plus",
-    tint: .blue,
-    selection: $startDate,
-    displayedComponents: [.date]
-)
-```
-
-### SFKSettingsStepperRow (Numeric)
-
-```swift
-@State private var alertCount = 3
-
-SFKSettingsStepperRow(
-    title: "Number of Alerts",
-    subtitle: "How many times to remind",
-    icon: "bell.badge",
-    tint: .red,
-    value: $alertCount,
-    range: 1...10,
-    step: 1,
-    displayValue: { "\($0) times" }
-)
-```
-
-### SFKSettingsSliderRow (Continuous)
-
-```swift
-@State private var opacity: Double = 0.5
-
-SFKSettingsSliderRow(
-    title: "Image Opacity",
-    subtitle: "Adjust transparency",
-    icon: "circle.lefthalf.filled",
-    tint: .blue,
-    value: $opacity,
-    range: 0...1,
-    step: 0.01,
-    displayValue: { "\(Int($0 * 100))%" }
-)
-```
-
-### SFKSettingsColorPickerRow (Sheet-based)
-
-```swift
-@State private var themeColor = Color.blue
-
-SFKSettingsColorPickerRow(
-    title: "Theme Color",
-    subtitle: "Choose your preferred color",
-    icon: "paintpalette",
-    tint: .purple,
-    selection: $themeColor
-)
-```
-
-### SFKSettingsInlineColorPicker
-
-```swift
-@State private var accentColor = Color.purple
-
-SFKSettingsInlineColorPicker(
-    title: "Accent Color",
-    icon: "paintbrush.fill",
-    tint: .purple,
-    selection: $accentColor
-)
-```
-
-### SFKSettingsLinkRow (External URL)
-
-```swift
-SFKSettingsLinkRow(
-    title: "Privacy Policy",
-    subtitle: "Read our privacy policy",
-    icon: "hand.raised.fill",
-    tint: .blue,
-    url: URL(string: "https://example.com/privacy")!
-)
-```
-
-### SFKSettingsDestructiveRow (Dangerous Action)
-
-```swift
-SFKSettingsDestructiveRow(
-    title: "Delete Account",
-    subtitle: "Permanently delete your account and all data",
-    icon: "trash.fill",
-    action: {
-        // Handle deletion
-    }
-)
-```
-
-### SFKSettingsConfirmationRow (Confirm Dialog)
-
-```swift
-SFKSettingsConfirmationRow(
-    title: "Reset All Data",
-    subtitle: "Clear all app data and settings",
-    icon: "exclamationmark.triangle.fill",
-    tint: .orange,
-    confirmationTitle: "Reset Data?",
-    confirmationMessage: "This action cannot be undone. All your data will be permanently deleted.",
-    confirmTitle: "Reset",
-    confirmStyle: .destructive
-) {
-    // Reset data
-}
-```
-
----
-
-## Complete Sample Settings Screen
-
-This example demonstrates a settings screen with **all row types**:
-
-```swift
-import SwiftUI
-import SwapFoundationKit
-
-struct MyAppSettingsView: View {
-    // Toggle state
-    @AppStorage("notifications") private var notificationsEnabled = true
-    @AppStorage("darkMode") private var darkModeEnabled = false
-
-    // Date/Time state
-    @State private var reminderDate = Date()
-    @State private var alarmTime = Date()
-
-    // Numeric state
-    @State private var alertCount = 3
-    @State private var opacity: Double = 0.75
-
-    // Color state
-    @State private var themeColor = Color.blue
-
-    // Picker state
-    @State private var selectedLanguage = "en"
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                // MARK: - Custom Header Section
-                Section {
-                    // Header content like a pro banner
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("MyApp Settings")
-                            .font(.title2.bold())
-                        Text("Customize your experience")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 8)
-                }
-
-                // MARK: - Toggle Section
-                Section {
-                    SFKSettingsToggle(
-                        title: "Push Notifications",
-                        subtitle: "Receive notifications for updates",
-                        icon: "bell.badge.fill",
-                        tint: .blue,
-                        isOn: $notificationsEnabled
-                    )
-
-                    SFKSettingsToggle(
-                        title: "Dark Mode",
-                        subtitle: "Use dark appearance",
-                        icon: "moon.fill",
-                        tint: .purple,
-                        isOn: $darkModeEnabled
-                    )
-                } header: {
-                    Text("Preferences")
-                }
-
-                // MARK: - Date/Time Pickers
-                Section {
-                    SFKSettingsDatePickerRow(
-                        title: "Reminder Date",
-                        subtitle: "When to send the reminder",
-                        icon: "calendar",
-                        tint: .orange,
-                        selection: $reminderDate,
-                        displayedComponents: [.date]
-                    )
-
-                    SFKSettingsTimePickerRow(
-                        title: "Alarm Time",
-                        subtitle: "When to trigger the alarm",
-                        icon: "clock.fill",
-                        tint: .red,
-                        selection: $alarmTime
-                    )
-
-                    SFKSettingsInlineDatePicker(
-                        title: "Start Date",
-                        icon: "calendar.badge.plus",
-                        tint: .green,
-                        selection: $reminderDate,
-                        displayedComponents: [.date]
-                    )
-                } header: {
-                    Text("Date & Time")
-                }
-
-                // MARK: - Numeric Controls
-                Section {
-                    SFKSettingsStepperRow(
-                        title: "Alert Count",
-                        subtitle: "Number of reminders",
-                        icon: "bell.badge",
-                        tint: .red,
-                        value: $alertCount,
-                        range: 1...10,
-                        step: 1,
-                        displayValue: { "\($0) times" }
-                    )
-
-                    SFKSettingsSliderRow(
-                        title: "Opacity",
-                        subtitle: "Adjust transparency",
-                        icon: "circle.lefthalf.filled",
-                        tint: .blue,
-                        value: $opacity,
-                        range: 0...1,
-                        step: 0.01,
-                        displayValue: { "\(Int($0 * 100))%" }
-                    )
-                } header: {
-                    Text("Adjustments")
-                }
-
-                // MARK: - Color Picker
-                Section {
-                    SFKSettingsColorPickerRow(
-                        title: "Theme Color",
-                        subtitle: "Choose app color",
-                        icon: "paintpalette.fill",
-                        tint: .purple,
-                        selection: $themeColor
-                    )
-
-                    SFKSettingsInlineColorPicker(
-                        title: "Accent Color",
-                        icon: "paintbrush.fill",
-                        tint: themeColor,
-                        selection: $themeColor
-                    )
-                } header: {
-                    Text("Appearance")
-                }
-
-                // MARK: - Standard Information Items
-                Section {
-                    ForEach(SFKInformationSectionItem.allCases, id: \.id) { item in
-                        SFKSettingsRow(item: item) {
-                            handleInfoItemTap(item)
-                        }
-                    }
-                } header: {
-                    Text("Information")
-                } footer: {
-                    Text("Thank you for using MyApp!")
-                }
-
-                // MARK: - Developer Section
-                Section {
-                    ForEach(SFKDeveloperSectionItem.allCases, id: \.id) { item in
-                        SFKSettingsRow(item: item) {
-                            handleDeveloperItemTap(item)
-                        }
-                    }
-                } header: {
-                    Text("Developer")
-                }
-
-                // MARK: - Link Row
-                Section {
-                    SFKSettingsLinkRow(
-                        title: "Documentation",
-                        subtitle: "Read the full documentation",
-                        icon: "book.fill",
-                        tint: .green,
-                        url: URL(string: "https://example.com/docs")!
-                    )
-                }
-
-                // MARK: - Destructive Actions
-                Section {
-                    SFKSettingsConfirmationRow(
-                        title: "Reset All Settings",
-                        subtitle: "Return all settings to default values",
-                        icon: "arrow.counterclockwise",
-                        tint: .orange,
-                        confirmationTitle: "Reset Settings?",
-                        confirmationMessage: "This will reset all your preferences to their default values.",
-                        confirmTitle: "Reset",
-                        confirmStyle: .destructive
-                    ) {
-                        resetSettings()
-                    }
-
-                    SFKSettingsDestructiveRow(
-                        title: "Delete Account",
-                        subtitle: "Permanently delete your account and all data",
-                        icon: "trash.fill",
-                        action: {
-                            deleteAccount()
-                        }
-                    )
-                } header: {
-                    Text("Danger Zone")
-                }
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-
-    private func handleInfoItemTap(_ item: SFKInformationSectionItem) {
-        // Handle information items
-    }
-
-    private func handleDeveloperItemTap(_ item: SFKDeveloperSectionItem) {
-        // Handle developer items
-    }
-
-    private func resetSettings() {
-        // Reset all settings
-    }
-
-    private func deleteAccount() {
-        // Delete account
-    }
-}
-```
-
----
-
-## Full Settings Screen with SFKSettingsScreen
-
-Alternatively, use `SFKSettingsScreen` for a structured approach:
+#### Row Components
+
+| Row Type | Component | Use Case |
+|----------|-----------|----------|
+| Tappable | `SFKSettingsRow<Item>` | Navigation, actions |
+| Label | `SFKSettingsLabel` | Display-only |
+| Toggle | `SFKSettingsToggle` | Boolean on/off (explicit properties) |
+| Toggle (SettingsItem) | `SFKSettingsToggleRow<Item>` | Boolean on/off (protocol-based) |
+| Date Picker | `SFKSettingsDatePickerRow` | Date/time selection (sheet) |
+| Time Picker | `SFKSettingsTimePickerRow` | Time selection (sheet) |
+| Inline Date | `SFKSettingsInlineDatePicker` | Inline date picker |
+| Stepper | `SFKSettingsStepperRow` | Numeric +/- |
+| Slider | `SFKSettingsSliderRow` | Continuous values |
+| Color Picker | `SFKSettingsColorPickerRow` | Color selection (sheet) |
+| Inline Color | `SFKSettingsInlineColorPicker` | Inline color picker |
+| Link | `SFKSettingsLinkRow` | Open URL |
+| Destructive | `SFKSettingsDestructiveRow` | Delete/reset |
+| Confirmation | `SFKSettingsConfirmationRow` | Confirm before action |
+| Picker | `SFKSettingsPickerRow` | Generic picker row |
+
+#### Full Settings Screen
 
 ```swift
 import SwiftUI
@@ -1798,13 +1923,11 @@ import SwapFoundationKit
 struct MySettingsView: View {
     @State private var notificationsEnabled = true
     @State private var reminderDate = Date()
-
     private let actionHandler = SFKSettingsActionHandler(appID: "123456789")
 
     var body: some View {
         SFKSettingsScreen(
             header: {
-                // Custom header like a pro banner
                 VStack(alignment: .leading, spacing: 8) {
                     Text("MyApp Pro")
                         .font(.title2.bold())
@@ -1815,20 +1938,15 @@ struct MySettingsView: View {
                 .padding()
             },
             sections: [
-                // Preferences with toggle
                 SFKSettingsSectionConfiguration(
                     title: "Preferences",
                     items: []
                 ),
-
-                // Information section
                 SFKSettingsSectionConfiguration(
                     title: "Information",
                     items: SFKInformationSectionItem.allCases,
                     footer: "Version 1.0.0 (100)"
                 ),
-
-                // Developer section
                 SFKSettingsSectionConfiguration(
                     title: "Developer",
                     items: SFKDeveloperSectionItem.allCases
@@ -1843,248 +1961,542 @@ struct MySettingsView: View {
     private func handleItemTap(_ item: any SettingsItem) {
         if let infoItem = item as? SFKInformationSectionItem {
             switch infoItem {
-            case .rateOnTheAppStore:
-                actionHandler.rateOnTheAppStore()
-            case .privacyPolicy:
-                actionHandler.openURLString("https://example.com/privacy")
-            case .termsAndConditions:
-                actionHandler.openURLString("https://example.com/terms")
-            default:
-                break
+            case .rateOnTheAppStore: actionHandler.rateOnTheAppStore()
+            case .privacyPolicy: actionHandler.openURLString("https://example.com/privacy")
+            case .termsAndConditions: actionHandler.openURLString("https://example.com/terms")
+            default: break
             }
         }
     }
 }
 ```
 
----
+#### Standard Section Items
 
-## Standard Section Items
+**SFKInformationSectionItem**: `.version`, `.reportABug`, `.rateOnTheAppStore`, `.referToFriends`, `.privacyPolicy`, `.termsAndConditions`
 
-### SFKInformationSectionItem
+**SFKDeveloperSectionItem**: `.website`, `.twitter`, `.anotherApp`
 
-| Case | Icon | Title | Tint |
-|------|------|-------|------|
-| `.version` | `info.circle.fill` | Version | `.secondary` |
-| `.reportABug` | `ant.circle.fill` | Report a Bug | `.orange` |
-| `.rateOnTheAppStore` | `star.circle.fill` | Rate on the App Store | `.yellow` |
-| `.referToFriends` | `person.2.circle` | Refer to Friends | `.pink` |
-| `.privacyPolicy` | `globe` | Privacy Policy | `.blue` |
-| `.termsAndConditions` | `globe` | Terms and Conditions | `.blue` |
-
-### SFKDeveloperSectionItem
-
-| Case | Icon | Title | Tint |
-|------|------|-------|------|
-| `.website` | `globe` | Website | `.blue` |
-| `.twitter` | `heart.circle` | Twitter (X) | `.purple` |
-| `.anotherApp` | `heart.circle.fill` | View Another App | `.pink` |
-
----
-
-## Action Handlers
-
-### SFKSettingsActionHandler
+#### Action Handlers
 
 ```swift
 let handler = SFKSettingsActionHandler(appID: "123456789")
 
 handler.rateOnTheAppStore()
+handler.shareApp(shareText: "Check out this great app!", appURL: url)
+handler.openURL(url)
+handler.openURLString("https://example.com")
 
-handler.shareApp(
-    shareText: "Check out this great app!",
-    appURL: URL(string: "https://apps.apple.com/app/id123456789")!
-)
-
-handler.openURL(URL(string: "https://example.com")!)
-```
-
-### SFKInformationSectionHandler
-
-```swift
-let handler = SFKSettingsActionHandler(appID: "123456789")
-
+// Pre-built handlers
 let infoHandler = SFKInformationSectionHandler(
     handler: handler,
     privacyPolicyURL: URL(string: "https://myapp.com/privacy"),
     termsURL: URL(string: "https://myapp.com/terms")
 )
 
-// In your tap handler:
-if infoHandler.handle(item) {
-    // Item was handled (rate app, open URL, etc.)
-    // Return early
-}
+if infoHandler.handle(item) { /* item was handled */ }
 ```
 
-### SFKDeveloperSectionHandler
+#### Update Banner Integration
+
+`SFKSettingsScreen` supports update-banner placement directly:
 
 ```swift
-let handler = SFKSettingsActionHandler(appID: "123456789")
+@State private var updateVersion: String? = "2.3.0"
 
-let devHandler = SFKDeveloperSectionHandler(
-    handler: handler,
-    websiteURL: URL(string: "https://myapp.com"),
-    twitterURL: URL(string: "https://twitter.com/myapp")
+SFKSettingsScreen(
+    header: header,
+    sections: sections,
+    updateBannerVersion: $updateVersion,
+    updateBannerTheme: .default,
+    updateBannerAppStoreID: "123456789",
+    onUpdateBannerTap: {
+        analytics.track("update_banner_tapped")
+    },
+    onItemTap: handleTap(_:)
 )
-
-// In your tap handler:
-if devHandler.handle(item) {
-    // Item was handled
-}
 ```
+
+**Behavior**:
+- Banner shown when `updateBannerVersion.wrappedValue` is non-`nil`.
+- Tapping opens the App Store page.
+- After tap, `updateBannerVersion.wrappedValue` is set to `nil`.
+- `onUpdateBannerTap` runs after the binding is cleared, so apps can log analytics or clear mirrored state.
+
+**Migration steps**:
+1. Find your custom settings screen/row implementations.
+2. Replace with SFK settings components.
+3. Make your settings items conform to `SettingsItem`.
+4. Use `SFKSettingsScreen` for the full screen or individual row components in your own Form.
+5. Remove your custom settings implementation.
+
+**Keep custom when**: The host app needs a pro banner, subscription-specific logic, or app-coordinator navigation that should remain in the app layer.
 
 ---
 
-## 🚀 Quick Start
+### 40. Onboarding UI Components
 
-### Initial Setup
+**Tier**: `heuristic` · **Confidence**: medium
+
+Replace local onboarding components with the SFK onboarding module.
+
+**Sources**: `Sources/SwapFoundationKit/UI/Onboarding/` (6 files)
+
+Full documentation: `Docs/onboarding-components.md`
+
+#### Component Summary
+
+| Component | Purpose |
+|-----------|---------|
+| `SFKChipFlowLayout` | Flex-wrap `Layout` for chips/tags |
+| `SFKSegmentedProgress` | Story-style segmented progress bar |
+| `SFKSelectableChip` | Selectable capsule button with icon support |
+| `SFKChipItem` | Protocol for model types used with chips |
+| `SFKSecondaryButton` | Text-only button for skip/dismiss actions |
+| `SFKTypography` | Six View-extension typography modifiers |
+| `SFKCard` | Rounded-rectangle card container with optional icon |
+
+#### Quick Example
 
 ```swift
 import SwapFoundationKit
 
-@main
-struct MyApp: App {
-    init() {
-        // Configure SwapFoundationKit
-        let config = SwapFoundationKitConfiguration(
-            appMetadata: AppMetaData(
-                appGroupIdentifier: "group.com.yourapp.widget",
-                appName: "MyApp",
-                appVersion: "1.0.0"
-            ),
-            enableWatchConnectivity: true,
-            watchSyncOptions: WatchSyncOptions(
-                preferredTransport: .applicationContext,
-                fallbackOrder: [.userInfo, .messageData, .file]
-            ),
-            enableAnalytics: true,
-            enableItemSync: true,
-            enableNetworking: true,
-            networkTimeout: 30.0
-        )
-        
-        Task {
-            try? await SwapFoundationKit.shared.start(with: config)
-            
-            // Start exchange rate manager
-            await ExchangeRateManager.shared.start()
-        }
-    }
-    
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
+// Progress bar
+SFKSegmentedProgress(currentStep: 2, totalSteps: 5)
+
+// Chip flow with selectable items
+SFKChipFlowLayout(spacing: 8) {
+    SFKSelectableChip("Save money", isSelected: true, tintColor: .blue) { }
+    SFKSelectableChip("Track spending", isSelected: false, tintColor: .blue) { }
+}
+
+// Typography
+Text("Welcome")
+    .sfkFlowTitleStyle()
+
+// Card
+SFKCard(icon: "star.fill", iconTint: .yellow) {
+    Text("Featured content")
+}
+
+// Secondary button
+SFKSecondaryButton("Skip for now") { }
+```
+
+#### SFKChipItem Protocol
+
+```swift
+enum Goal: String, CaseIterable, SFKChipItem {
+    case trackSpending = "Track my spending"
+    case saveMoney = "Save money"
+
+    var chipLabel: String { rawValue }
+    var chipIcon: String? { nil } // optional emoji or SF Symbol
 }
 ```
 
+#### Typography Modifiers
+
+| Modifier | Font | Weight | Color | Use Case |
+|----------|------|--------|-------|----------|
+| `sfkFlowTitleStyle()` | `.title` | `.bold` | `.primary` | Screen headers |
+| `sfkFlowQuestionStyle()` | `.title2` | `.bold` | `.primary` | Question prompts |
+| `sfkFlowSubtitleStyle()` | `.body` | `.medium` | `.secondary` | Descriptive text |
+| `sfkFlowCardTitleStyle()` | `.headline` | `.semibold` | `.primary` | Card titles |
+| `sfkFlowCardBodyStyle()` | `.subheadline` | regular | `.secondary` | Card body text |
+| `sfkFlowChipStyle()` | `.subheadline` | `.semibold` | `.primary` | Chip labels |
+
+#### Migration from App-Local Components
+
+| Your Local Component | SFK Replacement |
+|---------------------|-----------------|
+| `OnboardingChipFlowLayout` | `SFKChipFlowLayout` |
+| `OnboardingProgressBar` | `SFKSegmentedProgress` |
+| `GoalSelectionCard` / `SelectableChip` | `SFKSelectableChip` |
+| `OnboardingSecondaryButton` | `SFKSecondaryButton` |
+| `onboardingTitleStyle()` | `sfkFlowTitleStyle()` |
+| `onboardingSubtitleStyle()` | `sfkFlowSubtitleStyle()` |
+| `onboardingQuestionTitleStyle()` | `sfkFlowQuestionStyle()` |
+| `onboardingCardTitleStyle()` | `sfkFlowCardTitleStyle()` |
+| `onboardingCardBodyStyle()` | `sfkFlowCardBodyStyle()` |
+| `onboardingChipTitleStyle()` | `sfkFlowChipStyle()` |
+| Custom card container | `SFKCard` |
+
 ---
 
-## 📚 Complete API Reference
+### 41. Update Available Banner
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Display non-intrusive update-available banners with `SFKUpdateAvailableBannerView`.
+
+**Sources**: `Sources/SwapFoundationKit/UI/UpdateAvailableBanner/`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+// Direct usage
+SFKUpdateAvailableBannerView(
+    newVersion: "2.3.0",
+    appStoreID: "123456789",
+    onTap: { /* analytics */ },
+    onDismiss: { /* clear state */ }
+)
+
+// Reactive with UpdateBannerState
+SFKUpdateAvailableBannerView(state: bannerState, appStoreID: "123456789")
+```
+
+**Types**:
+- `UpdateBannerState` — `.none`, `.available(newVersion:)`
+- `UpdateAvailableBannerTheme` — `backgroundColor`, `titleColor`, `subtitleColor`, `iconName`, `buttonTitle`, `buttonColor`, `buttonTitleColor`
+- `UpdateAvailableManager` (from UpdateAvailableKit) — `shared`, `result`, `start()`, `configure(with:)`
+- `UpdateAvailableConfiguration` — `bundleID`, `cacheDuration`
+
+---
+
+### 42. UIKit Extensions
+
+**Tier**: `manual` · **Confidence**: low
+
+Replace custom UIKit extensions with SFK's UIKit extensions.
+
+**Sources**: `Sources/SwapFoundationKit/UI/UIKitExtensions/`
+
+#### UIColor Extensions
+
+**Source**: `Sources/SwapFoundationKit/UI/UIKitExtensions/UIColor+.swift`
+
+```swift
+import SwapFoundationKit
+
+// Hex colors
+let color = UIColor(hex: "#FF0000")
+print(color.hexString()) // "#FF0000"
+
+// Color components
+print(color.redComponent)
+print(color.greenComponent)
+print(color.blueComponent)
+print(color.alphaComponent)
+
+// Color manipulation
+let lighter = color.lighter(by: 0.2)
+let darker = color.darker(by: 0.2)
+let random = UIColor.random
+```
+
+#### UIView Extensions
+
+**Sources**: `Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Layout.swift`, `Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Hierarchy.swift`
+
+```swift
+import SwapFoundationKit
+
+// Add multiple subviews
+view.addSubviews(view1, view2, view3)
+
+// Remove all subviews
+view.removeAllSubviews()
+
+// Find subviews
+let buttons = view.allSubViewsOf(type: UIButton.self)
+
+// Layout constraints
+view.anchor(top: parent.topAnchor, leading: parent.leadingAnchor,
+            bottom: parent.bottomAnchor, trailing: parent.trailingAnchor)
+```
+
+#### UIImage Extensions
+
+**Source**: `Sources/SwapFoundationKit/UI/UIKitExtensions/UIImage+.swift`
+
+```swift
+import SwapFoundationKit
+
+if let resized = image.resized(targetSize: CGSize(width: 100, height: 100)) {
+    imageView.image = resized
+}
+```
+
+#### CGTypes Extensions
+
+**Source**: `Sources/SwapFoundationKit/UI/UIKitExtensions/CGTypes+Extensions.swift`
+
+```swift
+import SwapFoundationKit
+
+let distance = point1.distance(to: point2)
+let ratio = size.aspectRatio
+let fitted = size.fitted(into: otherSize)
+let center = rect.center
+```
+
+#### Other UIKit Extensions
+
+- `UIViewController+` — view controller utilities
+- `UINavigationController+` — navigation controller utilities
+- `UIApplication+SafeArea` — safe area helpers
+
+---
+
+### 43. Compatibility Wrappers
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Version-compatible wrappers for iOS version-specific APIs.
+
+**Sources**: `Sources/SwapFoundationKit/Compatibility/`
+
+- `CompatibleNavigationSubtitle` — navigation subtitle compatibility
+- `CompatibleTabBarMinimizeBehavior` / `UIKitTabBarMinimizeBehavior` — tab bar minimize behavior
+
+---
+
+### 44. Configuration Service
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Centralized configuration service.
+
+**Sources**: `Sources/SwapFoundationKit/SwapFoundationKit.swift`, `Sources/SwapFoundationKit/SwapFoundationKitConfiguration.swift`, `Sources/SwapFoundationKit/Core/ConfigurationService.swift`
+
+**Search your app for**: `AppConfiguration`, `Environment`, `BuildConfig`, `InfoPlist`, `ConfigService`
+
+**Suspicious file patterns**: `*Config*`, `*Environment*`, `*BuildSettings*`
+
+**Migration steps**:
+1. Replace custom configuration classes with `SwapFoundationKitConfiguration`.
+2. Use `ConfigurationService.shared` for centralized config access.
+3. Remove your custom configuration implementation.
+
+**Keep custom when**: The host app maintains environment policy, feature flags, or secrets management above SFK.
+
+---
+
+### 45. Ads Manager
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Manage ad integration with `AdsManager`.
+
+**Sources**: `Sources/SwapFoundationKit/Ads/`
+
+**API**:
+
+```swift
+import SwapFoundationKit
+
+// Configuration
+let config = AdsConfiguration(
+    provider: .google(GoogleAdsConfiguration(
+        appId: "ca-app-pub-xxx",
+        adUnits: AdUnitConfiguration(
+            banner: "ca-app-pub-xxx/banner",
+            interstitial: "ca-app-pub-xxx/interstitial",
+            rewarded: "ca-app-pub-xxx/rewarded"
+        )
+    )),
+    preloadOnStart: true
+)
+
+// Start
+await AdsManager.shared.start(with: config)
+
+// Eligibility check
+AdsManager.shared.isEligibleToShowAds = { true }
+
+// Event handler
+AdsManager.shared.eventHandler = { event in
+    // Handle ad events
+}
+```
+
+**Components**: `AdsManager`, `AdsConfiguration`, `AdUnitConfiguration`, `GoogleAdsConfiguration`, `AdProvider` (`.google`), `AdsProvider` protocol, `GoogleAdsProvider`.
+
+---
+
+### 46. Protocols
+
+**Tier**: `manual` · **Confidence**: low
+
+Shared protocols for cross-cutting concerns.
+
+**Sources**: `Sources/SwapFoundationKit/Protocols/`
+
+- `AppMetaData` — app metadata protocol with App Store URL helpers
+- `Coordinator` — navigation coordinator protocol
+- `PasteboardCopyRepresentable` — protocol for types that can be copied to pasteboard
+- `ValueDefaultProvider` — protocol for value default providers
+
+---
+
+### 47. SFKSettingsScreen (Full Screen Builder)
+
+See [Capability 39: Settings Screen UI](#39-settings-screen-ui) for the complete settings module documentation including `SFKSettingsScreen`, row components, section items, and action handlers.
+
+---
+
+### 48. ItemDetailSource
+
+**Tier**: `heuristic` · **Confidence**: medium
+
+Protocol for fetching item detail data with default implementation.
+
+**Sources**: `Sources/SwapFoundationKit/Services/ItemDetailSource.swift`, `Sources/SwapFoundationKit/Services/DefaultItemDetailSource.swift`
+
+---
+
+## Known Refactoring Opportunities
+
+These are internal SFK improvements tracked for future work. They do not affect public API but are worth noting if you contribute to the library:
+
+| # | Issue | Files | Recommendation |
+|---|-------|-------|----------------|
+| 1 | Duplicate `NetworkError` definitions | `Networking.swift`, `NetworkService.swift` | Consolidate into single enum |
+| 2 | DateFormatter created 17+ times | `Date+Extensions.swift` | Use cached formatters |
+| 3 | Calendar.current accessed 18+ times | `Date+Extensions.swift` | Cache as static property |
+| 4 | UIColor RGBA extraction repeated 10+ times | `UIColor+.swift` | Extract helper method |
+| 5 | Duplicate type conversion logic | `Bundle+InfoPlist.swift` | Extract shared method |
+| 6 | UIColor+.swift (393 lines) | — | Split into 4 files |
+| 7 | Date+Extensions.swift (321 lines) | — | Split into 3 files |
+| 8 | String+.swift (315 lines) | — | Reorganize extension blocks |
+| 9 | ConfigurationService.swift (407 lines) | — | Extract convenience methods |
+| 10 | String validation naming inconsistencies | `String+.swift` | Standardize conventions |
+| 11 | HTTPClient vs NetworkService overlap | — | Clarify or consolidate |
+| 12 | Hardcoded URLs | `ExchangeRateManager.swift`, `AppMetaData.swift` | Extract to constants |
+
+---
+
+## API Reference
 
 ### Core Services
-- **`SwapFoundationKit`** - Main framework entry point
-- **`SwapFoundationKitConfiguration`** - Configuration struct
-- **`HTTPClient`** - Modern HTTP client with async/await
-- **`NetworkService`** - Network operations and reachability
-- **`SecurityService`** - Encryption, keychain, secure storage
-- **`BackupService`** - Data backup and restore
+- **`SwapFoundationKit`** — Main framework entry point (singleton)
+- **`SwapFoundationKitConfiguration`** — Configuration struct
+- **`ConfigurationService`** — Centralized configuration service
+- **`HTTPClient`** — Modern HTTP client with async/await
+- **`NetworkService`** — Network operations and reachability
+- **`SecurityService`** — Encryption, keychain, secure storage
+- **`BackupService`** — Data backup and restore
+
+### Services
+- **`HapticsHelper`** — Haptic feedback manager
+- **`Logger`** — Configurable logging with analytics integration
+- **`AnalyticsManager`** — Protocol-based analytics fan-out system
+- **`ToastManager`** — Toast notification system
+- **`UserDefault`** — Type-safe UserDefaults property wrapper
+- **`AppLinkOpener`** — URL and app link opening
+- **`DeviceInfo`** — Device information utility
+- **`FileExportService`** — Share sheet export
+- **`FileImportService`** — Document picker import
+- **`DeeplinkHandler`** — Type-safe deeplink handling with Combine
+- **`PasteboardService`** — Clipboard operations
+- **`LocationSearchService`** — MapKit location search
+- **`ItemDetailSource`** — Item detail data protocol
+- **`SFKUpdateAvailabilityService`** — Update availability checking
 
 ### UI Components
-- **`SFKButton`** - Configurable button view with line-item and configurator-based initializers
-- **`SFKButtonConfigurator`** - Reusable button configuration model with presets such as `.primary` and `.close`, plus loading and chrome options
+- **`SFKButton`** — Configurable button with line-item and configurator-based initializers
+- **`SFKButtonConfigurator`** — Reusable button configuration model with `.primary` and `.close` presets
+- **`SFKChipFlowLayout`** — Flex-wrap `Layout` for chip/tag clouds
+- **`SFKSegmentedProgress`** — Story-style segmented progress indicator
+- **`SFKSelectableChip`** — Selectable capsule button with icon and haptic support
+- **`SFKChipItem`** — Protocol for model types used with `SFKSelectableChip`
+- **`SFKSecondaryButton`** — Text-only button for skip/dismiss actions
+- **`SFKTypography`** — View extensions: `sfkFlowTitleStyle`, `sfkFlowQuestionStyle`, `sfkFlowSubtitleStyle`, `sfkFlowCardTitleStyle`, `sfkFlowCardBodyStyle`, `sfkFlowChipStyle`
+- **`SFKCard`** — Rounded-rectangle card container with optional leading icon
+- **`SFKItemPickerView`** — Generic picker view with single/multi-select
+- **`SFKSettingsScreen`** — Full settings screen builder
+- **`SFKSettingsRow`** — Tappable settings row
+- **`SFKSettingsLabel`** — Display-only settings row
+- **`SFKSettingsToggle`** — Toggle settings row
+- **`SFKSettingsDatePickerRow`** — Date picker settings row
+- **`SFKSettingsStepperRow`** — Stepper settings row
+- **`SFKSettingsColorPickerRow`** — Color picker settings row
+- **`SFKSettingsLinkRow`** — URL link settings row
+- **`SFKSettingsDestructiveRow`** — Destructive action settings row
+- **`SFKSettingsConfirmationRow`** — Confirmation settings row
+- **`SFKSettingsSliderRow`** — Slider settings row
+- **`SFKSettingsInlineDatePicker`** — Inline date picker
+- **`SFKSettingsInlineColorPicker`** — Inline color picker
+- **`SFKSettingsTimePickerRow`** — Time picker settings row
+- **`SFKSettingsPickerRow`** — Generic picker settings row
+- **`AlertController`** — SwiftUI-native alert manager
+- **`AlertPresenter`** — UIKit-based alert presentation
+- **`SFKUpdateAvailableBannerView`** — Update available banner
+- **`ProBannerView`** — Pro/upgrade banner
+- **`BarcodeScannerView`** — Barcode scanning UI
+- **`PhotoPicker`** — Photo picker wrapper
+- **`SFKAuraGlowBackground`** — Aura glow background effect
 
 ### Glass Compatibility Wrappers
-- **`.glassProminentCompat()`** - Compatibility wrapper for SwiftUI's `.glassProminent` button style
-- **`.glassCompat()`** - Compatibility wrapper for SwiftUI's `.glass` button style
-- **`.glassEffectCompat()`** - Compatibility wrapper for SwiftUI's `glassEffect(_:in:)`
+- **`.glassProminentCompat()`** — Compatibility wrapper for `.glassProminent`
+- **`.glassCompat()`** — Compatibility wrapper for `.glass`
+- **`.glassEffectCompat()`** — Compatibility wrapper for `glassEffect(_:in:)`
 
 ### Utilities
-- **`HapticsHelper`** - Haptic feedback manager
-- **`Logger`** - Configurable logging with analytics integration
-- **`Debouncer`** - Action debouncing utility
-- **`ImageProcessor`** - Image manipulation and caching
-- **`ExchangeRateManager`** - Currency exchange rates
-- **`Currency`** - Currency enum with symbols
-- **`AnalyticsManager`** - Protocol-based analytics system
-- **`AppLinkOpener`** - URL and app link opening
-
-### Alert Presentation
-- **`AlertController`** - SwiftUI-native ObservableObject for declarative alert management
-- **`AlertPresenter`** - Static methods for UIKit-based alert presentation
-- **`AlertAction`** - Represents an action in an alert
-- **`AlertActionStyle`** - Action style enum (`.default`, `.cancel`, `.destructive`)
-- **`AlertTextField`** - Text field configuration for alerts
-- **`KeyboardType`** - Platform-agnostic keyboard type enum
-
-### Settings UI
-- **`SettingsItem`** - Protocol defining a settings row contract
-- **`SFKSettingsRow`** - Tappable row with icon, title, subtitle, chevron, and custom trailing
-- **`SFKSettingsLabel`** - Display-only label row variant
-- **`SFKSettingsToggle`** - Toggle row with icon, title, subtitle (explicit properties)
-- **`SFKSettingsToggleRow`** - Toggle row with icon, title, subtitle (SettingsItem-based)
-- **`SFKSettingsDatePickerRow`** - Date/time picker presented in a sheet
-- **`SFKSettingsTimePickerRow`** - Time picker presented in a sheet
-- **`SFKSettingsInlineDatePicker`** - Date/time picker inline within form
-- **`SFKSettingsStepperRow`** - Numeric stepper row with +/- controls
-- **`SFKSettingsSliderRow`** - Slider row for continuous values
-- **`SFKSettingsColorPickerRow`** - Color picker presented in a sheet
-- **`SFKSettingsInlineColorPicker`** - Color picker inline within form
-- **`SFKSettingsLinkRow`** - Opens external URL
-- **`SFKSettingsDestructiveRow`** - Destructive action row (red styling)
-- **`SFKSettingsConfirmationRow`** - Row with confirmation dialog before action
-- **`SFKSettingsScreen`** - Full settings screen with sections, headers, and footers
-- **`SFKSettingsSectionConfiguration`** - Section configuration with title, items, and optional footer
-- **`SFKInformationSectionItem`** - Standard info section items (version, report bug, rate app, share, privacy, terms)
-- **`SFKDeveloperSectionItem`** - Developer section items (website, twitter, another app)
-- **`SFKSettingsActionHandler`** - Helper for rate app, share, open URLs
-- **`SFKInformationSectionHandler`** - Handler for SFKInformationSectionItem taps
-- **`SFKDeveloperSectionHandler`** - Handler for SFKDeveloperSectionItem taps
-
-### Item Picker
-- **`SFKPickableItem`** - Protocol for items displayed in the picker
-- **`SFKPickableItemIconKind`** - Icon display modes (`.iconImage`, `.systemIcon`, `.text`, `.none`)
-- **`SFKItemPickerSelectionMode`** - Selection mode enum (`.single`, `.multi`)
-- **`SFKItemPickerView`** - Generic picker view with NavigationStack and close button
-- **`SFKItemPickerRow`** - Individual row with icon, title, subtitle, checkmark, and haptics
+- **`Debouncer`** — Action debouncing utility
+- **`ImageProcessor`** — Image manipulation and caching
+- **`ExchangeRateManager`** — Currency exchange rates
+- **`Currency`** — Currency enum with symbols
 
 ### Extensions
-- **`Date`** - Comprehensive date formatting and manipulation
-- **`String`** - String validation, manipulation, and conversion
-- **`Double`/`Float`** - Number formatting utilities
-- **`Data`** - Crypto hashing (MD5, SHA1, SHA256)
-- **`Bundle`** - Info.plist access utilities
-- **`Collection`** - Safe subscript and utilities
-- **`UIColor`** - Hex colors, color manipulation
-- **`UIView`** - Layout and hierarchy utilities
-- **`UIImage`** - Image resizing utilities
-
-### Property Wrappers
-- **`@UserDefault`** - Type-safe UserDefaults with SwiftUI support
+- **`Date`** — Comprehensive date formatting and manipulation
+- **`String`** — String validation, manipulation, and conversion
+- **`Double`/`Float`** — Number formatting utilities
+- **`Data`** — Crypto hashing (MD5, SHA1, SHA256)
+- **`Bundle`** — Info.plist access utilities
+- **`Collection`** — Safe subscript and utilities
+- **`URL`** — URL query helpers
+- **`FileManager`** — File operations
+- **`Result`** — Result helpers
+- **`JSONCodable`** — JSON encode/decode helpers
+- **`UIColor`** — Hex colors, color manipulation
+- **`UIView`** — Layout and hierarchy utilities
+- **`UIImage`** — Image resizing utilities
+- **`CGTypes`** — CGPoint/CGSize/CGRect utilities
 
 ### Modules
-- **`ItemSync`** - Data synchronization between app, widgets, and Watch
-- **`WatchSyncService`** - Type-safe watch transport abstraction with envelope-based payloads
-- **`WatchSyncEnvelope`** - Canonical watch payload format (identifier + payload + version)
-- **`WatchSyncOptions`** - Transport preference/fallback configuration
+- **`ItemSync`** — Data synchronization between app, widgets, and Watch
+- **`WatchSync`** — Type-safe watch transport abstraction
+- **`Ads`** — Ad management (Google Mobile Ads)
+
+### Protocols
+- **`AppMetaData`** — App metadata with App Store URL helpers
+- **`Coordinator`** — Navigation coordinator
+- **`SettingsItem`** — Settings row contract
+- **`SFKPickableItem`** — Picker item contract
+- **`SFKChipItem`** — Chip item contract
+- **`AnalyticsEvent`** — Analytics event contract
+- **`AnalyticsLogger`** — Analytics logger contract
+- **`SyncableData`** — Syncable data contract
+- **`NetworkRequest`** — Network request contract
+- **`SFKToastKind`** — Toast kind contract
+- **`DeeplinkRoute`** — Deeplink route contract
+- **`UserDefaultKeyProtocol`** — UserDefaults key contract
+- **`PasteboardCopyRepresentable`** — Pasteboard contract
+- **`ValueDefaultProvider`** — Value provider contract
+
+### Property Wrappers
+- **`@UserDefault`** — Type-safe UserDefaults with SwiftUI support
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 SwapFoundationKit is built with these principles:
 
-- **Protocol-Oriented Design** - Easy to implement, test, and extend
-- **Modern Swift Features** - Leverages async/await, actors, and Swift concurrency
-- **Type Safety** - Compile-time safety with generics and protocols
-- **Modular Structure** - Import only what you need
-- **Comprehensive Testing** - Well-tested components with mock support
+- **Protocol-Oriented Design** — Easy to implement, test, and extend
+- **Modern Swift Features** — Leverages async/await, actors, and Swift concurrency
+- **Type Safety** — Compile-time safety with generics and protocols
+- **Modular Structure** — Organized by domain (Core, Services, UI, Extensions, Utilities)
+- **Comprehensive Testing** — Well-tested components with mock support
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### App Groups (for ItemSync)
 
@@ -2105,15 +2517,15 @@ To use ItemSync with widgets, add App Groups capability to your app:
 
 ---
 
-## 🧪 Testing
+## Testing
 
 The package includes test coverage for core utilities. This library targets **iOS** and depends on UIKit-based packages, so **`swift test` on macOS often fails** (UIKit is not available for the default macOS triple).
 
-Run tests from the package root with Xcode’s iOS Simulator destination, for example:
+Run tests from the package root with Xcode's iOS Simulator destination:
 
 ```bash
 cd /path/to/SwapFoundationKit
-xcodebuild test -scheme SwapFoundationKit -destination 'platform=iOS Simulator,name=iPhone 17'
+xcodebuild test -scheme SwapFoundationKit -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
 If you open `Package.swift` in Xcode, you can also run the **SwapFoundationKit** test action from the UI.
@@ -2126,7 +2538,7 @@ Many components include mock implementations for testing:
 // Mock analytics logger for testing
 class MockAnalyticsLogger: AnalyticsLogger {
     private(set) var loggedEvents: [(event: AnalyticsEvent, parameters: [String: String]?)] = []
-    
+
     func logEvent(event: AnalyticsEvent, additionalParameters: [String: String]?) {
         loggedEvents.append((event: event, parameters: additionalParameters))
     }
@@ -2135,19 +2547,19 @@ class MockAnalyticsLogger: AnalyticsLogger {
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **ECB** for providing exchange rate data
 - **Apple** for the excellent Swift language and frameworks
@@ -2155,7 +2567,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 Support
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/SwapnanilDhol/SwapFoundationKit/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/SwapnanilDhol/SwapFoundationKit/discussions)

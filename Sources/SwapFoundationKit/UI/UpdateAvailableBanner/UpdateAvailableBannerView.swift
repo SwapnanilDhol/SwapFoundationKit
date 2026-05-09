@@ -49,6 +49,7 @@ public enum UpdateBannerState: Equatable {
 public struct SFKUpdateAvailableBannerView: View {
 
     private let newVersion: String?
+    private let state: Binding<UpdateBannerState>?
     private let theme: UpdateAvailableBannerTheme
     private let appStoreID: String?
     private let onTap: (() -> Void)?
@@ -66,6 +67,7 @@ public struct SFKUpdateAvailableBannerView: View {
         onTap: (() -> Void)? = nil
     ) {
         self.newVersion = nil
+        self.state = state
         self.theme = theme
         self.appStoreID = appStoreID
         self.onTap = onTap
@@ -84,16 +86,27 @@ public struct SFKUpdateAvailableBannerView: View {
         onTap: (() -> Void)? = nil
     ) {
         self.newVersion = newVersion
+        self.state = nil
         self.theme = theme
         self.appStoreID = appStoreID
         self.onTap = onTap
     }
 
     public var body: some View {
-        if let version = newVersion {
+        if let version = resolvedVersion {
             bannerContent(version: version)
                 .transition(.move(edge: .top).combined(with: .opacity))
         }
+    }
+
+    private var resolvedVersion: String? {
+        if let state {
+            if case .available(let version) = state.wrappedValue {
+                return version
+            }
+            return nil
+        }
+        return newVersion
     }
 
     @ViewBuilder
@@ -101,6 +114,7 @@ public struct SFKUpdateAvailableBannerView: View {
         VStack(spacing: 0) {
             Button {
                 openAppStore()
+                state?.wrappedValue = .none
                 onTap?()
             } label: {
                 HStack(spacing: 12) {

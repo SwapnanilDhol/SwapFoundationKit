@@ -106,12 +106,18 @@ public final class SwapFoundationKit {
         // Initialize HTTP client if networking is enabled
         if let config = configuration, config.enableNetworking {
             if let customClient = config.customHTTPClient {
+                customClient.networkLogLevel = config.networkLogLevel
                 self.httpClient = customClient
             } else {
                 // Configure default HTTP client
-                let client = HTTPClient.shared
+                let sessionConfiguration = URLSessionConfiguration.default
+                sessionConfiguration.timeoutIntervalForRequest = config.networkTimeout
+                sessionConfiguration.timeoutIntervalForResource = config.networkTimeout
+
+                let client = HTTPClient(configuration: sessionConfiguration)
                 // Configure default headers if needed
                 client.defaultHeaders["User-Agent"] = "\(config.appMetadata.appName)/\(config.appMetadata.appVersion)"
+                client.networkLogLevel = config.networkLogLevel
                 self.httpClient = client
             }
         }

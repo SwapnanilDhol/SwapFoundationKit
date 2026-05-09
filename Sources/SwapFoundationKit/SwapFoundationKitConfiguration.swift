@@ -45,6 +45,9 @@ public struct SwapFoundationKitConfiguration {
     /// Whether to enable networking features
     public let enableNetworking: Bool
 
+    /// Controls request/response logging verbosity for SFK networking.
+    public let networkLogLevel: NetworkLogLevel
+
     // MARK: - Custom Services
 
     /// Custom analytics logger implementation
@@ -74,6 +77,7 @@ public struct SwapFoundationKitConfiguration {
     ///   - networkTimeout: Network timeout in seconds
     ///   - enableCertificatePinning: Whether to enable certificate pinning
     ///   - enableNetworking: Whether to enable networking features
+    ///   - networkLogLevel: Request/response logging level for networking
     ///   - customAnalyticsLogger: Custom analytics logger
     ///   - customStorageService: Custom storage service
     ///   - customHTTPClient: Custom HTTP client
@@ -88,6 +92,7 @@ public struct SwapFoundationKitConfiguration {
         networkTimeout: TimeInterval = 30.0,
         enableCertificatePinning: Bool = false,
         enableNetworking: Bool = true,
+        networkLogLevel: NetworkLogLevel = .none,
         customAnalyticsLogger: AnalyticsLogger? = nil,
         customStorageService: FileStorageService? = nil,
         customHTTPClient: HTTPClient? = nil,
@@ -102,6 +107,7 @@ public struct SwapFoundationKitConfiguration {
         self.networkTimeout = networkTimeout
         self.enableCertificatePinning = enableCertificatePinning
         self.enableNetworking = enableNetworking
+        self.networkLogLevel = networkLogLevel
         self.customAnalyticsLogger = customAnalyticsLogger
         self.customStorageService = customStorageService
         self.customHTTPClient = customHTTPClient

@@ -52,7 +52,8 @@ import Foundation
 ///             enableAnalytics: true,
 ///             enableItemSync: true,
 ///             networkTimeout: 30.0,
-///             enableCertificatePinning: true
+///             enableCertificatePinning: true,
+///             networkLogLevel: .info
 ///         )
 ///         
 ///         do {

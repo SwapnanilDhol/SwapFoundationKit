@@ -77,6 +77,11 @@ public struct SFKItemPickerView: View {
                     didSelect: { selectedItem in
                         viewModel.handleSelection(of: selectedItem)
                         onSelect?(selectedItem)
+
+                        // Auto-dismiss when a single item is selected
+                        if viewModel.selectionType == .single {
+                            onDismiss?()
+                        }
                     }
                 )
             }

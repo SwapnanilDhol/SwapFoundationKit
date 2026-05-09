@@ -11,7 +11,7 @@
  
 import Foundation
 
-public enum LogLevel: String, Sendable {
+public enum LogLevel: String, Sendable, CaseIterable, Comparable {
     case debug = "DEBUG"
     case info = "INFO"
     case warning = "WARNING"
@@ -34,6 +34,19 @@ public enum LogLevel: String, Sendable {
         case .debug: return "\u{001B}[0;35m"   // Magenta
         }
     }
+
+    private var severity: Int {
+        switch self {
+        case .debug: return 0
+        case .info: return 1
+        case .warning: return 2
+        case .error: return 3
+        }
+    }
+
+    public static func < (lhs: LogLevel, rhs: LogLevel) -> Bool {
+        lhs.severity < rhs.severity
+    }
 }
 
 actor LoggerSettings {
@@ -50,7 +63,7 @@ actor LoggerSettings {
 }
 
 public enum Logger {
-    public static let minimumLevel: LogLevel = .debug // Change to .info for less verbosity
+    public static var minimumLevel: LogLevel = .debug
 
     public static func setSendAnalyticsOnError(_ value: Bool) async {
         await LoggerSettings.shared.setSendAnalyticsOnError(value)
@@ -109,13 +122,7 @@ public enum Logger {
     }
 
     private static func shouldLog(_ level: LogLevel) -> Bool {
-        // You can make this smarter (e.g., only log warnings/errors in release)
-        switch minimumLevel {
-        case .debug: return true
-        case .info: return level != .debug
-        case .warning: return level == .warning || level == .error
-        case .error: return level == .error
-        }
+        level >= minimumLevel
     }
 
     private static func timestampString() -> String {
@@ -124,5 +131,3 @@ public enum Logger {
         return formatter.string(from: Date())
     }
 }
-
-

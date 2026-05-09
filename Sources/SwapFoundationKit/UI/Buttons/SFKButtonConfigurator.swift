@@ -141,7 +141,7 @@ public struct SFKButtonConfigurator {
     public static var close: Self {
         Self(
             leadingIconName: "xmark",
-            title: nil,
+            title: "Close".localized,
             subtitle: nil,
             isLoading: false,
             fullWidth: false,
@@ -150,14 +150,14 @@ public struct SFKButtonConfigurator {
             color: .white.opacity(0.12),
             spacing: 8,
             horizontalPadding: 12,
-            verticalPadding: 9,
+            verticalPadding: 5,
             titleFont: .footnote.weight(.semibold),
             subtitleFont: .caption2,
             iconFont: .footnote.weight(.bold),
             textAlignment: .center,
             titleLineLimit: 1,
             subtitleLineLimit: 1,
-            chrome: .glassEffect(style: .regular, shape: .capsule, isInteractive: true),
+            chrome: .glassProminent,
             hapticStyle: .medium
         )
     }

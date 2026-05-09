@@ -54,8 +54,10 @@ public final class NetworkService: ObservableObject {
     
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkService")
+    private let client: HTTPClient
     
-    public init() {
+    public init(client: HTTPClient = .shared) {
+        self.client = client
         setupNetworkMonitoring()
     }
     
@@ -99,9 +101,14 @@ public final class NetworkService: ObservableObject {
         guard isConnected else {
             throw NetworkError.noInternetConnection
         }
-        
-        let request = URLRequest(url: url, timeoutInterval: timeout)
-        return try await performRequest(request)
+
+        return try await performRequest(
+            BasicURLNetworkRequest(
+                url: url,
+                method: .get,
+                timeoutInterval: timeout
+            )
+        )
     }
     
     /// Performs a POST request
@@ -116,17 +123,19 @@ public final class NetworkService: ObservableObject {
         guard isConnected else {
             throw NetworkError.noInternetConnection
         }
-        
-        var request = URLRequest(url: url, timeoutInterval: timeout)
-        request.httpMethod = "POST"
-        request.httpBody = body
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        for (key, value) in headers {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-        
-        return try await performRequest(request)
+
+        var requestHeaders = headers
+        requestHeaders["Content-Type"] = requestHeaders["Content-Type"] ?? "application/json"
+
+        return try await performRequest(
+            BasicURLNetworkRequest(
+                url: url,
+                method: .post,
+                headers: requestHeaders,
+                body: body,
+                timeoutInterval: timeout
+            )
+        )
     }
     
     /// Performs a PUT request
@@ -141,17 +150,19 @@ public final class NetworkService: ObservableObject {
         guard isConnected else {
             throw NetworkError.noInternetConnection
         }
-        
-        var request = URLRequest(url: url, timeoutInterval: timeout)
-        request.httpMethod = "PUT"
-        request.httpBody = body
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        for (key, value) in headers {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-        
-        return try await performRequest(request)
+
+        var requestHeaders = headers
+        requestHeaders["Content-Type"] = requestHeaders["Content-Type"] ?? "application/json"
+
+        return try await performRequest(
+            BasicURLNetworkRequest(
+                url: url,
+                method: .put,
+                headers: requestHeaders,
+                body: body,
+                timeoutInterval: timeout
+            )
+        )
     }
     
     /// Performs a DELETE request
@@ -164,11 +175,14 @@ public final class NetworkService: ObservableObject {
         guard isConnected else {
             throw NetworkError.noInternetConnection
         }
-        
-        var request = URLRequest(url: url, timeoutInterval: timeout)
-        request.httpMethod = "DELETE"
-        
-        return try await performRequest(request)
+
+        return try await performRequest(
+            BasicURLNetworkRequest(
+                url: url,
+                method: .delete,
+                timeoutInterval: timeout
+            )
+        )
     }
     
     // MARK: - JSON Operations
@@ -233,9 +247,12 @@ public final class NetworkService: ObservableObject {
             throw NetworkError.noInternetConnection
         }
         
-        let request = URLRequest(url: url)
-        
-        let (asyncBytes, response) = try await URLSession.shared.bytes(for: request)
+        let request = BasicURLNetworkRequest(url: url, method: .get)
+        guard let urlRequest = request.request else {
+            throw NetworkError.invalidResponse
+        }
+
+        let (asyncBytes, response) = try await client.session.bytes(for: urlRequest)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
@@ -266,26 +283,12 @@ public final class NetworkService: ObservableObject {
     
     // MARK: - Private Methods
     
-    private func performRequest(_ request: URLRequest) async throws -> Data {
+    private func performRequest(_ request: NetworkRequest) async throws -> Data {
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw NetworkError.invalidResponse
-            }
-            
-            switch httpResponse.statusCode {
-            case 200...299:
-                return data
-            case 400...499:
-                throw NetworkError.requestFailed(NSError(domain: "Client Error", code: httpResponse.statusCode, userInfo: nil))
-            case 500...599:
-                throw NetworkError.serverError(httpResponse.statusCode)
-            default:
-                throw NetworkError.invalidResponse
-            }
-        } catch let error as NetworkError {
-            throw error
+            let response = try await client.execute(request)
+            return response.data
+        } catch let error as HTTPClientError {
+            throw mapNetworkError(error)
         } catch {
             if (error as NSError).code == NSURLErrorTimedOut {
                 throw NetworkError.timeout
@@ -293,6 +296,65 @@ public final class NetworkService: ObservableObject {
                 throw NetworkError.requestFailed(error)
             }
         }
+    }
+
+    private func mapNetworkError(_ error: HTTPClientError) -> NetworkError {
+        switch error {
+        case .invalidURL, .invalidResponse:
+            return .invalidResponse
+        case .requestFailed(let underlying):
+            return .requestFailed(underlying)
+        case .httpError(let statusCode, _):
+            if (500...599).contains(statusCode) {
+                return .serverError(statusCode)
+            }
+            return .requestFailed(NSError(domain: "Client Error", code: statusCode, userInfo: nil))
+        case .decodingError(let underlying):
+            return .decodingFailed(underlying)
+        case .timeout:
+            return .timeout
+        case .noInternetConnection:
+            return .noInternetConnection
+        case .cancelled:
+            return .requestFailed(URLError(.cancelled))
+        }
+    }
+}
+
+private struct BasicURLNetworkRequest: NetworkRequest {
+    let scheme: String
+    let baseURL: String
+    let path: String
+    let method: HTTPMethod
+    let parameters: [String: String]?
+    let headers: [String: String]?
+    let body: Data?
+    let timeoutInterval: TimeInterval
+    let cachePolicy: URLRequest.CachePolicy
+
+    init(
+        url: URL,
+        method: HTTPMethod,
+        parameters: [String: String]? = nil,
+        headers: [String: String]? = nil,
+        body: Data? = nil,
+        timeoutInterval: TimeInterval = 30,
+        cachePolicy: URLRequest.CachePolicy = .useProtocolCachePolicy
+    ) {
+        self.scheme = url.scheme ?? "https"
+        let host = url.host ?? ""
+        if let port = url.port {
+            self.baseURL = "\(host):\(port)"
+        } else {
+            self.baseURL = host
+        }
+        self.path = url.path.isEmpty ? "/" : url.path
+        self.method = method
+        self.parameters = parameters ?? url.queryParameters
+        self.headers = headers
+        self.body = body
+        self.timeoutInterval = timeoutInterval
+        self.cachePolicy = cachePolicy
     }
 }
 

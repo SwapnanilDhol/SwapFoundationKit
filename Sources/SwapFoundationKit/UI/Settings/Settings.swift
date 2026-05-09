@@ -168,6 +168,8 @@
 ///
 /// ### Full Settings Screen
 /// ```swift
+/// @State private var updateVersion: String? = "2.3.0"
+///
 /// SFKSettingsScreen(
 ///     header: {
 ///         ProBannerView()
@@ -186,6 +188,11 @@
 ///             items: SFKDeveloperSectionItem.allCases
 ///         )
 ///     ],
+///     updateBannerVersion: $updateVersion,
+///     updateBannerAppStoreID: "123456789",
+///     onUpdateBannerTap: {
+///         analytics.track("update_banner_tapped")
+///     },
 ///     onItemTap: { item in
 ///         handleItemTap(item)
 ///     }
