@@ -184,7 +184,7 @@ struct OnboardingScreen: View {
 - File Export/Import: `FileExportService` for presenting `UIActivityViewController` with data, `FileImportService` for `UIDocumentPickerViewController` with custom `UTType` registration
 - Deeplink handling: `DeeplinkHandler` protocol with `DefaultDeeplinkHandler` implementation, `DeeplinkRoute` protocol for type-safe routes, `DeeplinkEvent` for Combine-based callbacks handling cold launch, resume, universal links, and Handoff
 - On-device JSON backups: `BackupService` — `performBackup` writes under `Documents/<FileType>/`; `restoreBackup` reads the **newest** backup (same order as `listBackupFiles(for:).first`). Use the same `Decodable` type (and `JSONDecoder` date strategy) as the `Encodable` payload you store. For tests, `BackupService(documentsDirectoryOverride: tempURL)` keeps files out of the real Documents folder.
-- Update available banner: `SFKUpdateAvailableBannerView` — shows a non-intrusive banner when an update is available; tap opens App Store. Use with `UpdateAvailableKit` (`UpdateAvailableManager.shared.result`) for reactive version checking, or pass `newVersion: String?` directly.
+- Update available banner: `SFKUpdateAvailableBannerView` — shows a non-intrusive banner when an update is available; tap opens App Store. Use with `SFKUpdateAvailabilityService.shared.result` for reactive version checking, or pass `newVersion: String?` directly.
 
 ---
 
@@ -1206,7 +1206,7 @@ Ads do not load on simulator. `AdaptiveBannerAdView` falls back to an empty view
 
 `SFKUpdateAvailableBannerView` shows a non-intrusive banner at the top of the screen when a new app version is available. Tapping the banner opens an App Store confirmation sheet.
 
-Requires `UpdateAvailableKit` as a dependency for reactive version checking (optional — you can also pass the version string directly).
+Uses SFK's built-in update availability service for reactive version checking (optional — you can also pass the version string directly).
 
 ### Quick Start
 
@@ -1252,14 +1252,13 @@ SFKUpdateAvailableBannerView(
 )
 ```
 
-### Reactive Usage with `UpdateAvailableKit`
+### Reactive Usage with `SFKUpdateAvailabilityService`
 
-Use `UpdateAvailableManager.shared` to check for updates and drive the banner reactively.
+Use `SFKUpdateAvailabilityService.shared` to check for updates and drive the banner reactively.
 
 **Setup at app launch:**
 ```swift
 import SwapFoundationKit
-import UpdateAvailableKit
 
 @main
 struct MyApp: App {
@@ -1267,22 +1266,21 @@ struct MyApp: App {
         WindowGroup {
             ContentView()
                 .onAppear {
-                    UpdateAvailableManager.shared.start()
+                    SFKUpdateAvailabilityService.shared.start()
                 }
         }
     }
 }
 ```
 
-**Connecting `UpdateAvailableManager` to `SFKUpdateAvailableBannerView`:**
+**Connecting `SFKUpdateAvailabilityService` to `SFKUpdateAvailableBannerView`:**
 
 ```swift
 import SwiftUI
 import SwapFoundationKit
-import UpdateAvailableKit
 
 struct ContentView: View {
-    @ObservedObject private var updateManager = UpdateAvailableManager.shared
+    @ObservedObject private var updateService = SFKUpdateAvailabilityService.shared
 
     @State private var bannerState: UpdateBannerState = .none
 
@@ -1297,13 +1295,13 @@ struct ContentView: View {
         .onAppear {
             syncBannerState()
         }
-        .onChange(of: updateManager.result) { _, _ in
+        .onChange(of: updateService.result) { _, _ in
             syncBannerState()
         }
     }
 
     private func syncBannerState() {
-        switch updateManager.result {
+        switch updateService.result {
         case .updateAvailable(let newVersion):
             bannerState = .available(newVersion: newVersion)
         case .noUpdatesAvailable:
@@ -1316,13 +1314,13 @@ struct ContentView: View {
 **Or using the simpler initializer with a derived binding:**
 ```swift
 struct ContentView: View {
-    @ObservedObject private var updateManager = UpdateAvailableManager.shared
+    @ObservedObject private var updateService = SFKUpdateAvailabilityService.shared
 
     var body: some View {
         VStack {
             Spacer()
             SFKUpdateAvailableBannerView(
-                newVersion: updateManager.newVersion,
+                newVersion: updateService.newVersion,
                 appStoreID: "123456789",
                 onDismiss: {
                     // Optionally clear the banner on dismiss
@@ -1330,7 +1328,7 @@ struct ContentView: View {
             )
         }
         .onAppear {
-            updateManager.start()
+            updateService.start()
         }
     }
 }
@@ -1371,28 +1369,32 @@ public struct UpdateAvailableBannerTheme: Sendable {
 }
 ```
 
-### `UpdateAvailableManager` API
+### `SFKUpdateAvailabilityService` API
 
 ```swift
-public final class UpdateAvailableManager: ObservableObject {
-    public static let shared = UpdateAvailableManager()
+public final class SFKUpdateAvailabilityService: ObservableObject {
+    public static let shared = SFKUpdateAvailabilityService()
 
-    @Published public private(set) var result: UpdateAvailableResult
+    @Published public private(set) var result: SFKUpdateAvailabilityResult
+    @Published public private(set) var bannerVersion: String?
+    public var newVersion: String? { get }
 
-    public func configure(with: UpdateAvailableConfiguration)
-    @MainActor public func start()
+    public func configure(with: SFKUpdateAvailabilityConfiguration)
+    public func start()
+    public func dismissBanner()
 }
 
 // Result enum
-public enum UpdateAvailableResult: Equatable {
+public enum SFKUpdateAvailabilityResult: Equatable {
     case noUpdatesAvailable
     case updateAvailable(newVersion: String)
 }
 
 // Configuration
-public struct UpdateAvailableConfiguration {
+public struct SFKUpdateAvailabilityConfiguration {
     public var bundleID: String?
-    public var cacheDuration: TimeInterval  // default: 3600 (1 hour)
+    public var currentVersion: String?
+    public var cacheDuration: TimeInterval  // default: 21600 (6 hours)
 }
 ```
 

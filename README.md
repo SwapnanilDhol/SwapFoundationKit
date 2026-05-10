@@ -24,7 +24,7 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 - **iOS**: 17.0+
 - **Swift**: 5.9+
 - **Xcode**: 15.0+
-- **Dependencies**: Google Mobile Ads (13.1.0), Toast-Swift (2.1.3), UpdateAvailableKit (2.0.0+)
+- **Dependencies**: Google Mobile Ads (13.1.0), Toast-Swift (2.1.3)
 
 ---
 
@@ -1612,7 +1612,7 @@ Check for app updates with `SFKUpdateAvailabilityService`.
 
 **Source**: `Sources/SwapFoundationKit/Services/UpdateAvailability/SFKUpdateAvailabilityService.swift`
 
-Integrates with `UpdateAvailableKit` for version checking.
+Includes a built-in App Store version check service for version checking.
 
 ---
 
@@ -2251,8 +2251,8 @@ SFKUpdateAvailableBannerView(state: bannerState, appStoreID: "123456789")
 **Types**:
 - `UpdateBannerState` — `.none`, `.available(newVersion:)`
 - `UpdateAvailableBannerTheme` — `backgroundColor`, `titleColor`, `subtitleColor`, `iconName`, `buttonTitle`, `buttonColor`, `buttonTitleColor`
-- `UpdateAvailableManager` (from UpdateAvailableKit) — `shared`, `result`, `start()`, `configure(with:)`
-- `UpdateAvailableConfiguration` — `bundleID`, `cacheDuration`
+- `SFKUpdateAvailabilityService` — `shared`, `result`, `newVersion`, `start()`, `configure(with:)`
+- `SFKUpdateAvailabilityConfiguration` — `bundleID`, `currentVersion`, `cacheDuration`
 
 ---
 
