@@ -9,7 +9,7 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-#if canImport(UIKit) && canImport(GoogleMobileAds)
+#if !targetEnvironment(simulator) && canImport(UIKit) && canImport(GoogleMobileAds)
 import UIKit
 import XCTest
 @testable import SwapFoundationKit

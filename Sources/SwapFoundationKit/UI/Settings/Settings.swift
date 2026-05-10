@@ -188,11 +188,6 @@
 ///             items: SFKDeveloperSectionItem.allCases
 ///         )
 ///     ],
-///     updateBannerVersion: $updateVersion,
-///     updateBannerAppStoreID: "123456789",
-///     onUpdateBannerTap: {
-///         analytics.track("update_banner_tapped")
-///     },
 ///     onItemTap: { item in
 ///         handleItemTap(item)
 ///     }

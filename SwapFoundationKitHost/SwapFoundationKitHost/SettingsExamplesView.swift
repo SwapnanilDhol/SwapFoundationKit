@@ -48,7 +48,6 @@ private enum AppExtrasItem: String, CaseIterable, SettingsItem {
 struct SettingsExamplesView: View {
     @State private var notificationsEnabled = true
     @State private var lastSyncDate = Date.now
-    @State private var updateBannerVersion: String?
 
     private let sections: [SFKSettingsSectionConfiguration] = [
         SFKSettingsSectionConfiguration(
@@ -80,12 +79,6 @@ struct SettingsExamplesView: View {
                 }
             ],
             sections: sections,
-            updateBannerVersion: $updateBannerVersion,
-            updateBannerAppStoreID: "123456789",
-            onUpdateBannerTap: {
-                // Example hook for analytics side-effects.
-                print("Update banner tapped")
-            },
             rowTrailingBuilder: trailingView(for:),
             rowChevronBuilder: showChevron(for:),
             onItemTap: handleTap(_:)

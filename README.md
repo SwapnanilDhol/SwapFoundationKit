@@ -13,6 +13,7 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 | [Capabilities Checklist](#capabilities-checklist) | Every capability as a migration checklist item |
 | [API Reference](#api-reference) | Complete API summary |
 | [Architecture](#architecture) | Design principles |
+| [Networking RFC](Docs/networking-rfc.md) | Proposed networking refactor and migration plan |
 | [Testing](#testing) | How to run tests |
 | [Support](#support) | Issues, discussions, contact |
 
@@ -23,7 +24,7 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 - **iOS**: 17.0+
 - **Swift**: 5.9+
 - **Xcode**: 15.0+
-- **Dependencies**: Google Mobile Ads (13.1.0), Toast-Swift (2.1.3), UpdateAvailableKit (2.0.0+)
+- **Dependencies**: Google Mobile Ads (13.1.0), Toast-Swift (2.1.3)
 
 ---
 
@@ -467,6 +468,72 @@ networkService.$isConnected
 // Make requests
 let data = try await networkService.get(from: url)
 let user: User = try await networkService.get(from: url, as: User.self)
+```
+
+#### Recommended Usage Today
+
+Use `HTTPClient` as the primary transport API for SDK and app HTTP work.
+
+- Prefer `HTTPClient` when you want typed requests, shared configuration, consistent error handling, and a future-proof path for retry/auth/logging improvements.
+- Prefer `NetworkService` when you want to observe network state in UI and optionally make simple convenience requests nearby.
+- Do not treat `NetworkService.isConnected` as a requirement before every request. Reachability is best used as UI signal; actual request success should still come from `URLSession` execution.
+
+Example:
+
+```swift
+import SwapFoundationKit
+
+let config = SwapFoundationKitConfiguration(
+    appMetadata: AppMetaData(
+        appGroupIdentifier: "group.com.example.app",
+        appName: "ExampleApp",
+        appVersion: "1.0.0"
+    ),
+    enableNetworking: true,
+    networkTimeout: 30,
+    networkLogLevel: .debug
+)
+
+try await SwapFoundationKit.shared.start(with: config)
+
+guard let client = SwapFoundationKit.shared.networkClient else { return }
+
+struct GetUsersRequest: NetworkRequest {
+    var scheme: String { "https" }
+    var baseURL: String { "api.example.com" }
+    var path: String { "/users" }
+    var method: HTTPMethod { .get }
+    var parameters: [String: String]? { ["limit": "20"] }
+    var headers: [String: String]? { ["Authorization": "Bearer token"] }
+    var body: Data? { nil }
+}
+
+let response = try await client.execute(GetUsersRequest())
+let users: [User] = try await client.executeAndDecode(GetUsersRequest())
+```
+
+Monitoring reachability in UI:
+
+```swift
+import SwapFoundationKit
+
+@MainActor
+final class NetworkViewModel: ObservableObject {
+    let networkService = NetworkService()
+
+    func loadStatus() async {
+        do {
+            let data = try await networkService.get(
+                from: URL(string: "https://api.example.com/status")!
+            )
+            print(data)
+        } catch let error as NetworkError {
+            print(error.localizedDescription)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+}
 ```
 
 **Migration steps**:
@@ -1541,11 +1608,11 @@ MapKit-based location search service.
 
 **Tier**: `heuristic` · **Confidence**: medium
 
-Check for app updates with `SFKUpdateAvailabilityService`.
+Moved out of `SwapFoundationKit`.
 
-**Source**: `Sources/SwapFoundationKit/Services/UpdateAvailability/SFKUpdateAvailabilityService.swift`
+Use `UpdateAvailableKit` directly for App Store version checks and update banners.
 
-Integrates with `UpdateAvailableKit` for version checking.
+`SwapFoundationKit` no longer ships update-availability APIs.
 
 ---
 
@@ -2029,32 +2096,6 @@ let infoHandler = SFKInformationSectionHandler(
 if infoHandler.handle(item) { /* item was handled */ }
 ```
 
-#### Update Banner Integration
-
-`SFKSettingsScreen` supports update-banner placement directly:
-
-```swift
-@State private var updateVersion: String? = "2.3.0"
-
-SFKSettingsScreen(
-    header: header,
-    sections: sections,
-    updateBannerVersion: $updateVersion,
-    updateBannerTheme: .default,
-    updateBannerAppStoreID: "123456789",
-    onUpdateBannerTap: {
-        analytics.track("update_banner_tapped")
-    },
-    onItemTap: handleTap(_:)
-)
-```
-
-**Behavior**:
-- Banner shown when `updateBannerVersion.wrappedValue` is non-`nil`.
-- Tapping opens the App Store page.
-- After tap, `updateBannerVersion.wrappedValue` is set to `nil`.
-- `onUpdateBannerTap` runs after the binding is cleared, so apps can log analytics or clear mirrored state.
-
 **Migration steps**:
 1. Find your custom settings screen/row implementations.
 2. Replace with SFK settings components.
@@ -2160,32 +2201,9 @@ enum Goal: String, CaseIterable, SFKChipItem {
 
 **Tier**: `heuristic` · **Confidence**: medium
 
-Display non-intrusive update-available banners with `SFKUpdateAvailableBannerView`.
+Moved out of `SwapFoundationKit`.
 
-**Sources**: `Sources/SwapFoundationKit/UI/UpdateAvailableBanner/`
-
-**API**:
-
-```swift
-import SwapFoundationKit
-
-// Direct usage
-SFKUpdateAvailableBannerView(
-    newVersion: "2.3.0",
-    appStoreID: "123456789",
-    onTap: { /* analytics */ },
-    onDismiss: { /* clear state */ }
-)
-
-// Reactive with UpdateBannerState
-SFKUpdateAvailableBannerView(state: bannerState, appStoreID: "123456789")
-```
-
-**Types**:
-- `UpdateBannerState` — `.none`, `.available(newVersion:)`
-- `UpdateAvailableBannerTheme` — `backgroundColor`, `titleColor`, `subtitleColor`, `iconName`, `buttonTitle`, `buttonColor`, `buttonTitleColor`
-- `UpdateAvailableManager` (from UpdateAvailableKit) — `shared`, `result`, `start()`, `configure(with:)`
-- `UpdateAvailableConfiguration` — `bundleID`, `cacheDuration`
+Use `UpdateAvailableKit` directly for update banners and version checks.
 
 ---
 
@@ -2427,7 +2445,6 @@ These are internal SFK improvements tracked for future work. They do not affect 
 - **`PasteboardService`** — Clipboard operations
 - **`LocationSearchService`** — MapKit location search
 - **`ItemDetailSource`** — Item detail data protocol
-- **`SFKUpdateAvailabilityService`** — Update availability checking
 
 ### UI Components
 - **`SFKButton`** — Configurable button with line-item and configurator-based initializers
@@ -2457,7 +2474,6 @@ These are internal SFK improvements tracked for future work. They do not affect 
 - **`SFKSettingsPickerRow`** — Generic picker settings row
 - **`AlertController`** — SwiftUI-native alert manager
 - **`AlertPresenter`** — UIKit-based alert presentation
-- **`SFKUpdateAvailableBannerView`** — Update available banner
 - **`ProBannerView`** — Pro/upgrade banner
 - **`BarcodeScannerView`** — Barcode scanning UI
 - **`PhotoPicker`** — Photo picker wrapper

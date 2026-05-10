@@ -151,8 +151,7 @@ SwapFoundationKit/
 ├── README.md                         ← Full capability reference (48 items)
 ├── Docs/
 │   ├── host-app-audit-catalog.yaml   ← Audit catalog (source of truth for audits)
-│   ├── onboarding-components.md      ← Onboarding UI documentation
-│   └── settings-update-banner.md     ← Settings banner integration docs
+│   └── onboarding-components.md      ← Onboarding UI documentation
 └── Sources/SwapFoundationKit/        ← All source code
 ```
 

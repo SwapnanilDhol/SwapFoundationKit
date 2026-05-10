@@ -97,10 +97,6 @@ public struct SFKSettingsScreen: View {
     private let rowTrailingBuilder: SFKSettingsTrailingBuilder?
     private let rowChevronBuilder: SFKSettingsChevronBuilder?
     private let defaultShowChevron: Bool
-    private let updateBannerVersion: Binding<String?>?
-    private let updateBannerTheme: UpdateAvailableBannerTheme
-    private let updateBannerAppStoreID: String?
-    private let onUpdateBannerTap: (() -> Void)?
 
     /// Creates a settings screen without a header.
     /// - Parameters:
@@ -114,10 +110,6 @@ public struct SFKSettingsScreen: View {
         customSections: [SFKSettingsCustomSection] = [],
         sections: [SFKSettingsSectionConfiguration],
         showChevron: Bool = true,
-        updateBannerVersion: Binding<String?>? = nil,
-        updateBannerTheme: UpdateAvailableBannerTheme = .default,
-        updateBannerAppStoreID: String? = nil,
-        onUpdateBannerTap: (() -> Void)? = nil,
         rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
         rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
         onItemTap: @escaping SFKSettingsItemAction
@@ -126,10 +118,6 @@ public struct SFKSettingsScreen: View {
         self.customSections = customSections
         self.sections = sections
         self.defaultShowChevron = showChevron
-        self.updateBannerVersion = updateBannerVersion
-        self.updateBannerTheme = updateBannerTheme
-        self.updateBannerAppStoreID = updateBannerAppStoreID
-        self.onUpdateBannerTap = onUpdateBannerTap
         self.onItemTap = onItemTap
         self.rowTrailingBuilder = rowTrailingBuilder
         self.rowChevronBuilder = rowChevronBuilder
@@ -149,10 +137,6 @@ public struct SFKSettingsScreen: View {
         customSections: [SFKSettingsCustomSection] = [],
         sections: [SFKSettingsSectionConfiguration],
         showChevron: Bool = true,
-        updateBannerVersion: Binding<String?>? = nil,
-        updateBannerTheme: UpdateAvailableBannerTheme = .default,
-        updateBannerAppStoreID: String? = nil,
-        onUpdateBannerTap: (() -> Void)? = nil,
         rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
         rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
         onItemTap: @escaping SFKSettingsItemAction
@@ -161,10 +145,6 @@ public struct SFKSettingsScreen: View {
         self.customSections = customSections
         self.sections = sections
         self.defaultShowChevron = showChevron
-        self.updateBannerVersion = updateBannerVersion
-        self.updateBannerTheme = updateBannerTheme
-        self.updateBannerAppStoreID = updateBannerAppStoreID
-        self.onUpdateBannerTap = onUpdateBannerTap
         self.onItemTap = onItemTap
         self.rowTrailingBuilder = rowTrailingBuilder
         self.rowChevronBuilder = rowChevronBuilder
@@ -213,23 +193,6 @@ public struct SFKSettingsScreen: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if let currentVersion = updateBannerVersion?.wrappedValue {
-                SFKUpdateAvailableBannerView(
-                    newVersion: currentVersion,
-                    theme: updateBannerTheme,
-                    appStoreID: updateBannerAppStoreID,
-                    onTap: {
-                        updateBannerVersion?.wrappedValue = nil
-                        onUpdateBannerTap?()
-                    }
-                )
-                .frame(maxWidth: .infinity)
-                .background(Color(uiColor: .systemBackground).opacity(0.98))
-                .zIndex(10)
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
     }
 
     @ViewBuilder

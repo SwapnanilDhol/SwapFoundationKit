@@ -178,6 +178,29 @@ public enum NetworkError: Error, LocalizedError {
     }
 }
 
+extension NetworkError {
+    static func from(_ error: Error) -> NetworkError {
+        if let networkError = error as? NetworkError {
+            return networkError
+        }
+
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .timedOut:
+                return .timeout
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .noInternetConnection
+            case .cancelled:
+                return .cancelled
+            default:
+                return .requestFailed(urlError)
+            }
+        }
+
+        return .requestFailed(error)
+    }
+}
+
 public typealias HTTPClientError = NetworkError
 
 /// HTTP client for executing network requests
@@ -243,21 +266,12 @@ public final class HTTPClient {
             return networkResponse
         } catch let error as URLError {
             log(.error, "Transport error for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
-            switch error.code {
-            case .timedOut:
-                throw NetworkError.timeout
-            case .notConnectedToInternet, .networkConnectionLost:
-                throw NetworkError.noInternetConnection
-            case .cancelled:
-                throw NetworkError.cancelled
-            default:
-                throw NetworkError.requestFailed(error)
-            }
+            throw NetworkError.from(error)
         } catch let error as NetworkError {
             throw error
         } catch {
             log(.error, "Unexpected request failure for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
-            throw NetworkError.requestFailed(error)
+            throw NetworkError.from(error)
         }
     }
 
