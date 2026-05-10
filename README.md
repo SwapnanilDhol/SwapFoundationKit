@@ -1608,11 +1608,11 @@ MapKit-based location search service.
 
 **Tier**: `heuristic` · **Confidence**: medium
 
-Check for app updates with `SFKUpdateAvailabilityService`.
+Moved out of `SwapFoundationKit`.
 
-**Source**: `Sources/SwapFoundationKit/Services/UpdateAvailability/SFKUpdateAvailabilityService.swift`
+Use `UpdateAvailableKit` directly for App Store version checks and update banners.
 
-Includes a built-in App Store version check service for version checking.
+`SwapFoundationKit` no longer ships update-availability APIs.
 
 ---
 
@@ -2096,32 +2096,6 @@ let infoHandler = SFKInformationSectionHandler(
 if infoHandler.handle(item) { /* item was handled */ }
 ```
 
-#### Update Banner Integration
-
-`SFKSettingsScreen` supports update-banner placement directly:
-
-```swift
-@State private var updateVersion: String? = "2.3.0"
-
-SFKSettingsScreen(
-    header: header,
-    sections: sections,
-    updateBannerVersion: $updateVersion,
-    updateBannerTheme: .default,
-    updateBannerAppStoreID: "123456789",
-    onUpdateBannerTap: {
-        analytics.track("update_banner_tapped")
-    },
-    onItemTap: handleTap(_:)
-)
-```
-
-**Behavior**:
-- Banner shown when `updateBannerVersion.wrappedValue` is non-`nil`.
-- Tapping opens the App Store page.
-- After tap, `updateBannerVersion.wrappedValue` is set to `nil`.
-- `onUpdateBannerTap` runs after the binding is cleared, so apps can log analytics or clear mirrored state.
-
 **Migration steps**:
 1. Find your custom settings screen/row implementations.
 2. Replace with SFK settings components.
@@ -2227,32 +2201,9 @@ enum Goal: String, CaseIterable, SFKChipItem {
 
 **Tier**: `heuristic` · **Confidence**: medium
 
-Display non-intrusive update-available banners with `SFKUpdateAvailableBannerView`.
+Moved out of `SwapFoundationKit`.
 
-**Sources**: `Sources/SwapFoundationKit/UI/UpdateAvailableBanner/`
-
-**API**:
-
-```swift
-import SwapFoundationKit
-
-// Direct usage
-SFKUpdateAvailableBannerView(
-    newVersion: "2.3.0",
-    appStoreID: "123456789",
-    onTap: { /* analytics */ },
-    onDismiss: { /* clear state */ }
-)
-
-// Reactive with UpdateBannerState
-SFKUpdateAvailableBannerView(state: bannerState, appStoreID: "123456789")
-```
-
-**Types**:
-- `UpdateBannerState` — `.none`, `.available(newVersion:)`
-- `UpdateAvailableBannerTheme` — `backgroundColor`, `titleColor`, `subtitleColor`, `iconName`, `buttonTitle`, `buttonColor`, `buttonTitleColor`
-- `SFKUpdateAvailabilityService` — `shared`, `result`, `newVersion`, `start()`, `configure(with:)`
-- `SFKUpdateAvailabilityConfiguration` — `bundleID`, `currentVersion`, `cacheDuration`
+Use `UpdateAvailableKit` directly for update banners and version checks.
 
 ---
 
@@ -2494,7 +2445,6 @@ These are internal SFK improvements tracked for future work. They do not affect 
 - **`PasteboardService`** — Clipboard operations
 - **`LocationSearchService`** — MapKit location search
 - **`ItemDetailSource`** — Item detail data protocol
-- **`SFKUpdateAvailabilityService`** — Update availability checking
 
 ### UI Components
 - **`SFKButton`** — Configurable button with line-item and configurator-based initializers
@@ -2524,7 +2474,6 @@ These are internal SFK improvements tracked for future work. They do not affect 
 - **`SFKSettingsPickerRow`** — Generic picker settings row
 - **`AlertController`** — SwiftUI-native alert manager
 - **`AlertPresenter`** — UIKit-based alert presentation
-- **`SFKUpdateAvailableBannerView`** — Update available banner
 - **`ProBannerView`** — Pro/upgrade banner
 - **`BarcodeScannerView`** — Barcode scanning UI
 - **`PhotoPicker`** — Photo picker wrapper
