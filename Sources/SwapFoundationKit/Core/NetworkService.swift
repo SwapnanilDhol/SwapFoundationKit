@@ -222,18 +222,30 @@ public final class NetworkService: ObservableObject {
 
             let totalBytes = httpResponse.expectedContentLength
             var downloadedBytes: Int64 = 0
+            let bufferSize = 64 * 1024
+            var writeBuffer = Data()
+            writeBuffer.reserveCapacity(bufferSize)
 
             let fileHandle = try FileHandle(forWritingTo: destination)
             defer { try? fileHandle.close() }
 
             for try await byte in asyncBytes {
-                try fileHandle.write(contentsOf: [byte])
+                writeBuffer.append(byte)
                 downloadedBytes += 1
+
+                if writeBuffer.count >= bufferSize {
+                    try fileHandle.write(contentsOf: writeBuffer)
+                    writeBuffer.removeAll(keepingCapacity: true)
+                }
 
                 if let progressHandler, totalBytes > 0 {
                     let progress = Double(downloadedBytes) / Double(totalBytes)
                     progressHandler(progress)
                 }
+            }
+
+            if !writeBuffer.isEmpty {
+                try fileHandle.write(contentsOf: writeBuffer)
             }
 
             return destination

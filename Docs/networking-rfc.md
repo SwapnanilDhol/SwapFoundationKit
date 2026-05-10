@@ -19,8 +19,8 @@ The goal is not to add complexity for its own sake. The goal is to make SFK's ne
 
 SFK currently exposes two overlapping networking abstractions:
 
-1. `HTTPClient` in [Sources/SwapFoundationKit/Core/Networking.swift](/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/Core/Networking.swift:47)
-2. `NetworkService` in [Sources/SwapFoundationKit/Core/NetworkService.swift](/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/Core/NetworkService.swift:15)
+1. `HTTPClient` in [Sources/SwapFoundationKit/Core/Networking.swift](../Sources/SwapFoundationKit/Core/Networking.swift)
+2. `NetworkService` in [Sources/SwapFoundationKit/Core/NetworkService.swift](../Sources/SwapFoundationKit/Core/NetworkService.swift)
 
 ### What `HTTPClient` already does well
 
@@ -42,9 +42,9 @@ SFK currently exposes two overlapping networking abstractions:
 
 Several SDK features still bypass the shared stack and use `URLSession.shared` directly:
 
-- [Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift](/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift:18)
-- [Sources/SwapFoundationKit/Services/AppStoreSearch/AppStoreSearchResult.swift](/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/Services/AppStoreSearch/AppStoreSearchResult.swift:20)
-- [Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift](/Users/swapnanildhol/Desktop/iOS-Projects/SwapFoundationKit/Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift:204)
+- [Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift](../Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift)
+- [Sources/SwapFoundationKit/Services/AppStoreSearch/AppStoreSearchResult.swift](../Sources/SwapFoundationKit/Services/AppStoreSearch/AppStoreSearchResult.swift)
+- [Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift](../Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift)
 
 ### Current configuration hooks
 
@@ -175,24 +175,22 @@ The pipeline should be ordered and deterministic.
 
 SFK should expose one public error model for transport execution.
 
-Suggested shape:
+Suggested near-term shape:
 
 ```swift
-public enum NetworkError: Error, LocalizedError, Sendable {
+public enum NetworkError: Error, LocalizedError {
     case invalidURL
     case invalidResponse
-    case transport(URLError)
-    case http(statusCode: Int, data: Data?, response: HTTPURLResponse?)
-    case decoding(Error)
+    case requestFailed(Error)
+    case httpError(statusCode: Int, data: Data?)
+    case decodingError(Error)
     case noInternetConnection
     case timeout
     case cancelled
-    case pinningFailed
-    case unknown(Error)
 }
 ```
 
-The exact cases can change, but the important part is that all public transport APIs converge on the same model.
+This reflects the current implementation more closely and keeps the RFC aligned with Phase 1. A later phase can still refine naming, payload shape, or `Sendable` conformance once the transport API is fully consolidated.
 
 ### Internal consumers depend on injected transport
 

@@ -663,7 +663,7 @@ final class NetworkingTests: XCTestCase {
         do {
             let _: User = try await service.get(from: URL(string: "https://api.example.com/user")!, as: User.self)
             XCTFail("Expected decoding error")
-        } catch NetworkError.decodingError {
+        } catch NetworkError.decodingError(_) {
             // Success
         } catch {
             XCTFail("Expected NetworkError.decodingError, got \(error)")
