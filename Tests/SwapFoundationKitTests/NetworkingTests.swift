@@ -32,6 +32,7 @@ final class NetworkingTests: XCTestCase {
         client = nil
         mockSession = nil
         MockURLProtocol.mockResponse = nil
+        MockURLProtocol.lastRequest = nil
         SwapFoundationKit.shared.resetForTesting()
         try await super.tearDown()
     }
@@ -552,6 +553,123 @@ final class NetworkingTests: XCTestCase {
         // In a real test, you'd verify the request headers were set correctly
     }
 
+    func testRequestHeadersOverrideDefaultHeaders() async throws {
+        // Given
+        client.defaultHeaders["Authorization"] = "Bearer default"
+        MockURLProtocol.mockResponse = (
+            data: Data(),
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/test")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!,
+            error: nil
+        )
+
+        // When
+        _ = try await client.get(
+            baseURL: "api.example.com",
+            path: "/test",
+            headers: ["Authorization": "Bearer request"]
+        )
+
+        // Then
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "Authorization"), "Bearer request")
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "Accept"), "application/json")
+    }
+
+    // MARK: - NetworkService Tests
+
+    @MainActor
+    func testNetworkServiceUsesSharedNetworkErrorForInvalidStringURL() async {
+        let service = NetworkService(client: client)
+
+        do {
+            _ = try await service.get(from: "not a url")
+            XCTFail("Expected invalid URL error")
+        } catch NetworkError.invalidURL {
+            // Success
+        } catch {
+            XCTFail("Expected NetworkError.invalidURL, got \(error)")
+        }
+    }
+
+    @MainActor
+    func testNetworkServiceDoesNotRequirePreflightConnectivityToExecuteRequest() async throws {
+        MockURLProtocol.mockResponse = (
+            data: Data("success".utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/status")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!,
+            error: nil
+        )
+
+        let service = NetworkService(client: client)
+
+        let data = try await service.get(from: URL(string: "https://api.example.com/status")!)
+
+        XCTAssertEqual(data, Data("success".utf8))
+    }
+
+    @MainActor
+    func testNetworkServicePropagatesHTTPError() async {
+        MockURLProtocol.mockResponse = (
+            data: Data("Server Error".utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/fail")!,
+                statusCode: 500,
+                httpVersion: nil,
+                headerFields: nil
+            )!,
+            error: nil
+        )
+
+        let service = NetworkService(client: client)
+
+        do {
+            _ = try await service.get(from: URL(string: "https://api.example.com/fail")!)
+            XCTFail("Expected HTTP error")
+        } catch NetworkError.httpError(let statusCode, let data) {
+            XCTAssertEqual(statusCode, 500)
+            XCTAssertEqual(data, Data("Server Error".utf8))
+        } catch {
+            XCTFail("Expected NetworkError.httpError, got \(error)")
+        }
+    }
+
+    @MainActor
+    func testNetworkServiceUsesSharedDecodingError() async {
+        MockURLProtocol.mockResponse = (
+            data: Data("invalid json".utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/user")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!,
+            error: nil
+        )
+
+        struct User: Decodable {
+            let id: Int
+        }
+
+        let service = NetworkService(client: client)
+
+        do {
+            let _: User = try await service.get(from: URL(string: "https://api.example.com/user")!, as: User.self)
+            XCTFail("Expected decoding error")
+        } catch NetworkError.decodingError {
+            // Success
+        } catch {
+            XCTFail("Expected NetworkError.decodingError, got \(error)")
+        }
+    }
+
     // MARK: - URL Extensions Tests
 
     func testURLAppendingQueryParameters() {
@@ -651,11 +769,13 @@ final class NetworkingTests: XCTestCase {
 
 class MockURLProtocol: URLProtocol {
     static var mockResponse: (data: Data?, response: URLResponse?, error: Error?)?
+    static var lastRequest: URLRequest?
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
+        MockURLProtocol.lastRequest = request
         if let mockResponse = MockURLProtocol.mockResponse {
             if let data = mockResponse.data {
                 client?.urlProtocol(self, didLoad: data)

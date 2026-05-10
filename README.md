@@ -13,6 +13,7 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 | [Capabilities Checklist](#capabilities-checklist) | Every capability as a migration checklist item |
 | [API Reference](#api-reference) | Complete API summary |
 | [Architecture](#architecture) | Design principles |
+| [Networking RFC](Docs/networking-rfc.md) | Proposed networking refactor and migration plan |
 | [Testing](#testing) | How to run tests |
 | [Support](#support) | Issues, discussions, contact |
 
@@ -467,6 +468,72 @@ networkService.$isConnected
 // Make requests
 let data = try await networkService.get(from: url)
 let user: User = try await networkService.get(from: url, as: User.self)
+```
+
+#### Recommended Usage Today
+
+Use `HTTPClient` as the primary transport API for SDK and app HTTP work.
+
+- Prefer `HTTPClient` when you want typed requests, shared configuration, consistent error handling, and a future-proof path for retry/auth/logging improvements.
+- Prefer `NetworkService` when you want to observe network state in UI and optionally make simple convenience requests nearby.
+- Do not treat `NetworkService.isConnected` as a requirement before every request. Reachability is best used as UI signal; actual request success should still come from `URLSession` execution.
+
+Example:
+
+```swift
+import SwapFoundationKit
+
+let config = SwapFoundationKitConfiguration(
+    appMetadata: AppMetaData(
+        appGroupIdentifier: "group.com.example.app",
+        appName: "ExampleApp",
+        appVersion: "1.0.0"
+    ),
+    enableNetworking: true,
+    networkTimeout: 30,
+    networkLogLevel: .debug
+)
+
+try await SwapFoundationKit.shared.start(with: config)
+
+guard let client = SwapFoundationKit.shared.networkClient else { return }
+
+struct GetUsersRequest: NetworkRequest {
+    var scheme: String { "https" }
+    var baseURL: String { "api.example.com" }
+    var path: String { "/users" }
+    var method: HTTPMethod { .get }
+    var parameters: [String: String]? { ["limit": "20"] }
+    var headers: [String: String]? { ["Authorization": "Bearer token"] }
+    var body: Data? { nil }
+}
+
+let response = try await client.execute(GetUsersRequest())
+let users: [User] = try await client.executeAndDecode(GetUsersRequest())
+```
+
+Monitoring reachability in UI:
+
+```swift
+import SwapFoundationKit
+
+@MainActor
+final class NetworkViewModel: ObservableObject {
+    let networkService = NetworkService()
+
+    func loadStatus() async {
+        do {
+            let data = try await networkService.get(
+                from: URL(string: "https://api.example.com/status")!
+            )
+            print(data)
+        } catch let error as NetworkError {
+            print(error.localizedDescription)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+}
 ```
 
 **Migration steps**:

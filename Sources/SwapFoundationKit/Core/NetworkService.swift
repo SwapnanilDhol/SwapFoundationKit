@@ -15,33 +15,6 @@ import Network
 /// Service for handling network operations, reachability, and basic networking utilities
 @MainActor
 public final class NetworkService: ObservableObject {
-    
-    public enum NetworkError: Error, LocalizedError {
-        case noInternetConnection
-        case requestFailed(Error)
-        case invalidResponse
-        case decodingFailed(Error)
-        case timeout
-        case serverError(Int)
-        
-        public var errorDescription: String? {
-            switch self {
-            case .noInternetConnection:
-                return "No internet connection available"
-            case .requestFailed(let error):
-                return "Request failed: \(error.localizedDescription)"
-            case .invalidResponse:
-                return "Invalid response from server"
-            case .decodingFailed(let error):
-                return "Failed to decode response: \(error.localizedDescription)"
-            case .timeout:
-                return "Request timed out"
-            case .serverError(let code):
-                return "Server error: \(code)"
-            }
-        }
-    }
-    
     public enum ConnectionType {
         case wifi
         case cellular
@@ -98,10 +71,6 @@ public final class NetworkService: ObservableObject {
     /// - Returns: The response data
     /// - Throws: NetworkError
     public func get(from url: URL, timeout: TimeInterval = 30) async throws -> Data {
-        guard isConnected else {
-            throw NetworkError.noInternetConnection
-        }
-
         return try await performRequest(
             BasicURLNetworkRequest(
                 url: url,
@@ -120,10 +89,6 @@ public final class NetworkService: ObservableObject {
     /// - Returns: The response data
     /// - Throws: NetworkError
     public func post(to url: URL, body: Data, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
-        guard isConnected else {
-            throw NetworkError.noInternetConnection
-        }
-
         var requestHeaders = headers
         requestHeaders["Content-Type"] = requestHeaders["Content-Type"] ?? "application/json"
 
@@ -147,10 +112,6 @@ public final class NetworkService: ObservableObject {
     /// - Returns: The response data
     /// - Throws: NetworkError
     public func put(to url: URL, body: Data, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
-        guard isConnected else {
-            throw NetworkError.noInternetConnection
-        }
-
         var requestHeaders = headers
         requestHeaders["Content-Type"] = requestHeaders["Content-Type"] ?? "application/json"
 
@@ -172,10 +133,6 @@ public final class NetworkService: ObservableObject {
     /// - Returns: The response data
     /// - Throws: NetworkError
     public func delete(from url: URL, timeout: TimeInterval = 30) async throws -> Data {
-        guard isConnected else {
-            throw NetworkError.noInternetConnection
-        }
-
         return try await performRequest(
             BasicURLNetworkRequest(
                 url: url,
@@ -201,7 +158,7 @@ public final class NetworkService: ObservableObject {
         do {
             return try decoder.decode(type, from: data)
         } catch {
-            throw NetworkError.decodingFailed(error)
+            throw NetworkError.decodingError(error)
         }
     }
     
@@ -229,7 +186,7 @@ public final class NetworkService: ObservableObject {
         do {
             return try decoder.decode(responseType, from: responseData)
         } catch {
-            throw NetworkError.decodingFailed(error)
+            throw NetworkError.decodingError(error)
         }
     }
     
@@ -243,81 +200,53 @@ public final class NetworkService: ObservableObject {
     /// - Returns: The downloaded file URL
     /// - Throws: NetworkError
     public func downloadFile(from url: URL, to destination: URL, progressHandler: ((Double) -> Void)? = nil) async throws -> URL {
-        guard isConnected else {
-            throw NetworkError.noInternetConnection
-        }
-        
         let request = BasicURLNetworkRequest(url: url, method: .get)
         guard let urlRequest = request.request else {
-            throw NetworkError.invalidResponse
+            throw NetworkError.invalidURL
         }
 
-        let (asyncBytes, response) = try await client.session.bytes(for: urlRequest)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
-        }
-        
-        guard httpResponse.statusCode == 200 else {
-            throw NetworkError.serverError(httpResponse.statusCode)
-        }
-        
-        let totalBytes = httpResponse.expectedContentLength
-        var downloadedBytes: Int64 = 0
-        
-        let fileHandle = try FileHandle(forWritingTo: destination)
-        defer { try? fileHandle.close() }
-        
-        for try await byte in asyncBytes {
-            try fileHandle.write(contentsOf: [byte])
-            downloadedBytes += 1
-            
-            if let progressHandler = progressHandler, totalBytes > 0 {
-                let progress = Double(downloadedBytes) / Double(totalBytes)
-                progressHandler(progress)
+        do {
+            let (asyncBytes, response) = try await client.session.bytes(for: urlRequest)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NetworkError.invalidResponse
             }
+
+            guard httpResponse.statusCode == 200 else {
+                throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: nil)
+            }
+
+            if !FileManager.default.fileExists(atPath: destination.path) {
+                FileManager.default.createFile(atPath: destination.path, contents: nil)
+            }
+
+            let totalBytes = httpResponse.expectedContentLength
+            var downloadedBytes: Int64 = 0
+
+            let fileHandle = try FileHandle(forWritingTo: destination)
+            defer { try? fileHandle.close() }
+
+            for try await byte in asyncBytes {
+                try fileHandle.write(contentsOf: [byte])
+                downloadedBytes += 1
+
+                if let progressHandler, totalBytes > 0 {
+                    let progress = Double(downloadedBytes) / Double(totalBytes)
+                    progressHandler(progress)
+                }
+            }
+
+            return destination
+        } catch {
+            throw NetworkError.from(error)
         }
-        
-        return destination
     }
     
     // MARK: - Private Methods
     
     private func performRequest(_ request: NetworkRequest) async throws -> Data {
-        do {
-            let response = try await client.execute(request)
-            return response.data
-        } catch let error as HTTPClientError {
-            throw mapNetworkError(error)
-        } catch {
-            if (error as NSError).code == NSURLErrorTimedOut {
-                throw NetworkError.timeout
-            } else {
-                throw NetworkError.requestFailed(error)
-            }
-        }
-    }
-
-    private func mapNetworkError(_ error: HTTPClientError) -> NetworkError {
-        switch error {
-        case .invalidURL, .invalidResponse:
-            return .invalidResponse
-        case .requestFailed(let underlying):
-            return .requestFailed(underlying)
-        case .httpError(let statusCode, _):
-            if (500...599).contains(statusCode) {
-                return .serverError(statusCode)
-            }
-            return .requestFailed(NSError(domain: "Client Error", code: statusCode, userInfo: nil))
-        case .decodingError(let underlying):
-            return .decodingFailed(underlying)
-        case .timeout:
-            return .timeout
-        case .noInternetConnection:
-            return .noInternetConnection
-        case .cancelled:
-            return .requestFailed(URLError(.cancelled))
-        }
+        let response = try await client.execute(request)
+        return response.data
     }
 }
 
@@ -403,7 +332,7 @@ extension NetworkService {
     /// - Throws: NetworkError
     public func get(from urlString: String, timeout: TimeInterval = 30) async throws -> Data {
         guard let url = URL(string: urlString) else {
-            throw NetworkError.invalidResponse
+            throw NetworkError.invalidURL
         }
         return try await get(from: url, timeout: timeout)
     }
@@ -418,7 +347,7 @@ extension NetworkService {
     /// - Throws: NetworkError
     public func post(to urlString: String, body: Data, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
         guard let url = URL(string: urlString) else {
-            throw NetworkError.invalidResponse
+            throw NetworkError.invalidURL
         }
         return try await post(to: url, body: body, headers: headers, timeout: timeout)
     }
