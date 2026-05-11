@@ -54,12 +54,10 @@ public final class AdsManager {
         }
     }
 
-    @available(*, deprecated, message: "AdMob support was removed from SwapFoundationKit.")
     public func presentInterstitial() async -> AdPresentationResult {
         await present(.interstitial)
     }
 
-    @available(*, deprecated, message: "AdMob support was removed from SwapFoundationKit.")
     public func presentRewarded() async -> AdPresentationResult {
         await present(.rewarded)
     }
@@ -77,7 +75,6 @@ public final class AdsManager {
         )
     }
 
-    @available(*, deprecated, message: "AdMob support was removed from SwapFoundationKit.")
     public func makeBannerViewController() -> UIViewController {
         guard
             let configuration,
@@ -104,9 +101,9 @@ public final class AdsManager {
     }
 }
 
-final class EmptyBannerViewController: UIViewController { }
+private final class EmptyBannerViewController: UIViewController { }
 
-/// Banner placeholder (AdMob removed; no ads are loaded).
+/// Adaptive banner using Google Mobile Ads (device builds). On simulator, returns an empty container.
 public struct AdaptiveBannerAdView: UIViewControllerRepresentable {
     public init() {}
 

@@ -43,6 +43,43 @@ final class AdsManagerTests: XCTestCase {
         XCTAssertEqual(provider.preloadedPlacements, [.interstitial, .rewarded])
     }
 
+    func testPresentInterstitial_ReturnsSkippedWhenIneligible() async {
+        await manager.start(with: makeConfiguration(isEligibleToShowAds: false))
+
+        let result = await manager.presentInterstitial()
+
+        XCTAssertEqual(result, .skippedIneligible)
+        XCTAssertTrue(provider.presentedPlacements.isEmpty)
+    }
+
+    func testPresentInterstitial_ReturnsUnavailableWhenProviderHasNoAd() async {
+        provider.presentationResults[.interstitial] = .unavailable
+        await manager.start(with: makeConfiguration())
+
+        let result = await manager.presentInterstitial()
+
+        XCTAssertEqual(result, .unavailable)
+        XCTAssertEqual(provider.presentedPlacements, [.interstitial])
+    }
+
+    func testPresentInterstitial_ForwardsLifecycleEvents() async {
+        let recorder = EventRecorder()
+        provider.presentationResults[.interstitial] = .shown
+        provider.presentationEvents[.interstitial] = [
+            .impression(.interstitial),
+            .dismissed(.interstitial)
+        ]
+        await manager.start(with: makeConfiguration(eventRecorder: recorder))
+
+        let result = await manager.presentInterstitial()
+
+        XCTAssertEqual(result, .shown)
+        XCTAssertEqual(
+            recorder.events,
+            [.impression(.interstitial), .dismissed(.interstitial)]
+        )
+    }
+
     func testPresentRewarded_ReturnsSkippedWhenIneligible() async {
         await manager.start(with: makeConfiguration(isEligibleToShowAds: false))
 
@@ -80,6 +117,7 @@ final class AdsManagerTests: XCTestCase {
         )
     }
 
+#if !targetEnvironment(simulator)
     func testSwapFoundationKitStart_InitializesAdsManagerWhenConfigured() async throws {
         let sharedProvider = FakeAdsProvider()
         AdsManager.shared.setProviderFactoryForTesting(FakeAdsProviderFactory(provider: sharedProvider))
@@ -96,6 +134,7 @@ final class AdsManagerTests: XCTestCase {
         XCTAssertNotNil(SwapFoundationKit.shared.adsManager)
         XCTAssertEqual(sharedProvider.preloadedPlacements, [.interstitial])
     }
+#endif
 
     func testSwapFoundationKitStart_LeavesAdsUnavailableWhenNotConfigured() async throws {
         let configuration = SwapFoundationKitConfiguration(

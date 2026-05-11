@@ -36,8 +36,19 @@ protocol AdsProviderFactory {
     func makeProvider(from configuration: AdsProviderConfiguration) -> AdsProvider
 }
 
+#if !targetEnvironment(simulator) && canImport(GoogleMobileAds)
 @MainActor
-private final class NoOpAdsProvider: AdsProvider {
+struct DefaultAdsProviderFactory: AdsProviderFactory {
+    func makeProvider(from configuration: AdsProviderConfiguration) -> AdsProvider {
+        switch configuration {
+        case .google(let googleConfiguration):
+            return GoogleAdsProvider(configuration: googleConfiguration)
+        }
+    }
+}
+#else
+@MainActor
+private final class SimulatorAdsUnavailableProvider: AdsProvider {
     func start() async { }
 
     func preload(
@@ -59,16 +70,14 @@ private final class NoOpAdsProvider: AdsProvider {
         adUnitID: String,
         eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
     ) -> UIViewController {
-        EmptyBannerViewController()
+        UIViewController()
     }
 }
 
 @MainActor
 struct DefaultAdsProviderFactory: AdsProviderFactory {
     func makeProvider(from configuration: AdsProviderConfiguration) -> AdsProvider {
-        switch configuration {
-        case .google:
-            return NoOpAdsProvider()
-        }
+        SimulatorAdsUnavailableProvider()
     }
 }
+#endif

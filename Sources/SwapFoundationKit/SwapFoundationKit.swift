@@ -122,11 +122,14 @@ public final class SwapFoundationKit {
             }
         }
 
+        // Google Mobile Ads is not used on simulator builds from this package target.
+#if !targetEnvironment(simulator)
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
             // Do not initialize ads during preview rendering
         } else if let adsConfiguration = configuration?.adsConfiguration {
             await AdsManager.shared.start(with: adsConfiguration)
         }
+#endif
 
         // Configure deeplink handler with supported routes
         if let routes = configuration?.supportedRoutes {
