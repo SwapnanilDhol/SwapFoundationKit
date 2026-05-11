@@ -122,7 +122,7 @@ public final class SwapFoundationKit {
             }
         }
 
-        // Skip Ads SDK on simulator (GoogleAds SDK doesn't support simulator builds)
+        // Google Mobile Ads is not used on simulator builds from this package target.
 #if !targetEnvironment(simulator)
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
             // Do not initialize ads during preview rendering

@@ -22,14 +22,14 @@ let package = Package(
             url: "https://github.com/BastiaanJansen/Toast-Swift.git",
             exact: "2.1.3"
         ),
-            ],
+    ],
     targets: [
         .target(
             name: "SwapFoundationKit",
             dependencies: [
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
                 .product(name: "Toast", package: "Toast-Swift"),
-                            ]
+            ]
         ),
         .testTarget(
             name: "SwapFoundationKitTests",

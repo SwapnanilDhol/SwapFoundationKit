@@ -15,8 +15,6 @@ import UIKit
 
 @MainActor
 final class GoogleAdsProvider: NSObject, AdsProvider {
-    private let configuration: GoogleAdsConfiguration
-
     private var interstitialAd: InterstitialAd?
     private var rewardedAd: RewardedAd?
     private var isLoadingInterstitial = false
@@ -24,9 +22,7 @@ final class GoogleAdsProvider: NSObject, AdsProvider {
     private var interstitialDelegate: GoogleFullScreenAdDelegate?
     private var rewardedDelegate: GoogleFullScreenAdDelegate?
 
-    init(configuration: GoogleAdsConfiguration) {
-        self.configuration = configuration
-    }
+    init(configuration _: GoogleAdsConfiguration) { }
 
     func start() async {
         await MobileAds.shared.start()
@@ -107,6 +103,28 @@ final class GoogleAdsProvider: NSObject, AdsProvider {
         }
     }
 
+    private func presentInterstitial(
+        _ interstitialAd: InterstitialAd,
+        adUnitID: String,
+        from viewController: UIViewController,
+        eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
+    ) async -> AdPresentationResult {
+        await withCheckedContinuation { continuation in
+            let delegate = GoogleFullScreenAdDelegate(
+                placement: .interstitial,
+                eventHandler: eventHandler
+            ) { [weak self] result in
+                continuation.resume(returning: result)
+                self?.interstitialDelegate = nil
+                self?.loadInterstitial(adUnitID: adUnitID, eventHandler: eventHandler)
+            }
+
+            interstitialDelegate = delegate
+            interstitialAd.fullScreenContentDelegate = delegate
+            interstitialAd.present(from: viewController)
+        }
+    }
+
     private func loadRewarded(
         adUnitID: String,
         eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
@@ -127,28 +145,6 @@ final class GoogleAdsProvider: NSObject, AdsProvider {
                 self.rewardedAd = ad
                 eventHandler(.loaded(.rewarded))
             }
-        }
-    }
-
-    private func presentInterstitial(
-        _ interstitialAd: InterstitialAd,
-        adUnitID: String,
-        from viewController: UIViewController,
-        eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
-    ) async -> AdPresentationResult {
-        await withCheckedContinuation { continuation in
-            let delegate = GoogleFullScreenAdDelegate(
-                placement: .interstitial,
-                eventHandler: eventHandler
-            ) { [weak self] result in
-                continuation.resume(returning: result)
-                self?.interstitialDelegate = nil
-                self?.loadInterstitial(adUnitID: adUnitID, eventHandler: eventHandler)
-            }
-
-            interstitialDelegate = delegate
-            interstitialAd.fullScreenContentDelegate = delegate
-            interstitialAd.present(from: viewController)
         }
     }
 

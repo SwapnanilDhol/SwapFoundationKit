@@ -9,7 +9,6 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-#if !targetEnvironment(simulator) && canImport(UIKit) && canImport(GoogleMobileAds)
 import UIKit
 
 @MainActor
@@ -37,6 +36,7 @@ protocol AdsProviderFactory {
     func makeProvider(from configuration: AdsProviderConfiguration) -> AdsProvider
 }
 
+#if !targetEnvironment(simulator) && canImport(GoogleMobileAds)
 @MainActor
 struct DefaultAdsProviderFactory: AdsProviderFactory {
     func makeProvider(from configuration: AdsProviderConfiguration) -> AdsProvider {
@@ -44,6 +44,40 @@ struct DefaultAdsProviderFactory: AdsProviderFactory {
         case .google(let googleConfiguration):
             return GoogleAdsProvider(configuration: googleConfiguration)
         }
+    }
+}
+#else
+@MainActor
+private final class SimulatorAdsUnavailableProvider: AdsProvider {
+    func start() async { }
+
+    func preload(
+        _ placement: AdPlacement,
+        adUnitID: String,
+        eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
+    ) { }
+
+    func present(
+        _ placement: AdPlacement,
+        adUnitID: String,
+        from viewController: UIViewController,
+        eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
+    ) async -> AdPresentationResult {
+        .unavailable
+    }
+
+    func makeBannerViewController(
+        adUnitID: String,
+        eventHandler: @escaping @MainActor (AdLifecycleEvent) -> Void
+    ) -> UIViewController {
+        UIViewController()
+    }
+}
+
+@MainActor
+struct DefaultAdsProviderFactory: AdsProviderFactory {
+    func makeProvider(from configuration: AdsProviderConfiguration) -> AdsProvider {
+        SimulatorAdsUnavailableProvider()
     }
 }
 #endif

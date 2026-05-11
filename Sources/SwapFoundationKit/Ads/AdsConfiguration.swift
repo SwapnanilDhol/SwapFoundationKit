@@ -44,14 +44,15 @@ public struct AdUnitConfiguration: Sendable, Equatable {
     public let interstitial: String
     public let rewarded: String
 
-    public init(
-        banner: String,
-        interstitial: String,
-        rewarded: String
-    ) {
+    public init(banner: String, interstitial: String, rewarded: String) {
         self.banner = banner
         self.interstitial = interstitial
         self.rewarded = rewarded
+    }
+
+    /// Convenience when you do not use rewarded placements (use an empty rewarded ad unit ID).
+    public init(banner: String, interstitial: String) {
+        self.init(banner: banner, interstitial: interstitial, rewarded: "")
     }
 
     internal func adUnitID(for placement: AdPlacement) -> String {
