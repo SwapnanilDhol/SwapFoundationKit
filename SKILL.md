@@ -17,11 +17,11 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 
 Read files in this order:
 
-1. `README.md` — Full capability reference with 48 numbered migration items, API summaries, and code examples
-2. `Docs/host-app-audit-catalog.yaml` — Curated audit catalog with tier classifications (exact/heuristic/manual)
-3. `Docs/onboarding-components.md` — Onboarding UI component documentation
-4. `Docs/settings-update-banner.md` — Update banner integration for settings screens
-5. `Docs/AGENTS.md` — LLM agent workflow for host app audits
+1. `README.md` — Quick reference and key capabilities
+2. `Docs/README.md` — Documentation index
+3. `Docs/migration/migration-guide.md` — Full migration guide
+4. `Docs/migration/catalog.yaml` — Curated audit catalog with tier classifications
+5. `Docs/development/agents.md` — LLM agent workflow documentation
 6. Relevant source files under `Sources/SwapFoundationKit/`
 
 ## Workflows
@@ -30,7 +30,7 @@ Read files in this order:
 
 When the user wants to find overlapping code in their app that SFK already provides:
 
-1. Read `Docs/host-app-audit-catalog.yaml` first
+1. Read `Docs/migration/catalog.yaml` first
 2. Start with `audit_tier: exact` capabilities only
 3. For each exact-tier capability:
    - Search the host app for `host_search_terms`
@@ -64,11 +64,8 @@ When adding a new component to the library:
 1. Place source files under the appropriate `Sources/SwapFoundationKit/` subdirectory
 2. Follow the `SFK` prefix naming convention for public types
 3. Add `#Preview` blocks with multiple variants
-4. Update `README.md`:
-   - Add a new numbered capability in the Capabilities Checklist
-   - Add to the API Reference section
-   - Include in the Quick Navigation table if significant
-5. Update `Docs/host-app-audit-catalog.yaml` with a new capability entry
+4. Update `README.md` and `Docs/README.md` with new capability
+5. Update `Docs/migration/catalog.yaml` with a new capability entry
 6. Update this `SKILL.md` trigger description if new keywords apply
 
 ### Update an Existing Capability
@@ -76,8 +73,8 @@ When adding a new component to the library:
 When modifying public API of an existing component:
 
 1. Update the source code
-2. Update the capability section in `README.md`
-3. Update `Docs/host-app-audit-catalog.yaml` (public_symbols, search terms, source_files)
+2. Update `Docs/README.md` and `README.md` sections
+3. Update `Docs/migration/catalog.yaml` (public_symbols, search terms, source_files)
 4. If the API changed significantly, update code examples in README
 5. If a new capability emerged, add it to the catalog and README
 

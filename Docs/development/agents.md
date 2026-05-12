@@ -11,7 +11,7 @@ This repository ships an LLM-friendly workflow for:
 
 Read files in this order:
 
-1. `Docs/host-app-audit-catalog.yaml` — Curated audit catalog with tier classifications
+1. `Docs/migration/catalog.yaml` — Curated audit catalog with tier classifications
 2. `README.md` — Full capability reference (48 numbered items with API, examples, migration steps)
 3. `SKILL.md` — Skill file with trigger keywords and quick capability lookup
 4. Relevant source files under `Sources/SwapFoundationKit/`
@@ -27,7 +27,7 @@ When tasked with "audit a host app for overlap with SFK":
 ### Step 1: Read the Catalog
 
 ```
-Read Docs/host-app-audit-catalog.yaml
+Read Docs/migration/catalog.yaml
 ```
 
 ### Step 2: Start with Exact Tier
@@ -113,7 +113,7 @@ When adding a new component to the library:
    - Add a new numbered capability in the Capabilities Checklist
    - Include: tier, confidence, description, source path, search terms, suspicious patterns, API, migration steps, "keep custom when"
    - Add to the API Reference section
-4. Update `Docs/host-app-audit-catalog.yaml`:
+4. Update `Docs/migration/catalog.yaml`:
    - Add a new `capabilities` entry with: `id`, `audit_tier`, `confidence`, `replace_with`, `public_symbols`, `host_search_terms`, `suspicious_file_patterns`, `keep_custom_when`, `source_files`
 5. Update `SKILL.md`:
    - Add trigger keywords to the `description` field
@@ -125,7 +125,7 @@ When modifying public API of an existing component:
 
 1. Update the source code
 2. Update the capability section in `README.md` (API, examples, migration steps)
-3. Update `Docs/host-app-audit-catalog.yaml`:
+3. Update `Docs/migration/catalog.yaml`:
    - `public_symbols` if method signatures changed
    - `host_search_terms` if new search patterns apply
    - `source_files` if files moved or were added
@@ -134,7 +134,7 @@ When modifying public API of an existing component:
 
 ## Maintenance Rules
 
-- Update `Docs/host-app-audit-catalog.yaml` whenever a public SFK API is added, removed, renamed, or intentionally deprecated
+- Update `Docs/migration/catalog.yaml` whenever a public SFK API is added, removed, renamed, or intentionally deprecated
 - Do not advertise internal-only helpers as host-app replacements
 - If the README or migration guide drifts from the public API, fix the catalog first, then align the prose docs
 - Keep audit guidance focused on replaceable capabilities, not every helper in the package
@@ -146,12 +146,22 @@ When modifying public API of an existing component:
 
 ```
 SwapFoundationKit/
-├── SKILL.md                          ← This skill file (LLM trigger + workflows)
-├── AGENTS.md                         ← This file (detailed agent workflows)
-├── README.md                         ← Full capability reference (48 items)
+├── SKILL.md                          ← Skill file (LLM trigger + workflows)
+├── README.md                         ← Quick reference
 ├── Docs/
-│   ├── host-app-audit-catalog.yaml   ← Audit catalog (source of truth for audits)
-│   └── onboarding-components.md      ← Onboarding UI documentation
+│   ├── README.md                     ← Documentation index
+│   ├── migration/
+│   │   ├── migration-guide.md        ← Migration guide
+│   │   └── catalog.yaml             ← Audit catalog (source of truth)
+│   ├── guides/
+│   │   ├── networking-rfc.md         ← Networking refactor proposal
+│   │   ├── google-mobile-ads.md     ← Optional ads module
+│   │   └── onboarding.md            ← Onboarding UI documentation
+│   ├── reference/
+│   │   └── trial-audit.md           ← Trial audit
+│   └── development/
+│       ├── agents.md                 ← Detailed agent workflows
+│       └── refactoring-todo.md      ← Refactoring priorities
 └── Sources/SwapFoundationKit/        ← All source code
 ```
 
@@ -162,7 +172,7 @@ SwapFoundationKit/
 - **`AGENTS.md`** is the package-traveling workflow document. It provides detailed, structured
   instructions for any agent or human reviewer to follow, regardless of whether the skill
   is installed in their environment.
-- **`host-app-audit-catalog.yaml`** is the curated data source. It lists capabilities with
+- **`catalog.yaml`** is the curated data source. It lists capabilities with
   machine-readable audit metadata (tiers, search terms, file patterns).
 
 The catalog and AGENTS.md travel with the package and are easier for any agent or human
