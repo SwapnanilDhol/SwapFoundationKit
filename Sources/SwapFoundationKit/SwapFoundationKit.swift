@@ -36,12 +36,6 @@ public final class SwapFoundationKit {
         return httpClient ?? HTTPClient.shared
     }
 
-    /// Shared ads manager instance when ads are configured
-    @MainActor
-    public var adsManager: AdsManager? {
-        AdsManager.shared.isConfigured ? AdsManager.shared : nil
-    }
-
     /// Shared deeplink handler instance for handling URLs and universal links.
     /// Returns nil if the framework has not been initialized.
     public var deeplinkHandler: DeeplinkHandler? {
@@ -121,15 +115,6 @@ public final class SwapFoundationKit {
                 self.httpClient = client
             }
         }
-
-        // Google Mobile Ads is not used on simulator builds from this package target.
-#if !targetEnvironment(simulator)
-        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-            // Do not initialize ads during preview rendering
-        } else if let adsConfiguration = configuration?.adsConfiguration {
-            await AdsManager.shared.start(with: adsConfiguration)
-        }
-#endif
 
         // Configure deeplink handler with supported routes
         if let routes = configuration?.supportedRoutes {

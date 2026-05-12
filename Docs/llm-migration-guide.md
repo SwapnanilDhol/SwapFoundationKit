@@ -1102,40 +1102,39 @@ If you follow the above steps precisely, an LLM can safely migrate most codebase
 
 ## 12) Ad Integration Architecture (Wrapper-Only)
 
-The correct architecture for ad integration keeps GoogleMobileAds types isolated in kit packages. App targets should **never** import GoogleMobileAds or SwapProKitAdMob directly.
+Keep Google Mobile Ads types out of generic app code when possible: link the optional **`SwapFoundationKitGoogleMobileAds`** product and use **`AdsManager`** / **`AdaptiveBannerAdView`**. Core **`SwapFoundationKit`** no longer pulls in the Google Mobile Ads SDK.
 
 ### Architecture
 
 ```
-App Target
-├── SwapProKit
-│   └── SwapFoundationKit → GoogleMobileAds (transitive)
-└── SwapProKitAdMob (wrapper only — no ad types leak to app)
-    ├── SwapProKit
-    └── RevenueCatAdMob (ad revenue tracking)
+App Target (with ads)
+├── SwapFoundationKit (core — config types only)
+├── SwapFoundationKitGoogleMobileAds → GoogleMobileAds
+└── (optional) SwapProKit / SwapProKitAdMob for subscription + attribution stacks
 
 App target should use:
-├── AdsManager (SwapFoundationKit) — SDK init and wrapper
-├── AdaptiveBannerAdView (SwapFoundationKit) — banner display
+├── AdsManager (SwapFoundationKitGoogleMobileAds) — SDK init and wrapper
+├── AdaptiveBannerAdView (SwapFoundationKitGoogleMobileAds) — banner display
 └── AdsConfiguration / AdUnitConfiguration (SwapFoundationKit) — config
 ```
 
-### Why Wrapper-Only
+### Why the split
 
-1. **Module visibility**: GoogleMobileAds is a transitive dependency of SwapFoundationKit. `canImport(GoogleMobileAds)` in app targets is unreliable across build configs.
-2. **RevenueCat tracking**: SwapProKitAdMob's `swapProLoadAndTrack()` methods handle RevenueCat attribution. These are called from within SwapFoundationKit's provider layer.
-3. **CI reliability**: Avoids conditional compilation (`#if canImport(...)`) that silently disables code.
+1. **Optional dependency**: Apps that do not show ads link only `SwapFoundationKit` and avoid the GMA binary.
+2. **Explicit version**: You can add Google’s `GoogleMobileAds` package on the app target and pin the same version as SFK’s ads module (see `Package.swift`).
+3. **Simulator / previews**: `AdsManager.startIfNeeded` and the ads module’s stubs avoid loading real ads on simulator; see [GOOGLE_MOBILE_ADS.md](GOOGLE_MOBILE_ADS.md).
 
 ### Correct Usage
 
-**AppDelegate — SDK setup:**
+**After `SwapFoundationKit.shared.start` — SDK setup:**
 ```swift
 import SwapFoundationKit
+import SwapFoundationKitGoogleMobileAds
 
 private func setupAds() {
     Task { @MainActor in
-        await AdsManager.shared.start(
-            with: AdsConfiguration(
+        await AdsManager.startIfNeeded(
+            configuration: AdsConfiguration(
                 provider: .google(GoogleAdsConfiguration()),
                 adUnits: AdUnitConfiguration(
                     banner: "ca-app-pub-xxxxxxx/banner",
@@ -1166,7 +1165,7 @@ private func setupAds() {
 
 **Views — Banner display:**
 ```swift
-import SwapFoundationKit
+import SwapFoundationKitGoogleMobileAds
 
 struct MyView: View {
     var body: some View {
@@ -1180,18 +1179,16 @@ struct MyView: View {
 
 ### What NOT To Do
 
-- Do NOT import `GoogleMobileAds` directly in app target
-- Do NOT import `SwapProKitAdMob` directly in app target (unless using RevenueCatAdMob SPI)
-- Do NOT use `#if canImport(SwapProKitAdMob)` guards — AdsManager handles unavailability
-- Do NOT create inline `UIViewControllerRepresentable` wrappers for BannerView
+- Do not pass `adsConfiguration` into `SwapFoundationKitConfiguration` (removed); call `AdsManager.startIfNeeded` or `AdsManager.shared.start` from the ads module instead.
+- Do not create inline `UIViewControllerRepresentable` wrappers for `BannerView` unless you have a strong reason — use `AdaptiveBannerAdView`.
 
 ### RevenueCat Ad Attribution
 
-RevenueCatAdMob integration is handled automatically through SwapProKitAdMob's `swapProLoadAndTrack()` extensions. These are called from within SwapFoundationKit's GoogleAdsProvider when ads load. No app target code needs to directly interact with RevenueCatAdMob.
+If you use SwapProKitAdMob / RevenueCatAdMob, keep that integration in the wrapper layer you own; SFK’s `GoogleAdsProvider` focuses on loading and presenting ads.
 
 ### Simulator Behavior
 
-Ads do not load on simulator. `AdaptiveBannerAdView` falls back to an empty view when GoogleMobileAds is unavailable. `AdsManager.start()` returns early on simulator — no crash, no action needed.
+Ads do not load on simulator. `AdaptiveBannerAdView` uses an empty container when the provider is unavailable. `AdsManager.startIfNeeded` is a no-op on simulator; `AdsManager.shared.start` uses the simulator stub provider.
 
 ### Validation
 

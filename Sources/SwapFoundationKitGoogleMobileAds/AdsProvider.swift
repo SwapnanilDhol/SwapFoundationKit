@@ -1,6 +1,6 @@
 /*****************************************************************************
  * AdsProvider.swift
- * SwapFoundationKit
+ * SwapFoundationKitGoogleMobileAds
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *
@@ -9,6 +9,7 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
+import SwapFoundationKit
 import UIKit
 
 @MainActor

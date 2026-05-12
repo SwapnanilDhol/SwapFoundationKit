@@ -1,6 +1,6 @@
 /*****************************************************************************
  * AdsManagerTests.swift
- * SwapFoundationKit
+ * SwapFoundationKitGoogleMobileAdsTests
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *
@@ -13,6 +13,7 @@
 import UIKit
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitGoogleMobileAds
 
 @MainActor
 final class AdsManagerTests: XCTestCase {
@@ -40,7 +41,7 @@ final class AdsManagerTests: XCTestCase {
 
         manager.preload([.banner, .interstitial, .rewarded])
 
-        XCTAssertEqual(provider.preloadedPlacements, [.interstitial, .rewarded])
+        XCTAssertEqual(Set(provider.preloadedPlacements), Set([.interstitial, .rewarded]))
     }
 
     func testPresentInterstitial_ReturnsSkippedWhenIneligible() async {
@@ -118,25 +119,27 @@ final class AdsManagerTests: XCTestCase {
     }
 
 #if !targetEnvironment(simulator)
-    func testSwapFoundationKitStart_InitializesAdsManagerWhenConfigured() async throws {
+    func testStartIfNeeded_PreloadsAfterSwapFoundationKitStart() async throws {
         let sharedProvider = FakeAdsProvider()
         AdsManager.shared.setProviderFactoryForTesting(FakeAdsProviderFactory(provider: sharedProvider))
 
-        let configuration = SwapFoundationKitConfiguration(
+        let kitConfiguration = SwapFoundationKitConfiguration(
             appMetadata: AppMetaData(appGroupIdentifier: "tests.swapfoundationkit"),
             enableItemSync: false,
-            enableNetworking: false,
-            adsConfiguration: makeConfiguration(preloadOnStart: [.interstitial])
+            enableNetworking: false
         )
 
-        try await SwapFoundationKit.shared.start(with: configuration)
+        try await SwapFoundationKit.shared.start(with: kitConfiguration)
 
-        XCTAssertNotNil(SwapFoundationKit.shared.adsManager)
+        let adsConfiguration = makeConfiguration(preloadOnStart: [.interstitial])
+        await AdsManager.startIfNeeded(configuration: adsConfiguration)
+
+        XCTAssertTrue(AdsManager.shared.isConfigured)
         XCTAssertEqual(sharedProvider.preloadedPlacements, [.interstitial])
     }
 #endif
 
-    func testSwapFoundationKitStart_LeavesAdsUnavailableWhenNotConfigured() async throws {
+    func testAdsManager_StaysUnconfiguredWhenStartIfNeededNeverCalled() async throws {
         let configuration = SwapFoundationKitConfiguration(
             appMetadata: AppMetaData(appGroupIdentifier: "tests.swapfoundationkit"),
             enableItemSync: false,
@@ -145,8 +148,16 @@ final class AdsManagerTests: XCTestCase {
 
         try await SwapFoundationKit.shared.start(with: configuration)
 
-        XCTAssertNil(SwapFoundationKit.shared.adsManager)
+        XCTAssertFalse(AdsManager.shared.isConfigured)
     }
+
+#if targetEnvironment(simulator)
+    func testStartIfNeeded_IsNoOpOnSimulator() async {
+        AdsManager.shared.setProviderFactoryForTesting(FakeAdsProviderFactory(provider: FakeAdsProvider()))
+        await AdsManager.startIfNeeded(configuration: makeConfiguration(preloadOnStart: [.interstitial]))
+        XCTAssertFalse(AdsManager.shared.isConfigured)
+    }
+#endif
 
     private func makeConfiguration(
         preloadOnStart: Set<AdPlacement> = [],

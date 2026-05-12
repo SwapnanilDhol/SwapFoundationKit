@@ -55,7 +55,7 @@ public struct AdUnitConfiguration: Sendable, Equatable {
         self.init(banner: banner, interstitial: interstitial, rewarded: "")
     }
 
-    internal func adUnitID(for placement: AdPlacement) -> String {
+    public func adUnitID(for placement: AdPlacement) -> String {
         switch placement {
         case .banner:
             return banner

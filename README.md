@@ -14,6 +14,7 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 | [API Reference](#api-reference) | Complete API summary |
 | [Architecture](#architecture) | Design principles |
 | [Networking RFC](Docs/networking-rfc.md) | Proposed networking refactor and migration plan |
+| [Google Mobile Ads (optional)](Docs/GOOGLE_MOBILE_ADS.md) | Optional ads module and migration |
 | [Testing](#testing) | How to run tests |
 | [Support](#support) | Issues, discussions, contact |
 
@@ -24,7 +25,8 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 - **iOS**: 17.0+
 - **Swift**: 5.9+
 - **Xcode**: 15.0+
-- **Dependencies**: Google Mobile Ads (13.1.0), Toast-Swift (2.1.3)
+- **Dependencies (core)**: Toast-Swift (2.1.3)
+- **Optional**: product `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads **13.1.0** — see [Docs/GOOGLE_MOBILE_ADS.md](Docs/GOOGLE_MOBILE_ADS.md)
 
 ---
 
@@ -41,8 +43,20 @@ Or in `Package.swift`:
 ```swift
 dependencies: [
     .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "1.0.0")
+],
+targets: [
+    .target(
+        name: "YourApp",
+        dependencies: [
+            .product(name: "SwapFoundationKit", package: "SwapFoundationKit"),
+            // Optional — only if you show ads:
+            .product(name: "SwapFoundationKitGoogleMobileAds", package: "SwapFoundationKit"),
+        ]
+    ),
 ]
 ```
+
+Ads setup and breaking changes are documented in [Docs/GOOGLE_MOBILE_ADS.md](Docs/GOOGLE_MOBILE_ADS.md).
 
 ---
 
@@ -2330,41 +2344,36 @@ Centralized configuration service.
 
 **Tier**: `heuristic` · **Confidence**: medium
 
-Manage ad integration with `AdsManager`.
+Manage ad integration with `AdsManager` in the **optional** product `SwapFoundationKitGoogleMobileAds`. Types such as `AdsConfiguration` stay in the core module.
 
-**Sources**: `Sources/SwapFoundationKit/Ads/`
+**Sources**: `Sources/SwapFoundationKit/Ads/AdsConfiguration.swift`, `Sources/SwapFoundationKitGoogleMobileAds/`
 
 **API**:
 
 ```swift
 import SwapFoundationKit
+import SwapFoundationKitGoogleMobileAds
 
-// Configuration
 let config = AdsConfiguration(
-    provider: .google(GoogleAdsConfiguration(
-        appId: "ca-app-pub-xxx",
-        adUnits: AdUnitConfiguration(
-            banner: "ca-app-pub-xxx/banner",
-            interstitial: "ca-app-pub-xxx/interstitial",
-            rewarded: "ca-app-pub-xxx/rewarded"
-        )
-    )),
-    preloadOnStart: true
+    provider: .google(GoogleAdsConfiguration()),
+    adUnits: AdUnitConfiguration(
+        banner: "ca-app-pub-xxx/banner",
+        interstitial: "ca-app-pub-xxx/interstitial",
+        rewarded: "ca-app-pub-xxx/rewarded"
+    ),
+    preloadOnStart: [.interstitial],
+    isEligibleToShowAds: { true },
+    presentingViewController: { rootViewController },
+    eventHandler: { _ in }
 )
 
-// Start
-await AdsManager.shared.start(with: config)
-
-// Eligibility check
-AdsManager.shared.isEligibleToShowAds = { true }
-
-// Event handler
-AdsManager.shared.eventHandler = { event in
-    // Handle ad events
-}
+await AdsManager.startIfNeeded(configuration: config)
+// or: await AdsManager.shared.start(with: config)
 ```
 
-**Components**: `AdsManager`, `AdsConfiguration`, `AdUnitConfiguration`, `GoogleAdsConfiguration`, `AdProvider` (`.google`), `AdsProvider` protocol, `GoogleAdsProvider`.
+**Details**: [Docs/GOOGLE_MOBILE_ADS.md](Docs/GOOGLE_MOBILE_ADS.md)
+
+**Components**: `AdsManager`, `AdaptiveBannerAdView` (GMA product); `AdsConfiguration`, `AdUnitConfiguration`, `GoogleAdsConfiguration`, `AdsProviderConfiguration` (core).
 
 ---
 
@@ -2509,7 +2518,7 @@ These are internal SFK improvements tracked for future work. They do not affect 
 ### Modules
 - **`ItemSync`** — Data synchronization between app, widgets, and Watch
 - **`WatchSync`** — Type-safe watch transport abstraction
-- **`Ads`** — Ad management (Google Mobile Ads)
+- **`SwapFoundationKitGoogleMobileAds`** (optional SPM product) — Ad management (Google Mobile Ads); core keeps ad **configuration** types only
 
 ### Protocols
 - **`AppMetaData`** — App metadata with App Store URL helpers
@@ -2576,7 +2585,7 @@ cd /path/to/SwapFoundationKit
 xcodebuild test -scheme SwapFoundationKit -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
-If you open `Package.swift` in Xcode, you can also run the **SwapFoundationKit** test action from the UI.
+If you open `Package.swift` in Xcode, run the **SwapFoundationKit** scheme test action: it includes **`SwapFoundationKitTests`** (core) and **`SwapFoundationKitGoogleMobileAdsTests`** (ads).
 
 ### Mock Objects
 

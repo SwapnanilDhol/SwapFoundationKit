@@ -59,9 +59,6 @@ public struct SwapFoundationKitConfiguration {
     /// Custom HTTP client configuration
     public let customHTTPClient: HTTPClient?
 
-    /// Ads configuration for optional ad services
-    public let adsConfiguration: AdsConfiguration?
-
     /// Route types that the deeplink handler should recognize
     public let supportedRoutes: [DeeplinkRoute.Type]
 
@@ -81,7 +78,6 @@ public struct SwapFoundationKitConfiguration {
     ///   - customAnalyticsLogger: Custom analytics logger
     ///   - customStorageService: Custom storage service
     ///   - customHTTPClient: Custom HTTP client
-    ///   - adsConfiguration: Optional ads configuration
     ///   - supportedRoutes: Route types for deeplink handling
     public init(
         appMetadata: AppMetaData,
@@ -96,7 +92,6 @@ public struct SwapFoundationKitConfiguration {
         customAnalyticsLogger: AnalyticsLogger? = nil,
         customStorageService: FileStorageService? = nil,
         customHTTPClient: HTTPClient? = nil,
-        adsConfiguration: AdsConfiguration? = nil,
         supportedRoutes: [DeeplinkRoute.Type] = []
     ) {
         self.appMetadata = appMetadata
@@ -111,7 +106,6 @@ public struct SwapFoundationKitConfiguration {
         self.customAnalyticsLogger = customAnalyticsLogger
         self.customStorageService = customStorageService
         self.customHTTPClient = customHTTPClient
-        self.adsConfiguration = adsConfiguration
         self.supportedRoutes = supportedRoutes
     }
 }

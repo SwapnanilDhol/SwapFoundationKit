@@ -1,6 +1,6 @@
 /*****************************************************************************
  * GoogleAdsProvider.swift
- * SwapFoundationKit
+ * SwapFoundationKitGoogleMobileAds
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *
@@ -11,6 +11,7 @@
 
 #if !targetEnvironment(simulator) && canImport(UIKit) && canImport(GoogleMobileAds)
 import GoogleMobileAds
+import SwapFoundationKit
 import UIKit
 
 @MainActor

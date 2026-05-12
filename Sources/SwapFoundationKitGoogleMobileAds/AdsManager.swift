@@ -1,6 +1,6 @@
 /*****************************************************************************
  * AdsManager.swift
- * SwapFoundationKit
+ * SwapFoundationKitGoogleMobileAds
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *
@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 import SwiftUI
+import SwapFoundationKit
 import UIKit
 
 @MainActor
@@ -31,6 +32,14 @@ public final class AdsManager {
 
     internal static func makeForTesting(providerFactory: AdsProviderFactory) -> AdsManager {
         AdsManager(providerFactory: providerFactory)
+    }
+
+    /// Same behavior as legacy `SwapFoundationKit` automatic ads startup: skips simulator, skips SwiftUI previews.
+    public static func startIfNeeded(configuration: AdsConfiguration) async {
+#if !targetEnvironment(simulator)
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return }
+        await shared.start(with: configuration)
+#endif
     }
 
     public func start(with configuration: AdsConfiguration) async {

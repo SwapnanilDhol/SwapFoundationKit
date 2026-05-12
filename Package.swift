@@ -11,7 +11,12 @@ let package = Package(
     products: [
         .library(
             name: "SwapFoundationKit",
-            targets: ["SwapFoundationKit"]),
+            targets: ["SwapFoundationKit"]
+        ),
+        .library(
+            name: "SwapFoundationKitGoogleMobileAds",
+            targets: ["SwapFoundationKitGoogleMobileAds"]
+        ),
     ],
     dependencies: [
         .package(
@@ -27,13 +32,26 @@ let package = Package(
         .target(
             name: "SwapFoundationKit",
             dependencies: [
-                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
                 .product(name: "Toast", package: "Toast-Swift"),
+            ]
+        ),
+        .target(
+            name: "SwapFoundationKitGoogleMobileAds",
+            dependencies: [
+                "SwapFoundationKit",
+                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
             ]
         ),
         .testTarget(
             name: "SwapFoundationKitTests",
             dependencies: ["SwapFoundationKit"]
+        ),
+        .testTarget(
+            name: "SwapFoundationKitGoogleMobileAdsTests",
+            dependencies: [
+                "SwapFoundationKit",
+                "SwapFoundationKitGoogleMobileAds",
+            ]
         ),
     ]
 )
