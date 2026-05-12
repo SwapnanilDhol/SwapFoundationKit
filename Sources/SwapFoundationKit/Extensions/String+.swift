@@ -187,7 +187,7 @@ public extension String {
 
     var htmlStripped: String {
         guard let data = data(using: .utf8),
-              let attributed = try? NSAttributedString(data: data, options: [.documentType: .html], documentAttributes: nil) else {
+              let attributed = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil) else {
             return self
         }
         return attributed.string
@@ -213,7 +213,7 @@ public extension String {
         for i in 1...m {
             for j in 1...n {
                 let cost = selfArray[i - 1] == otherArray[j - 1] ? 0 : 1
-                matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
+                matrix[i][j] = Swift.min(matrix[i-1][j] + 1, Swift.min(matrix[i][j-1] + 1, matrix[i-1][j-1] + cost))
             }
         }
         return matrix[m][n]

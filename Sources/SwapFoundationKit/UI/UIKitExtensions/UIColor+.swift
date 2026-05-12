@@ -12,6 +12,8 @@ import QuartzCore
 import SwiftUI
 #endif
 
+#if canImport(UIKit) && os(iOS)
+
 // MARK: - RGBA Components
 
 /// Represents color components as a structured type instead of an array.
@@ -21,7 +23,7 @@ public struct RGBAColorComponents {
     public let blue: CGFloat
     public let alpha: CGFloat
 
-    public init(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) {
+    @inlinable public init(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) {
         self.red = red
         self.green = green
         self.blue = blue
@@ -35,12 +37,11 @@ public struct RGBAColorComponents {
     public var rgb: [CGFloat] { [red, green, blue] }
 }
 
-#if canImport(UIKit) && os(iOS)
 public extension UIColor {
 
     // MARK: - Hex Initialization
 
-    init?(hex: String) {
+    convenience init?(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         guard Scanner(string: hex).scanHexInt64(&int) else {
