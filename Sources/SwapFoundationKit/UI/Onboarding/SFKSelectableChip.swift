@@ -136,7 +136,7 @@ public struct SFKSelectableChip: View {
                 if let icon {
                     iconView(for: icon)
                         .font(.subheadline)
-                        .foregroundStyle(isSelected ? tintColor : .secondary)
+                        .foregroundStyle(tintColor)
                 }
 
                 Text(text)
@@ -165,10 +165,11 @@ public struct SFKSelectableChip: View {
         )
     }
 
-    /// Tint applied to the glass effect — heavier when selected so the chip
-    /// reads as active without overpowering the icon and label.
+    /// Tint applied to the glass effect. Unselected chips still carry a soft
+    /// wash of their own `tintColor` so each chip reads as colorful rather
+    /// than a generic grey capsule; selected chips deepen that tint.
     private var glassTintColor: Color {
-        isSelected ? tintColor.opacity(0.32) : Color.white.opacity(0.2)
+        isSelected ? tintColor.opacity(0.38) : tintColor.opacity(0.16)
     }
 
     /// Renders the icon as an SF Symbol when the string maps to a valid system
