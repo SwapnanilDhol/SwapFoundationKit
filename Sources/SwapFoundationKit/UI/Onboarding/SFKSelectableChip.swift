@@ -135,12 +135,12 @@ public struct SFKSelectableChip: View {
             HStack(spacing: 8) {
                 if let icon {
                     iconView(for: icon)
-                        .font(.subheadline)
+                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
                         .foregroundStyle(tintColor)
                 }
 
                 Text(text)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(isSelected ? .semibold : .regular))
                     .lineLimit(1)
                     .multilineTextAlignment(.leading)
                     .foregroundStyle(.primary)
@@ -165,11 +165,12 @@ public struct SFKSelectableChip: View {
         )
     }
 
-    /// Tint applied to the glass effect. Unselected chips still carry a soft
-    /// wash of their own `tintColor` so each chip reads as colorful rather
-    /// than a generic grey capsule; selected chips deepen that tint.
+    /// Tint applied to the glass effect. Unselected chips carry only a faint
+    /// wash of their own `tintColor` so a strip of chips reads as calm and
+    /// colorful at rest; selected chips deepen the tint and pair with the
+    /// semibold label + stroke for clear differentiation.
     private var glassTintColor: Color {
-        isSelected ? tintColor.opacity(0.38) : tintColor.opacity(0.16)
+        isSelected ? tintColor.opacity(0.34) : tintColor.opacity(0.10)
     }
 
     /// Renders the icon as an SF Symbol when the string maps to a valid system
