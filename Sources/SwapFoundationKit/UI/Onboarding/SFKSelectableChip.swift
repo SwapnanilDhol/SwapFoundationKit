@@ -134,8 +134,9 @@ public struct SFKSelectableChip: View {
         }) {
             HStack(spacing: 8) {
                 if let icon {
-                    Text(icon)
+                    iconView(for: icon)
                         .font(.subheadline)
+                        .foregroundStyle(isSelected ? Color(UIColor.systemBackground) : .primary)
                 }
 
                 Text(text)
@@ -157,6 +158,21 @@ public struct SFKSelectableChip: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    /// Renders the icon as an SF Symbol when the string maps to a valid system
+    /// image, otherwise falls back to plain text (so emoji icons still work).
+    @ViewBuilder
+    private func iconView(for icon: String) -> some View {
+        #if canImport(UIKit) && os(iOS)
+        if UIImage(systemName: icon) != nil {
+            Image(systemName: icon)
+        } else {
+            Text(icon)
+        }
+        #else
+        Text(icon)
+        #endif
     }
 
     private func triggerHaptic() {
