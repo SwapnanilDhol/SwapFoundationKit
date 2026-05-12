@@ -136,28 +136,39 @@ public struct SFKSelectableChip: View {
                 if let icon {
                     iconView(for: icon)
                         .font(.subheadline)
-                        .foregroundStyle(isSelected ? Color(UIColor.systemBackground) : .primary)
+                        .foregroundStyle(isSelected ? tintColor : .secondary)
                 }
 
                 Text(text)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                     .multilineTextAlignment(.leading)
-                    .foregroundStyle(isSelected ? Color(UIColor.systemBackground) : .primary)
+                    .foregroundStyle(.primary)
             }
             .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(isSelected ? tintColor : Color(.secondarySystemBackground))
-            )
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(isSelected ? tintColor : Color.gray.opacity(0.45), lineWidth: 1)
-            )
         }
         .buttonStyle(.plain)
+        .glassEffectCompat(
+            style: .regular,
+            color: glassTintColor,
+            isInteractive: true,
+            in: Capsule()
+        )
+        .overlay(
+            Capsule(style: .continuous)
+                .strokeBorder(
+                    isSelected ? tintColor : Color.clear,
+                    lineWidth: 2
+                )
+        )
+    }
+
+    /// Tint applied to the glass effect — heavier when selected so the chip
+    /// reads as active without overpowering the icon and label.
+    private var glassTintColor: Color {
+        isSelected ? tintColor.opacity(0.32) : Color.white.opacity(0.2)
     }
 
     /// Renders the icon as an SF Symbol when the string maps to a valid system
