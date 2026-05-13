@@ -49,6 +49,15 @@ struct SettingsExamplesView: View {
     @State private var notificationsEnabled = true
     @State private var lastSyncDate = Date.now
 
+    private let theme = SFKSettingsTheme(
+        colors: .init(
+            accent: .mint,
+            itemTintBehavior: .useAccent,
+            toggleOnTint: .mint,
+            sliderTint: .mint
+        )
+    )
+
     private let sections: [SFKSettingsSectionConfiguration] = [
         SFKSettingsSectionConfiguration(
             title: "App Settings",
@@ -73,12 +82,12 @@ struct SettingsExamplesView: View {
                         title: "Push Notifications",
                         subtitle: "Enable alerts for app updates.",
                         icon: "bell.badge.fill",
-                        tint: .blue,
                         isOn: $notificationsEnabled
                     )
                 }
             ],
             sections: sections,
+            theme: theme,
             rowTrailingBuilder: trailingView(for:),
             rowChevronBuilder: showChevron(for:),
             onItemTap: handleTap(_:)

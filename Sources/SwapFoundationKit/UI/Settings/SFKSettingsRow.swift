@@ -29,6 +29,7 @@ import SwiftUI
 /// })
 /// ```
 public struct SFKSettingsRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let icon: String
     private let title: String
@@ -61,39 +62,41 @@ public struct SFKSettingsRow: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 iconContainer
                 labelStack
                 Spacer()
                 trailingContent
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedItemTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private var labelStack: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
             Text(title)
-                .font(.body.weight(.medium))
-                .foregroundStyle(.primary)
+                .font(theme.typography.titleFont)
+                .foregroundStyle(theme.colors.titleColor)
 
             if !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.subtitleFont)
+                    .foregroundStyle(theme.colors.subtitleColor)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -103,15 +106,17 @@ public struct SFKSettingsRow: View {
 
     @ViewBuilder
     private var trailingContent: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: theme.metrics.trailingSpacing) {
             if let trailing = trailingView {
                 trailing
+                    .font(theme.typography.valueFont)
+                    .foregroundStyle(theme.colors.valueColor)
                     .multilineTextAlignment(.trailing)
             }
             if showChevron {
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
         }
     }
@@ -119,6 +124,7 @@ public struct SFKSettingsRow: View {
 
 /// A display-only settings label row (no tap action).
 public struct SFKSettingsLabel: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
@@ -139,30 +145,32 @@ public struct SFKSettingsLabel: View {
     }
 
     public var body: some View {
-        HStack(spacing: 12) {
+        let resolvedTint = theme.resolvedTint(tint)
+        return HStack(spacing: theme.metrics.rowSpacing) {
             ZStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(tint.opacity(0.14))
+                RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                    .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
                 Image(systemName: icon)
-                    .font(.caption.bold())
-                    .foregroundStyle(tint)
+                    .font(theme.typography.iconFont)
+                    .foregroundStyle(resolvedTint)
             }
-            .frame(width: 28, height: 28)
+            .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                 Text(title)
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(.primary)
+                    .font(theme.typography.titleFont)
+                    .foregroundStyle(theme.colors.titleColor)
 
                 Text(subtitle)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.subtitleFont)
+                    .foregroundStyle(theme.colors.subtitleColor)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
     }
 }
 

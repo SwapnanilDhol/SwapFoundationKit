@@ -23,12 +23,14 @@ Quick links to all documentation. For full API reference, see the [main README](
 | [Networking RFC](guides/networking-rfc.md) | Proposed refactor for the networking stack |
 | [Google Mobile Ads](guides/google-mobile-ads.md) | Optional ads module setup and migration |
 | [Onboarding Components](guides/onboarding.md) | Generic onboarding UI components reference |
+| [Settings UI](guides/settings.md) | Build host-app settings screens with SFK components |
 
 ## Reference
 
 | Document | Description |
 |----------|-------------|
 | [Trial Audit](reference/trial-audit.md) | Subscription trial audit documentation |
+| [Settings Integration Checklist](reference/settings-integration-checklist.md) | Audit checklist for host-app settings integration |
 
 ---
 

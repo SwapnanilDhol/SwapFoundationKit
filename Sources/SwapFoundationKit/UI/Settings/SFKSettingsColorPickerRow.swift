@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// A settings row that presents a ColorPicker in a sheet.
+/// A settings row that invokes the system ColorPicker directly.
 ///
 /// ## Usage
 /// ```swift
@@ -21,14 +21,13 @@ import SwiftUI
 /// )
 /// ```
 public struct SFKSettingsColorPickerRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var selection: Color
-
-    @State private var isPresented = false
 
     /// Creates a color picker settings row.
     /// - Parameters:
@@ -41,7 +40,7 @@ public struct SFKSettingsColorPickerRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         selection: Binding<Color>
     ) {
         self.title = title
@@ -52,76 +51,42 @@ public struct SFKSettingsColorPickerRow: View {
     }
 
     public var body: some View {
-        Button {
-            isPresented = true
-        } label: {
-            HStack(spacing: 12) {
+        let resolvedTint = theme.resolvedTint(tint)
+        ColorPicker(selection: $selection, supportsOpacity: true) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
                         .fill(selection.opacity(0.14))
 
                     Image(systemName: icon)
-                        .font(.caption.bold())
-                        .foregroundStyle(selection)
+                        .font(theme.typography.iconFont)
+                        .foregroundStyle(resolvedTint)
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer()
-
                 Circle()
                     .fill(selection)
-                    .frame(width: 24, height: 24)
+                    .frame(width: theme.metrics.colorSwatchSize, height: theme.metrics.colorSwatchSize)
                     .overlay(
                         Circle()
-                            .strokeBorder(Color.primary.opacity(0.2), lineWidth: 1)
+                            .strokeBorder(theme.colors.swatchBorderColor, lineWidth: 1)
                     )
-
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
-        }
-        // Row-level button style keeps Form hit testing without tinting labels with the accent color.
-        .buttonStyle(SFKSettingsFormRowButtonStyle())
-        .sheet(isPresented: $isPresented) {
-            NavigationStack {
-                VStack(spacing: 20) {
-                    ColorPicker(
-                        "Select Color",
-                        selection: $selection,
-                        supportsOpacity: true
-                    )
-                    .labelsHidden()
-                    .padding()
-
-                    Spacer()
-                }
-                .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
-                            isPresented = false
-                        }
-                    }
-                }
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
         }
     }
 }
@@ -140,17 +105,18 @@ public struct SFKSettingsColorPickerRow: View {
 /// )
 /// ```
 public struct SFKSettingsInlineColorPicker: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var selection: Color
 
     /// Creates an inline color picker settings row.
     public init(
         title: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         selection: Binding<Color>
     ) {
         self.title = title
@@ -160,23 +126,26 @@ public struct SFKSettingsInlineColorPicker: View {
     }
 
     public var body: some View {
-        HStack(spacing: 12) {
+        let resolvedTint = theme.resolvedTint(tint)
+        HStack(spacing: theme.metrics.rowSpacing) {
             ZStack {
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
                     .fill(selection.opacity(0.14))
 
                 Image(systemName: icon)
-                    .font(.caption.bold())
-                    .foregroundStyle(selection)
+                    .font(theme.typography.iconFont)
+                    .foregroundStyle(resolvedTint)
             }
-            .frame(width: 28, height: 28)
+            .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
             ColorPicker(title, selection: $selection, supportsOpacity: true)
-                .labelsHidden()
+                .font(theme.typography.subtitleFont)
+                .tint(resolvedTint)
                 .buttonStyle(SFKSettingsFormRowButtonStyle())
 
             Spacer()
         }
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
     }
 }
 

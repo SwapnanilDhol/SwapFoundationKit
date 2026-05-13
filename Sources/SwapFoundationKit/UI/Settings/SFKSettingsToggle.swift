@@ -28,11 +28,12 @@ import SwiftUI
 /// }
 /// ```
 public struct SFKSettingsToggle: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var isOn: Bool
 
     /// Creates a settings toggle row.
@@ -46,7 +47,7 @@ public struct SFKSettingsToggle: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         isOn: Binding<Bool>
     ) {
         self.title = title
@@ -57,34 +58,36 @@ public struct SFKSettingsToggle: View {
     }
 
     public var body: some View {
+        let resolvedTint = theme.resolvedTint(tint)
         Toggle(isOn: $isOn) {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(tint.opacity(0.14))
+                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                        .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
                     Image(systemName: icon)
-                        .font(.caption.bold())
-                        .foregroundStyle(tint)
+                        .font(theme.typography.iconFont)
+                        .foregroundStyle(resolvedTint)
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
         }
         .toggleStyle(.switch)
-        .tint(tint)
+        .tint(theme.resolvedToggleTint(tint))
     }
 }
 
@@ -105,6 +108,7 @@ public struct SFKSettingsToggle: View {
 /// SFKSettingsToggleRow(item: MyToggleItem(), isOn: $isEnabled)
 /// ```
 public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let item: Item
     @Binding private var isOn: Bool
@@ -122,34 +126,37 @@ public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
     }
 
     public var body: some View {
+        let resolvedTint = theme.resolvedItemTint(item.tint)
+        let resolvedToggleTint = theme.colors.toggleOnTint ?? resolvedTint
         Toggle(isOn: $isOn) {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(item.tint.opacity(0.14))
+                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                        .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
                     Image(systemName: item.icon)
-                        .font(.caption.bold())
-                        .foregroundStyle(item.tint)
+                        .font(theme.typography.iconFont)
+                        .foregroundStyle(resolvedTint)
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(item.title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(item.subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
         }
         .toggleStyle(.switch)
-        .tint(item.tint)
+        .tint(resolvedToggleTint)
     }
 }
 

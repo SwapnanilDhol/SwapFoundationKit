@@ -23,11 +23,12 @@ import SwiftUI
 /// )
 /// ```
 public struct SFKSettingsDatePickerRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var selection: Date
     private let displayedComponents: DatePickerComponents
 
@@ -45,7 +46,7 @@ public struct SFKSettingsDatePickerRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         selection: Binding<Date>,
         displayedComponents: DatePickerComponents = [.date]
     ) {
@@ -58,20 +59,21 @@ public struct SFKSettingsDatePickerRow: View {
     }
 
     public var body: some View {
+        let resolvedTint = theme.resolvedTint(tint)
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 iconContainer
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -80,14 +82,15 @@ public struct SFKSettingsDatePickerRow: View {
                 Spacer()
 
                 Text(formattedDate)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.valueFont)
+                    .foregroundStyle(theme.colors.valueColor)
                     .multilineTextAlignment(.trailing)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -101,6 +104,7 @@ public struct SFKSettingsDatePickerRow: View {
                     )
                     .datePickerStyle(.graphical)
                     .labelsHidden()
+                    .tint(resolvedTint)
 
                     Spacer()
                 }
@@ -120,15 +124,16 @@ public struct SFKSettingsDatePickerRow: View {
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private var formattedDate: String {
@@ -160,11 +165,12 @@ public struct SFKSettingsDatePickerRow: View {
 /// )
 /// ```
 public struct SFKSettingsTimePickerRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var selection: Date
 
     @State private var isPresented = false
@@ -180,7 +186,7 @@ public struct SFKSettingsTimePickerRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         selection: Binding<Date>
     ) {
         self.title = title
@@ -191,20 +197,21 @@ public struct SFKSettingsTimePickerRow: View {
     }
 
     public var body: some View {
+        let resolvedTint = theme.resolvedTint(tint)
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 iconContainer
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -213,14 +220,15 @@ public struct SFKSettingsTimePickerRow: View {
                 Spacer()
 
                 Text(formattedTime)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.valueFont)
+                    .foregroundStyle(theme.colors.valueColor)
                     .multilineTextAlignment(.trailing)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -234,6 +242,7 @@ public struct SFKSettingsTimePickerRow: View {
                     )
                     .datePickerStyle(.wheel)
                     .labelsHidden()
+                    .tint(resolvedTint)
 
                     Spacer()
                 }
@@ -254,15 +263,16 @@ public struct SFKSettingsTimePickerRow: View {
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private var formattedTime: String {
@@ -286,10 +296,11 @@ public struct SFKSettingsTimePickerRow: View {
 /// )
 /// ```
 public struct SFKSettingsInlineDatePicker: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var selection: Date
     private let displayedComponents: DatePickerComponents
 
@@ -297,7 +308,7 @@ public struct SFKSettingsInlineDatePicker: View {
     public init(
         title: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         selection: Binding<Date>,
         displayedComponents: DatePickerComponents = [.date]
     ) {
@@ -309,22 +320,86 @@ public struct SFKSettingsInlineDatePicker: View {
     }
 
     public var body: some View {
-        HStack(spacing: 12) {
+        let resolvedTint = theme.resolvedTint(tint)
+        HStack(spacing: theme.metrics.rowSpacing) {
             ZStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(tint.opacity(0.14))
+                RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                    .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
                 Image(systemName: icon)
-                    .font(.caption.bold())
-                    .foregroundStyle(tint)
+                    .font(theme.typography.iconFont)
+                    .foregroundStyle(resolvedTint)
             }
-            .frame(width: 28, height: 28)
+            .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
             DatePicker(
                 title,
                 selection: $selection,
                 displayedComponents: displayedComponents
             )
+            .font(theme.typography.subtitleFont)
+            .tint(resolvedTint)
         }
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
+    }
+}
+
+// MARK: - Previews
+
+#Preview("SFKSettingsDatePickerRow") {
+    @Previewable @State var selectedDate = Date.now
+
+    List {
+        SFKSettingsDatePickerRow(
+            title: "Reminder Date",
+            subtitle: "Choose when the next reminder should be scheduled.",
+            icon: "calendar.badge.clock",
+            tint: .blue,
+            selection: $selectedDate,
+            displayedComponents: [.date]
+        )
+        SFKSettingsDatePickerRow(
+            title: "Delivery Window",
+            subtitle: "Pick both the date and time for the scheduled action.",
+            icon: "calendar.and.clock",
+            tint: .indigo,
+            selection: $selectedDate,
+            displayedComponents: [.date, .hourAndMinute]
+        )
+    }
+}
+
+#Preview("SFKSettingsTimePickerRow") {
+    @Previewable @State var selectedTime = Date.now
+
+    List {
+        SFKSettingsTimePickerRow(
+            title: "Daily Reminder",
+            subtitle: "Select the time used for recurring reminders.",
+            icon: "clock.fill",
+            tint: .orange,
+            selection: $selectedTime
+        )
+    }
+}
+
+#Preview("SFKSettingsInlineDatePicker") {
+    @Previewable @State var selectedDate = Date.now
+
+    List {
+        SFKSettingsInlineDatePicker(
+            title: "Start Date",
+            icon: "calendar",
+            tint: .green,
+            selection: $selectedDate,
+            displayedComponents: [.date]
+        )
+        SFKSettingsInlineDatePicker(
+            title: "Quiet Hours",
+            icon: "moon.stars.fill",
+            tint: .purple,
+            selection: $selectedDate,
+            displayedComponents: [.hourAndMinute]
+        )
     }
 }

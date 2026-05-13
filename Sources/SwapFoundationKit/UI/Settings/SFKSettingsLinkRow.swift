@@ -24,11 +24,12 @@ import UIKit
 /// )
 /// ```
 public struct SFKSettingsLinkRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     private let url: URL
 
     /// Creates a link settings row.
@@ -42,7 +43,7 @@ public struct SFKSettingsLinkRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         url: URL
     ) {
         self.title = title
@@ -56,17 +57,17 @@ public struct SFKSettingsLinkRow: View {
         Button {
             openURL()
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 iconContainer
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -75,28 +76,30 @@ public struct SFKSettingsLinkRow: View {
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private func openURL() {
@@ -120,6 +123,7 @@ public struct SFKSettingsLinkRow: View {
 /// )
 /// ```
 public struct SFKSettingsDestructiveRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
@@ -146,25 +150,25 @@ public struct SFKSettingsDestructiveRow: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.red.opacity(0.14))
+                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                        .fill(theme.colors.destructiveTint.opacity(theme.colors.iconBackgroundOpacity))
 
                     Image(systemName: icon)
-                        .font(.caption.bold())
-                        .foregroundStyle(.red)
+                        .font(theme.typography.iconFont)
+                        .foregroundStyle(theme.colors.destructiveTint)
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.red)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.destructiveTint)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -172,6 +176,7 @@ public struct SFKSettingsDestructiveRow: View {
 
                 Spacer()
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -197,11 +202,12 @@ public struct SFKSettingsDestructiveRow: View {
 /// )
 /// ```
 public struct SFKSettingsConfirmationRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     private let confirmationTitle: String
     private let confirmationMessage: String
     private let confirmTitle: String
@@ -225,7 +231,7 @@ public struct SFKSettingsConfirmationRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         confirmationTitle: String,
         confirmationMessage: String,
         confirmTitle: String = "Confirm",
@@ -247,17 +253,17 @@ public struct SFKSettingsConfirmationRow: View {
         Button {
             showConfirmation = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 iconContainer
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -266,9 +272,10 @@ public struct SFKSettingsConfirmationRow: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -283,15 +290,16 @@ public struct SFKSettingsConfirmationRow: View {
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 }
 

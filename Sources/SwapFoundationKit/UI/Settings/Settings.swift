@@ -22,6 +22,8 @@
 /// - `SFKSettingsDatePickerRow` - Date picker in sheet
 /// - `SFKSettingsTimePickerRow` - Time picker in sheet
 /// - `SFKSettingsInlineDatePicker` - Inline date picker
+/// - `SFKSettingsPickerRow` - Option picker presented from a settings row
+/// - `SFKSettingsPickerSheetRow` - Option picker presented in a sheet list
 /// - `SFKSettingsStepperRow` - Numeric stepper row
 /// - `SFKSettingsSliderRow` - Slider row
 /// - `SFKSettingsColorPickerRow` - Color picker in sheet
@@ -33,6 +35,8 @@
 /// ### Screen Components
 /// - `SFKSettingsScreen` - Full settings screen with sections
 /// - `SFKSettingsSectionConfiguration` - Section configuration
+/// - `SFKSettingsCustomSection` - Custom SwiftUI-backed section content
+/// - `SFKSettingsTheme` - Theme for colors, typography, and sizing
 ///
 /// ### Section Items
 /// - `SFKInformationSectionItem` - Standard info items (version, report bug, rate, share, privacy, terms)
@@ -92,7 +96,22 @@
 /// ```swift
 /// @State private var selectedUnit = "metric"
 ///
-/// // Use with SFKSettingsPickerSheetRow or confirmationDialog-based picker
+/// let options = [
+///     SFKSettingsPickerOption(id: "metric", label: "Metric"),
+///     SFKSettingsPickerOption(id: "imperial", label: "Imperial")
+/// ]
+///
+/// SFKSettingsPickerRow(
+///     title: "Units",
+///     subtitle: "Measurement system",
+///     icon: "ruler",
+///     tint: .green,
+///     options: options,
+///     selection: $selectedUnit,
+///     displayName: { id in
+///         options.first(where: { $0.id == id })?.label ?? id
+///     }
+/// )
 /// ```
 ///
 /// ### Stepper Row

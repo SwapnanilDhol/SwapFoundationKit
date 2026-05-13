@@ -24,11 +24,12 @@ import SwiftUI
 /// )
 /// ```
 public struct SFKSettingsStepperRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var value: Int
     private let range: ClosedRange<Int>
     private let step: Int
@@ -48,7 +49,7 @@ public struct SFKSettingsStepperRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         value: Binding<Int>,
         range: ClosedRange<Int>,
         step: Int = 1,
@@ -65,17 +66,17 @@ public struct SFKSettingsStepperRow: View {
     }
 
     public var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: theme.metrics.rowSpacing) {
             iconContainer
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                 Text(title)
-                    .font(.body)
-                    .foregroundStyle(.primary)
+                    .font(theme.typography.titleFont)
+                    .foregroundStyle(theme.colors.titleColor)
 
                 Text(subtitle)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.subtitleFont)
+                    .foregroundStyle(theme.colors.subtitleColor)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -86,8 +87,8 @@ public struct SFKSettingsStepperRow: View {
             HStack(spacing: 8) {
                 if let displayValue = displayValue {
                     Text(displayValue(value))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.valueFont)
+                        .foregroundStyle(theme.colors.valueColor)
                         .monospacedDigit()
                 }
 
@@ -100,18 +101,20 @@ public struct SFKSettingsStepperRow: View {
                 .labelsHidden()
             }
         }
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 }
 
@@ -131,11 +134,12 @@ public struct SFKSettingsStepperRow: View {
 /// )
 /// ```
 public struct SFKSettingsSliderRow: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     @Binding private var value: Double
     private let range: ClosedRange<Double>
     private let step: Double
@@ -155,7 +159,7 @@ public struct SFKSettingsSliderRow: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         value: Binding<Double>,
         range: ClosedRange<Double>,
         step: Double = 0.01,
@@ -173,17 +177,17 @@ public struct SFKSettingsSliderRow: View {
 
     public var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 iconContainer
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -193,27 +197,29 @@ public struct SFKSettingsSliderRow: View {
 
                 if let displayValue = displayValue {
                     Text(displayValue(value))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.valueFont)
+                        .foregroundStyle(theme.colors.valueColor)
                         .monospacedDigit()
                 }
             }
 
             Slider(value: $value, in: range, step: step)
-                .tint(tint)
+                .tint(theme.resolvedSliderTint(tint))
         }
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
     }
 
     private var iconContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tint.opacity(0.14))
+        let resolvedTint = theme.resolvedTint(tint)
+        return ZStack {
+            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
 
             Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
+                .font(theme.typography.iconFont)
+                .foregroundStyle(resolvedTint)
         }
-        .frame(width: 28, height: 28)
+        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 }
 

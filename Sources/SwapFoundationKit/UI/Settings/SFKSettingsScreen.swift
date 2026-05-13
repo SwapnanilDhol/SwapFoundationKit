@@ -93,6 +93,7 @@ public struct SFKSettingsScreen: View {
     private let headerContent: AnyView?
     private let customSections: [SFKSettingsCustomSection]
     private let sections: [SFKSettingsSectionConfiguration]
+    private let theme: SFKSettingsTheme
     private let onItemTap: SFKSettingsItemAction?
     private let rowTrailingBuilder: SFKSettingsTrailingBuilder?
     private let rowChevronBuilder: SFKSettingsChevronBuilder?
@@ -102,6 +103,7 @@ public struct SFKSettingsScreen: View {
     /// - Parameters:
     ///   - customSections: Arbitrary sections rendered before standard item sections.
     ///   - sections: Configuration for each section.
+    ///   - theme: Theme for colors, typography, and sizing.
     ///   - showChevron: Default chevron visibility for rows. Default is `true`.
     ///   - rowTrailingBuilder: Optional builder for row trailing content.
     ///   - rowChevronBuilder: Optional builder for per-row chevron visibility.
@@ -109,6 +111,7 @@ public struct SFKSettingsScreen: View {
     public init(
         customSections: [SFKSettingsCustomSection] = [],
         sections: [SFKSettingsSectionConfiguration],
+        theme: SFKSettingsTheme = SFKSettingsTheme(),
         showChevron: Bool = true,
         rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
         rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
@@ -117,6 +120,7 @@ public struct SFKSettingsScreen: View {
         self.headerContent = nil
         self.customSections = customSections
         self.sections = sections
+        self.theme = theme
         self.defaultShowChevron = showChevron
         self.onItemTap = onItemTap
         self.rowTrailingBuilder = rowTrailingBuilder
@@ -128,6 +132,7 @@ public struct SFKSettingsScreen: View {
     ///   - header: Any view to display as the header (e.g., ProBannerView).
     ///   - customSections: Arbitrary sections rendered before standard item sections.
     ///   - sections: Configuration for each section.
+    ///   - theme: Theme for colors, typography, and sizing.
     ///   - showChevron: Default chevron visibility for rows. Default is `true`.
     ///   - rowTrailingBuilder: Optional builder for row trailing content.
     ///   - rowChevronBuilder: Optional builder for per-row chevron visibility.
@@ -136,6 +141,7 @@ public struct SFKSettingsScreen: View {
         header: H,
         customSections: [SFKSettingsCustomSection] = [],
         sections: [SFKSettingsSectionConfiguration],
+        theme: SFKSettingsTheme = SFKSettingsTheme(),
         showChevron: Bool = true,
         rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
         rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
@@ -144,6 +150,7 @@ public struct SFKSettingsScreen: View {
         self.headerContent = AnyView(header)
         self.customSections = customSections
         self.sections = sections
+        self.theme = theme
         self.defaultShowChevron = showChevron
         self.onItemTap = onItemTap
         self.rowTrailingBuilder = rowTrailingBuilder
@@ -193,6 +200,7 @@ public struct SFKSettingsScreen: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .sfkSettingsTheme(theme)
     }
 
     @ViewBuilder
@@ -211,6 +219,36 @@ public struct SFKSettingsScreen: View {
 // MARK: - Preview
 
 #Preview("Settings Screen - All Row Types") {
+    @Previewable @State var notificationsEnabled = true
+    @Previewable @State var darkModeEnabled = false
+    @Previewable @State var selectedDate = Date.now
+    @Previewable @State var selectedTime = Date.now
+    @Previewable @State var units = "metric"
+    @Previewable @State var navigationMode = "walking"
+    @Previewable @State var alertCount = 3
+    @Previewable @State var opacity = 0.75
+    @Previewable @State var themeColor = Color.blue
+
+    let unitOptions = [
+        SFKSettingsPickerOption(id: "metric", label: "Metric"),
+        SFKSettingsPickerOption(id: "imperial", label: "Imperial")
+    ]
+
+    let navigationOptions = [
+        SFKSettingsPickerOption(id: "walking", label: "Walking"),
+        SFKSettingsPickerOption(id: "cycling", label: "Cycling"),
+        SFKSettingsPickerOption(id: "driving", label: "Driving")
+    ]
+
+    let previewTheme = SFKSettingsTheme(
+        colors: .init(
+            accent: .mint,
+            itemTintBehavior: .useAccent,
+            toggleOnTint: .mint,
+            sliderTint: .mint
+        )
+    )
+
     NavigationStack {
         Form {
             // Header
@@ -227,28 +265,122 @@ public struct SFKSettingsScreen: View {
 
             // Toggles
             Section {
-                TogglePreview()
+                SFKSettingsToggle(
+                    title: "Push Notifications",
+                    subtitle: "Receive notifications",
+                    icon: "bell.badge.fill",
+                    tint: .blue,
+                    isOn: $notificationsEnabled
+                )
+                SFKSettingsToggle(
+                    title: "Dark Mode",
+                    subtitle: "Use dark appearance",
+                    icon: "moon.fill",
+                    tint: .purple,
+                    isOn: $darkModeEnabled
+                )
             } header: {
                 Text("Toggles")
             }
 
             // Date/Time
             Section {
-                DatePickerPreview()
+                SFKSettingsDatePickerRow(
+                    title: "Reminder Date",
+                    subtitle: "When to remind",
+                    icon: "calendar",
+                    tint: .orange,
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
+                SFKSettingsTimePickerRow(
+                    title: "Alarm Time",
+                    subtitle: "When to alarm",
+                    icon: "clock.fill",
+                    tint: .red,
+                    selection: $selectedTime
+                )
+                SFKSettingsInlineDatePicker(
+                    title: "Inline Date",
+                    icon: "calendar.badge.plus",
+                    tint: .green,
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
             } header: {
                 Text("Date & Time")
             }
 
+            // Pickers
+            Section {
+                SFKSettingsPickerRow(
+                    title: "Units",
+                    subtitle: "Choose the default measurement system.",
+                    icon: "ruler.fill",
+                    tint: .green,
+                    options: unitOptions,
+                    selection: $units,
+                    displayName: { value in
+                        unitOptions.first(where: { $0.id == value })?.label ?? value
+                    },
+                    pickerStyle: .actionSheet
+                )
+                SFKSettingsPickerSheetRow(
+                    title: "Navigation Mode",
+                    subtitle: "Use a sheet picker for longer lists of options.",
+                    icon: "list.bullet.rectangle.portrait.fill",
+                    tint: .blue,
+                    options: navigationOptions,
+                    selection: $navigationMode,
+                    displayName: { value in
+                        navigationOptions.first(where: { $0.id == value })?.label ?? value
+                    }
+                )
+            } header: {
+                Text("Pickers")
+            }
+
             // Numeric
             Section {
-                NumericPreview()
+                SFKSettingsStepperRow(
+                    title: "Alert Count",
+                    subtitle: "How many times",
+                    icon: "bell.badge",
+                    tint: .red,
+                    value: $alertCount,
+                    range: 1...10,
+                    step: 1,
+                    displayValue: { "\($0) times" }
+                )
+                SFKSettingsSliderRow(
+                    title: "Opacity",
+                    subtitle: "Adjust transparency",
+                    icon: "circle.lefthalf.filled",
+                    tint: .blue,
+                    value: $opacity,
+                    range: 0...1,
+                    step: 0.01,
+                    displayValue: { "\(Int($0 * 100))%" }
+                )
             } header: {
                 Text("Numeric Controls")
             }
 
             // Colors
             Section {
-                ColorPreview()
+                SFKSettingsColorPickerRow(
+                    title: "Theme Color",
+                    subtitle: "Choose your color",
+                    icon: "paintpalette.fill",
+                    tint: .purple,
+                    selection: $themeColor
+                )
+                SFKSettingsInlineColorPicker(
+                    title: "Accent Color",
+                    icon: "paintbrush.fill",
+                    tint: themeColor,
+                    selection: $themeColor
+                )
             } header: {
                 Text("Colors")
             }
@@ -310,114 +442,5 @@ public struct SFKSettingsScreen: View {
         }
         .navigationTitle("Settings Preview")
     }
-}
-
-// MARK: - Preview Components
-
-private struct TogglePreview: View {
-    @State private var enabled1 = true
-    @State private var enabled2 = false
-
-    var body: some View {
-        VStack(spacing: 16) {
-            SFKSettingsToggle(
-                title: "Push Notifications",
-                subtitle: "Receive notifications",
-                icon: "bell.badge.fill",
-                tint: .blue,
-                isOn: $enabled1
-            )
-            SFKSettingsToggle(
-                title: "Dark Mode",
-                subtitle: "Use dark appearance",
-                icon: "moon.fill",
-                tint: .purple,
-                isOn: $enabled2
-            )
-        }
-    }
-}
-
-private struct DatePickerPreview: View {
-    @State private var date = Date()
-    @State private var time = Date()
-
-    var body: some View {
-        VStack(spacing: 16) {
-            SFKSettingsDatePickerRow(
-                title: "Reminder Date",
-                subtitle: "When to remind",
-                icon: "calendar",
-                tint: .orange,
-                selection: $date,
-                displayedComponents: [.date]
-            )
-            SFKSettingsTimePickerRow(
-                title: "Alarm Time",
-                subtitle: "When to alarm",
-                icon: "clock.fill",
-                tint: .red,
-                selection: $time
-            )
-            SFKSettingsInlineDatePicker(
-                title: "Inline Date",
-                icon: "calendar.badge.plus",
-                tint: .green,
-                selection: $date,
-                displayedComponents: [.date]
-            )
-        }
-    }
-}
-
-private struct NumericPreview: View {
-    @State private var count = 3
-    @State private var opacity: Double = 0.75
-
-    var body: some View {
-        VStack(spacing: 16) {
-            SFKSettingsStepperRow(
-                title: "Alert Count",
-                subtitle: "How many times",
-                icon: "bell.badge",
-                tint: .red,
-                value: $count,
-                range: 1...10,
-                step: 1,
-                displayValue: { "\($0) times" }
-            )
-            SFKSettingsSliderRow(
-                title: "Opacity",
-                subtitle: "Adjust transparency",
-                icon: "circle.lefthalf.filled",
-                tint: .blue,
-                value: $opacity,
-                range: 0...1,
-                step: 0.01,
-                displayValue: { "\(Int($0 * 100))%" }
-            )
-        }
-    }
-}
-
-private struct ColorPreview: View {
-    @State private var color = Color.blue
-
-    var body: some View {
-        VStack(spacing: 16) {
-            SFKSettingsColorPickerRow(
-                title: "Theme Color",
-                subtitle: "Choose your color",
-                icon: "paintpalette.fill",
-                tint: .purple,
-                selection: $color
-            )
-            SFKSettingsInlineColorPicker(
-                title: "Accent Color",
-                icon: "paintbrush.fill",
-                tint: color,
-                selection: $color
-            )
-        }
-    }
+    .sfkSettingsTheme(previewTheme)
 }

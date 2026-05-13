@@ -40,11 +40,12 @@ public struct SFKSettingsPickerOption: Identifiable, Hashable {
 /// )
 /// ```
 public struct SFKSettingsPickerRow<Selection: Hashable>: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     private let options: [SFKSettingsPickerOption]
     @Binding private var selection: Selection
     private let displayName: (Selection) -> String
@@ -66,7 +67,7 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         options: [SFKSettingsPickerOption],
         selection: Binding<Selection>,
         displayName: @escaping (Selection) -> String,
@@ -86,25 +87,25 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(tint.opacity(0.14))
+                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                        .fill(theme.resolvedTint(tint).opacity(theme.colors.iconBackgroundOpacity))
 
                     Image(systemName: icon)
-                        .font(.caption.bold())
-                        .foregroundStyle(tint)
+                        .font(theme.typography.iconFont)
+                        .foregroundStyle(theme.resolvedTint(tint))
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -113,33 +114,88 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
                 Spacer()
 
                 Text(displayName(selection))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.valueFont)
+                    .foregroundStyle(theme.colors.valueColor)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
-        .confirmationDialog(title, isPresented: $isPresented, titleVisibility: .visible) {
-            ForEach(options) { option in
-                Button(option.label) {
-                    selectOption(option)
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text(subtitle)
-        }
+        .modifier(
+            SFKPickerPresentationModifier(
+                isPresented: $isPresented,
+                pickerStyle: pickerStyle,
+                title: title,
+                subtitle: subtitle,
+                options: options,
+                onSelect: selectOption
+            )
+        )
     }
 
     private func selectOption(_ option: SFKSettingsPickerOption) {
-        // The option ID should match the selection type
-        if let typedOption = option as? Selection as? SFKSettingsPickerOption,
-           let stringId = typedOption.id as? Selection {
-            selection = stringId
+        guard let typedSelection = option.id as? Selection else {
+            return
+        }
+        selection = typedSelection
+    }
+}
+
+private struct SFKPickerPresentationModifier: ViewModifier {
+    @Environment(\.sfkSettingsTheme) private var theme
+    @Binding var isPresented: Bool
+    let pickerStyle: SFKPickerStyle
+    let title: String
+    let subtitle: String
+    let options: [SFKSettingsPickerOption]
+    let onSelect: (SFKSettingsPickerOption) -> Void
+
+    func body(content: Content) -> some View {
+        switch pickerStyle {
+        case .actionSheet:
+            content.confirmationDialog(title, isPresented: $isPresented, titleVisibility: .visible) {
+                ForEach(options) { option in
+                    Button(option.label) {
+                        onSelect(option)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(subtitle)
+            }
+        case .sheet:
+            content.sheet(isPresented: $isPresented) {
+                NavigationStack {
+                    List {
+                        ForEach(options) { option in
+                            Button {
+                                onSelect(option)
+                                isPresented = false
+                            } label: {
+                                HStack {
+                                    Text(option.label)
+                                        .foregroundStyle(theme.colors.titleColor)
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle(title)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                isPresented = false
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.medium, .large])
+            }
         }
     }
 }
@@ -154,11 +210,12 @@ public enum SFKPickerStyle {
 
 /// A settings row that presents a picker in a sheet with a List.
 public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
+    @Environment(\.sfkSettingsTheme) private var theme
 
     private let title: String
     private let subtitle: String
     private let icon: String
-    private let tint: Color
+    private let tint: Color?
     private let options: [SFKSettingsPickerOption]
     @Binding private var selection: Selection
     private let displayName: (Selection) -> String
@@ -170,7 +227,7 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
         title: String,
         subtitle: String,
         icon: String,
-        tint: Color,
+        tint: Color? = nil,
         options: [SFKSettingsPickerOption],
         selection: Binding<Selection>,
         displayName: @escaping (Selection) -> String
@@ -188,25 +245,25 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(tint.opacity(0.14))
+                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
+                        .fill(theme.resolvedTint(tint).opacity(theme.colors.iconBackgroundOpacity))
 
                     Image(systemName: icon)
-                        .font(.caption.bold())
-                        .foregroundStyle(tint)
+                        .font(theme.typography.iconFont)
+                        .foregroundStyle(theme.resolvedTint(tint))
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                     Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
+                        .font(theme.typography.titleFont)
+                        .foregroundStyle(theme.colors.titleColor)
 
                     Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(theme.colors.subtitleColor)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -215,13 +272,14 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
                 Spacer()
 
                 Text(displayName(selection))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.valueFont)
+                    .foregroundStyle(theme.colors.valueColor)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(theme.typography.accessoryFont)
+                    .foregroundStyle(theme.colors.accessoryColor)
             }
+            .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -235,11 +293,11 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
                         } label: {
                             HStack {
                                 Text(option.label)
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(theme.colors.titleColor)
                                 Spacer()
                                 if isSelected(option) {
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(.tint)
+                                        .foregroundStyle(theme.colors.accent)
                                 }
                             }
                         }
@@ -260,18 +318,61 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
     }
 
     private func isSelected(_ option: SFKSettingsPickerOption) -> Bool {
-        guard let stringId = option.id as? String,
-              let stringSelection = selection as? String else {
+        guard let stringSelection = selection as? String else {
             return false
         }
-        return stringId == stringSelection
+        return option.id == stringSelection
     }
 
     private func selectOption(_ option: SFKSettingsPickerOption) {
-        guard let stringId = option.id as? String,
-              let typedSelection = stringId as? Selection else {
+        guard let typedSelection = option.id as? Selection else {
             return
         }
         selection = typedSelection
+    }
+}
+
+// MARK: - Previews
+
+private let previewPickerOptions = [
+    SFKSettingsPickerOption(id: "metric", label: "Metric"),
+    SFKSettingsPickerOption(id: "imperial", label: "Imperial"),
+    SFKSettingsPickerOption(id: "customary", label: "US Customary")
+]
+
+#Preview("SFKSettingsPickerRow") {
+    @Previewable @State var selection = "metric"
+
+    List {
+        SFKSettingsPickerRow(
+            title: "Units",
+            subtitle: "Choose the measurement system used across the app.",
+            icon: "ruler.fill",
+            tint: .green,
+            options: previewPickerOptions,
+            selection: $selection,
+            displayName: { id in
+                previewPickerOptions.first(where: { $0.id == id })?.label ?? id
+            },
+            pickerStyle: .actionSheet
+        )
+    }
+}
+
+#Preview("SFKSettingsPickerSheetRow") {
+    @Previewable @State var selection = "imperial"
+
+    List {
+        SFKSettingsPickerSheetRow(
+            title: "Default Units",
+            subtitle: "Present a full sheet when you have a longer options list.",
+            icon: "list.bullet.rectangle.fill",
+            tint: .blue,
+            options: previewPickerOptions,
+            selection: $selection,
+            displayName: { id in
+                previewPickerOptions.first(where: { $0.id == id })?.label ?? id
+            }
+        )
     }
 }

@@ -54,6 +54,7 @@ targets: [
 ```
 
 Ads setup: see [Docs/guides/google-mobile-ads.md](Docs/guides/google-mobile-ads.md)
+Settings UI guide: see [Docs/guides/settings.md](Docs/guides/settings.md)
 
 ---
 
