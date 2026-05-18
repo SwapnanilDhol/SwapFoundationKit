@@ -98,6 +98,7 @@ public struct SFKSettingsScreen: View {
     private let rowTrailingBuilder: SFKSettingsTrailingBuilder?
     private let rowChevronBuilder: SFKSettingsChevronBuilder?
     private let defaultShowChevron: Bool
+    private let auraColor: Color?
 
     /// Creates a settings screen without a header.
     /// - Parameters:
@@ -113,6 +114,7 @@ public struct SFKSettingsScreen: View {
         sections: [SFKSettingsSectionConfiguration],
         theme: SFKSettingsTheme = SFKSettingsTheme(),
         showChevron: Bool = true,
+        auraColor: Color? = nil,
         rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
         rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
         onItemTap: @escaping SFKSettingsItemAction
@@ -122,6 +124,7 @@ public struct SFKSettingsScreen: View {
         self.sections = sections
         self.theme = theme
         self.defaultShowChevron = showChevron
+        self.auraColor = auraColor
         self.onItemTap = onItemTap
         self.rowTrailingBuilder = rowTrailingBuilder
         self.rowChevronBuilder = rowChevronBuilder
@@ -143,6 +146,7 @@ public struct SFKSettingsScreen: View {
         sections: [SFKSettingsSectionConfiguration],
         theme: SFKSettingsTheme = SFKSettingsTheme(),
         showChevron: Bool = true,
+        auraColor: Color? = nil,
         rowTrailingBuilder: SFKSettingsTrailingBuilder? = nil,
         rowChevronBuilder: SFKSettingsChevronBuilder? = nil,
         onItemTap: @escaping SFKSettingsItemAction
@@ -152,12 +156,37 @@ public struct SFKSettingsScreen: View {
         self.sections = sections
         self.theme = theme
         self.defaultShowChevron = showChevron
+        self.auraColor = auraColor
         self.onItemTap = onItemTap
         self.rowTrailingBuilder = rowTrailingBuilder
         self.rowChevronBuilder = rowChevronBuilder
     }
 
     public var body: some View {
+        Group {
+            if let auraColor {
+                ZStack(alignment: .top) {
+                    TopAuraBackground(
+                        glowColor: auraColor,
+                        opacity: 0.22,
+                        blurRadius: 40,
+                        bandHeight: 320
+                    )
+                    .allowsHitTesting(false)
+
+                    formContent
+                        .scrollContentBackground(.hidden)
+                }
+            } else {
+                formContent
+            }
+        }
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .sfkSettingsTheme(theme)
+    }
+
+    private var formContent: some View {
         Form {
             if let header = headerContent {
                 Section {
@@ -179,6 +208,7 @@ public struct SFKSettingsScreen: View {
                         Text(footer)
                     }
                 }
+                .listRowBackground(Color.clear)
             }
 
             ForEach(sections) { section in
@@ -196,11 +226,9 @@ public struct SFKSettingsScreen: View {
                         Text(footer)
                     }
                 }
+                .listRowBackground(Color.clear)
             }
         }
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
-        .sfkSettingsTheme(theme)
     }
 
     @ViewBuilder

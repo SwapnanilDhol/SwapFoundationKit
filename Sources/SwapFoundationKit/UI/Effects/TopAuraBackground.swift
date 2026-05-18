@@ -53,6 +53,27 @@ public struct TopAuraBackground: View {
         self.verticalOffset = verticalOffset
     }
 
+    /// Convenience initializer with a simplified 4-parameter API.
+    public init(
+        glowColor: Color = Color(red: 0.24, green: 0.56, blue: 1.0),
+        opacity: Double = 0.25,
+        blurRadius: CGFloat = 40,
+        bandHeight: CGFloat = 200
+    ) {
+        self.baseColor = Color(.systemGroupedBackground)
+        self.glowColor = glowColor
+        self.secondaryGlowColor = glowColor.opacity(0.6)
+        self.primaryOpacity = opacity
+        self.secondaryOpacity = opacity * 0.4
+        self.primaryHeight = bandHeight * 1.2
+        self.secondaryHeight = bandHeight
+        self.startRadius = 24
+        self.endRadius = bandHeight * 1.6
+        self.primaryBlurRadius = blurRadius
+        self.secondaryBlurRadius = blurRadius * 0.6
+        self.verticalOffset = -92
+    }
+
     public var body: some View {
         ZStack(alignment: .top) {
             baseColor
