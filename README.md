@@ -2,73 +2,28 @@
 
 A comprehensive Swift package providing essential utilities, extensions, UI components, and services for iOS development.
 
-## Quick Navigation
-
-| Section | Description |
-|---------|-------------|
-| [Requirements](#requirements) | Platform and tooling requirements |
-| [Installation](#installation) | SPM setup instructions |
-| [Quick Start](#quick-start) | Framework initialization |
-| [Documentation](Docs/README.md) | Full documentation index |
-| [Migration Guide](Docs/migration/migration-guide.md) | Migrate a host app to SFK |
-| [Audit Catalog](Docs/migration/catalog.yaml) | 48 capabilities for auditing host apps |
-| [Testing](#testing) | How to run tests |
-| [Support](#support) | Issues, discussions, contact |
-
----
-
 ## Requirements
 
 - **iOS**: 17.0+
 - **Swift**: 5.9+
-- **Xcode**: 15.0+
-- **Dependencies (core)**: Toast-Swift (2.1.3)
-- **Optional**: `SwapFoundationKitGoogleMobileAds` product + Google Mobile Ads **13.1.0**
-
----
+- **Dependencies (core)**: [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3
+- **Optional**: `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.1.0
 
 ## Installation
 
-### Swift Package Manager
-
-1. In Xcode: **File** → **Add Package Dependencies**
-2. Enter: `https://github.com/SwapnanilDhol/SwapFoundationKit`
-3. Select version and click **Add Package**
-
-Or in `Package.swift`:
-
 ```swift
+// Package.swift
 dependencies: [
     .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "1.0.0")
 ],
 targets: [
-    .target(
-        name: "YourApp",
-        dependencies: [
-            .product(name: "SwapFoundationKit", package: "SwapFoundationKit"),
-            // Optional — only if you show ads:
-            .product(name: "SwapFoundationKitGoogleMobileAds", package: "SwapFoundationKit"),
-        ]
-    ),
+    .target(name: "YourApp", dependencies: [
+        .product(name: "SwapFoundationKit", package: "SwapFoundationKit"),
+    ]),
 ]
 ```
 
-Ads setup: see [Docs/guides/google-mobile-ads.md](Docs/guides/google-mobile-ads.md)
-Settings UI guide: see [Docs/guides/settings.md](Docs/guides/settings.md)
-
----
-
-## GitHub / CI Usage
-
-The package graph uses remote GitHub URLs only — safe for CI and downstream consumers.
-
-For local development: use Xcode's local package override flow, then revert to the GitHub URL before committing.
-
----
-
 ## Quick Start
-
-Initialize the framework in your `App` struct:
 
 ```swift
 import SwapFoundationKit
@@ -85,11 +40,8 @@ struct MyApp: App {
             enableWatchConnectivity: true,
             enableAnalytics: true,
             enableItemSync: true,
-            enableNetworking: true,
-            networkTimeout: 30.0,
-            networkLogLevel: .info
+            enableNetworking: true
         )
-
         Task {
             try? await SwapFoundationKit.shared.start(with: config)
             await ExchangeRateManager.shared.start()
@@ -102,68 +54,50 @@ struct MyApp: App {
 }
 ```
 
----
+## Module Index
 
-## Migrating a Host App
+| Module | Description |
+|--------|-------------|
+| [Core](Sources/SwapFoundationKit/Core/README.md) | Networking, security, backup, configuration |
+| [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, toasts, files, location, pro gating, notifications |
+| [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
+| [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |
+| [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Debouncer, Throttler, environment detection, launch arguments |
+| [Currency](Sources/SwapFoundationKit/Currency/README.md) | 35 currencies with flags/symbols, formatting, sorting, exchange rates |
+| [ImageProcessor](Sources/SwapFoundationKit/ImageProcessor/README.md) | Image resize, filters, caching, JPEG compression |
+| [ItemSync](Sources/SwapFoundationKit/ItemSync/README.md) | App Group data sync for widgets and extensions |
+| [WatchSync](Sources/SwapFoundationKit/WatchSync/README.md) | Type-safe Watch Connectivity transport |
+| [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
+| [Compatibility](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
+| [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |
 
-See [Docs/migration/migration-guide.md](Docs/migration/migration-guide.md) for the full migration guide.
+## Documentation
 
-**Quick audit workflow**:
-1. Read [Docs/migration/catalog.yaml](Docs/migration/catalog.yaml) for 48 capabilities
-2. Start with `audit_tier: exact` items for highest confidence
-3. Replace redundant implementations with SFK equivalents
-4. Run tests after each migration
+| Resource | Description |
+|----------|-------------|
+| [Docs/README.md](Docs/README.md) | Documentation index |
+| [Docs/capabilities.yaml](Docs/capabilities.yaml) | Agent-first feature discovery catalog |
+| [Docs/migration/catalog.yaml](Docs/migration/catalog.yaml) | Audit catalog for host-app overlap detection |
+| [Docs/migration/migration-guide.md](Docs/migration/migration-guide.md) | Step-by-step migration guide |
+| [Docs/guides/](Docs/guides/) | In-depth guides (networking, ads, onboarding, settings) |
 
----
+## Agent Workflow
 
-## Key Capabilities
+For LLM agents working with this package:
 
-### Core Services
-- **Haptics**: `HapticsHelper` — impact, notification, selection feedback
-- **Logging**: `Logger` — configurable with analytics integration
-- **Analytics**: `AnalyticsManager` — protocol-based fan-out to providers
-- **Networking**: `HTTPClient` (modern async/await) or `NetworkService` (reachability)
-- **Security**: `SecurityService` — encryption, keychain, hashing
-- **Backup**: `BackupService` — data export and restore
-
-### UI Components
-- **Buttons**: `SFKButton`, `SFKButtonConfigurator` with presets
-- **Settings**: Full settings module — `SFKSettingsScreen`, 14+ row types
-- **Onboarding**: `SFKChipFlowLayout`, `SFKSelectableChip`, `SFKSegmentedProgress`
-- **Pickers**: `SFKItemPickerView` for single/multi-select
-- **Glass wrappers**: `.glassCompat()`, `.glassProminentCompat()`, `.glassEffectCompat()`
-
-### Data Sync
-- **ItemSync**: Sync data between app, widgets, and extensions
-- **WatchSync**: Type-safe Watch connectivity transport
-
-### Extensions
-- **Date**: Formatting, components, manipulation
-- **String**: Validation, manipulation, hashing
-- **UIColor**: Hex colors, manipulation
-- **Collection**: Safe subscript, chunking
-
-Full API reference: see [Docs/README.md](Docs/README.md)
-
----
-
-## Testing
-
-```bash
-cd /path/to/SwapFoundationKit
-xcodebuild test -scheme SwapFoundationKit -destination 'platform=iOS Simulator,name=iPhone 16'
-```
-
----
+| File | Purpose |
+|------|---------|
+| [AGENTS.md](AGENTS.md) | Package-traveling workflow document |
+| [SKILL.md](SKILL.md) | Environment-specific trigger + quick lookup |
+| [Docs/capabilities.yaml](Docs/capabilities.yaml) | Check SFK before building host-app features |
+| [Docs/development/feature-discovery.md](Docs/development/feature-discovery.md) | Feature discovery workflow |
 
 ## Architecture
 
 - **Protocol-Oriented**: Easy to implement, test, and extend
 - **Modern Swift**: async/await, actors, Swift concurrency
-- **Modular**: Core, Services, UI, Extensions, Utilities
-- **Comprehensive**: Well-tested with mock support
-
----
+- **Modular**: 12 subdirectories with clear boundaries
+- **SFK prefix**: Public UI types use `SFK` prefix; protocols and services do not
 
 ## Support
 

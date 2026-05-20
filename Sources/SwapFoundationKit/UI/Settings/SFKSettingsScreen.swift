@@ -208,7 +208,7 @@ public struct SFKSettingsScreen: View {
                         Text(footer)
                     }
                 }
-                .listRowBackground(Color.clear)
+                .listRowBackground(rowBackground)
             }
 
             ForEach(sections) { section in
@@ -226,8 +226,16 @@ public struct SFKSettingsScreen: View {
                         Text(footer)
                     }
                 }
-                .listRowBackground(Color.clear)
+                .listRowBackground(rowBackground)
             }
+        }
+    }
+
+    private var rowBackground: some View {
+        if auraColor != nil {
+            Color(.secondarySystemGroupedBackground)
+        } else {
+            Color(.systemGroupedBackground)
         }
     }
 

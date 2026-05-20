@@ -1,0 +1,437 @@
+version: 2
+module: SwapFoundationKit
+last_reviewed: "2026-05-20"
+purpose: >
+  Agent-first capability index for host-app feature development. Use this file
+  before implementing new UI, utilities, or app infrastructure in a host app.
+rules:
+  - Check this catalog before building any reusable UI, utility, or infrastructure feature in a host app.
+  - Prefer documented public API over copying code from source files.
+  - Keep app-specific business rules, domain models, navigation, and flows in the host app.
+  - Use SFK directly when the capability is generic and the host app does not need intentional visual or behavioral divergence.
+  - If SFK only provides a low-level primitive, keep the higher-level app facade in the host app and place SFK underneath it.
+domains:
+  - id: settings
+    priority: 1
+    summary: Shared settings screen shell, rows, interactive controls, built-in info/developer sections, and theme injection.
+    when_to_check:
+      - Building a settings page
+      - Refactoring app preferences or about screens
+      - Adding toggles, pickers, color settings, or destructive settings actions
+    prefer_when:
+      - The UI is a standard iOS settings form
+      - The app wants one shared settings theme across rows and controls
+      - The screen mixes app-specific rows with reusable info/developer sections
+    keep_in_host_app_when:
+      - The app has subscription logic, coordinator routing, or feature gating specific to its product
+      - The app intentionally diverges from SFK's settings presentation
+    public_api:
+      - SFKSettingsScreen
+      - SFKSettingsTheme
+      - SFKSettingsSectionConfiguration
+      - SFKSettingsCustomSection
+      - SettingsItem
+      - SFKSettingsRow
+      - SFKSettingsLabel
+      - SFKSettingsToggle
+      - SFKSettingsToggleRow
+      - SFKSettingsDatePickerRow
+      - SFKSettingsTimePickerRow
+      - SFKSettingsInlineDatePicker
+      - SFKSettingsPickerRow
+      - SFKSettingsPickerSheetRow
+      - SFKSettingsStepperRow
+      - SFKSettingsSliderRow
+      - SFKSettingsColorPickerRow
+      - SFKSettingsInlineColorPicker
+      - SFKSettingsLinkRow
+      - SFKSettingsDestructiveRow
+      - SFKSettingsConfirmationRow
+      - SFKInformationSectionItem
+      - SFKDeveloperSectionItem
+      - SFKSettingsActionHandler
+    docs:
+      - Docs/guides/settings.md
+      - Docs/reference/settings-integration-checklist.md
+    examples:
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsScreen.swift
+      - SwapFoundationKitHost/SwapFoundationKitHost/SettingsExamplesView.swift
+    host_app_triggers:
+      - SettingsView
+      - SettingsScreen
+      - preferences
+      - about screen
+      - toggle row
+      - color picker
+
+  - id: buttons
+    priority: 2
+    summary: Reusable SFK button components and button configurators, including close/dismiss patterns.
+    when_to_check:
+      - Building primary/secondary actions
+      - Adding close buttons to sheets or onboarding
+      - Standardizing repeated button styling
+    prefer_when:
+      - The app needs consistent reusable button styling
+      - The interaction pattern is generic rather than feature-specific
+    keep_in_host_app_when:
+      - The app's design system intentionally diverges from SFK button presentation
+      - The button owns product-specific loading or domain logic beyond presentation
+    public_api:
+      - SFKButton
+      - SFKButtonConfigurator
+    docs:
+      - Docs/migration/migration-guide.md
+    examples:
+      - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
+      - Sources/SwapFoundationKit/UI/Buttons/SFKButtonConfigurator.swift
+    host_app_triggers:
+      - primary button
+      - CTA
+      - dismiss button
+      - close button
+
+  - id: onboarding
+    priority: 3
+    summary: Reusable onboarding components for chips, progress, secondary actions, typography, and cards.
+    when_to_check:
+      - Building multi-step onboarding
+      - Adding chip selectors or story-style progress indicators
+      - Standardizing onboarding typography or card shells
+    prefer_when:
+      - The flow needs reusable onboarding primitives rather than a one-off screen
+      - The host app wants shared onboarding building blocks but keeps its own state machine
+    keep_in_host_app_when:
+      - The onboarding is deeply product-specific and only borrows some low-level UI patterns
+    public_api:
+      - SFKChipFlowLayout
+      - SFKSelectableChip
+      - SFKChipItem
+      - SFKSegmentedProgress
+      - SFKSecondaryButton
+      - SFKTypography
+      - SFKCard
+    docs:
+      - Docs/guides/onboarding.md
+    examples:
+      - Sources/SwapFoundationKit/UI/Onboarding/SFKSelectableChip.swift
+      - Sources/SwapFoundationKit/UI/Onboarding/SFKSegmentedProgress.swift
+    host_app_triggers:
+      - onboarding
+      - multi-step flow
+      - chip selector
+      - segmented progress
+
+  - id: pickers
+    priority: 4
+    summary: Generic item picker screen and settings pickers for single-select or multi-select flows.
+    when_to_check:
+      - Building a searchable chooser or modal picker
+      - Replacing custom list-based selection sheets
+      - Adding option pickers to settings
+    prefer_when:
+      - The selection model is generic and can conform to SFK protocols
+      - The app needs reusable modal picking UI
+    keep_in_host_app_when:
+      - The picker has feature-specific domain actions or complex filtering logic that must remain app-owned
+    public_api:
+      - SFKItemPickerView
+      - SFKPickableItem
+      - SFKPickableItemIconKind
+      - SFKItemPickerSelectionMode
+      - SFKSettingsPickerRow
+      - SFKSettingsPickerSheetRow
+    docs:
+      - Docs/migration/migration-guide.md
+      - Docs/guides/settings.md
+    examples:
+      - Sources/SwapFoundationKit/UI/ItemPicker/SFKItemPickerView.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsPickerRow.swift
+    host_app_triggers:
+      - picker
+      - selection sheet
+      - select item
+      - choose currency
+
+  - id: alerts
+    priority: 5
+    summary: Reusable alert and confirmation presentation helpers plus confirmation-style settings rows.
+    when_to_check:
+      - Building a generic confirmation dialog
+      - Replacing repeated UIKit/SwiftUI alert helpers
+      - Adding destructive confirmations in settings or utilities
+    prefer_when:
+      - The alert is a common reusable prompt pattern
+      - The host app wants centralized alert presentation
+    keep_in_host_app_when:
+      - The app has a custom design-system alert implementation or domain-specific orchestration
+    public_api:
+      - AlertPresenter
+      - SFKSettingsConfirmationRow
+      - SFKSettingsDestructiveRow
+    docs:
+      - Docs/migration/migration-guide.md
+      - Docs/guides/settings.md
+    examples:
+      - Sources/SwapFoundationKit/UI/AlertPresenter.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsLinkRow.swift
+    host_app_triggers:
+      - alert
+      - confirmation
+      - destructive action
+      - reset dialog
+
+  - id: sync_shared_storage
+    priority: 6
+    summary: Shared storage, widget sync, and Watch sync primitives for app data propagation.
+    when_to_check:
+      - Syncing data to widgets, extensions, or watch
+      - Replacing app-group file sync code
+      - Standardizing cross-target data propagation
+    prefer_when:
+      - The data is generic and serializable
+      - The app wants a reusable sync primitive beneath its domain layer
+    keep_in_host_app_when:
+      - The host app has domain conflict resolution or orchestration logic that should remain above SFK
+    public_api:
+      - ItemSync
+      - ItemSyncServiceFactory
+      - DataSyncService
+      - WatchSyncService
+      - WatchSyncOptions
+      - WatchSyncTransport
+    docs:
+      - Docs/migration/migration-guide.md
+    examples:
+      - Sources/SwapFoundationKit/ItemSync/ItemSyncServiceFactory.swift
+      - Sources/SwapFoundationKit/WatchSync/Core/WatchSyncOptions.swift
+    host_app_triggers:
+      - widget sync
+      - app group
+      - watch sync
+      - shared storage
+
+  - id: utilities
+    priority: 7
+    summary: Broad utility layer for haptics, logging, analytics, defaults, URLs, backup, file import/export, pasteboard, location, and foundational extensions.
+    when_to_check:
+      - Adding common app infrastructure
+      - Replacing thin wrappers around standard iOS utilities
+      - Looking for shared helpers before writing new utility code
+    prefer_when:
+      - The feature is generic and reusable across multiple apps
+      - The host app only needs a thin app-specific facade
+    keep_in_host_app_when:
+      - The utility owns compliance, billing, auth, or product-specific business logic
+    public_api:
+      - HapticsHelper
+      - Logger
+      - AnalyticsManager
+      - UserDefault
+      - AppLinkOpener
+      - BackupService
+      - FileExportService
+      - FileImportService
+      - PasteboardService
+      - LocationSearchService
+      - Bundle info plist extensions
+      - Date extensions
+      - String extensions
+      - Number extensions
+      - URL extensions
+      - Debouncer
+      - Throttler
+    docs:
+      - README.md
+      - Docs/migration/migration-guide.md
+      - Docs/migration/catalog.yaml
+    examples:
+      - SwapFoundationKitHost/SwapFoundationKitHost/HapticsExamplesView.swift
+      - SwapFoundationKitHost/SwapFoundationKitHost/UserDefaultExamplesView.swift
+      - SwapFoundationKitHost/SwapFoundationKitHost/AppLinkOpenerExamplesView.swift
+    host_app_triggers:
+      - haptics
+      - logging
+      - analytics
+      - user defaults
+      - app link
+      - backup
+      - import/export
+
+  - id: configuration_environment
+    priority: 8
+    summary: Compile-time environment detection, launch argument parsing, and rounded UIKit appearance configuration.
+    when_to_check:
+      - Setting up debug/release/testing behavior
+      - Parsing CLI flags for UI testing or Maestro automation
+      - Configuring global navigation bar and tab bar appearance with rounded typography
+      - Wrapping SwiftUI views in a rounded-font hosting controller
+    prefer_when:
+      - The app needs compile-time environment switching
+      - The app uses launch arguments for test automation
+      - The app wants a consistent rounded typography system
+    keep_in_host_app_when:
+      - The app has custom per-environment feature flags beyond basic compile-time detection
+      - The app has a custom design system not using rounded fonts
+    public_api:
+      - SFKAppEnvironment
+      - SFKLaunchArguments
+      - SFKAppearanceManager
+      - UIFont.roundedSystemFont(ofSize:weight:)
+      - SFKRoundedHostingController
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/Utilities/SFKAppEnvironment.swift
+      - Sources/SwapFoundationKit/Utilities/SFKLaunchArguments.swift
+      - Sources/SwapFoundationKit/UI/SFKAppearanceManager.swift
+      - Sources/SwapFoundationKit/UI/SFKRoundedHostingController.swift
+    host_app_triggers:
+      - environment
+      - launch arguments
+      - automation mode
+      - rounded font
+      - appearance
+      - hosting controller
+
+  - id: analytics_loggers
+    priority: 9
+    summary: Pre-built AnalyticsLogger implementations for Firebase, TelemetryDeck, and PostHog.
+    when_to_check:
+      - Adding analytics tracking
+      - Wiring up Firebase, TelemetryDeck, or PostHog
+      - Implementing AnalyticsLogger protocol
+    prefer_when:
+      - The app uses one of the three supported analytics providers
+      - The app wants a drop-in AnalyticsLogger for SFK's AnalyticsManager
+    keep_in_host_app_when:
+      - The app uses a different analytics provider
+      - The app needs custom setup or identification logic per logger
+    public_api:
+      - SFKFirebaseLogger
+      - SFKTelemetryLogger
+      - SFKPostHogLogger
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
+      - Sources/SwapFoundationKit/Services/Analytics/SFKTelemetryLogger.swift
+      - Sources/SwapFoundationKit/Services/Analytics/SFKPostHogLogger.swift
+    host_app_triggers:
+      - analytics logger
+      - firebase
+      - telemetrydeck
+      - posthog
+      - tracking
+
+  - id: pro_gating
+    priority: 10
+    summary: IAP feature-gating pattern with closure-based Pro status checking and automatic upsell sheet presentation.
+    when_to_check:
+      - Gating premium features behind in-app purchase
+      - Checking Pro status before allowing an action
+      - Presenting upsell sheets when a gated feature is accessed
+    prefer_when:
+      - The app has multiple Pro-gated features
+      - The app wants a consistent gating pattern
+    keep_in_host_app_when:
+      - The app's Pro gating is deeply tied to domain-specific analytics or UI
+    public_api:
+      - SFKProGate
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/Services/SFKProGate.swift
+    host_app_triggers:
+      - pro gate
+      - feature gating
+      - require pro
+      - show pro sheet
+      - is pro enabled
+
+  - id: notifications
+    priority: 11
+    summary: Generic UNUserNotificationCenter wrapper for authorization, posting, scheduling, badge management, and category registration.
+    when_to_check:
+      - Implementing local notifications
+      - Managing notification authorization
+      - Scheduling calendar-based reminders
+      - Managing app badge count
+    prefer_when:
+      - The app needs a simple notification API
+      - The app wants to avoid direct UNUserNotificationCenter boilerplate
+    keep_in_host_app_when:
+      - The app has complex notification scheduling tied to domain triggers
+    public_api:
+      - SFKNotificationService
+      - SFKNotificationAction
+      - SFKNotificationCategory
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/Services/SFKNotificationService.swift
+    host_app_triggers:
+      - notification
+      - push notification
+      - local notification
+      - badge
+      - UNUserNotificationCenter
+
+  - id: image_compression
+    priority: 12
+    summary: Image compression utility for resizing and JPEG compression with configurable max dimension and quality.
+    when_to_check:
+      - Compressing images for storage or upload
+      - Resizing images to a max dimension
+      - Reducing image file size for network transfer
+    prefer_when:
+      - The app needs simple JPEG compression
+      - The app wants configurable max dimension and quality
+    keep_in_host_app_when:
+      - The app needs format-specific compression (PNG, HEIC)
+    public_api:
+      - SFKImageCompressor
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/ImageProcessor/SFKImageCompressor.swift
+    host_app_triggers:
+      - image compressor
+      - compress image
+      - resize image
+      - jpeg
+
+  - id: async_collections
+    priority: 13
+    summary: Async extensions for Sequence (asyncReduce) and Dictionary (asyncMap).
+    when_to_check:
+      - Performing async operations over collections
+      - Replacing manual async for-loops with functional patterns
+    prefer_when:
+      - The app needs sequential async processing over collections
+    keep_in_host_app_when:
+      - The app needs concurrent processing (TaskGroup-based)
+    public_api:
+      - asyncReduce(_:_:)
+      - asyncMap(_:)
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/Extensions/Collection+Async.swift
+    host_app_triggers:
+      - async reduce
+      - async map
+      - async collection
+      - await forEach
+
+agent_workflow:
+  feature_first_sequence:
+    - Read Docs/capabilities.yaml first.
+    - Match the host-app request to one or more domains.
+    - Read the linked docs/examples for the matched domain before inspecting raw source.
+    - Decide one of: use SFK directly, wrap SFK in host-app code, or keep custom host-app code.
+    - Only implement custom code first if no documented SFK public API fits.
+  output_expectations:
+    - State which SFK domain(s) were checked.
+    - State which public API was chosen or why SFK was not chosen.
+    - If not using SFK, state the reason clearly.

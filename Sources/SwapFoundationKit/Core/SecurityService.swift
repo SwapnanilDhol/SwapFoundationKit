@@ -50,22 +50,22 @@ public final class SecurityService {
     
     // MARK: - Encryption/Decryption
     
-    /// Encrypts data using AES encryption
+    /// Encrypts data using AES encryption with a persistent key stored in the Keychain.
     /// - Parameter data: The data to encrypt
     /// - Returns: Encrypted data
     /// - Throws: SecurityError
     public func encrypt(_ data: Data) throws -> Data {
-        let key = try generateEncryptionKey()
+        let key = try persistentEncryptionKey()
         let encryptedData = try AESEncryption.encrypt(data, using: key)
         return encryptedData
     }
     
-    /// Decrypts data using AES decryption
+    /// Decrypts data using AES decryption with a persistent key stored in the Keychain.
     /// - Parameter encryptedData: The encrypted data
     /// - Returns: Decrypted data
     /// - Throws: SecurityError
     public func decrypt(_ encryptedData: Data) throws -> Data {
-        let key = try generateEncryptionKey()
+        let key = try persistentEncryptionKey()
         let decryptedData = try AESEncryption.decrypt(encryptedData, using: key)
         return decryptedData
     }
@@ -178,19 +178,29 @@ public final class SecurityService {
     }
     
     // MARK: - Private Methods
-    
-    private func generateEncryptionKey() throws -> Data {
-        // In a production app, you'd want to use a more sophisticated key generation
-        // and key derivation strategy
+
+    private static let encryptionKeyIdentifier = "com.swapfoundationkit.aes-key"
+
+    private func persistentEncryptionKey() throws -> Data {
+        if let existingKey = try? keychain.retrieve(forKey: Self.encryptionKeyIdentifier) {
+            return existingKey
+        }
+
         let keySize = kCCKeySizeAES256
         var key = [UInt8](repeating: 0, count: keySize)
         let status = SecRandomCopyBytes(kSecRandomDefault, keySize, &key)
-        
+
         guard status == errSecSuccess else {
             throw SecurityError.keyGenerationFailed
         }
-        
-        return Data(key)
+
+        let keyData = Data(key)
+        try keychain.store(
+            data: keyData,
+            forKey: Self.encryptionKeyIdentifier,
+            accessibility: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        )
+        return keyData
     }
 }
 

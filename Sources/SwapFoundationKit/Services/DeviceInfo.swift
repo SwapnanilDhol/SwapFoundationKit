@@ -14,7 +14,7 @@ import UIKit
 
 // MARK: - DeviceInfo
 
-enum DeviceInfo {
+public enum DeviceInfo {
     /// Returns the device model identifier (e.g., "iPhone15,2")
     static var deviceModelIdentifier: String {
         var systemInfo = utsname()

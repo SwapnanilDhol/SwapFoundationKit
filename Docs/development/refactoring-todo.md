@@ -61,17 +61,15 @@ Internal SFK improvements tracked for future work. These do not affect public AP
 
 ### 7. URL Hardcoding
 
-| Files | Recommendation |
-|-------|----------------|
-| `ExchangeRateManager.swift`, `AppMetaData.swift` | Extract URLs to constants |
-
-**Why**: Single source of truth for configuration values.
+| Status | Notes |
+|--------|-------|
+| Done | `ExchangeRateManager` URL extracted to `defaultExchangeRateURL` constant with configurable `init(exchangeRateURL:)`. `AppMetaData` still has some hardcoded fallbacks. |
 
 ### 8. String Extension Naming
 
-| Issue | Recommendation |
-|-------|----------------|
-| String validation naming inconsistencies | Standardize conventions across methods |
+| Status | Notes |
+|--------|-------|
+| Done | Removed `isEmail` alias, removed `removingWhitespaces` duplicate. |
 
 ### 9. UserDefaults File Naming
 
@@ -85,8 +83,20 @@ Internal SFK improvements tracked for future work. These do not affect public AP
 
 | # | Issue | Resolution |
 |---|-------|------------|
+| 7 | URL Hardcoding in `ExchangeRateManager.swift` | Extracted to `ExchangeRateManager.defaultExchangeRateURL` constant. Added `init(exchangeRateURL:)` for custom URLs. |
+| 8 | String Extension Naming | Removed `isEmail` alias (duplicate of `isValidEmail`). Removed `removingWhitespaces` (duplicate of `withoutWhitespace`). |
 | 2 | DateFormatter/Date+Extensions performance | Added CachedFormatters struct with cached DateFormatter, ISO8601, and RelativeDateTimeFormatter instances. Cached Calendar.current as private var. Reduced file from 469 to 296 lines. |
 | 1 | UIColor+.swift (434 lines) | Added RGBAColorComponents struct for structured component access. Made UIColor(hex:) return optional. Added Adjustment enum for type-safe color adjustments. Consolidated gradient and component methods. Reduced from 434 to 328 lines. |
+
+### New Additions (2026-05-20)
+
+| # | Capability | Description |
+|---|-----------|-------------|
+| A1 | SecurityService encryption fix | Replaced random-key-per-call `generateEncryptionKey()` with persistent Keychain-stored key via `persistentEncryptionKey()`. |
+| A2 | Access control audit | Made 6 internal types public: `DeviceInfo`, `Throttler`/`AsyncThrottler`, `JSONCodable`/`JSONCodingError`, `FileManager+`, `Result+`, `CGTypes+`. |
+| A3 | ExchangeRateManager enhancements | Added configurable URL init, 5-min cache TTL, exponential backoff retry (3 attempts), HTTP status validation. |
+| A4 | New capabilities extracted from host apps | Added 14 new public types: `SFKAppEnvironment`, `SFKLaunchArguments`, `SFKAppearanceManager`, `SFKRoundedHostingController`, `SFKProGate`, `SFKNotificationService`, `SFKFirebaseLogger`, `SFKTelemetryLogger`, `SFKPostHogLogger`, `SFKImageCompressor`, `Collection+Async`, enhanced `Currency` sorting/formatting, `Coordinator` dismiss/presentItemPicker. |
+| A5 | Host app duplicate cleanup | Deleted 14 duplicate files across PassMaker, SubscriptionTracker, and MoneyTracker. |
 
 ---
 

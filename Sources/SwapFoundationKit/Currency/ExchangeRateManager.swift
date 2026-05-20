@@ -17,22 +17,45 @@ private struct RatePair: Codable {
     let rate: Double
 }
 
-/// An actor-based manager for currency exchange rates.
+/// An actor-based manager for currency exchange rates fetched from the European Central Bank.
 public actor ExchangeRateManager: NSObject, XMLParserDelegate {
     public static let shared = ExchangeRateManager()
 
-    private let exchangeRateURL = URL(string: "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")!
+    public static let defaultExchangeRateURL = URL(
+        string: "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    )!
+
+    /// Maximum number of retry attempts when fetching rates fails.
+    private static let maxRetries = 3
+    /// Base delay for exponential backoff between retries.
+    private static let retryBaseDelay: TimeInterval = 1.0
+
+    private let exchangeRateURL: URL
     private let cacheFileName = "exchangeRatesCache.json"
+
+    /// Duration for which cached rates are considered valid before re-fetching.
+    /// Defaults to 5 minutes. Set to 0 or less to always re-fetch.
+    public var cacheValidityInterval: TimeInterval = 300
+
     private var cacheFileURL: URL {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return dir.appendingPathComponent(cacheFileName)
     }
 
+    private var lastFetchTime: Date?
     private(set) var exchangeRates = Currency.fallBackExchangeRates.rates
 
-    private override init() { }
+    private override init() {
+        self.exchangeRateURL = Self.defaultExchangeRateURL
+    }
 
-    /// Call this on app launch to load cached rates if available.
+    /// Creates a manager that fetches from a custom URL.
+    /// - Parameter exchangeRateURL: URL returning ECB-style XML.
+    public init(exchangeRateURL: URL) {
+        self.exchangeRateURL = exchangeRateURL
+    }
+
+    /// Loads cached rates if available and fresh, then fetches if stale.
     public func start() async {
         if let cached = await loadRatesFromCache() {
             Logger.info("Loaded exchange rates from cache")
@@ -41,23 +64,21 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
             Logger.info("No cached exchange rates found, using fallback rates")
             exchangeRates = Currency.fallBackExchangeRates.rates
         }
-        await cacheExchangeRates()
+        await fetchAndCacheExchangeRates()
     }
 
     /// Fetches and updates exchange rates from the ECB, then caches them.
-    private func cacheExchangeRates() async {
-        do {
-            let (data, _) = try await URLSession.shared.data(from: exchangeRateURL)
-            let parser = XMLParser(data: data)
-            parser.delegate = self
-            Logger.info("Parsing exchange rates from XML")
-            parser.parse()
-            Logger.info("Exchange rates parsed successfully")
-            await saveRatesToCache()
-            Logger.info("Exchange rates cached successfully")
-        } catch {
-            Logger.error("Failed to fetch exchange rates: \(error)")
+    /// Respects `cacheValidityInterval` — skips fetch if cache is still fresh.
+    public func fetchAndCacheExchangeRates() async {
+        if let lastFetch = lastFetchTime, cacheValidityInterval > 0 {
+            let elapsed = Date().timeIntervalSince(lastFetch)
+            if elapsed < cacheValidityInterval {
+                Logger.debug("Exchange rates cache still valid (fetched \(String(format: "%.0f", elapsed))s ago)")
+                return
+            }
         }
+
+        await performFetchWithRetry()
     }
 
     /// Converts a value from one currency to another.
@@ -74,6 +95,39 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
 
     public func convertToBaseCurrency(amount: Double, from currency: Currency) -> Double {
         return convert(value: amount, fromCurrency: currency, toCurrency: .EUR)
+    }
+
+    // MARK: - Fetch with Retry
+
+    private func performFetchWithRetry() async {
+        for attempt in 1...Self.maxRetries {
+            do {
+                try await fetchAndParse()
+                lastFetchTime = Date()
+                await saveRatesToCache()
+                Logger.info("Exchange rates fetched and cached successfully")
+                return
+            } catch {
+                Logger.warning("Exchange rate fetch attempt \(attempt)/\(Self.maxRetries) failed: \(error)")
+                if attempt < Self.maxRetries {
+                    let delay = Self.retryBaseDelay * pow(2.0, Double(attempt - 1))
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                }
+            }
+        }
+        Logger.error("All exchange rate fetch attempts failed")
+    }
+
+    private func fetchAndParse() async throws {
+        let (data, response) = try await URLSession.shared.data(from: exchangeRateURL)
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        let parser = XMLParser(data: data)
+        parser.delegate = self
+        guard parser.parse() else {
+            throw URLError(.cannotParseResponse)
+        }
     }
 
     // MARK: - XMLParserDelegate

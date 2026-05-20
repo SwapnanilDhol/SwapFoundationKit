@@ -163,6 +163,7 @@ public struct SFKSelectableChip: View {
                     lineWidth: 2
                 )
         )
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 
     /// Tint applied to the glass effect. Unselected chips carry only a faint

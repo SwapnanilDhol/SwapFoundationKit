@@ -126,6 +126,23 @@ public struct SFKButtonConfigurator {
         self.hapticStyle = hapticStyle
     }
 
+    // MARK: - Centralized Disabled Design Tokens
+
+    /// Standard neutral translucent background color for disabled buttons.
+    public static var disabledColor: Color {
+        Color(.systemGray4).opacity(0.3)
+    }
+
+    /// Standard secondary text color for disabled buttons.
+    public static var disabledTitleColor: Color {
+        .secondary
+    }
+
+    /// Standard muted secondary subtitle color for disabled buttons.
+    public static var disabledSubtitleColor: Color {
+        .secondary.opacity(0.8)
+    }
+
     /// A sensible default configuration for a prominent primary action.
     public static var primary: Self {
         Self()

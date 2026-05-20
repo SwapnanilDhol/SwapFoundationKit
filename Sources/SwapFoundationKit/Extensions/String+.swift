@@ -23,12 +23,11 @@ public extension String {
         !isEmpty && range(of: "[^a-zA-Z0-9]", options: .regularExpression) == nil
     }
 
-    /// Valid email format (alias: isEmail)
+    /// Valid email format
     var isValidEmail: Bool {
         let pattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
         return matches(regex: pattern)
     }
-    var isEmail: Bool { isValidEmail }
 
     // MARK: - Manipulation
 
@@ -39,9 +38,6 @@ public extension String {
     }
     var withoutWhitespace: String {
         components(separatedBy: .whitespacesAndNewlines).joined()
-    }
-    var removingWhitespaces: String {
-        replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "\n", with: "")
     }
 
     func truncated(to maxLength: Int, with suffix: String = "...") -> String {

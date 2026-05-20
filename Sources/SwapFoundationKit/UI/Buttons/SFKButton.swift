@@ -39,6 +39,7 @@ import SwiftUI
 /// }
 /// ```
 public struct SFKButton: View {
+    @Environment(\.isEnabled) private var isEnabled
     private let hapticsHelper = HapticsHelper()
     private let configuration: SFKButtonConfigurator
     private let action: () -> Void
@@ -109,7 +110,7 @@ public struct SFKButton: View {
             .padding(.horizontal, configuration.horizontalPadding)
             .padding(.vertical, configuration.verticalPadding)
             .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
-            .foregroundStyle(configuration.titleColor)
+            .foregroundStyle(resolvedTitleColor)
             .contentShape(Rectangle())
         }
         .disabled(configuration.isLoading)
@@ -134,15 +135,13 @@ public struct SFKButton: View {
                 if hasTextContent {
                     VStack(alignment: configuration.textAlignment, spacing: 2) {
                         if let title = configuration.title, !title.isEmpty {
-                            Text(title)
-                                .font(configuration.titleFont)
-                                .lineLimit(configuration.titleLineLimit)
+                            titleView(title)
                         }
 
                         if let subtitle = configuration.subtitle, !subtitle.isEmpty {
                             Text(subtitle)
                                 .font(configuration.subtitleFont)
-                                .foregroundStyle(configuration.subtitleColor)
+                                .foregroundStyle(resolvedSubtitleColor)
                                 .lineLimit(configuration.subtitleLineLimit)
                         }
                     }
@@ -161,7 +160,14 @@ public struct SFKButton: View {
         configuration.fullWidth && !configuration.isLoading
     }
 
+    private func titleView(_ title: String) -> some View {
+        Text(title)
+            .font(configuration.titleFont)
+            .lineLimit(configuration.titleLineLimit)
+    }
+
     private func triggerHapticIfNeeded() {
+        guard isEnabled else { return }
         switch configuration.hapticStyle {
         case .light:
             hapticsHelper.lightImpact()
@@ -173,6 +179,18 @@ public struct SFKButton: View {
             break
         }
     }
+
+    private var resolvedTitleColor: Color {
+        isEnabled ? configuration.titleColor : SFKButtonConfigurator.disabledTitleColor
+    }
+
+    private var resolvedSubtitleColor: Color {
+        isEnabled ? configuration.subtitleColor : SFKButtonConfigurator.disabledSubtitleColor
+    }
+
+    private var resolvedColor: Color {
+        isEnabled ? configuration.color : SFKButtonConfigurator.disabledColor
+    }
 }
 
 private extension SFKButton {
@@ -180,32 +198,34 @@ private extension SFKButton {
     func styledButton<Content: View>(_ content: Content) -> some View {
         switch configuration.chrome {
         case .glassProminent:
-            content.glassProminentCompat(color: configuration.color)
+            content
+                .glassProminentCompat(color: resolvedColor)
 
         case .glass:
-            content.glassCompat(color: configuration.color)
+            content
+                .glassCompat(color: resolvedColor)
 
         case let .glassEffect(style, shape, isInteractive):
             switch shape {
             case let .roundedRectangle(cornerRadius):
                 content.glassEffectCompat(
                     style: style,
-                    color: configuration.color,
-                    isInteractive: isInteractive,
+                    color: resolvedColor,
+                    isInteractive: isInteractive && isEnabled,
                     in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 )
             case .capsule:
                 content.glassEffectCompat(
                     style: style,
-                    color: configuration.color,
-                    isInteractive: isInteractive,
+                    color: resolvedColor,
+                    isInteractive: isInteractive && isEnabled,
                     in: Capsule()
                 )
             case .circle:
                 content.glassEffectCompat(
                     style: style,
-                    color: configuration.color,
-                    isInteractive: isInteractive,
+                    color: resolvedColor,
+                    isInteractive: isInteractive && isEnabled,
                     in: Circle()
                 )
             }
@@ -215,7 +235,6 @@ private extension SFKButton {
         }
     }
 }
-
 #Preview("SFKButton Gallery") {
     var closeConfig = SFKButtonConfigurator.close
     closeConfig.title = "Close"

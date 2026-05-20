@@ -87,7 +87,7 @@ public struct SFKSettingsToggle: View {
             .padding(.vertical, theme.metrics.rowVerticalPadding)
         }
         .toggleStyle(.switch)
-        .tint(theme.resolvedToggleTint(tint))
+        .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
     }
 }
 
@@ -127,7 +127,6 @@ public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedItemTint(item.tint)
-        let resolvedToggleTint = theme.colors.toggleOnTint ?? resolvedTint
         Toggle(isOn: $isOn) {
             HStack(spacing: theme.metrics.rowSpacing) {
                 ZStack {
@@ -156,7 +155,7 @@ public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
             .padding(.vertical, theme.metrics.rowVerticalPadding)
         }
         .toggleStyle(.switch)
-        .tint(resolvedToggleTint)
+        .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
     }
 }
 

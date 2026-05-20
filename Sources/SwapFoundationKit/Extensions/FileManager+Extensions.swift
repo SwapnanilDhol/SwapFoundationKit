@@ -13,7 +13,7 @@ import Foundation
 
 // MARK: - FileManager+Extensions
 
-extension FileManager {
+public extension FileManager {
     /// Returns the URL for the app's Documents directory
     var documentsDirectory: URL {
         urls(for: .documentDirectory, in: .userDomainMask)[0]

@@ -1,6 +1,6 @@
-version: 1
+version: 2
 module: SwapFoundationKit
-last_reviewed: 2026-03-20
+last_reviewed: "2026-05-20"
 purpose: >
   Source-of-truth inventory for host-app redundancy audits. Use this file before
   the README examples when deciding whether an app-local abstraction should be
@@ -111,7 +111,7 @@ capabilities:
       - UserDefaultsManager
       - PreferencesStore
       - AppStorage
-      - @AppStorage
+      - "@AppStorage"
       - DefaultsKey
       - PropertyListEncoder
     suspicious_file_patterns:
@@ -277,22 +277,28 @@ capabilities:
 
   - id: debouncing
     audit_tier: exact
-    confidence: medium
+    confidence: high
     replace_with:
       - Debouncer
+      - Throttler
+      - AsyncThrottler
     public_symbols:
       - Debouncer.call(_:)
+      - Throttler.throttle(_:)
+      - AsyncThrottler.throttle(_:)
     host_search_terms:
       - Debouncer
+      - Throttler
       - debounce
+      - throttle
       - DispatchWorkItem
       - searchDelay
     suspicious_file_patterns:
       - "*Debouncer*"
-      - "*Search*"
       - "*Throttle*"
+      - "*Search*"
     keep_custom_when:
-      - The host app specifically needs throttling semantics; SFK's Throttler is currently internal and should not be used as a public replacement target.
+      - The host app has advanced timing requirements beyond debounce/throttle semantics.
     source_files:
       - Sources/SwapFoundationKit/Utilities/Debouncer.swift
       - Sources/SwapFoundationKit/Utilities/Throttler.swift
@@ -650,3 +656,346 @@ capabilities:
       - Sources/SwapFoundationKit/Extensions/URL+Extensions.swift
       - Sources/SwapFoundationKit/Extensions/FileManager+Extensions.swift
       - Sources/SwapFoundationKit/Extensions/Result+Extensions.swift
+
+  - id: device_info
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - DeviceInfo
+    public_symbols:
+      - DeviceInfo.deviceModelIdentifier
+      - DeviceInfo.deviceModel
+      - DeviceInfo.systemVersion
+      - DeviceInfo.isSimulator
+      - DeviceInfo.hasNotch
+      - DeviceInfo.isIPad
+      - DeviceInfo.isIPhone
+      - DeviceInfo.screenSize
+    host_search_terms:
+      - DeviceInfo
+      - deviceModel
+      - utsname
+      - systemVersion
+      - isSimulator
+      - isIPad
+      - screenSize
+    suspicious_file_patterns:
+      - "*DeviceInfo*"
+      - "*Device+*"
+      - "*UIDevice+*"
+    keep_custom_when:
+      - The host app needs RevenueCat-specific or Pro-status-specific device properties layered on top.
+    source_files:
+      - Sources/SwapFoundationKit/Services/DeviceInfo.swift
+
+  - id: json_codable
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - JSONCodable
+      - JSONCodingError
+    public_symbols:
+      - JSONCodable.encode(_:prettyPrinted:)
+      - JSONCodable.decode(_:from:)
+      - JSONCodable.encodeToString(_:prettyPrinted:)
+      - JSONCodable.decodeFromString(_:from:)
+      - JSONCodable.jsonFromFile(_:in:fileExtension:)
+    host_search_terms:
+      - JSONEncoder
+      - JSONDecoder
+      - Codable
+      - encode
+      - decode
+      - jsonFromFile
+    suspicious_file_patterns:
+      - "*JSON*"
+      - "*Codable*"
+      - "*Encode*"
+      - "*Decode*"
+    keep_custom_when:
+      - The host app uses custom encoding/decoding strategies that cannot be expressed via JSONCodable.
+    source_files:
+      - Sources/SwapFoundationKit/Extensions/JSON+Codable.swift
+
+  - id: app_environment
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKAppEnvironment
+    public_symbols:
+      - SFKAppEnvironment.current
+      - SFKAppEnvironment.isDebug
+      - SFKAppEnvironment.isRelease
+      - SFKAppEnvironment.isTesting
+    host_search_terms:
+      - AppEnvironment
+      - Environment
+      - DEBUG
+      - RELEASE
+      - build configuration
+    suspicious_file_patterns:
+      - "*AppEnvironment*"
+      - "*Environment*"
+      - "*BuildConfig*"
+    keep_custom_when:
+      - The host app has complex per-environment feature flags that go beyond compile-time detection.
+    source_files:
+      - Sources/SwapFoundationKit/Utilities/SFKAppEnvironment.swift
+
+  - id: launch_arguments
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKLaunchArguments
+    public_symbols:
+      - SFKLaunchArguments.hasFlag(_:)
+      - SFKLaunchArguments.environmentFlag(_:)
+      - SFKLaunchArguments.environmentString(_:)
+      - SFKLaunchArguments.isAutomationMode
+    host_search_terms:
+      - ProcessInfo.processInfo.arguments
+      - ProcessInfo.processInfo.environment
+      - launch arguments
+      - CLI flag
+      - automation mode
+      - UI testing
+    suspicious_file_patterns:
+      - "*LaunchArgument*"
+      - "*AppLaunch*"
+      - "*Automation*"
+    keep_custom_when:
+      - The host app has deeply custom flag parsing or Maestro-specific setup.
+    source_files:
+      - Sources/SwapFoundationKit/Utilities/SFKLaunchArguments.swift
+
+  - id: app_appearance
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKAppearanceManager
+      - UIFont.roundedSystemFont(ofSize:weight:)
+    public_symbols:
+      - SFKAppearanceManager.configure()
+      - UIFont.roundedSystemFont(ofSize:weight:)
+    host_search_terms:
+      - UINavigationBarAppearance
+      - UITabBarAppearance
+      - roundedSystemFont
+      - fontDesign(.rounded)
+      - appearance
+      - navigation bar
+    suspicious_file_patterns:
+      - "*Appearance*"
+      - "*Typography*"
+      - "*Font+*"
+      - "*UIFont+*"
+    keep_custom_when:
+      - The host app uses a custom design system with different font designs or appearance.
+    source_files:
+      - Sources/SwapFoundationKit/UI/SFKAppearanceManager.swift
+
+  - id: rounded_hosting
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKRoundedHostingController
+    public_symbols:
+      - SFKRoundedHostingController.init(rootView:)
+    host_search_terms:
+      - UIHostingController
+      - fontDesign(.rounded)
+      - rounded font
+      - hosting
+    suspicious_file_patterns:
+      - "*HostingController*"
+      - "*RoundedHosting*"
+    keep_custom_when:
+      - The host app needs a font design other than rounded or additional hosting configuration.
+    source_files:
+      - Sources/SwapFoundationKit/UI/SFKRoundedHostingController.swift
+
+  - id: pro_gate
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - SFKProGate
+    public_symbols:
+      - SFKProGate.isProEnabled
+      - SFKProGate.presentProSheet
+      - SFKProGate.check(_:)
+      - SFKProGate.require(_:action:)
+    host_search_terms:
+      - ProValidation
+      - ProGate
+      - feature gating
+      - require pro
+      - showProSheet
+      - isProEnabled
+    suspicious_file_patterns:
+      - "*ProValidat*"
+      - "*ProGate*"
+      - "*FeatureGate*"
+    keep_custom_when:
+      - The host app has domain-specific Pro reasons tied to analytics or custom UI.
+    source_files:
+      - Sources/SwapFoundationKit/Services/SFKProGate.swift
+
+  - id: notification_service
+    audit_tier: heuristic
+    confidence: medium
+    replace_with:
+      - SFKNotificationService
+      - SFKNotificationAction
+      - SFKNotificationCategory
+    public_symbols:
+      - SFKNotificationService.shared.requestAuthorization()
+      - SFKNotificationService.shared.post(title:body:)
+      - SFKNotificationService.shared.schedule(title:body:identifier:dateComponents:)
+      - SFKNotificationService.shared.setBadgeCount(_:)
+      - SFKNotificationService.shared.registerCategories(_:)
+    host_search_terms:
+      - UNUserNotificationCenter
+      - notification
+      - push notification
+      - local notification
+      - badge
+    suspicious_file_patterns:
+      - "*NotificationService*"
+      - "*NotificationManager*"
+      - "*Notif*"
+    keep_custom_when:
+      - The host app has complex notification scheduling tied to domain-specific triggers.
+    source_files:
+      - Sources/SwapFoundationKit/Services/SFKNotificationService.swift
+
+  - id: analytics_loggers
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - SFKFirebaseLogger
+      - SFKTelemetryLogger
+      - SFKPostHogLogger
+    public_symbols:
+      - SFKFirebaseLogger
+      - SFKTelemetryLogger
+      - SFKPostHogLogger
+    host_search_terms:
+      - FirebaseLogger
+      - TelemetryLogger
+      - PostHogLogger
+      - AnalyticsLogger
+      - Analytics.logEvent
+      - TelemetryDeck
+      - PostHogSDK
+    suspicious_file_patterns:
+      - "*FirebaseLogger*"
+      - "*TelemetryLogger*"
+      - "*PostHogLogger*"
+    keep_custom_when:
+      - The host app uses a different analytics provider not covered by SFK's pre-built loggers.
+    source_files:
+      - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
+      - Sources/SwapFoundationKit/Services/Analytics/SFKTelemetryLogger.swift
+      - Sources/SwapFoundationKit/Services/Analytics/SFKPostHogLogger.swift
+
+  - id: image_compressor
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKImageCompressor
+    public_symbols:
+      - SFKImageCompressor.compress(_:)
+      - SFKImageCompressor.compressToSize(_:maxBytes:)
+      - SFKImageCompressor.maxDimension
+      - SFKImageCompressor.compressionQuality
+    host_search_terms:
+      - ImageCompressor
+      - compress image
+      - jpegData
+      - resize image
+      - maxDimension
+    suspicious_file_patterns:
+      - "*ImageCompress*"
+      - "*Compress*"
+      - "*ImageResize*"
+    keep_custom_when:
+      - The host app needs format-specific compression (PNG, HEIC) or domain-specific resizing.
+    source_files:
+      - Sources/SwapFoundationKit/ImageProcessor/SFKImageCompressor.swift
+
+  - id: enhanced_currency
+    audit_tier: exact
+    confidence: medium
+    replace_with:
+      - Currency.sortedAllCases
+      - Currency.sortedWithMajorFirst
+      - Currency.local
+      - Currency.formatAmount(_:)
+      - Currency.formatAbbreviated(_:)
+    public_symbols:
+      - Currency.sortedAllCases
+      - Currency.sortedWithMajorFirst
+      - Currency.local
+      - Currency.formatAmount(_:)
+      - Currency.formatAbbreviated(_:)
+    host_search_terms:
+      - sortedAllCases
+      - sortedWithMajorFirst
+      - currency sorting
+      - formatAmount
+      - abbreviated
+      - currency symbol
+    suspicious_file_patterns:
+      - "*Currency*"
+      - "*Format*"
+      - "*Amount*"
+    keep_custom_when:
+      - The host app needs custom currency formatting or sorting rules.
+    source_files:
+      - Sources/SwapFoundationKit/Currency/Currency.swift
+
+  - id: async_collections
+    audit_tier: heuristic
+    confidence: medium
+    replace_with:
+      - Sequence.asyncReduce
+      - Dictionary.asyncMap
+    public_symbols:
+      - asyncReduce(_:_:)
+      - asyncMap(_:)
+    host_search_terms:
+      - asyncReduce
+      - asyncMap
+      - async forEach
+      - await reduce
+      - await map
+    suspicious_file_patterns:
+      - "*Collection+Async*"
+      - "*Sequence+*"
+      - "*Async*"
+    keep_custom_when:
+      - The host app needs concurrent async processing (these run sequentially).
+    source_files:
+      - Sources/SwapFoundationKit/Extensions/Collection+Async.swift
+
+  - id: coordinator_extensions
+    audit_tier: heuristic
+    confidence: medium
+    replace_with:
+      - Coordinator.dismiss()
+      - Coordinator.presentItemPicker(...)
+    public_symbols:
+      - Coordinator.dismiss(animated:)
+      - Coordinator.presentItemPicker(title:items:selectionType:initialSelection:delegate:onSelect:)
+    host_search_terms:
+      - Coordinator
+      - dismiss
+      - presentItemPicker
+      - picker sheet
+    suspicious_file_patterns:
+      - "*Coordinator+*"
+      - "*CoordinatorExtension*"
+    keep_custom_when:
+      - The host app has custom coordinator patterns that diverge from SFK's navigation model.
+    source_files:
+      - Sources/SwapFoundationKit/Protocols/Coordinator.swift

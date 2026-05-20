@@ -13,14 +13,14 @@ import Foundation
 
 // MARK: - JSON+Codable
 
-enum JSONCodingError: Error {
+public enum JSONCodingError: Error {
     case encodingFailed(Error)
     case decodingFailed(Error)
     case fileNotFound(String)
     case invalidData
 }
 
-struct JSONCodable {
+public struct JSONCodable {
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
@@ -34,7 +34,7 @@ struct JSONCodable {
     ///   - value: The value to encode
     ///   - prettyPrinted: Whether to use pretty printing (default: true)
     /// - Returns: The encoded Data
-    static func encode<T: Encodable>(_ value: T, prettyPrinted: Bool = true) throws -> Data {
+    public static func encode<T: Encodable>(_ value: T, prettyPrinted: Bool = true) throws -> Data {
         let encoder = JSONEncoder()
         if prettyPrinted {
             encoder.outputFormatting = .prettyPrinted
@@ -47,7 +47,7 @@ struct JSONCodable {
     ///   - type: The type to decode to
     ///   - data: The Data to decode
     /// - Returns: The decoded value
-    static func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+    public static func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         return try decoder.decode(type, from: data)
     }
 
@@ -56,7 +56,7 @@ struct JSONCodable {
     ///   - value: The value to encode
     ///   - prettyPrinted: Whether to use pretty printing (default: true)
     /// - Returns: The encoded JSON string
-    static func encodeToString<T: Encodable>(_ value: T, prettyPrinted: Bool = true) throws -> String {
+    public static func encodeToString<T: Encodable>(_ value: T, prettyPrinted: Bool = true) throws -> String {
         let data = try encode(value, prettyPrinted: prettyPrinted)
         guard let string = String(data: data, encoding: .utf8) else {
             throw JSONCodingError.invalidData
@@ -69,7 +69,7 @@ struct JSONCodable {
     ///   - type: The type to decode to
     ///   - string: The JSON string to decode
     /// - Returns: The decoded value
-    static func decodeFromString<T: Decodable>(_ type: T.Type, from string: String) throws -> T {
+    public static func decodeFromString<T: Decodable>(_ type: T.Type, from string: String) throws -> T {
         guard let data = string.data(using: .utf8) else {
             throw JSONCodingError.invalidData
         }
@@ -82,7 +82,7 @@ struct JSONCodable {
     ///   - bundle: The bundle to search in (default: .main)
     ///   - fileExtension: The file extension (default: "json")
     /// - Returns: The decoded value
-    static func jsonFromFile<T: Decodable>(
+    public static func jsonFromFile<T: Decodable>(
         _ filename: String,
         in bundle: Bundle = .main,
         fileExtension: String = "json"
@@ -93,5 +93,20 @@ struct JSONCodable {
 
         let data = try Data(contentsOf: url)
         return try decode(T.self, from: data)
+    }
+}
+
+extension JSONCodingError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .encodingFailed(let error):
+            return "Failed to encode: \(error.localizedDescription)"
+        case .decodingFailed(let error):
+            return "Failed to decode: \(error.localizedDescription)"
+        case .fileNotFound(let name):
+            return "File not found: \(name)"
+        case .invalidData:
+            return "Invalid data"
+        }
     }
 }

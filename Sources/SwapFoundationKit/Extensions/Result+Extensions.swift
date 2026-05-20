@@ -13,7 +13,7 @@ import Foundation
 
 // MARK: - Result+Extensions
 
-extension Result {
+public extension Result {
     /// Returns true if the result is a success
     var isSuccess: Bool {
         switch self {

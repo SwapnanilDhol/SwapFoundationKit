@@ -17,7 +17,7 @@ import Foundation
 /// then ignores subsequent calls until the specified time interval has elapsed.
 /// Unlike Debouncer which delays execution, Throttler executes immediately
 /// and then blocks until the interval passes.
-final class Throttler {
+public final class Throttler {
     private let interval: TimeInterval
     private var lastExecutionTime: Date?
     private let queue: DispatchQueue
@@ -27,7 +27,7 @@ final class Throttler {
     /// - Parameters:
     ///   - interval: The minimum interval between executions in seconds
     ///   - queue: The queue to execute the work on (default: .main)
-    init(interval: TimeInterval, queue: DispatchQueue = .main) {
+    public init(interval: TimeInterval, queue: DispatchQueue = .main) {
         self.interval = interval
         self.queue = queue
     }
@@ -35,7 +35,7 @@ final class Throttler {
     /// Throttles the execution of a closure
     /// The first call executes immediately, subsequent calls within the interval are ignored
     /// - Parameter work: The closure to execute
-    func throttle(_ work: @escaping () -> Void) {
+    public func throttle(_ work: @escaping () -> Void) {
         let now = Date()
 
         // If this is the first call or enough time has passed, execute immediately
@@ -54,7 +54,7 @@ final class Throttler {
 
     /// Throttles the execution of an async closure
     /// - Parameter work: The async closure to execute
-    func throttle(_ work: @escaping () async -> Void) {
+    public func throttle(_ work: @escaping () async -> Void) {
         let now = Date()
 
         // If this is the first call or enough time has passed, execute immediately
@@ -76,7 +76,7 @@ final class Throttler {
     }
 
     /// Resets the throttler, allowing the next call to execute immediately
-    func reset() {
+    public func reset() {
         lastExecutionTime = nil
         pendingWorkItem?.cancel()
         pendingWorkItem = nil
@@ -87,20 +87,20 @@ final class Throttler {
 
 /// An async/await compatible throttler
 @available(iOS 13.0, *)
-final class AsyncThrottler {
+public final class AsyncThrottler {
     private let interval: TimeInterval
     private var lastExecutionTime: Date?
     private let stateQueue = DispatchQueue(label: "com.swapfoundationkit.async-throttler.state")
 
     /// Creates a new AsyncThrottler
     /// - Parameter interval: The minimum interval between executions in seconds
-    init(interval: TimeInterval) {
+    public init(interval: TimeInterval) {
         self.interval = interval
     }
 
     /// Throttles the execution of an async closure
     /// - Parameter work: The async closure to execute
-    func throttle<T>(_ work: @escaping () async throws -> T) async throws -> T? {
+    public func throttle<T>(_ work: @escaping () async throws -> T) async throws -> T? {
         let shouldExecute = stateQueue.sync { () -> Bool in
             let now = Date()
             if let lastTime = lastExecutionTime {
@@ -122,7 +122,7 @@ final class AsyncThrottler {
 
     /// Forces execution regardless of throttling
     /// - Parameter work: The async closure to execute
-    func forceThrottle<T>(_ work: @escaping () async throws -> T) async throws -> T {
+    public func forceThrottle<T>(_ work: @escaping () async throws -> T) async throws -> T {
         stateQueue.sync {
             lastExecutionTime = Date()
         }
@@ -131,7 +131,7 @@ final class AsyncThrottler {
     }
 
     /// Resets the throttler
-    func reset() {
+    public func reset() {
         stateQueue.sync {
             lastExecutionTime = nil
         }

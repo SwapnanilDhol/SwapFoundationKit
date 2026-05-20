@@ -350,6 +350,86 @@ extension Currency: SFKPickableItem {
     public var pickableItemTitle: String { rawValue }
 
     public var pickableItemSubtitle: String? {
-        description.key
+        String(localized: String.LocalizationValue(description.key))
+    }
+}
+
+// MARK: - Sorting
+
+extension Currency {
+    /// Returns all currency cases sorted alphabetically by their display name.
+    public static var sortedAllCases: [Currency] {
+        allCases.sorted {
+            String(localized: String.LocalizationValue($0.description.key))
+                .localizedCaseInsensitiveCompare(
+                    String(localized: String.LocalizationValue($1.description.key))
+                ) == .orderedAscending
+        }
+    }
+
+    /// Returns currencies sorted with the user's local currency first,
+    /// followed by major currencies (USD, EUR, GBP, JPY, AUD), then the rest.
+    public static var sortedWithMajorFirst: [Currency] {
+        let majorCurrencies: Set<Currency> = [.USD, .EUR, .GBP, .JPY, .AUD]
+        let localCurrencyCode = Locale.current.currency?.identifier ?? ""
+
+        return sortedAllCases.sorted { lhs, rhs in
+            let lhsIsLocal = lhs.rawValue == localCurrencyCode
+            let rhsIsLocal = rhs.rawValue == localCurrencyCode
+
+            if lhsIsLocal { return true }
+            if rhsIsLocal { return false }
+
+            switch (majorCurrencies.contains(lhs), majorCurrencies.contains(rhs)) {
+            case (true, false): return true
+            case (false, true): return false
+            default:
+                let lhsName = String(localized: String.LocalizationValue(lhs.description.key))
+                let rhsName = String(localized: String.LocalizationValue(rhs.description.key))
+                return lhsName < rhsName
+            }
+        }
+    }
+
+    /// Detects the user's local currency from the current locale.
+    /// Falls back to USD if no currency code is set.
+    public static var local: Currency {
+        guard let code = Locale.current.currency?.identifier else { return .USD }
+        return Currency(rawValue: code) ?? .USD
+    }
+}
+
+// MARK: - Formatting
+
+extension Currency {
+    /// Formats an amount with the currency symbol and proper fraction digits.
+    /// - Parameter amount: The amount to format.
+    /// - Returns: A formatted string (e.g., "₹1,234.56").
+    public func formatAmount(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencySymbol = currencySymbol
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(currencySymbol)\(amount)"
+    }
+
+    /// Formats an amount with abbreviated notation for large numbers.
+    /// - Parameter amount: The amount to format.
+    /// - Returns: A compact string (e.g., "₹1.2K", "₹3.4M").
+    public func formatAbbreviated(_ amount: Double) -> String {
+        let absAmount = abs(amount)
+        let sign = amount < 0 ? "-" : ""
+
+        switch absAmount {
+        case 1_000_000_000...:
+            return "\(sign)\(currencySymbol)\(String(format: "%.1f", absAmount / 1_000_000_000))B"
+        case 1_000_000...:
+            return "\(sign)\(currencySymbol)\(String(format: "%.1f", absAmount / 1_000_000))M"
+        case 1_000...:
+            return "\(sign)\(currencySymbol)\(String(format: "%.1f", absAmount / 1_000))K"
+        default:
+            return formatAmount(amount)
+        }
     }
 }

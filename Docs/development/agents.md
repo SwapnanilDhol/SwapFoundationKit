@@ -3,22 +3,71 @@
 ## Purpose
 
 This repository ships an LLM-friendly workflow for:
-1. Auditing host apps for redundant implementations after adopting `SwapFoundationKit`
-2. Migrating host app code to use SFK capabilities
-3. Adding or updating capabilities within the SFK package itself
+1. Discovering whether SFK already covers a host-app feature before implementation
+2. Auditing host apps for redundant implementations after adopting `SwapFoundationKit`
+3. Migrating host app code to use SFK capabilities
+4. Adding or updating capabilities within the SFK package itself
 
 ## Source of Truth
 
 Read files in this order:
 
-1. `Docs/migration/catalog.yaml` — Curated audit catalog with tier classifications
-2. `README.md` — Full capability reference (48 numbered items with API, examples, migration steps)
-3. `SKILL.md` — Skill file with trigger keywords and quick capability lookup
-4. Relevant source files under `Sources/SwapFoundationKit/`
+1. `Docs/capabilities.yaml` — Agent-first capability catalog for host-app feature discovery
+2. `Docs/migration/catalog.yaml` — Curated audit catalog with tier classifications
+3. `README.md` — Full capability reference (48 numbered items with API, examples, migration steps)
+4. `SKILL.md` — Skill file with trigger keywords and quick capability lookup
+5. Relevant source files under `Sources/SwapFoundationKit/`
 
-The audit catalog is the primary source of truth for audits because it is curated against
-the package's public API and marks each capability as `exact`, `heuristic`, or `manual`.
+The capabilities catalog is the primary source of truth for host-app feature discovery.
+The audit catalog is the primary source of truth for overlap audits because it is curated
+against the package's public API and marks each capability as `exact`, `heuristic`, or `manual`.
 The README is the primary source of truth for migration and API reference.
+
+## Feature Discovery Workflow
+
+When tasked with "build a feature in a host app" or "check whether SFK already has this":
+
+### Step 1: Read the Capabilities Catalog
+
+```
+Read Docs/capabilities.yaml
+```
+
+### Step 2: Match the Request to a Domain
+
+Check whether the request falls into a documented reusable domain such as:
+
+- settings
+- buttons
+- onboarding
+- pickers
+- alerts
+- sync/shared storage
+- utilities
+
+### Step 3: Decide the Reuse Strategy
+
+Before implementing, decide one of:
+
+- **use_sfk_directly**: the public SFK API already fits
+- **wrap_sfk**: SFK provides the primitive, but the host app needs domain logic on top
+- **keep_custom**: SFK does not fit or the host app intentionally diverges
+
+### Step 4: Implement Only After the Lookup
+
+Only implement fully custom host-app code first if:
+
+- no documented SFK public API fits, or
+- the host app needs intentional visual/behavioral divergence
+
+### Step 5: State the Decision
+
+When returning work, say:
+
+- which SFK domain(s) were checked
+- which API was selected
+- whether SFK was used directly or wrapped
+- why custom host-app code was kept if SFK was skipped
 
 ## Audit Workflow
 
@@ -141,6 +190,7 @@ When modifying public API of an existing component:
 - Prefer false negatives over noisy false positives in audits
 - Audit against public API only — ignore internal implementation details
 - Keep app-specific facades when they add domain behavior — SFK should sit underneath
+- For host-app build/refactor tasks involving reusable UI, utilities, or infrastructure, check `Docs/capabilities.yaml` before implementing
 
 ## File Structure Reference
 
@@ -150,6 +200,7 @@ SwapFoundationKit/
 ├── README.md                         ← Quick reference
 ├── Docs/
 │   ├── README.md                     ← Documentation index
+│   ├── capabilities.yaml            ← Agent-first feature discovery catalog
 │   ├── migration/
 │   │   ├── migration-guide.md        ← Migration guide
 │   │   └── catalog.yaml             ← Audit catalog (source of truth)
@@ -161,6 +212,7 @@ SwapFoundationKit/
 │   │   └── trial-audit.md           ← Trial audit
 │   └── development/
 │       ├── agents.md                 ← Detailed agent workflows
+│       ├── feature-discovery.md      ← Check SFK first for host-app features
 │       └── refactoring-todo.md      ← Refactoring priorities
 └── Sources/SwapFoundationKit/        ← All source code
 ```
@@ -172,8 +224,10 @@ SwapFoundationKit/
 - **`AGENTS.md`** is the package-traveling workflow document. It provides detailed, structured
   instructions for any agent or human reviewer to follow, regardless of whether the skill
   is installed in their environment.
-- **`catalog.yaml`** is the curated data source. It lists capabilities with
-  machine-readable audit metadata (tiers, search terms, file patterns).
+- **`capabilities.yaml`** is the curated discovery source. It tells agents what reusable
+  domains SFK covers and where to look first during host-app feature work.
+- **`catalog.yaml`** is the curated audit source. It lists capabilities with
+  machine-readable overlap metadata (tiers, search terms, file patterns).
 
-The catalog and AGENTS.md travel with the package and are easier for any agent or human
+The catalogs and AGENTS.md travel with the package and are easier for any agent or human
 reviewer to consume. SKILL.md is the opt-in activation layer.

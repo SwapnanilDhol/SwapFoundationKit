@@ -16,7 +16,7 @@ import UIKit
 
 // MARK: - CGPoint+Extensions
 
-extension CGPoint {
+public extension CGPoint {
     /// Calculates the distance to another point
     /// - Parameter point: The other point
     /// - Returns: The distance in points
@@ -45,7 +45,7 @@ extension CGPoint {
 
 // MARK: - CGSize+Extensions
 
-extension CGSize {
+public extension CGSize {
     /// Returns the aspect ratio (width / height)
     var aspectRatio: CGFloat {
         guard height != 0 else { return 0 }
@@ -82,7 +82,7 @@ extension CGSize {
 
 // MARK: - CGRect+Extensions
 
-extension CGRect {
+public extension CGRect {
     /// Returns the center point of the rectangle
     var center: CGPoint {
         CGPoint(x: midX, y: midY)
@@ -121,7 +121,7 @@ extension CGRect {
 
 // MARK: - CGVector+Extensions
 
-extension CGVector {
+public extension CGVector {
     /// Returns the magnitude (length) of the vector
     var magnitude: CGFloat {
         sqrt(dx * dx + dy * dy)
@@ -161,7 +161,7 @@ extension CGVector {
 // MARK: - UIEdgeInsets+Extensions
 
 #if canImport(UIKit) && os(iOS)
-extension UIEdgeInsets {
+public extension UIEdgeInsets {
     /// Creates uniform insets
     /// - Parameter value: The value for all edges
     init(uniform value: CGFloat) {
