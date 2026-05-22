@@ -95,7 +95,7 @@ Internal SFK improvements tracked for future work. These do not affect public AP
 | A1 | SecurityService encryption fix | Replaced random-key-per-call `generateEncryptionKey()` with persistent Keychain-stored key via `persistentEncryptionKey()`. |
 | A2 | Access control audit | Made 6 internal types public: `DeviceInfo`, `Throttler`/`AsyncThrottler`, `JSONCodable`/`JSONCodingError`, `FileManager+`, `Result+`, `CGTypes+`. |
 | A3 | ExchangeRateManager enhancements | Added configurable URL init, 5-min cache TTL, exponential backoff retry (3 attempts), HTTP status validation. |
-| A4 | New capabilities extracted from host apps | Added 14 new public types: `SFKAppEnvironment`, `SFKLaunchArguments`, `SFKAppearanceManager`, `SFKRoundedHostingController`, `SFKProGate`, `SFKNotificationService`, `SFKFirebaseLogger`, `SFKTelemetryLogger`, `SFKPostHogLogger`, `SFKImageCompressor`, `Collection+Async`, enhanced `Currency` sorting/formatting, `Coordinator` dismiss/presentItemPicker. |
+| A4 | New capabilities extracted from host apps | Added 14 new public types: `SFKAppEnvironment`, `SFKLaunchArguments`, `SFKAppearanceManager`, `SFKRoundedHostingController`, `SFKProGate`, `SFKNotificationService`, `SFKFirebaseLogger`, `SFKTelemetryLogger`, `SFKImageCompressor`, `Collection+Async`, enhanced `Currency` sorting/formatting, `Coordinator` dismiss/presentItemPicker. (`SFKPostHogLogger` later removed — host apps should implement their own PostHog `AnalyticsLogger`.) |
 | A5 | Host app duplicate cleanup | Deleted 14 duplicate files across PassMaker, SubscriptionTracker, and MoneyTracker. |
 
 ---

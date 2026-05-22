@@ -34,7 +34,6 @@ Application-level services for haptics, logging, analytics, user defaults, deepl
 | `SFKNotificationService` | class | Generic `UNUserNotificationCenter` wrapper |
 | `SFKFirebaseLogger` | class | Pre-built `AnalyticsLogger` for Firebase |
 | `SFKTelemetryLogger` | class | Pre-built `AnalyticsLogger` for TelemetryDeck |
-| `SFKPostHogLogger` | class | Pre-built `AnalyticsLogger` for PostHog with feature flags |
 
 ## Quick Examples
 
@@ -82,7 +81,6 @@ await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 - `AnalyticsProtocol.swift` — AnalyticsManager, AnalyticsLogger, AnalyticsEvent
 - `Analytics/SFKFirebaseLogger.swift` — Firebase adapter
 - `Analytics/SFKTelemetryLogger.swift` — TelemetryDeck adapter
-- `Analytics/SFKPostHogLogger.swift` — PostHog adapter
 
 ### Deeplinks
 - `DeeplinkHandler/DeeplinkHandler.swift` — DefaultDeeplinkHandler

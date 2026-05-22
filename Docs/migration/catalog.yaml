@@ -874,29 +874,23 @@ capabilities:
     replace_with:
       - SFKFirebaseLogger
       - SFKTelemetryLogger
-      - SFKPostHogLogger
     public_symbols:
       - SFKFirebaseLogger
       - SFKTelemetryLogger
-      - SFKPostHogLogger
     host_search_terms:
       - FirebaseLogger
       - TelemetryLogger
-      - PostHogLogger
-      - AnalyticsLogger
+      - AnalogicsLogger
       - Analytics.logEvent
       - TelemetryDeck
-      - PostHogSDK
     suspicious_file_patterns:
       - "*FirebaseLogger*"
       - "*TelemetryLogger*"
-      - "*PostHogLogger*"
     keep_custom_when:
       - The host app uses a different analytics provider not covered by SFK's pre-built loggers.
     source_files:
       - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
       - Sources/SwapFoundationKit/Services/Analytics/SFKTelemetryLogger.swift
-      - Sources/SwapFoundationKit/Services/Analytics/SFKPostHogLogger.swift
 
   - id: image_compressor
     audit_tier: exact

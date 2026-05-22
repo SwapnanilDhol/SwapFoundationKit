@@ -296,32 +296,30 @@ domains:
 
   - id: analytics_loggers
     priority: 9
-    summary: Pre-built AnalyticsLogger implementations for Firebase, TelemetryDeck, and PostHog.
+    summary: Pre-built AnalyticsLogger implementations for Firebase and TelemetryDeck.
     when_to_check:
       - Adding analytics tracking
-      - Wiring up Firebase, TelemetryDeck, or PostHog
+      - Wiring up Firebase or TelemetryDeck
       - Implementing AnalyticsLogger protocol
     prefer_when:
-      - The app uses one of the three supported analytics providers
+      - The app uses one of the two supported analytics providers
       - The app wants a drop-in AnalyticsLogger for SFK's AnalyticsManager
     keep_in_host_app_when:
       - The app uses a different analytics provider
       - The app needs custom setup or identification logic per logger
+      - The app needs PostHog support (implement a host-side AnalyticsLogger)
     public_api:
       - SFKFirebaseLogger
       - SFKTelemetryLogger
-      - SFKPostHogLogger
     docs:
       - README.md
     examples:
       - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
       - Sources/SwapFoundationKit/Services/Analytics/SFKTelemetryLogger.swift
-      - Sources/SwapFoundationKit/Services/Analytics/SFKPostHogLogger.swift
     host_app_triggers:
       - analytics logger
       - firebase
       - telemetrydeck
-      - posthog
       - tracking
 
   - id: pro_gating
