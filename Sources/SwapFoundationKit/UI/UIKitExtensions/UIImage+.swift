@@ -14,7 +14,7 @@ import Foundation
 #if canImport(UIKit) && os(iOS)
 import UIKit
 
-extension UIImage {
+public extension UIImage {
     /// Resizes the image to a target size while maintaining aspect ratio
     /// - Parameter targetSize: The desired size of the output image
     /// - Returns: A resized UIImage, or nil if resizing fails

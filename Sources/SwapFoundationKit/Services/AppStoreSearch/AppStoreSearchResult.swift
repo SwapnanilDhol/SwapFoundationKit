@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct AppStoreSearchResult: Identifiable, Equatable, Decodable {
-    let trackId: Int
-    let trackName: String
-    let sellerName: String?
-    let bundleId: String?
-    let artworkUrl100: String?
+public struct AppStoreSearchResult: Identifiable, Equatable, Decodable {
+    public let trackId: Int
+    public let trackName: String
+    public let sellerName: String?
+    public let bundleId: String?
+    public let artworkUrl100: String?
 
-    var id: Int { trackId }
+    public var id: Int { trackId }
 }
 
 private struct AppStoreSearchResponse: Decodable {
@@ -23,14 +23,16 @@ private struct AppStoreSearchResponse: Decodable {
 
 @MainActor
 final public class AppStoreSearchService: ObservableObject {
-    @Published var query = ""
-    @Published var results: [AppStoreSearchResult] = []
-    @Published var isSearching = false
-    @Published var errorMessage: String?
+    @Published public var query = ""
+    @Published public var results: [AppStoreSearchResult] = []
+    @Published public var isSearching = false
+    @Published public var errorMessage: String?
 
     private var searchTask: Task<Void, Never>?
 
-    func updateQuery(_ newValue: String) {
+    public init() {}
+
+    public func updateQuery(_ newValue: String) {
         query = newValue
         searchTask?.cancel()
 

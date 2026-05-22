@@ -128,10 +128,10 @@ public struct SFKSelectableChip: View {
     }
 
     public var body: some View {
-        Button(action: {
+        Button {
             triggerHaptic()
             action()
-        }) {
+        } label: {
             HStack(spacing: 8) {
                 if let icon {
                     iconView(for: icon)
@@ -150,18 +150,18 @@ public struct SFKSelectableChip: View {
             .padding(.vertical, 10)
         }
         .buttonStyle(.plain)
-        .glassEffectCompat(
-            style: .regular,
-            color: glassTintColor,
-            isInteractive: true,
-            in: Capsule()
-        )
         .overlay(
             Capsule(style: .continuous)
                 .strokeBorder(
                     isSelected ? tintColor : Color.clear,
                     lineWidth: 2
                 )
+        )
+        .glassEffectCompat(
+            style: .regular,
+            color: glassTintColor,
+            isInteractive: true,
+            in: Capsule()
         )
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }

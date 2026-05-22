@@ -41,7 +41,7 @@ final public class LocationSearchService: NSObject, ObservableObject {
 
     // MARK: - Public Methods
 
-    func search() {
+    public func search() {
         performSearch(query: searchQuery.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
@@ -49,7 +49,7 @@ final public class LocationSearchService: NSObject, ObservableObject {
     /// - Parameters:
     ///   - completion: The search completion to resolve
     ///   - completionHandler: Callback with the resolved map item
-    func search(for completion: MKLocalSearchCompletion, completionHandler: @escaping (MKMapItem?) -> Void) {
+    public func search(for completion: MKLocalSearchCompletion, completionHandler: @escaping (MKMapItem?) -> Void) {
         let searchRequest = MKLocalSearch.Request(completion: completion)
         let search = MKLocalSearch(request: searchRequest)
 
@@ -75,13 +75,13 @@ final public class LocationSearchService: NSObject, ObservableObject {
     }
 
     /// Clears the search query and results
-    func clearSearch() {
+    public func clearSearch() {
         searchQuery = ""
         completions = []
         errorMessage = nil
     }
 
-    func formattedAddress(for mapItem: MKMapItem) -> String {
+    public func formattedAddress(for mapItem: MKMapItem) -> String {
         let placemark = mapItem.placemark
         let parts: [String] = [
             mapItem.name,

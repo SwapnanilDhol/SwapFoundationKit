@@ -118,5 +118,10 @@ public extension UIApplication {
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in onCancel?() }
         presentAlert(title: title, message: message, actions: [confirmAction, cancelAction])
     }
+
+    /// Resigns the first responder, dismissing the keyboard.
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
 }
 #endif

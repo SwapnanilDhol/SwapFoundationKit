@@ -24,11 +24,6 @@ public extension FileManager {
         urls(for: .cachesDirectory, in: .userDomainMask)[0]
     }
 
-    /// Returns the URL for the app's Temporary directory
-    var temporaryDirectory: URL {
-        URL(fileURLWithPath: NSTemporaryDirectory())
-    }
-
     /// Returns the file size in bytes at the given path
     func fileSize(at path: String) -> Int64 {
         guard let attributes = try? attributesOfItem(atPath: path),

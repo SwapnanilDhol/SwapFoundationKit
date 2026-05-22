@@ -41,7 +41,7 @@ public extension UIColor {
 
     // MARK: - Hex Initialization
 
-    convenience init?(hex: String) {
+    public convenience init?(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         guard Scanner(string: hex).scanHexInt64(&int) else {
@@ -218,7 +218,7 @@ public extension UIColor {
 
     // MARK: - RGB String
 
-    func toRGBString() -> String {
+    public func toRGBString() -> String {
         let components = cgColor.components ?? [0.0, 0.0, 0.0]
         let red = Int(components[0] * 255.0)
         let green = Int(components[1] * 255.0)
@@ -226,7 +226,7 @@ public extension UIColor {
         return "rgb(\(red), \(green), \(blue))"
     }
 
-    static func extractRGB(from rgbString: String) -> (Int, Int, Int)? {
+    public static func extractRGB(from rgbString: String) -> (Int, Int, Int)? {
         let pattern = #"rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
               let match = regex.firstMatch(in: rgbString, range: NSRange(rgbString.startIndex..., in: rgbString)),
@@ -304,7 +304,7 @@ public extension UIColor {
 @available(iOS 14.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 public extension Color {
 
-    init?(hex: String) {
+    public init?(hex: String) {
         guard let uiColor = UIColor(hex: hex) else { return nil }
         self.init(uiColor)
     }
@@ -316,7 +316,7 @@ public extension Color {
     var uiColor: UIColor { UIColor(self) }
     var hex: String { uiColor.hexString() }
 
-    func toRGBString() -> String {
+    public func toRGBString() -> String {
         let components = uiColor.cgColor.components ?? [0.0, 0.0, 0.0]
         return "rgb(\(Int(components[0] * 255)), \(Int(components[1] * 255)), \(Int(components[2] * 255)))"
     }

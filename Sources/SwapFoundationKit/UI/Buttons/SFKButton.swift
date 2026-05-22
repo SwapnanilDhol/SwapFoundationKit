@@ -235,6 +235,7 @@ private extension SFKButton {
         }
     }
 }
+
 #Preview("SFKButton Gallery") {
     var closeConfig = SFKButtonConfigurator.close
     closeConfig.title = "Close"
