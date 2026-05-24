@@ -47,11 +47,14 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Pickers
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKItemPickerView` | View | Full searchable item picker screen |
-| `SFKItemPickerViewModel` | class | Selection state management |
-| `SFKPickableItem` | protocol | Item model: id, icon, title, subtitle |
+| `SFKItemPickerView` | View | Full searchable item picker/list screen with sections, selection, toolbar actions, browsing mode, context actions, and swipe actions |
+| `SFKItemPickerViewModel` | class | Selection, search, sectioned, and reloadable item state management |
+| `SFKItemPickerSection` | struct | Optional list section with header, footer, and pickable items |
+| `SFKPickableItem` | protocol | Item model: id, icon, title, subtitle, optional badge, optional icon tint |
 | `SFKPickableItemIconKind` | enum | Icon source: image, SF Symbol, text, none |
 | `SFKItemPickerSelectionMode` | enum | `.single` or `.multi` |
+| `SFKItemPickerToolbarAction` | struct | Navigation bar action rendered by the picker |
+| `SFKItemPickerItemAction` | struct | Row-level context-menu or swipe action |
 | `SFKItemPickerDelegate` | protocol | Selection callbacks |
 
 ### Effects
@@ -106,6 +109,32 @@ SFKChipFlowLayout(spacing: 8) {
 
 // Item Picker
 Coordinator().presentItemPicker(title: "Currency", items: Currency.sortedAllCases)
+
+// Item list with row actions
+SFKItemPickerView(
+    pageTitle: "Accounts",
+    viewModel: viewModel,
+    selectsItems: false,
+    toolbarActions: [
+        SFKItemPickerToolbarAction(systemImage: "plus.circle.fill") {
+            addItem()
+        }
+    ],
+    onSelect: { item in edit(item) },
+    actionsProvider: { item in [
+        SFKItemPickerItemAction(title: "Delete", systemImage: "trash", role: .destructive, presentation: .swipe) {
+            delete(item)
+        }
+    ] }
+)
+
+// Sectioned picker
+let pickerViewModel = SFKItemPickerViewModel(
+    sections: [
+        SFKItemPickerSection(title: "System", items: systemItems),
+        SFKItemPickerSection(title: "Custom", items: customItems)
+    ]
+)
 
 // Glass
 Text("Hello")

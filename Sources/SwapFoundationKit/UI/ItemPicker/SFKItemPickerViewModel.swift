@@ -37,10 +37,11 @@ import Combine
 /// ```
 @MainActor
 public final class SFKItemPickerViewModel: ObservableObject {
-    public let items: [any SFKPickableItem]
+    @Published public private(set) var sections: [SFKItemPickerSection]
     public let selectionType: SFKItemPickerSelectionMode
 
     @Published public private(set) var selectedItems: [any SFKPickableItem] = []
+    @Published public var searchText: String = ""
 
     public weak var delegate: SFKItemPickerDelegate?
 
@@ -49,7 +50,20 @@ public final class SFKItemPickerViewModel: ObservableObject {
         selectionType: SFKItemPickerSelectionMode = .single,
         initialSelection: [any SFKPickableItem] = []
     ) {
-        self.items = items
+        self.sections = [SFKItemPickerSection(items: items)]
+        self.selectionType = selectionType
+        self.selectedItems = initialSelection.filter { item in
+            items.contains { $0.pickableItemId == item.pickableItemId }
+        }
+    }
+
+    public init(
+        sections: [SFKItemPickerSection],
+        selectionType: SFKItemPickerSelectionMode = .single,
+        initialSelection: [any SFKPickableItem] = []
+    ) {
+        let items = sections.flatMap(\.items)
+        self.sections = sections
         self.selectionType = selectionType
         self.selectedItems = initialSelection.filter { item in
             items.contains { $0.pickableItemId == item.pickableItemId }
@@ -73,5 +87,44 @@ public final class SFKItemPickerViewModel: ObservableObject {
 
     public func isSelected(_ item: any SFKPickableItem) -> Bool {
         selectedItems.map(\.pickableItemId).contains(item.pickableItemId)
+    }
+
+    public var items: [any SFKPickableItem] {
+        sections.flatMap(\.items)
+    }
+
+    public var filteredItems: [any SFKPickableItem] {
+        filteredSections.flatMap(\.items)
+    }
+
+    public var filteredSections: [SFKItemPickerSection] {
+        let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedSearchText.isEmpty else { return sections }
+
+        return sections.compactMap { section in
+            let filteredItems = section.items.filter { item in
+                item.pickableItemTitle.localizedCaseInsensitiveContains(trimmedSearchText)
+                    || (item.pickableItemSubtitle?.localizedCaseInsensitiveContains(trimmedSearchText) ?? false)
+            }
+            guard !filteredItems.isEmpty else { return nil }
+            return SFKItemPickerSection(
+                id: section.id,
+                title: section.title,
+                footer: section.footer,
+                items: filteredItems
+            )
+        }
+    }
+
+    public func updateItems(_ items: [any SFKPickableItem]) {
+        updateSections([SFKItemPickerSection(items: items)])
+    }
+
+    public func updateSections(_ sections: [SFKItemPickerSection]) {
+        self.sections = sections
+        let items = sections.flatMap(\.items)
+        selectedItems = selectedItems.filter { selectedItem in
+            items.contains { $0.pickableItemId == selectedItem.pickableItemId }
+        }
     }
 }

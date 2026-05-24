@@ -124,7 +124,7 @@ domains:
 
   - id: pickers
     priority: 4
-    summary: Generic item picker screen and settings pickers for single-select or multi-select flows.
+    summary: Generic item picker/list screen and settings pickers for single-select, multi-select, sectioned, searchable browsing, and row-action flows.
     when_to_check:
       - Building a searchable chooser or modal picker
       - Replacing custom list-based selection sheets
@@ -137,8 +137,13 @@ domains:
     public_api:
       - SFKItemPickerView
       - SFKPickableItem
+      - SFKItemPickerSection
       - SFKPickableItemIconKind
       - SFKItemPickerSelectionMode
+      - SFKItemPickerToolbarAction
+      - SFKItemPickerToolbarActionPlacement
+      - SFKItemPickerItemAction
+      - SFKItemPickerItemActionPresentation
       - SFKSettingsPickerRow
       - SFKSettingsPickerSheetRow
     docs:

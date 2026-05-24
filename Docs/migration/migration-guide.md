@@ -24,7 +24,7 @@ Prefer `SFKButton(configuration: .close)` for all close/dismiss actions in modal
 
 ## 4b) Item Picker (`SFKItemPickerView`)
 
-A generic picker view for selecting items from a list, with support for single-select and multi-select modes.
+A generic picker view for selecting or managing items from a list, with support for single-select, multi-select, sections, searchable browsing, context-menu actions, and swipe actions.
 
 ### Protocols
 
@@ -35,8 +35,12 @@ public protocol SFKPickableItem: Identifiable, Hashable {
     var pickableItemIconKind: SFKPickableItemIconKind { get }
     var pickableItemTitle: String { get }
     var pickableItemSubtitle: String? { get }
+    var pickableItemBadgeTitle: String? { get }
+    var pickableItemIconTintColor: UIColor? { get }
 }
 ```
+
+`pickableItemBadgeTitle` and `pickableItemIconTintColor` have default implementations, so existing conformers do not need to change.
 
 **`SFKPickableItemIconKind`** — enum for icon display modes:
 ```swift
@@ -50,9 +54,19 @@ public enum SFKPickableItemIconKind {
 
 **`SFKItemPickerSelectionMode`** — selection mode:
 ```swift
-public enum SFKPickableItemSelectionMode: Sendable {
+public enum SFKItemPickerSelectionMode: Sendable {
     case single
     case multi
+}
+```
+
+**`SFKItemPickerSection`** — optional list grouping:
+```swift
+public struct SFKItemPickerSection: Identifiable {
+    public let id: String
+    public let title: String?
+    public let footer: String?
+    public let items: [any SFKPickableItem]
 }
 ```
 
@@ -63,13 +77,19 @@ import SwapFoundationKit
 
 // Present as a sheet
 .sheet {
+    let viewModel = SFKItemPickerViewModel(
+        items: Currency.allCases,
+        selectionType: .single,
+        initialSelection: [selectedCurrency]
+    )
+
     SFKItemPickerView(
         pageTitle: "Select Currency",
-        items: Currency.allCases,
-        selectedItems: [selectedCurrency],
-        selectionType: .single,
-        onSelect: { currency in
-            selectedCurrency = currency
+        viewModel: viewModel,
+        onSelect: { item in
+            if let currency = item as? Currency {
+                selectedCurrency = currency
+            }
         },
         onDismiss: {
             presentationMode.wrappedValue.dismiss()
@@ -79,19 +99,60 @@ import SwapFoundationKit
 
 // Multi-select example
 .sheet {
+    let viewModel = SFKItemPickerViewModel(
+        items: Currency.allCases,
+        selectionType: .multi,
+        initialSelection: selectedCurrencies
+    )
+
     SFKItemPickerView(
         pageTitle: "Select Currencies",
-        items: Currency.allCases,
-        selectedItems: selectedCurrencies,
-        selectionType: .multi,
-        onSelect: { currency in
-            toggleSelection(currency)
+        viewModel: viewModel,
+        onSelect: { item in
+            if let currency = item as? Currency {
+                toggleSelection(currency)
+            }
         },
         onDismiss: {
             presentationMode.wrappedValue.dismiss()
         }
     )
 }
+
+// Browsing/management list example
+SFKItemPickerView(
+    pageTitle: "Accounts",
+    viewModel: accountPickerViewModel,
+    selectsItems: false,
+    toolbarActions: [
+        SFKItemPickerToolbarAction(systemImage: "plus.circle.fill") {
+            addAccount()
+        }
+    ],
+    onSelect: { item in edit(item) },
+    actionsProvider: { item in
+        [
+            SFKItemPickerItemAction(
+                title: "Delete",
+                systemImage: "trash",
+                role: .destructive,
+                presentation: .swipe
+            ) {
+                delete(item)
+            }
+        ]
+    }
+)
+
+// Sectioned picker example
+let viewModel = SFKItemPickerViewModel(
+    sections: [
+        SFKItemPickerSection(title: "System Categories", items: systemCategories),
+        SFKItemPickerSection(title: "User-Defined Categories", items: userCategories)
+    ],
+    selectionType: .single,
+    initialSelection: [selectedCategory]
+)
 ```
 
 ### Making a Type Conform to `SFKPickableItem`
@@ -116,8 +177,11 @@ extension Currency: SFKPickableItem {
 
 ### Components
 
-- **`SFKItemPickerView`** — main picker view with NavigationStack, close button, and list
-- **`SFKItemPickerRow`** — individual row with icon, title, subtitle, and checkmark; includes haptic feedback on selection
+- **`SFKItemPickerView`** — main picker/list view with NavigationStack, close button, search, selection, and optional row actions
+- **`SFKItemPickerSection`** — optional section wrapper with header/footer strings and pickable items
+- **`SFKItemPickerRow`** — individual row with icon, title, subtitle, optional badge, and checkmark; includes haptic feedback on selection
+- **`SFKItemPickerToolbarAction`** — navigation bar action rendered inside the picker toolbar
+- **`SFKItemPickerItemAction`** — row action rendered as a context-menu item or trailing swipe action
 
 ### Rules
 

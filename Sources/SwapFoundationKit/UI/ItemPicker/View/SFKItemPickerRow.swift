@@ -1,9 +1,13 @@
-//
-//  SFKItemPickerRow.swift
-//  SwapFoundationKit
-//
-//  Created by Swapnanil Dhol  on 4/19/26.
-//
+/*****************************************************************************
+ * SFKItemPickerRow.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2026 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
 
 import SwiftUI
 import UIKit
@@ -25,9 +29,22 @@ public struct SFKItemPickerRow: View {
                 iconView(for: item.pickableItemIconKind)
                     .frame(width: 45, height: 45)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.pickableItemTitle)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+                    HStack(alignment: .center, spacing: 6) {
+                        Text(item.pickableItemTitle)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+
+                        if let badgeTitle = item.pickableItemBadgeTitle {
+                            Text(badgeTitle)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color(.systemFill))
+                                .clipShape(Capsule())
+                        }
+                    }
 
                     if let subtitle = item.pickableItemSubtitle {
                         Text(subtitle)
@@ -56,8 +73,21 @@ public struct SFKItemPickerRow: View {
             Image(uiImage: uiImage)
                 .resizable()
         case .systemIcon(let symbolName):
-            Image(systemName: symbolName)
-                .resizable()
+            if let tintColor = item.pickableItemIconTintColor {
+                let color = Color(tintColor)
+                Image(systemName: symbolName)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(color)
+                    .padding(10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(color.opacity(0.15))
+                    )
+            } else {
+                Image(systemName: symbolName)
+                    .resizable()
+            }
         case .text(let text):
             Text(text)
                 .font(.title3)
@@ -66,4 +96,5 @@ public struct SFKItemPickerRow: View {
             EmptyView()
         }
     }
+
 }
