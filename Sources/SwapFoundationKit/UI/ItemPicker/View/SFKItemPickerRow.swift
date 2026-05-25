@@ -27,11 +27,11 @@ public struct SFKItemPickerRow: View {
         } label: {
             HStack(spacing: 12) {
                 iconView(for: item.pickableItemIconKind)
-                    .frame(width: 45, height: 45)
+                    .frame(width: 32, height: 32)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .center, spacing: 6) {
                         Text(item.pickableItemTitle)
-                            .font(.headline)
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.primary)
 
                         if let badgeTitle = item.pickableItemBadgeTitle {
@@ -48,7 +48,7 @@ public struct SFKItemPickerRow: View {
 
                     if let subtitle = item.pickableItemSubtitle {
                         Text(subtitle)
-                            .font(.caption)
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -60,7 +60,7 @@ public struct SFKItemPickerRow: View {
                         .fontWeight(.bold)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 3)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -72,6 +72,7 @@ public struct SFKItemPickerRow: View {
         case .iconImage(let uiImage):
             Image(uiImage: uiImage)
                 .resizable()
+                .scaledToFit()
         case .systemIcon(let symbolName):
             if let tintColor = item.pickableItemIconTintColor {
                 let color = Color(tintColor)
@@ -79,14 +80,15 @@ public struct SFKItemPickerRow: View {
                     .resizable()
                     .scaledToFit()
                     .foregroundStyle(color)
-                    .padding(10)
+                    .padding(7)
                     .background(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 6)
                             .fill(color.opacity(0.15))
                     )
             } else {
                 Image(systemName: symbolName)
                     .resizable()
+                    .scaledToFit()
             }
         case .text(let text):
             Text(text)
