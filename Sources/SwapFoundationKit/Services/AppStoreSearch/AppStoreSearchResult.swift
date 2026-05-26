@@ -21,6 +21,24 @@ private struct AppStoreSearchResponse: Decodable {
     let results: [AppStoreSearchResult]
 }
 
+private struct AppStoreSearchRequest: NetworkRequest {
+    let term: String
+
+    var scheme: String { "https" }
+    var baseURL: String { "itunes.apple.com" }
+    var path: String { "/search" }
+    var method: HTTPMethod { .get }
+    var parameters: [String : String]? {
+        [
+            "entity": "software",
+            "limit": "12",
+            "term": term
+        ]
+    }
+    var headers: [String : String]? { nil }
+    var body: Data? { nil }
+}
+
 @MainActor
 final public class AppStoreSearchService: ObservableObject {
     @Published public var query = ""
@@ -29,8 +47,11 @@ final public class AppStoreSearchService: ObservableObject {
     @Published public var errorMessage: String?
 
     private var searchTask: Task<Void, Never>?
+    private let client: HTTPClient
 
-    public init() {}
+    public init(client: HTTPClient = .shared) {
+        self.client = client
+    }
 
     public func updateQuery(_ newValue: String) {
         query = newValue
@@ -52,18 +73,11 @@ final public class AppStoreSearchService: ObservableObject {
     }
 
     func search(term: String) async {
-        guard let encodedTerm = term.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "https://itunes.apple.com/search?entity=software&limit=12&term=\(encodedTerm)") else {
-            errorMessage = "Could not build the App Store search URL."
-            return
-        }
-
         isSearching = true
         errorMessage = nil
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(AppStoreSearchResponse.self, from: data)
+            let response: AppStoreSearchResponse = try await client.executeAndDecode(AppStoreSearchRequest(term: term))
             results = response.results
         } catch {
             if Task.isCancelled { return }

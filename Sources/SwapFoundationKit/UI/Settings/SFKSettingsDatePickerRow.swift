@@ -63,24 +63,12 @@ public struct SFKSettingsDatePickerRow: View {
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                iconContainer
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: resolvedTint
+            ) {
                 Text(formattedDate)
                     .font(theme.typography.valueFont)
                     .foregroundStyle(theme.colors.valueColor)
@@ -121,19 +109,6 @@ public struct SFKSettingsDatePickerRow: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
-    }
-
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private var formattedDate: String {
@@ -201,24 +176,12 @@ public struct SFKSettingsTimePickerRow: View {
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                iconContainer
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: resolvedTint
+            ) {
                 Text(formattedTime)
                     .font(theme.typography.valueFont)
                     .foregroundStyle(theme.colors.valueColor)
@@ -260,19 +223,6 @@ public struct SFKSettingsTimePickerRow: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
-    }
-
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private var formattedTime: String {
@@ -321,22 +271,18 @@ public struct SFKSettingsInlineDatePicker: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedTint(tint)
-        HStack(spacing: theme.metrics.rowSpacing) {
-            ZStack {
-                RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                    .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-                Image(systemName: icon)
-                    .font(theme.typography.iconFont)
-                    .foregroundStyle(resolvedTint)
-            }
-            .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
+        _SFKSettingsRowContent(
+            title: title,
+            subtitle: "",
+            icon: icon,
+            tint: resolvedTint
+        ) {
             DatePicker(
                 title,
                 selection: $selection,
                 displayedComponents: displayedComponents
             )
+            .labelsHidden()
             .font(theme.typography.subtitleFont)
             .tint(resolvedTint)
         }

@@ -57,24 +57,12 @@ public struct SFKSettingsLinkRow: View {
         Button {
             openURL()
         } label: {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                iconContainer
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: theme.resolvedTint(tint)
+            ) {
                 Image(systemName: "arrow.up.right")
                     .font(theme.typography.accessoryFont)
                     .foregroundStyle(theme.colors.accessoryColor)
@@ -87,19 +75,6 @@ public struct SFKSettingsLinkRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
-    }
-
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 
     private func openURL() {
@@ -150,32 +125,13 @@ public struct SFKSettingsDestructiveRow: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                        .fill(theme.colors.destructiveTint.opacity(theme.colors.iconBackgroundOpacity))
-
-                    Image(systemName: icon)
-                        .font(theme.typography.iconFont)
-                        .foregroundStyle(theme.colors.destructiveTint)
-                }
-                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.destructiveTint)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-            }
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: theme.colors.destructiveTint,
+                titleColor: theme.colors.destructiveTint
+            )
             .padding(.vertical, theme.metrics.rowVerticalPadding)
             .contentShape(Rectangle())
         }
@@ -253,24 +209,12 @@ public struct SFKSettingsConfirmationRow: View {
         Button {
             showConfirmation = true
         } label: {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                iconContainer
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: theme.resolvedTint(tint)
+            ) {
                 Image(systemName: "chevron.right")
                     .font(theme.typography.accessoryFont)
                     .foregroundStyle(theme.colors.accessoryColor)
@@ -287,19 +231,6 @@ public struct SFKSettingsConfirmationRow: View {
         } message: {
             Text(confirmationMessage)
         }
-    }
-
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 }
 

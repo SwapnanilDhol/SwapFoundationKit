@@ -52,42 +52,18 @@ public struct SFKSettingsColorPickerRow: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedTint(tint)
-        ColorPicker(selection: $selection, supportsOpacity: true) {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                        .fill(selection.opacity(0.14))
-
-                    Image(systemName: icon)
-                        .font(theme.typography.iconFont)
-                        .foregroundStyle(resolvedTint)
-                }
-                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Circle()
-                    .fill(selection)
-                    .frame(width: theme.metrics.colorSwatchSize, height: theme.metrics.colorSwatchSize)
-                    .overlay(
-                        Circle()
-                            .strokeBorder(theme.colors.swatchBorderColor, lineWidth: 1)
-                    )
-            }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
-            .contentShape(Rectangle())
+        _SFKSettingsRowContent(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            tint: resolvedTint,
+            iconBackgroundColor: selection.opacity(0.14)
+        ) {
+            ColorPicker(title, selection: $selection, supportsOpacity: true)
+                .labelsHidden()
         }
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
+        .contentShape(Rectangle())
     }
 }
 
@@ -127,23 +103,17 @@ public struct SFKSettingsInlineColorPicker: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedTint(tint)
-        HStack(spacing: theme.metrics.rowSpacing) {
-            ZStack {
-                RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                    .fill(selection.opacity(0.14))
-
-                Image(systemName: icon)
-                    .font(theme.typography.iconFont)
-                    .foregroundStyle(resolvedTint)
-            }
-            .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
+        _SFKSettingsRowContent(
+            title: title,
+            subtitle: "",
+            icon: icon,
+            tint: resolvedTint,
+            iconBackgroundColor: selection.opacity(0.14)
+        ) {
             ColorPicker(title, selection: $selection, supportsOpacity: true)
-                .font(theme.typography.subtitleFont)
+                .labelsHidden()
                 .tint(resolvedTint)
                 .buttonStyle(SFKSettingsFormRowButtonStyle())
-
-            Spacer()
         }
         .padding(.vertical, theme.metrics.rowVerticalPadding)
     }

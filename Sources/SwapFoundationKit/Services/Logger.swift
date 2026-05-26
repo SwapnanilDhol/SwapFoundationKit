@@ -90,6 +90,14 @@ public enum Logger {
         let color = level.color
         let reset = "\u{001B}[0m"
         print("\(color)\(level.emoji) [\(projectName)][\(timestamp)][\(level.rawValue)] [\(fileName):\(line) \(function)] [\(thread)]\(contextString) - \(message)\(reset)")
+        SFKPulseService.recordMessage(
+            level: level,
+            message: message,
+            context: context,
+            function: function,
+            file: file,
+            line: line
+        )
         Task {
             let shouldSendAnalytics = await LoggerSettings.shared.sendAnalyticsOnError
             if level == .error && shouldSendAnalytics {

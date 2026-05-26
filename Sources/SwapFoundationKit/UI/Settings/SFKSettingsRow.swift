@@ -7,6 +7,30 @@
 
 import SwiftUI
 
+/// Trailing content for a settings row — either a themed value string or a fully custom view.
+public enum SFKSettingsTrailing {
+    /// A string rendered with the theme's `valueFont` and `valueColor`.
+    case value(String)
+    /// A fully custom trailing view. Theme styling is applied automatically (font + color).
+    case custom(AnyView)
+}
+
+/// A simple text view styled by the settings theme for use as trailing row content.
+public struct SFKSettingsValueText: View {
+    @Environment(\.sfkSettingsTheme) private var theme
+
+    let text: String
+
+    public init(_ text: String) { self.text = text }
+
+    public var body: some View {
+        Text(text)
+            .font(theme.typography.valueFont)
+            .foregroundStyle(theme.colors.valueColor)
+            .multilineTextAlignment(.trailing)
+    }
+}
+
 /// A reusable SwiftUI row component for displaying a settings item.
 ///
 /// Renders an icon in a colored rounded rectangle, followed by title and subtitle,
@@ -21,12 +45,8 @@ import SwiftUI
 ///     }
 /// }
 ///
-/// // With custom trailing view
-/// SFKSettingsRow(item: versionItem, trailingView: {
-///     Text("1.0.0 (100)")
-///         .font(.subheadline)
-///         .foregroundStyle(.secondary)
-/// })
+/// // With themed trailing value
+/// SFKSettingsRow(item: versionItem, trailingView: .value("1.0.0 (100)")) {}
 /// ```
 public struct SFKSettingsRow: View {
     @Environment(\.sfkSettingsTheme) private var theme
@@ -37,19 +57,19 @@ public struct SFKSettingsRow: View {
     private let tint: Color
     private let showChevron: Bool
     private let action: () -> Void
-    private let trailingView: AnyView?
+    private let trailingView: SFKSettingsTrailing?
 
     /// Creates a settings row.
     /// - Parameters:
     ///   - item: The settings item to display.
     ///   - action: The action to perform when the row is tapped.
     ///   - showChevron: Whether to show chevron. Default is `true`.
-    ///   - trailingView: Optional custom trailing view.
+    ///   - trailingView: Optional themed or custom trailing content.
     public init<Item: SettingsItem>(
         item: Item,
         action: @escaping () -> Void,
         showChevron: Bool = true,
-        trailingView: AnyView? = nil
+        trailingView: SFKSettingsTrailing? = nil
     ) {
         self.icon = item.icon
         self.title = item.title
@@ -62,10 +82,12 @@ public struct SFKSettingsRow: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                iconContainer
-                labelStack
-                Spacer()
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: theme.resolvedItemTint(tint)
+            ) {
                 trailingContent
             }
             .padding(.vertical, theme.metrics.rowVerticalPadding)
@@ -74,44 +96,19 @@ public struct SFKSettingsRow: View {
         .buttonStyle(SFKSettingsFormRowButtonStyle())
     }
 
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedItemTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-    }
-
-    private var labelStack: some View {
-        VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-            Text(title)
-                .font(theme.typography.titleFont)
-                .foregroundStyle(theme.colors.titleColor)
-
-            if !subtitle.isEmpty {
-                Text(subtitle)
-                    .font(theme.typography.subtitleFont)
-                    .foregroundStyle(theme.colors.subtitleColor)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
     @ViewBuilder
     private var trailingContent: some View {
         HStack(alignment: .center, spacing: theme.metrics.trailingSpacing) {
-            if let trailing = trailingView {
-                trailing
+            switch trailingView {
+            case .value(let text):
+                SFKSettingsValueText(text)
+            case .custom(let view):
+                view
                     .font(theme.typography.valueFont)
                     .foregroundStyle(theme.colors.valueColor)
                     .multilineTextAlignment(.trailing)
+            case nil:
+                EmptyView()
             }
             if showChevron {
                 Image(systemName: "chevron.right")
@@ -146,31 +143,101 @@ public struct SFKSettingsLabel: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedTint(tint)
-        return HStack(spacing: theme.metrics.rowSpacing) {
+        return _SFKSettingsRowContent(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            tint: resolvedTint
+        )
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
+    }
+}
+
+struct _SFKSettingsRowContent<Trailing: View>: View {
+    @Environment(\.sfkSettingsTheme) private var theme
+
+    let title: String
+    let subtitle: String
+    let icon: String
+    let tint: Color
+    let iconBackgroundColor: Color?
+    let titleColor: Color?
+    let subtitleColor: Color?
+    let trailing: Trailing
+
+    init(
+        title: String,
+        subtitle: String,
+        icon: String,
+        tint: Color,
+        iconBackgroundColor: Color? = nil,
+        titleColor: Color? = nil,
+        subtitleColor: Color? = nil,
+        @ViewBuilder trailing: () -> Trailing
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = icon
+        self.tint = tint
+        self.iconBackgroundColor = iconBackgroundColor
+        self.titleColor = titleColor
+        self.subtitleColor = subtitleColor
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        HStack(spacing: theme.metrics.rowSpacing) {
             ZStack {
                 RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                    .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
+                    .fill(iconBackgroundColor ?? tint.opacity(theme.colors.iconBackgroundOpacity))
 
                 Image(systemName: icon)
                     .font(theme.typography.iconFont)
-                    .foregroundStyle(resolvedTint)
+                    .foregroundStyle(tint)
             }
             .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
 
             VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
                 Text(title)
                     .font(theme.typography.titleFont)
-                    .foregroundStyle(theme.colors.titleColor)
+                    .foregroundStyle(titleColor ?? theme.colors.titleColor)
 
-                Text(subtitle)
-                    .font(theme.typography.subtitleFont)
-                    .foregroundStyle(theme.colors.subtitleColor)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(theme.typography.subtitleFont)
+                        .foregroundStyle(subtitleColor ?? theme.colors.subtitleColor)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            trailing
         }
-        .padding(.vertical, theme.metrics.rowVerticalPadding)
+    }
+}
+
+extension _SFKSettingsRowContent where Trailing == EmptyView {
+    init(
+        title: String,
+        subtitle: String,
+        icon: String,
+        tint: Color,
+        iconBackgroundColor: Color? = nil,
+        titleColor: Color? = nil,
+        subtitleColor: Color? = nil
+    ) {
+        self.init(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            tint: tint,
+            iconBackgroundColor: iconBackgroundColor,
+            titleColor: titleColor,
+            subtitleColor: subtitleColor
+        ) {
+            EmptyView()
+        }
     }
 }
 
@@ -228,11 +295,7 @@ private enum PreviewSettingsItem: String, SettingsItem {
             item: PreviewSettingsItem.version,
             action: {},
             showChevron: false,
-            trailingView: AnyView(
-                Text("1.0.0 (100)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            )
+            trailingView: .value("1.0.0 (100)")
         )
     }
 }

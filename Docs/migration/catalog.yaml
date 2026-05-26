@@ -65,6 +65,39 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/Services/Logger.swift
 
+  - id: pulse_logging_console
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKPulseService
+      - SFKPulseConsoleView
+      - SFKPulseConfiguration
+      - SFKPulseNetworkCaptureMode
+    public_symbols:
+      - SFKPulseService.configure(_:)
+      - SFKPulseService.isEnabled
+      - SFKPulseConsoleView.init(mode:)
+      - SFKPulseConfiguration.init(...)
+    host_search_terms:
+      - Pulse
+      - PulseUI
+      - ConsoleView
+      - NetworkLogger
+      - LoggerStore
+      - URLSessionProxy
+      - network inspector
+      - debug console
+    suspicious_file_patterns:
+      - "*Pulse*"
+      - "*Console*"
+      - "*NetworkInspector*"
+      - "*LoggerStore*"
+    keep_custom_when:
+      - The host app intentionally uses a different log viewer or must support a custom observability backend instead of Pulse.
+    source_files:
+      - Sources/SwapFoundationKit/Services/SFKPulseService.swift
+      - Sources/SwapFoundationKit/Services/SFKPulseConsoleView.swift
+
   - id: analytics
     audit_tier: exact
     confidence: high
@@ -134,11 +167,18 @@ capabilities:
       - NetworkService
       - HTTPMethod
       - NetworkResponse
+      - NetworkDownloadResponse
+      - NetworkDownloadProgress
       - NetworkError
     public_symbols:
       - HTTPClient.execute(_:)
       - HTTPClient.executeAndDecode(_:)
+      - HTTPClient.download(_:to:progressHandler:)
+      - HTTPClient.download(_:to:progress:progressHandler:)
+      - HTTPClient.download(scheme:baseURL:path:to:parameters:headers:progressHandler:)
+      - HTTPClient.download(scheme:baseURL:path:to:parameters:headers:progress:progressHandler:)
       - NetworkService.get/post/put/delete
+      - NetworkService.downloadFile(from:to:progressHandler:)
       - NetworkRequest.request
     host_search_terms:
       - APIClient
@@ -147,6 +187,8 @@ capabilities:
       - URLSession
       - Endpoint
       - HTTPClient
+      - downloadFile
+      - DownloadManager
       - Alamofire
     suspicious_file_patterns:
       - "*APIClient*"

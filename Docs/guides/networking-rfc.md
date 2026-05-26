@@ -347,6 +347,11 @@ Work:
 3. Add structured metrics/logging hooks.
 4. Add download/upload support directly on `HTTPClient`.
 
+Progress note:
+
+- `HTTPClient` now owns file-download support
+- `NetworkService.downloadFile` should remain a thin convenience wrapper that delegates to `HTTPClient`
+
 ### Phase 4: Deliver advanced transport capabilities
 
 Goals:

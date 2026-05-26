@@ -21,10 +21,23 @@ public final class NetworkService: ObservableObject {
         case ethernet
         case unknown
     }
-    
+
+    public static let shared = NetworkService()
+
     @Published public private(set) var isConnected = false
     @Published public private(set) var connectionType: ConnectionType = .unknown
-    
+
+    /// Headers included on every personal backend (Workers) request.
+    /// X-App-User-ID is always sent to enable server-side rate limiting and entitlement validation.
+    /// Set `backendHeadersProvider` at app launch to supply these headers.
+    public var backendDefaultHeaders: [String: String] {
+        Self.backendHeadersProvider?() ?? [:]
+    }
+
+    /// Closure that returns backend headers. Set by the host app at launch.
+    /// Example: { ["X-App-User-ID": AppUserID.headerValue] }
+    public static var backendHeadersProvider: (() -> [String: String])?
+
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkService")
     private let client: HTTPClient
@@ -67,14 +80,16 @@ public final class NetworkService: ObservableObject {
     /// Performs a GET request
     /// - Parameters:
     ///   - url: The URL to request
+    ///   - headers: Additional headers
     ///   - timeout: Request timeout in seconds
     /// - Returns: The response data
     /// - Throws: NetworkError
-    public func get(from url: URL, timeout: TimeInterval = 30) async throws -> Data {
+    public func get(from url: URL, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
         return try await performRequest(
             BasicURLNetworkRequest(
                 url: url,
                 method: .get,
+                headers: headers,
                 timeoutInterval: timeout
             )
         )
@@ -201,62 +216,20 @@ public final class NetworkService: ObservableObject {
     /// - Throws: NetworkError
     public func downloadFile(from url: URL, to destination: URL, progressHandler: ((Double) -> Void)? = nil) async throws -> URL {
         let request = BasicURLNetworkRequest(url: url, method: .get)
-        guard let urlRequest = request.request else {
-            throw NetworkError.invalidURL
-        }
-
-        do {
-            let (asyncBytes, response) = try await client.session.bytes(for: urlRequest)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw NetworkError.invalidResponse
-            }
-
-            guard httpResponse.statusCode == 200 else {
-                throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: nil)
-            }
-
-            if !FileManager.default.fileExists(atPath: destination.path) {
-                FileManager.default.createFile(atPath: destination.path, contents: nil)
-            }
-
-            let totalBytes = httpResponse.expectedContentLength
-            var downloadedBytes: Int64 = 0
-            let bufferSize = 64 * 1024
-            var writeBuffer = Data()
-            writeBuffer.reserveCapacity(bufferSize)
-
-            let fileHandle = try FileHandle(forWritingTo: destination)
-            defer { try? fileHandle.close() }
-
-            for try await byte in asyncBytes {
-                writeBuffer.append(byte)
-                downloadedBytes += 1
-
-                if writeBuffer.count >= bufferSize {
-                    try fileHandle.write(contentsOf: writeBuffer)
-                    writeBuffer.removeAll(keepingCapacity: true)
-                }
-
-                if let progressHandler, totalBytes > 0 {
-                    let progress = Double(downloadedBytes) / Double(totalBytes)
-                    progressHandler(progress)
-                }
-            }
-
-            if !writeBuffer.isEmpty {
-                try fileHandle.write(contentsOf: writeBuffer)
-            }
-
-            return destination
-        } catch {
-            throw NetworkError.from(error)
-        }
+        let response = try await client.download(request, to: destination, progressHandler: progressHandler)
+        return response.fileURL
     }
     
     // MARK: - Private Methods
     
     private func performRequest(_ request: NetworkRequest) async throws -> Data {
+        var allHeaders = backendDefaultHeaders
+        if let requestHeaders = request.headers {
+            for (key, value) in requestHeaders {
+                allHeaders[key] = value
+            }
+        }
+
         let response = try await client.execute(request)
         return response.data
     }

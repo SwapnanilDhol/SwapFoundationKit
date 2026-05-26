@@ -54,10 +54,10 @@ public struct SFKSettingsTheme {
         public var accessoryFont: Font
 
         public init(
-            iconFont: Font = .subheadline.weight(.semibold),
-            titleFont: Font = .body.weight(.semibold),
-            subtitleFont: Font = .body,
-            valueFont: Font = .subheadline,
+            iconFont: Font = .footnote.weight(.semibold),
+            titleFont: Font = .subheadline.weight(.semibold),
+            subtitleFont: Font = .footnote,
+            valueFont: Font = .footnote,
             accessoryFont: Font = .caption
         ) {
             self.iconFont = iconFont
@@ -78,12 +78,12 @@ public struct SFKSettingsTheme {
         public var colorSwatchSize: CGFloat
 
         public init(
-            iconTileSize: CGFloat = 32,
+            iconTileSize: CGFloat = 28,
             iconCornerRadius: CGFloat = 6,
-            rowSpacing: CGFloat = 12,
+            rowSpacing: CGFloat = 10,
             labelSpacing: CGFloat = 2,
             trailingSpacing: CGFloat = 8,
-            rowVerticalPadding: CGFloat = 6,
+            rowVerticalPadding: CGFloat = 3,
             colorSwatchSize: CGFloat = 24
         ) {
             self.iconTileSize = iconTileSize

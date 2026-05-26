@@ -66,24 +66,12 @@ public struct SFKSettingsStepperRow: View {
     }
 
     public var body: some View {
-        HStack(spacing: theme.metrics.rowSpacing) {
-            iconContainer
-
-            VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                Text(title)
-                    .font(theme.typography.titleFont)
-                    .foregroundStyle(theme.colors.titleColor)
-
-                Text(subtitle)
-                    .font(theme.typography.subtitleFont)
-                    .foregroundStyle(theme.colors.subtitleColor)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Spacer()
-
+        _SFKSettingsRowContent(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            tint: theme.resolvedTint(tint)
+        ) {
             HStack(spacing: 8) {
                 if let displayValue = displayValue {
                     Text(displayValue(value))
@@ -102,19 +90,6 @@ public struct SFKSettingsStepperRow: View {
             }
         }
         .padding(.vertical, theme.metrics.rowVerticalPadding)
-    }
-
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 }
 
@@ -177,24 +152,12 @@ public struct SFKSettingsSliderRow: View {
 
     public var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                iconContainer
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: theme.resolvedTint(tint)
+            ) {
                 if let displayValue = displayValue {
                     Text(displayValue(value))
                         .font(theme.typography.valueFont)
@@ -207,19 +170,6 @@ public struct SFKSettingsSliderRow: View {
                 .tint(theme.resolvedSliderTint(tint))
         }
         .padding(.vertical, theme.metrics.rowVerticalPadding)
-    }
-
-    private var iconContainer: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return ZStack {
-            RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-            Image(systemName: icon)
-                .font(theme.typography.iconFont)
-                .foregroundStyle(resolvedTint)
-        }
-        .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
     }
 }
 

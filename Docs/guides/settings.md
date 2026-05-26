@@ -9,6 +9,7 @@ The settings module is split into:
 - `SFKSettingsScreen` for a shared `Form`-based shell with sections, headers, and footers
 - `SFKSettingsTheme` for injected colors, typography, and sizing
 - `SFKSettingsRow` and `SFKSettingsLabel` for static/tappable rows
+- `SFKSettingsTrailing` enum (`.value` / `.custom`) and `SFKSettingsValueText` for typed trailing content
 - `SFKSettingsToggle`, `SFKSettingsToggleRow`, `SFKSettingsDatePickerRow`, `SFKSettingsTimePickerRow`, `SFKSettingsInlineDatePicker`, `SFKSettingsPickerRow`, `SFKSettingsPickerSheetRow`, `SFKSettingsStepperRow`, `SFKSettingsSliderRow`, `SFKSettingsColorPickerRow`, and `SFKSettingsInlineColorPicker` for interactive controls
 - `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for common reusable items
 - `SFKSettingsActionHandler`, `SFKInformationSectionHandler`, and `SFKDeveloperSectionHandler` for standard URL/share/review actions
@@ -195,18 +196,22 @@ Use `.preserveItemTint` when you want rows like privacy, developer, or destructi
 
 ### Add trailing values
 
-Use `rowTrailingBuilder` when you want `SFKSettingsScreen` rows to show dynamic values such as version, last sync, or selected units.
+Use `rowTrailingBuilder` when you want `SFKSettingsScreen` rows to show dynamic values such as version, last sync, or selected units. Return `.value("...")` for theme-styled text, or `.custom(AnyView(...))` for fully custom trailing content.
 
 ```swift
 rowTrailingBuilder: { item in
-    if let item = item as? SFKInformationSectionItem, item == .version {
-        return AnyView(
-            Text("2.2.0 (1)")
-        )
+    switch item {
+    case let infoItem as SFKInformationSectionItem where infoItem == .version:
+        return .value("2.2.0 (1)")
+    case let appItem as AppSettingsItem where appItem == .userName:
+        return .value(userName)
+    default:
+        return nil
     }
-    return nil
 }
 ```
+
+`SFKSettingsValueText` (used by `.value`) reads `valueFont` and `valueColor` from the theme, so trailing text stays visually consistent without manual styling.
 
 ### Hide chevrons selectively
 
@@ -228,6 +233,10 @@ Use `SFKInformationSectionItem.allCases` and `SFKDeveloperSectionItem.allCases` 
 ## Integration audit
 
 Use the checklist in [Settings Integration Checklist](../reference/settings-integration-checklist.md) after wiring a host app.
+
+## Patterns and best practices
+
+For architectural patterns (section composition, trailing values, debug menus, presentation ownership, item routing), see [Settings Patterns](settings-patterns.md).
 
 ## Preview entry points
 

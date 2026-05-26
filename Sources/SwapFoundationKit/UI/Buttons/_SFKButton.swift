@@ -11,14 +11,7 @@
 
 import SwiftUI
 
-@available(iOS 26, *)
-public enum SFKButtonStyle {
-    case standard   // uses fillColor + custom background
-    case glass      // uses .buttonStyle(.glass)
-    case glassProminent // uses .buttonStyle(.glassProminent)
-}
-
-@available(iOS 26, *)
+@available(iOS 16, *)
 public struct _SFKButton: View {
 
     @Environment(\.isEnabled) private var isEnabled
@@ -37,7 +30,6 @@ public struct _SFKButton: View {
     private let isFullWidth: Bool
     private let isLoading: Bool
     private let hapticStyle: SFKButtonHapticStyle
-    private let style: SFKButtonStyle
     private let action: () -> Void
 
     public init(
@@ -50,11 +42,10 @@ public struct _SFKButton: View {
         borderColor: Color = .clear,
         font: Font = .body.weight(.semibold),
         subtitleFont: Font = .caption,
-        cornerRadius: CGFloat = 14,
+        cornerRadius: CGFloat = 18,
         isFullWidth: Bool = true,
         isLoading: Bool = false,
         hapticStyle: SFKButtonHapticStyle = .medium,
-        style: SFKButtonStyle = .standard,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -70,47 +61,28 @@ public struct _SFKButton: View {
         self.isFullWidth = isFullWidth
         self.isLoading = isLoading
         self.hapticStyle = hapticStyle
-        self.style = style
         self.action = action
     }
 
     public var body: some View {
-        switch style {
-        case .standard:
-            standardButton
-        case .glass:
-            glassButton
-                .buttonStyle(.glass)
-        case .glassProminent:
-            glassButton
+        if #available(iOS 26, *) {
+            baseButton
                 .buttonStyle(.glassProminent)
+                .buttonBorderShape(.roundedRectangle(radius: cornerRadius))
+                .tint(fillColor)
+        } else {
+            baseButton
+                .buttonStyle(.plain)
+                .background(fillColor, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(borderColor, lineWidth: 1)
+                }
+                .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
     }
 
-    // MARK: - Standard (custom background)
-
-    private var standardButton: some View {
-        baseButton
-            .background(fillColor, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(borderColor, lineWidth: 1)
-            }
-            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .buttonStyle(.plain)
-    }
-
-    // MARK: - Glass (system renders the background)
-
-    private var glassButton: some View {
-        baseButton
-            // No custom background — .buttonStyle(.glass/.glassProminent) owns the surface.
-            // cornerRadius is expressed via buttonBorderShape instead.
-            .buttonBorderShape(.roundedRectangle(radius: cornerRadius))
-            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-    }
-
-    // MARK: - Shared label
+    // MARK: - Base Button
 
     private var baseButton: some View {
         Button {
@@ -126,7 +98,7 @@ public struct _SFKButton: View {
 
                 if isLoading {
                     ProgressView()
-                        .tint(style == .standard ? textColor : nil)
+                        .tint(textColor)
                 } else {
                     content
                 }
@@ -134,7 +106,7 @@ public struct _SFKButton: View {
             .frame(maxWidth: isFullWidth ? .infinity : nil, alignment: frameAlignment)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .foregroundStyle(style == .standard ? textColor : .primary)
+            .foregroundStyle(textColor)
         }
         .disabled(isLoading)
         .animation(.easeInOut(duration: 0.2), value: isLoading)
@@ -152,18 +124,14 @@ public struct _SFKButton: View {
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
                     .font(subtitleFont)
-                    .foregroundStyle(
-                        style == .standard
-                            ? AnyShapeStyle(textColor.opacity(0.82))
-                            : AnyShapeStyle(.secondary)
-                    )
+                    .foregroundStyle(textColor.opacity(0.82))
                     .lineLimit(2)
             }
         }
         .multilineTextAlignment(resolvedMultilineAlignment)
     }
 
-    // MARK: - Alignment helpers
+    // MARK: - Alignment Helpers
 
     private var resolvedHorizontalAlignment: HorizontalAlignment {
         switch textAlignment {
@@ -204,33 +172,87 @@ public struct _SFKButton: View {
 // MARK: - Previews
 
 @available(iOS 26, *)
-#Preview("Standard") {
+#Preview("Primary CTA") {
+
     VStack(spacing: 16) {
-        _SFKButton("Continue", icon: "arrow.right", fillColor: .blue) { }
-        _SFKButton("Delete", fillColor: .red) { }
+        _SFKButton(
+            "Continue",
+            subtitle: "Recommended next step",
+            icon: "arrow.right",
+            fillColor: .blue
+        ) { }
+
+        _SFKButton(
+            "Upgrade to Pro",
+            icon: "sparkles",
+            fillColor: .orange
+        ) { }
     }
     .padding(24)
 }
 
 @available(iOS 26, *)
-#Preview("Glass") {
-    ZStack {
-        LinearGradient(colors: [.blue, .purple], startPoint: .top, endPoint: .bottom)
-            .ignoresSafeArea()
+#Preview("Alignment") {
+    VStack(spacing: 16) {
+        _SFKButton(
+            "Leading aligned title",
+            subtitle: "Designed for longer supporting copy",
+            icon: "text.alignleft",
+            textAlignment: .leading,
+            fillColor: .green
+        ) { }
 
-        VStack(spacing: 16) {
-            _SFKButton("Filters", icon: "slider.horizontal.3", isFullWidth: false, style: .glass) { }
-            _SFKButton("Save", icon: "square.and.arrow.down", style: .glassProminent) { }
-        }
-        .padding(24)
+        _SFKButton(
+            "Trailing aligned title",
+            subtitle: "Useful for utility-style treatments",
+            icon: "text.alignright",
+            textAlignment: .trailing,
+            fillColor: .indigo
+        ) { }
     }
+    .padding(24)
 }
 
 @available(iOS 26, *)
-#Preview("Loading") {
+#Preview("Compact") {
+    HStack(spacing: 12) {
+        _SFKButton(
+            "Close",
+            icon: "xmark",
+            fillColor: Color(.quaternarySystemFill),
+            cornerRadius: 12,
+            isFullWidth: false
+        ) { }
+
+        _SFKButton(
+            "Filters",
+            icon: "slider.horizontal.3",
+            fillColor: .primary,
+            cornerRadius: 12,
+            isFullWidth: false
+        ) { }
+    }
+    .padding(24)
+}
+
+@available(iOS 26, *)
+#Preview("Loading & Disabled") {
     VStack(spacing: 16) {
-        _SFKButton("Saving...", fillColor: .blue, isLoading: true, style: .standard) { }
-        _SFKButton("Saving...", isLoading: true, style: .glass) { }
+        _SFKButton(
+            "Saving Changes",
+            subtitle: "Syncing your latest edits",
+            icon: "arrow.triangle.2.circlepath",
+            fillColor: .blue,
+            isLoading: true
+        ) { }
+
+        _SFKButton(
+            "Disabled Action",
+            subtitle: "Waiting for required input",
+            icon: "lock.fill",
+            fillColor: .red
+        ) { }
+        .disabled(true)
     }
     .padding(24)
 }

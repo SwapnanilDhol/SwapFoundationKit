@@ -27,12 +27,19 @@ let package = Package(
             url: "https://github.com/BastiaanJansen/Toast-Swift.git",
             exact: "2.1.3"
         ),
+        .package(
+            url: "https://github.com/kean/Pulse.git",
+            exact: "5.1.2"
+        ),
     ],
     targets: [
         .target(
             name: "SwapFoundationKit",
             dependencies: [
                 .product(name: "Toast", package: "Toast-Swift"),
+                .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
+                .product(name: "PulseUI", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
+                .product(name: "PulseProxy", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
             ]
         ),
         .target(
@@ -44,7 +51,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SwapFoundationKitTests",
-            dependencies: ["SwapFoundationKit"]
+            dependencies: [
+                "SwapFoundationKit",
+                .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
+            ]
         ),
         .testTarget(
             name: "SwapFoundationKitGoogleMobileAdsTests",

@@ -1,6 +1,6 @@
 # Services
 
-Application-level services for haptics, logging, analytics, user defaults, deeplinks, toasts, file I/O, pasteboard, location, app links, notifications, and Pro gating.
+Application-level services for haptics, logging, analytics, Pulse inspection, user defaults, deeplinks, toasts, file I/O, pasteboard, location, app links, notifications, and Pro gating.
 
 ## Public API
 
@@ -9,6 +9,12 @@ Application-level services for haptics, logging, analytics, user defaults, deepl
 | `HapticsHelper` | class | Impact (light/medium/heavy/custom) and notification haptics |
 | `Logger` | enum | Colored console logging with emoji prefixes, analytics fan-out on errors |
 | `LogLevel` | enum | debug, info, warning, error |
+| `SFKPulseService` | enum | Configures Pulse-backed log persistence and network capture for SFK |
+| `SFKPulseConfiguration` | struct | Controls store location, network capture mode, redaction, and remote logging |
+| `SFKPulseNetworkCaptureMode` | enum | disabled, SFK HTTPClient only, or debug proxy for all URLSessions |
+| `SFKPulseStoreLocation` | enum | Shared Pulse store or custom store URL |
+| `SFKPulseConsoleView` | struct | Ready-made SwiftUI console screen backed by PulseUI |
+| `SFKPulseConsoleMode` | enum | all, logs, network |
 | `AnalyticsManager` | class | Protocol-based fan-out to multiple `AnalyticsLogger` providers |
 | `AnalyticsLogger` | protocol | Implement to forward events to Firebase, TelemetryDeck, PostHog, etc. |
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
@@ -47,6 +53,16 @@ helper.successNotification()
 Logger.info("User signed in", context: "Auth")
 Logger.error("Network timeout", context: "API")
 
+// Pulse
+SFKPulseService.configure(
+    SFKPulseConfiguration(
+        networkCaptureMode: .sfkHTTPClientOnly,
+        enableRemoteLogging: true
+    )
+)
+// Present SFKPulseConsoleView() from a sheet or NavigationStack destination
+// Use hidesCloseButton: true when the console is pushed inside your own navigation stack
+
 // Analytics
 AnalyticsManager.shared.addLogger(SFKFirebaseLogger())
 AnalyticsManager.shared.logEvent(event: myEvent)
@@ -75,6 +91,8 @@ await SFKNotificationService.shared.requestAuthorization()
 await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 ```
 
+Host-app integration guidance lives in [Docs/guides/pulse-integration.md](../../../Docs/guides/pulse-integration.md).
+
 ## Source Files
 
 ### Analytics
@@ -90,6 +108,8 @@ await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 ### Other
 - `HapticsHelper.swift` — Haptic feedback
 - `Logger.swift` — Colored logging
+- `SFKPulseService.swift` — Pulse integration for logs and networking
+- `SFKPulseConsoleView.swift` — In-app Pulse console view
 - `ToastManager.swift` — Toast notifications
 - `UserDefault.swift` + `UserDefaults+.swift` — Type-safe defaults
 - `PasteboardService.swift` — Clipboard access

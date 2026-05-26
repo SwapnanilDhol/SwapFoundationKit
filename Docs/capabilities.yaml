@@ -218,7 +218,7 @@ domains:
 
   - id: utilities
     priority: 7
-    summary: Broad utility layer for haptics, logging, analytics, defaults, URLs, backup, file import/export, pasteboard, location, and foundational extensions.
+    summary: Broad utility layer for haptics, logging, analytics, Pulse inspection, defaults, URLs, backup, file import/export, pasteboard, location, and foundational extensions.
     when_to_check:
       - Adding common app infrastructure
       - Replacing thin wrappers around standard iOS utilities
@@ -231,6 +231,8 @@ domains:
     public_api:
       - HapticsHelper
       - Logger
+      - SFKPulseService
+      - SFKPulseConsoleView
       - AnalyticsManager
       - UserDefault
       - AppLinkOpener
@@ -258,6 +260,9 @@ domains:
       - haptics
       - logging
       - analytics
+      - pulse
+      - in-app logs
+      - network inspector
       - user defaults
       - app link
       - backup

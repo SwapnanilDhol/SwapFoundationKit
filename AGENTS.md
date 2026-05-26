@@ -119,6 +119,7 @@ When tasked with "migrate [capability] to SFK":
 - Keep module READMEs in sync with source files
 - Prefer false negatives over noisy false positives in audits
 - Audit against public API only
+- For SwiftUI UI, prefer semantic Dynamic Type text styles such as `.body`, `.subheadline`, `.footnote`, and `.caption` over hardcoded font sizes for titles, subtitles, and values.
 
 ## File Structure Reference
 

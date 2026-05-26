@@ -29,7 +29,7 @@ Use this checklist to audit whether a host app has integrated `SFKSettings` clea
 ## Composition
 
 - Static informational rows are represented as `SettingsItem` values where possible
-- Dynamic values such as version, sync time, or selected units use `rowTrailingBuilder`
+- Dynamic trailing values use `SFKSettingsTrailing` (`.value` for themed text, `.custom` for bespoke content) returned from `rowTrailingBuilder`
 - Non-navigable rows hide the chevron using `rowChevronBuilder`
 - Row tap routing is centralized instead of scattered across multiple nested views
 

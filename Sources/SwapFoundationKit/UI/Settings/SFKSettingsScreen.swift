@@ -57,7 +57,7 @@ public struct SFKSettingsSectionConfiguration: Identifiable {
 public typealias SFKSettingsItemAction = (any SettingsItem) -> Void
 
 /// A closure type for building custom trailing content for a settings row.
-public typealias SFKSettingsTrailingBuilder = (any SettingsItem) -> AnyView?
+public typealias SFKSettingsTrailingBuilder = (any SettingsItem) -> SFKSettingsTrailing?
 
 /// A closure type for deciding whether a specific settings row should show a chevron.
 public typealias SFKSettingsChevronBuilder = (any SettingsItem) -> Bool

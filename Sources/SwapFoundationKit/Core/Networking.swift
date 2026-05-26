@@ -145,6 +145,56 @@ public struct NetworkResponse {
     public var contentType: String? { response.value(forHTTPHeaderField: "Content-Type") }
 }
 
+/// Download response containing file location and response metadata.
+public struct NetworkDownloadResponse {
+    /// Final file location chosen by the caller.
+    public let fileURL: URL
+    /// The HTTP response object.
+    public let response: HTTPURLResponse
+    /// The request that was executed.
+    public let request: URLRequest
+
+    /// HTTP status code of the response.
+    public var statusCode: Int { response.statusCode }
+
+    /// Whether the request was successful (200-299).
+    public var isSuccessful: Bool { (200...299).contains(statusCode) }
+
+    /// Content type from response headers.
+    public var contentType: String? { response.value(forHTTPHeaderField: "Content-Type") }
+
+    /// Expected content length reported by the server, or `NSURLSessionTransferSizeUnknown`.
+    public var expectedContentLength: Int64 { response.expectedContentLength }
+
+    /// File size on disk for the final downloaded file.
+    public var downloadedFileSize: Int64 {
+        FileManager.default.fileSize(at: fileURL.path)
+    }
+}
+
+/// Rich progress information for an in-flight download.
+public struct NetworkDownloadProgress: Sendable {
+    public let bytesWritten: Int64
+    public let totalBytesWritten: Int64
+    public let totalBytesExpectedToWrite: Int64
+
+    /// Fraction completed when the server provides a valid expected size.
+    public var fractionCompleted: Double? {
+        guard totalBytesExpectedToWrite > 0 else { return nil }
+        return Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+    }
+
+    public init(
+        bytesWritten: Int64,
+        totalBytesWritten: Int64,
+        totalBytesExpectedToWrite: Int64
+    ) {
+        self.bytesWritten = bytesWritten
+        self.totalBytesWritten = totalBytesWritten
+        self.totalBytesExpectedToWrite = totalBytesExpectedToWrite
+    }
+}
+
 /// Network error types
 public enum NetworkError: Error, LocalizedError {
     case invalidURL
@@ -210,6 +260,7 @@ public final class HTTPClient {
 
     /// URLSession instance used for network requests
     public let session: URLSession
+    private let sessionPerformer: any SFKURLSessionPerforming
 
     /// Default headers to include in all requests
     public var defaultHeaders: [String: String] = [
@@ -222,7 +273,9 @@ public final class HTTPClient {
 
     /// Initialize with custom URLSession configuration
     public init(configuration: URLSessionConfiguration = .default) {
-        self.session = URLSession(configuration: configuration)
+        let components = SFKPulseService.makeSession(configuration: configuration)
+        self.session = components.session
+        self.sessionPerformer = components.performer
     }
 
     /// Execute a network request
@@ -230,22 +283,11 @@ public final class HTTPClient {
     /// - Returns: NetworkResponse containing the result
     /// - Throws: NetworkError if the request fails
     public func execute(_ request: NetworkRequest) async throws -> NetworkResponse {
-        guard let urlRequest = request.request else {
-            log(.error, "Failed to create URLRequest for \(request.method.rawValue) \(request.baseURL)\(request.path)")
-            throw NetworkError.invalidURL
-        }
-
-        // Merge default headers with request headers
-        var finalRequest = urlRequest
-        var allHeaders = defaultHeaders
-        if let requestHeaders = request.headers {
-            allHeaders.merge(requestHeaders) { (_, new) in new }
-        }
-        finalRequest.allHTTPHeaderFields = allHeaders
+        let finalRequest = try makeURLRequest(from: request)
         logRequest(finalRequest)
 
         do {
-            let (data, response) = try await session.data(for: finalRequest)
+            let (data, response) = try await sessionPerformer.data(for: finalRequest)
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 log(.error, "Received non-HTTP response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
@@ -291,9 +333,170 @@ public final class HTTPClient {
             throw NetworkError.decodingError(error)
         }
     }
+
+    /// Downloads a response body to the given file destination.
+    /// - Parameters:
+    ///   - request: The network request to execute.
+    ///   - destination: Final file location for the downloaded contents.
+    ///   - progressHandler: Optional callback for fractional progress when the server provides content length.
+    /// - Returns: Download metadata including the final file URL and HTTP response.
+    /// - Throws: NetworkError if request creation, transport, response validation, or file writing fails.
+    public func download(
+        _ request: NetworkRequest,
+        to destination: URL,
+        progress: ((NetworkDownloadProgress) -> Void)? = nil,
+        progressHandler: ((Double) -> Void)? = nil
+    ) async throws -> NetworkDownloadResponse {
+        let finalRequest = try makeURLRequest(from: request)
+        logRequest(finalRequest)
+
+        let fileManager = FileManager.default
+        let destinationDirectory = destination.deletingLastPathComponent()
+
+        do {
+            if usesCustomProtocolTransport {
+                let (data, response) = try await sessionPerformer.data(for: finalRequest)
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    log(.error, "Received non-HTTP download response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
+                    throw NetworkError.invalidResponse
+                }
+
+                guard (200...299).contains(httpResponse.statusCode) else {
+                    log(.error, "Download failed with HTTP \(httpResponse.statusCode) for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
+                    throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: data)
+                }
+
+                try fileManager.createDirectoryIfNeeded(at: destinationDirectory)
+                if fileManager.fileExists(at: destination) {
+                    try fileManager.removeItem(at: destination)
+                }
+                try data.write(to: destination, options: .atomic)
+
+                let snapshot = NetworkDownloadProgress(
+                    bytesWritten: Int64(data.count),
+                    totalBytesWritten: Int64(data.count),
+                    totalBytesExpectedToWrite: Int64(data.count)
+                )
+                progress?(snapshot)
+                progressHandler?(1.0)
+
+                return NetworkDownloadResponse(
+                    fileURL: destination,
+                    response: httpResponse,
+                    request: finalRequest
+                )
+            }
+
+            let (temporaryURL, response) = try await performDownload(
+                request: finalRequest,
+                progress: progress,
+                progressHandler: progressHandler
+            )
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                log(.error, "Received non-HTTP download response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
+                throw NetworkError.invalidResponse
+            }
+
+            guard (200...299).contains(httpResponse.statusCode) else {
+                log(.error, "Download failed with HTTP \(httpResponse.statusCode) for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
+                throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: nil)
+            }
+
+            try fileManager.createDirectoryIfNeeded(at: destinationDirectory)
+            if fileManager.fileExists(at: destination) {
+                try fileManager.removeItem(at: destination)
+            }
+            try fileManager.moveFile(from: temporaryURL, to: destination)
+
+            return NetworkDownloadResponse(
+                fileURL: destination,
+                response: httpResponse,
+                request: finalRequest
+            )
+        } catch let error as NetworkError {
+            fileManager.removeItemSafely(at: destination)
+            throw error
+        } catch {
+            fileManager.removeItemSafely(at: destination)
+            log(.error, "Download transport failure for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
+            throw NetworkError.from(error)
+        }
+    }
 }
 
 private extension HTTPClient {
+    var usesCustomProtocolTransport: Bool {
+        !(session.configuration.protocolClasses ?? []).isEmpty
+    }
+
+    func makeURLRequest(from request: NetworkRequest) throws -> URLRequest {
+        guard let urlRequest = request.request else {
+            log(.error, "Failed to create URLRequest for \(request.method.rawValue) \(request.baseURL)\(request.path)")
+            throw NetworkError.invalidURL
+        }
+
+        var finalRequest = urlRequest
+        var allHeaders = defaultHeaders
+        if let requestHeaders = request.headers {
+            allHeaders.merge(requestHeaders) { (_, new) in new }
+        }
+        finalRequest.allHTTPHeaderFields = allHeaders
+        return finalRequest
+    }
+
+    func performDownload(
+        request: URLRequest,
+        progress: ((NetworkDownloadProgress) -> Void)?,
+        progressHandler: ((Double) -> Void)?
+    ) async throws -> (URL, URLResponse) {
+        var observation: NSKeyValueObservation?
+        var task: URLSessionDownloadTask?
+        var lastReportedCompleted: Int64 = 0
+
+        return try await withTaskCancellationHandler(operation: {
+            try await withCheckedThrowingContinuation { continuation in
+                let downloadTask = session.downloadTask(with: request) { temporaryURL, response, error in
+                    observation?.invalidate()
+
+                    if let error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+
+                    guard let temporaryURL, let response else {
+                        continuation.resume(throwing: NetworkError.invalidResponse)
+                        return
+                    }
+
+                    continuation.resume(returning: (temporaryURL, response))
+                }
+                task = downloadTask
+
+                if progress != nil || progressHandler != nil {
+                    observation = downloadTask.progress.observe(\.completedUnitCount, options: [.initial, .new]) { taskProgress, change in
+                        let totalWritten = change.newValue ?? taskProgress.completedUnitCount
+                        let snapshot = NetworkDownloadProgress(
+                            bytesWritten: max(0, totalWritten - lastReportedCompleted),
+                            totalBytesWritten: totalWritten,
+                            totalBytesExpectedToWrite: taskProgress.totalUnitCount
+                        )
+                        lastReportedCompleted = totalWritten
+                        progress?(snapshot)
+                        if let fraction = snapshot.fractionCompleted {
+                            progressHandler?(fraction)
+                        }
+                    }
+                }
+
+                downloadTask.resume()
+            }
+        }, onCancel: {
+            task?.cancel()
+        })
+    }
+
     func log(_ level: LogLevel, _ message: String) {
         guard networkLogLevel.allows(level) else { return }
 
@@ -483,6 +686,40 @@ public extension HTTPClient {
                                        parameters: parameters,
                                        headers: headers,
                                        body: nil))
+    }
+
+    /// Download a file using the common URL-component request shape.
+    /// - Parameters:
+    ///   - scheme: URL scheme (default: "https")
+    ///   - baseURL: Base URL for the request
+    ///   - path: Path component
+    ///   - destination: Final file location for the downloaded contents
+    ///   - parameters: Query parameters
+    ///   - headers: Additional headers
+    ///   - progressHandler: Optional callback for fractional progress when available
+    /// - Returns: Download metadata for the completed file
+    func download(scheme: String = "https",
+                  baseURL: String,
+                  path: String,
+                  to destination: URL,
+                  parameters: [String: String]? = nil,
+                  headers: [String: String]? = nil,
+                  progress: ((NetworkDownloadProgress) -> Void)? = nil,
+                  progressHandler: ((Double) -> Void)? = nil) async throws -> NetworkDownloadResponse {
+        try await download(
+            SimpleRequest(
+                scheme: scheme,
+                baseURL: baseURL,
+                path: path,
+                method: .get,
+                parameters: parameters,
+                headers: headers,
+                body: nil
+            ),
+            to: destination,
+            progress: progress,
+            progressHandler: progressHandler
+        )
     }
 }
 

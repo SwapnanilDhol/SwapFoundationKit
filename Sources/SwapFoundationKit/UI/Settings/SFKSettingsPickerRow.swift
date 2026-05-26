@@ -84,35 +84,16 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
     }
 
     public var body: some View {
+        let resolvedTint = theme.resolvedTint(tint)
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                        .fill(theme.resolvedTint(tint).opacity(theme.colors.iconBackgroundOpacity))
-
-                    Image(systemName: icon)
-                        .font(theme.typography.iconFont)
-                        .foregroundStyle(theme.resolvedTint(tint))
-                }
-                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: resolvedTint
+            ) {
                 Text(displayName(selection))
                     .font(theme.typography.valueFont)
                     .foregroundStyle(theme.colors.valueColor)
@@ -242,35 +223,16 @@ public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
     }
 
     public var body: some View {
+        let resolvedTint = theme.resolvedTint(tint)
         Button {
             isPresented = true
         } label: {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                        .fill(theme.resolvedTint(tint).opacity(theme.colors.iconBackgroundOpacity))
-
-                    Image(systemName: icon)
-                        .font(theme.typography.iconFont)
-                        .foregroundStyle(theme.resolvedTint(tint))
-                }
-                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Spacer()
-
+            _SFKSettingsRowContent(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                tint: resolvedTint
+            ) {
                 Text(displayName(selection))
                     .font(theme.typography.valueFont)
                     .foregroundStyle(theme.colors.valueColor)

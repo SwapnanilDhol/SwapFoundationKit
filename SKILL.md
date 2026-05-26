@@ -7,8 +7,9 @@ description: >
   processor, debouncer, throttler, settings screen, onboarding, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
   glass compatibility, UIKit extensions, ads manager, configuration service,
-  environment, launch arguments, pro gate, notifications, appearance, rounded
-  font, hosting controller, JSON codable, device info, async collections.
+  environment, launch arguments, pro gate, notifications, Pulse, PulseUI,
+  network inspector, debug console, appearance, rounded font, hosting
+  controller, JSON codable, device info, async collections.
 ---
 
 # SwapFoundationKit

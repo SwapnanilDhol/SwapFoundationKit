@@ -345,6 +345,106 @@ final class NetworkingTests: XCTestCase {
         XCTAssertEqual(response.statusCode, 200)
     }
 
+    func testDownloadWritesFileToDestination() async throws {
+        let expectedData = Data("download-body".utf8)
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathComponent("payload.txt")
+        defer { try? FileManager.default.removeItem(at: destination.deletingLastPathComponent()) }
+
+        MockURLProtocol.mockResponse = (
+            data: expectedData,
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/download")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: [
+                    "Content-Type": "text/plain",
+                    "Content-Length": String(expectedData.count)
+                ]
+            )!,
+            error: nil
+        )
+
+        let response = try await client.download(
+            baseURL: "api.example.com",
+            path: "/download",
+            to: destination
+        )
+
+        XCTAssertEqual(response.fileURL, destination)
+        XCTAssertEqual(response.statusCode, 200)
+        XCTAssertEqual(response.contentType, "text/plain")
+        XCTAssertEqual(try Data(contentsOf: destination), expectedData)
+    }
+
+    func testDownloadReportsProgressAndOverwritesExistingFile() async throws {
+        let expectedData = Data("replace-me".utf8)
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let destination = root.appendingPathComponent("existing.txt")
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try Data("stale".utf8).write(to: destination)
+
+        MockURLProtocol.mockResponse = (
+            data: expectedData,
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/file")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: [
+                    "Content-Length": String(expectedData.count)
+                ]
+            )!,
+            error: nil
+        )
+
+        var progressValues: [Double] = []
+        var progressSnapshots: [NetworkDownloadProgress] = []
+
+        _ = try await client.download(
+            baseURL: "api.example.com",
+            path: "/file",
+            to: destination,
+            progress: { progressSnapshots.append($0) },
+            progressHandler: { progressValues.append($0) }
+        )
+
+        XCTAssertEqual(try Data(contentsOf: destination), expectedData)
+        XCTAssertFalse(progressValues.isEmpty)
+        XCTAssertFalse(progressSnapshots.isEmpty)
+        XCTAssertEqual(progressSnapshots.last?.totalBytesWritten, Int64(expectedData.count))
+        XCTAssertEqual(progressSnapshots.last?.totalBytesExpectedToWrite, Int64(expectedData.count))
+        XCTAssertEqual(progressValues.last ?? 0, 1.0, accuracy: 0.0001)
+    }
+
+    func testDownloadRemovesPartialFileOnFailure() async {
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathComponent("failed.bin")
+        defer { try? FileManager.default.removeItem(at: destination.deletingLastPathComponent()) }
+
+        MockURLProtocol.mockResponse = (
+            data: nil,
+            response: nil,
+            error: URLError(.timedOut)
+        )
+
+        do {
+            _ = try await client.download(
+                baseURL: "api.example.com",
+                path: "/failed",
+                to: destination
+            )
+            XCTFail("Expected timeout error")
+        } catch NetworkError.timeout {
+            XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+        } catch {
+            XCTFail("Expected NetworkError.timeout, got \(error)")
+        }
+    }
+
     // MARK: - JSON Encoding/Decoding Tests
 
     func testExecuteAndDecodeSuccess() async throws {
@@ -668,6 +768,37 @@ final class NetworkingTests: XCTestCase {
         } catch {
             XCTFail("Expected NetworkError.decodingError, got \(error)")
         }
+    }
+
+    @MainActor
+    func testNetworkServiceDownloadDelegatesToHTTPClient() async throws {
+        let expectedData = Data("network-service-download".utf8)
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathComponent("service.txt")
+        defer { try? FileManager.default.removeItem(at: destination.deletingLastPathComponent()) }
+
+        MockURLProtocol.mockResponse = (
+            data: expectedData,
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.example.com/service-download")!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: [
+                    "Content-Length": String(expectedData.count)
+                ]
+            )!,
+            error: nil
+        )
+
+        let service = NetworkService(client: client)
+        let fileURL = try await service.downloadFile(
+            from: URL(string: "https://api.example.com/service-download")!,
+            to: destination
+        )
+
+        XCTAssertEqual(fileURL, destination)
+        XCTAssertEqual(try Data(contentsOf: destination), expectedData)
     }
 
     // MARK: - URL Extensions Tests

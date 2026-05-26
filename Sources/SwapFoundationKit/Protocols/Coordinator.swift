@@ -54,6 +54,19 @@ public extension Coordinator {
     func present(_ viewController: UIViewController, animated: Bool = true, completion: (() -> Void)? = nil) {
         navigationController.present(viewController, animated: animated, completion: completion)
     }
+
+    /// Presents a view controller from the currently visible top controller, falling back to the coordinator's navigation controller.
+    /// - Parameters:
+    ///   - viewController: The view controller to present.
+    ///   - animated: Whether the transition should be animated.
+    ///   - completion: A closure to execute after the presentation completes.
+    func presentOnTop(_ viewController: UIViewController, animated: Bool = true, completion: (() -> Void)? = nil) {
+        if let topController = UIApplication.topViewController() {
+            topController.present(viewController, animated: animated, completion: completion)
+        } else {
+            navigationController.present(viewController, animated: animated, completion: completion)
+        }
+    }
     
     /// Sets the root view controller of the navigation controller.
     /// - Parameters:
@@ -154,6 +167,45 @@ public extension Coordinator {
             initialSelection: initialSelection
         )
         viewModel.delegate = delegate
+        presentItemPicker(
+            title: title,
+            subtitle: subtitle,
+            viewModel: viewModel,
+            selectsItems: selectsItems,
+            autoDismissOnSingleSelection: autoDismissOnSingleSelection,
+            showsCloseButton: showsCloseButton,
+            toolbarActions: toolbarActions,
+            onSelect: onSelect,
+            onDismiss: onDismiss,
+            actionsProvider: actionsProvider
+        )
+    }
+
+    /// Presents a ``SFKItemPickerView`` using an existing picker view model.
+    /// Use this when the host screen owns live picker state, reloads sections, or needs to update rows after model changes.
+    /// - Parameters:
+    ///   - title: The picker screen title.
+    ///   - subtitle: Optional subtitle shown beneath the navigation title.
+    ///   - viewModel: Existing picker view model to render.
+    ///   - selectsItems: Whether taps update picker selection state.
+    ///   - autoDismissOnSingleSelection: Whether single-select taps dismiss automatically.
+    ///   - showsCloseButton: Whether the picker renders the standard close button.
+    ///   - toolbarActions: Optional navigation bar actions rendered by the picker.
+    ///   - onSelect: Closure called when an item is tapped.
+    ///   - onDismiss: Closure called before the picker dismisses.
+    ///   - actionsProvider: Optional per-row action provider.
+    func presentItemPicker(
+        title: String,
+        subtitle: String = "",
+        viewModel: SFKItemPickerViewModel,
+        selectsItems: Bool = true,
+        autoDismissOnSingleSelection: Bool = true,
+        showsCloseButton: Bool = true,
+        toolbarActions: [SFKItemPickerToolbarAction] = [],
+        onSelect: ((any SFKPickableItem) -> Void)? = nil,
+        onDismiss: ((SFKItemPickerViewModel) -> Void)? = nil,
+        actionsProvider: ((any SFKPickableItem) -> [SFKItemPickerItemAction])? = nil
+    ) {
         let view = SFKItemPickerView(
             pageTitle: title,
             pageSubtitle: subtitle,
@@ -174,7 +226,7 @@ public extension Coordinator {
             sheet.detents = [.medium(), .large()]
             sheet.selectedDetentIdentifier = .medium
         }
-        navigationController.present(controller, animated: true)
+        presentOnTop(controller)
     }
 }
 #endif

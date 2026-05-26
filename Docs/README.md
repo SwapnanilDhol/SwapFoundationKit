@@ -51,11 +51,14 @@ Each module has its own README with full API reference and code examples:
 | [Networking RFC](guides/networking-rfc.md) | Proposed refactor for the networking stack |
 | [Google Mobile Ads](guides/google-mobile-ads.md) | Optional ads module setup and migration |
 | [Onboarding Components](guides/onboarding.md) | Generic onboarding UI components reference |
+| [Pulse Integration](guides/pulse-integration.md) | Host-app setup guide for SFK Pulse logging and console access |
 | [Settings UI](guides/settings.md) | Build host-app settings screens with SFK components |
+| [Settings Patterns](guides/settings-patterns.md) | Architecture patterns and best practices for settings screens |
 
 ## Reference
 
 | Document | Description |
 |----------|-------------|
 | [Trial Audit](reference/trial-audit.md) | Subscription trial audit documentation |
+| [Pulse Integration Checklist](reference/pulse-integration-checklist.md) | Audit checklist for host-app Pulse integration |
 | [Settings Integration Checklist](reference/settings-integration-checklist.md) | Audit checklist for host-app settings integration |

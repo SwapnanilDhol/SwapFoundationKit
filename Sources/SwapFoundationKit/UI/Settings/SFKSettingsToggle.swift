@@ -59,35 +59,18 @@ public struct SFKSettingsToggle: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedTint(tint)
-        Toggle(isOn: $isOn) {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                        .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-                    Image(systemName: icon)
-                        .font(theme.typography.iconFont)
-                        .foregroundStyle(resolvedTint)
-                }
-                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
+        _SFKSettingsRowContent(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            tint: resolvedTint
+        ) {
+            Toggle(title, isOn: $isOn)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
         }
-        .toggleStyle(.switch)
-        .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
     }
 }
 
@@ -127,35 +110,18 @@ public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
 
     public var body: some View {
         let resolvedTint = theme.resolvedItemTint(item.tint)
-        Toggle(isOn: $isOn) {
-            HStack(spacing: theme.metrics.rowSpacing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                        .fill(resolvedTint.opacity(theme.colors.iconBackgroundOpacity))
-
-                    Image(systemName: item.icon)
-                        .font(theme.typography.iconFont)
-                        .foregroundStyle(resolvedTint)
-                }
-                .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
-
-                VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
-                    Text(item.title)
-                        .font(theme.typography.titleFont)
-                        .foregroundStyle(theme.colors.titleColor)
-
-                    Text(item.subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(theme.colors.subtitleColor)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
+        _SFKSettingsRowContent(
+            title: item.title,
+            subtitle: item.subtitle,
+            icon: item.icon,
+            tint: resolvedTint
+        ) {
+            Toggle(item.title, isOn: $isOn)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
         }
-        .toggleStyle(.switch)
-        .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
+        .padding(.vertical, theme.metrics.rowVerticalPadding)
     }
 }
 
