@@ -342,10 +342,16 @@ Goals:
 
 Work:
 
-1. Add interceptor or middleware support.
-2. Add retry policy primitives.
-3. Add structured metrics/logging hooks.
-4. Add download/upload support directly on `HTTPClient`.
+1. ~~Add interceptor or middleware support.~~ Use `backendHeadersProvider` static closure instead.
+2. ~~Add retry policy primitives.~~
+3. ~~Add structured metrics/logging hooks.~~
+4. ~~Add download/upload support directly on `HTTPClient`.~~
+
+Progress note:
+
+- `HTTPClient` now owns file-download support
+- `NetworkService.downloadFile` should remain a thin convenience wrapper that delegates to `HTTPClient`
+- `NetworkService.backendHeadersProvider` (static closure) allows host apps to inject headers — such as `X-App-User-ID` — into every outgoing request automatically. No per-call-site manual passing needed.
 
 Progress note:
 
