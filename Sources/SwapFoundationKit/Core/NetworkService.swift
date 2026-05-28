@@ -211,12 +211,22 @@ public final class NetworkService: ObservableObject {
     /// - Parameters:
     ///   - url: The URL to download from
     ///   - destination: The destination URL
+    ///   - expectedBytes: Optional expected file size for integrity validation (20% tolerance)
     ///   - progressHandler: Progress callback
     /// - Returns: The downloaded file URL
     /// - Throws: NetworkError
-    public func downloadFile(from url: URL, to destination: URL, progressHandler: ((Double) -> Void)? = nil) async throws -> URL {
+    public func downloadFile(from url: URL, to destination: URL, expectedBytes: Int64? = nil, progressHandler: ((Double) -> Void)? = nil) async throws -> URL {
         let request = BasicURLNetworkRequest(url: url, method: .get)
         let response = try await client.download(request, to: destination, progressHandler: progressHandler)
+
+        if let expectedBytes {
+            let values = try response.fileURL.resourceValues(forKeys: [.fileSizeKey])
+            let actualBytes = Int64(values.fileSize ?? 0)
+            guard abs(actualBytes - expectedBytes) < max(1_000_000, expectedBytes / 20) else {
+                throw NetworkError.invalidResponse
+            }
+        }
+
         return response.fileURL
     }
     

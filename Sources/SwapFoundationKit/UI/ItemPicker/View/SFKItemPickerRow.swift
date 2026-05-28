@@ -54,13 +54,17 @@ public struct SFKItemPickerRow: View {
                 }
                 Spacer()
 
-                if isSelected {
+                if item.pickableItemTrailingAccessory == .disclosureIndicator {
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color(.tertiaryLabel))
+                } else if isSelected {
                     Image(systemName: selectionType == .multi ? "checkmark.square.fill" : "inset.filled.circle")
                         .foregroundStyle(Color(.label))
                         .fontWeight(.bold)
                 }
             }
-            .padding(.vertical, 3)
+            .padding(.vertical, 1)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -98,5 +102,4 @@ public struct SFKItemPickerRow: View {
             EmptyView()
         }
     }
-
 }

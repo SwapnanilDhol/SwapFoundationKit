@@ -27,9 +27,18 @@ public protocol SFKPickableItem: Identifiable, Hashable {
     var pickableItemSubtitle: String? { get }
     var pickableItemBadgeTitle: String? { get }
     var pickableItemIconTintColor: UIColor? { get }
+    var pickableItemTrailingAccessory: SFKPickableItemTrailingAccessory { get }
+}
+
+public enum SFKPickableItemTrailingAccessory: Equatable {
+    case none
+    case disclosureIndicator
+    case checkmark
+    case custom(iconName: String)
 }
 
 public extension SFKPickableItem {
     var pickableItemBadgeTitle: String? { nil }
     var pickableItemIconTintColor: UIColor? { nil }
+    var pickableItemTrailingAccessory: SFKPickableItemTrailingAccessory { .none }
 }
