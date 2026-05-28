@@ -135,6 +135,8 @@ domains:
     keep_in_host_app_when:
       - The picker has feature-specific domain actions or complex filtering logic that must remain app-owned
     public_api:
+      - SFKColorPickerDelegate
+      - SFKColorPickerSheet
       - SFKItemPickerView
       - SFKPickableItem
       - SFKItemPickerSection
@@ -154,6 +156,7 @@ domains:
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsPickerRow.swift
     host_app_triggers:
       - picker
+      - color picker sheet
       - selection sheet
       - select item
       - choose currency

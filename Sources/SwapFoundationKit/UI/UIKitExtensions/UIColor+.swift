@@ -309,6 +309,7 @@ public extension Color {
         self.init(uiColor)
     }
 
+    public var isDark: Bool { uiColor.isDark }
     var contrastingColor: Color {
         UIColor(self).isDark ? .white : .black
     }

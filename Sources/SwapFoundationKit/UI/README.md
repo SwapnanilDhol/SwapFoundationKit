@@ -47,6 +47,8 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Pickers
 | Type | Kind | Description |
 |------|------|-------------|
+| `SFKColorPickerSheet` | View | Hosted color picker sheet with presets, custom color, preview, and explicit apply |
+| `SFKColorPickerDelegate` | protocol | Delegate callback for `SFKColorPickerSheet` apply actions |
 | `SFKItemPickerView` | View | Full searchable item picker/list screen with sections, selection, toolbar actions, browsing mode, context actions, and swipe actions |
 | `SFKItemPickerViewModel` | class | Selection, search, sectioned, and reloadable item state management |
 | `SFKItemPickerSection` | struct | Optional list section with header, footer, and pickable items |
@@ -110,6 +112,14 @@ SFKChipFlowLayout(spacing: 8) {
 // Item Picker
 Coordinator().presentItemPicker(title: "Currency", items: Currency.sortedAllCases)
 
+// Color Picker
+SFKColorPickerSheet(
+    selectedColor: .blue,
+    promptTitle: "Choose an account color",
+    promptMessage: "Pick a color that makes this account easy to spot.",
+    delegate: colorDelegate
+)
+
 // Item list with row actions
 SFKItemPickerView(
     pageTitle: "Accounts",
@@ -159,6 +169,7 @@ AlertController().showAlert(title: "Done", message: "Saved successfully")
 ## Source Files
 
 - `Buttons/` — SFKButton, SFKButtonConfigurator, SFKButtonPreviewGallery
+- `ColorPicker/` — SFKColorPickerSheet, SFKColorPickerDelegate
 - `Settings/` — 14+ row type files, theme, action handler, screen
 - `Onboarding/` — Chip, layout, progress, typography, card, secondary button
 - `ItemPicker/` — View, view model, delegate, row, models

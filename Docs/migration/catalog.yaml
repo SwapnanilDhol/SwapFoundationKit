@@ -534,35 +534,43 @@ capabilities:
     audit_tier: heuristic
     confidence: medium
     replace_with:
-      - SFKPrimaryButton
-      - SFKSecondaryButton
-      - SFKInlineButton
-      - SFKPillButton
-      - SFKToolbarButton
+      - SFKButton
+      - SFKButtonConfigurator
       - glassButton modifiers
       - UIKit convenience extensions
+      - SFKColorPickerSheet
     public_symbols:
-      - SFKPrimaryButton
-      - SFKSecondaryButton
-      - View.glassButton(...)
-      - UIView layout helpers
-      - UIApplication safe-area helpers
+      - SFKButton
+      - SFKButtonConfigurator
+      - SFKColorPickerDelegate
+      - SFKColorPickerSheet
+      - View.glassCompat(color:)
+      - View.glassProminentCompat(color:)
+      - View.glassEffectCompat(style:color:isInteractive:in:)
+      - UIColor.init(hex:)
+      - Color.init(hex:)
     host_search_terms:
       - PrimaryButton
       - SecondaryButton
       - PillButton
       - ToolbarButton
+      - ColorPickerSheet
+      - choose color
+      - paintpalette
       - addPinnedSubview
       - safeAreaInsets
     suspicious_file_patterns:
       - "*Button*"
+      - "*ColorPicker*"
       - "*Layout*"
       - "*UIView+*"
       - "*UIApplication+*"
     keep_custom_when:
       - The host app already has a design system and should only adopt SFK components intentionally.
     source_files:
-      - Sources/SwapFoundationKit/UI/SFKButtons.swift
+      - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
+      - Sources/SwapFoundationKit/UI/Buttons/SFKButtonConfigurator.swift
+      - Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift
       - Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift
       - Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Layout.swift
       - Sources/SwapFoundationKit/UI/UIKitExtensions/UIViewController+.swift
