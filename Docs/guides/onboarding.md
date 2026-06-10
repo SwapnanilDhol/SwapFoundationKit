@@ -97,7 +97,7 @@ SFKSelectableChip("Swift", isSelected: true, tintColor: .blue) {
 }
 
 // With icon (SF Symbol or emoji)
-SFKSelectableChip(icon: "swift", text: "Swift", isSelected: false) {
+SFKSelectableChip("Swift", icon: "swift", isSelected: false) {
     selectLanguage()
 }
 
@@ -115,6 +115,7 @@ SFKSelectableChip(item: goal, isSelected: state.goals.contains(goal)) {
 | `text` / `title` | `String` | — | The label text |
 | `isSelected` | `Bool` | — | Whether the chip is in the selected state |
 | `tintColor` | `Color` | `.primary` | Accent color for the selected state (fill + stroke) |
+| `iconTint` | `Color?` | `nil` | Optional icon color override. Falls back to the chip's built-in tint logic when omitted |
 | `action` | `() -> Void` | — | Closure executed on tap |
 
 ### Visual States

@@ -114,9 +114,23 @@ public struct SFKItemPickerView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
                     if showsCloseButton {
-                        SFKButton(configuration: .close, action: {
-                            onDismiss?()
-                        })
+                        SFKButton(
+                            "Close".localized,
+                            leadingIconName: "xmark",
+                            fullWidth: false,
+                            titleColor: .primary,
+                            subtitleColor: .secondary,
+                            color: .white.opacity(0.12),
+                            spacing: 8,
+                            horizontalPadding: 12,
+                            verticalPadding: 5,
+                            titleFont: .footnote.weight(.semibold),
+                            subtitleFont: .caption2,
+                            iconFont: .footnote.weight(.bold),
+                            action: {
+                                onDismiss?()
+                            }
+                        )
                     }
 
                     ForEach(leadingToolbarActions) { action in

@@ -57,15 +57,23 @@ public extension SFKChipItem {
 /// }
 ///
 /// // With icon and text
-/// SFKSelectableChip(icon: "swift", text: "Swift", isSelected: true) {
+/// SFKSelectableChip("Swift", icon: "swift", isSelected: true) {
 ///     selectLanguage()
 /// }
 /// ```
 public struct SFKSelectableChip: View {
+    public enum VisualStyle: Sendable {
+        case standard
+        case subtle
+    }
+
     private let icon: String?
+    private let trailingAccessoryIcon: String?
     private let text: String
     private let isSelected: Bool
     private let tintColor: Color
+    private let iconTint: Color?
+    private let visualStyle: VisualStyle
     private let action: () -> Void
 
     /// Creates a chip from a conforming `SFKChipItem`.
@@ -73,57 +81,112 @@ public struct SFKSelectableChip: View {
     ///   - item: The chip item providing label and optional icon.
     ///   - isSelected: Whether the chip is currently selected.
     ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
+    ///   - iconTint: Optional icon override. When `nil`, the chip uses its built-in tint logic.
+    ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
+    ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
     ///   - action: Closure executed when the chip is tapped.
     public init<Item: SFKChipItem>(
         item: Item,
         isSelected: Bool,
         tintColor: Color = .primary,
+        iconTint: Color? = nil,
+        visualStyle: VisualStyle = .standard,
+        trailingAccessoryIcon: String? = nil,
         action: @escaping () -> Void
     ) {
-        self.icon = item.chipIcon
-        self.text = item.chipLabel
-        self.isSelected = isSelected
-        self.tintColor = tintColor
-        self.action = action
+        self.init(
+            text: item.chipLabel,
+            icon: item.chipIcon,
+            isSelected: isSelected,
+            tintColor: tintColor,
+            iconTint: iconTint,
+            visualStyle: visualStyle,
+            trailingAccessoryIcon: trailingAccessoryIcon,
+            action: action
+        )
     }
 
-    /// Creates a chip with icon and text.
+    /// Creates a chip with text and an optional icon.
+    /// - Parameters:
+    ///   - text: The label text.
+    ///   - icon: An optional SF Symbol name.
+    ///   - isSelected: Whether the chip is currently selected.
+    ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
+    ///   - iconTint: Optional icon override. When `nil`, the chip uses its built-in tint logic.
+    ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
+    ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
+    ///   - action: Closure executed when the chip is tapped.
+    public init(
+        _ text: String,
+        icon: String? = nil,
+        isSelected: Bool,
+        tintColor: Color = .primary,
+        iconTint: Color? = nil,
+        visualStyle: VisualStyle = .standard,
+        trailingAccessoryIcon: String? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.init(
+            text: text,
+            icon: icon,
+            isSelected: isSelected,
+            tintColor: tintColor,
+            iconTint: iconTint,
+            visualStyle: visualStyle,
+            trailingAccessoryIcon: trailingAccessoryIcon,
+            action: action
+        )
+    }
+
+    /// Backwards-compatible convenience initializer for existing `icon:text:` call sites.
     /// - Parameters:
     ///   - icon: An optional SF Symbol name.
+    ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
+    ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
     ///   - text: The label text.
     ///   - isSelected: Whether the chip is currently selected.
     ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
+    ///   - iconTint: Optional icon override. When `nil`, the chip uses its built-in tint logic.
     ///   - action: Closure executed when the chip is tapped.
     public init(
         icon: String? = nil,
+        visualStyle: VisualStyle = .standard,
+        trailingAccessoryIcon: String? = nil,
         text: String,
         isSelected: Bool,
         tintColor: Color = .primary,
+        iconTint: Color? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.init(
+            text,
+            icon: icon,
+            isSelected: isSelected,
+            tintColor: tintColor,
+            iconTint: iconTint,
+            visualStyle: visualStyle,
+            trailingAccessoryIcon: trailingAccessoryIcon,
+            action: action
+        )
+    }
+
+    private init(
+        text: String,
+        icon: String?,
+        isSelected: Bool,
+        tintColor: Color,
+        iconTint: Color?,
+        visualStyle: VisualStyle,
+        trailingAccessoryIcon: String?,
         action: @escaping () -> Void
     ) {
         self.icon = icon
+        self.trailingAccessoryIcon = trailingAccessoryIcon
         self.text = text
         self.isSelected = isSelected
         self.tintColor = tintColor
-        self.action = action
-    }
-
-    /// Creates a chip with text only.
-    /// - Parameters:
-    ///   - title: The label text.
-    ///   - isSelected: Whether the chip is currently selected.
-    ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
-    ///   - action: Closure executed when the chip is tapped.
-    public init(
-        _ title: String,
-        isSelected: Bool,
-        tintColor: Color = .primary,
-        action: @escaping () -> Void
-    ) {
-        self.icon = nil
-        self.text = title
-        self.isSelected = isSelected
-        self.tintColor = tintColor
+        self.iconTint = iconTint
+        self.visualStyle = visualStyle
         self.action = action
     }
 
@@ -135,26 +198,32 @@ public struct SFKSelectableChip: View {
             HStack(spacing: 8) {
                 if let icon {
                     iconView(for: icon)
-                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                        .foregroundStyle(tintColor)
+                        .font(iconFont)
+                        .foregroundStyle(resolvedIconColor)
                 }
 
                 Text(text)
-                    .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                    .font(labelFont)
                     .lineLimit(1)
                     .multilineTextAlignment(.leading)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(labelColor)
+
+                if let trailingAccessoryIcon {
+                    iconView(for: trailingAccessoryIcon)
+                        .font(trailingIconFont)
+                        .foregroundStyle(resolvedIconColor)
+                }
             }
             .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
         }
         .buttonStyle(.plain)
         .overlay(
             Capsule(style: .continuous)
                 .strokeBorder(
-                    isSelected ? tintColor : Color.clear,
-                    lineWidth: 2
+                    strokeColor,
+                    lineWidth: strokeWidth
                 )
         )
         .glassEffectCompat(
@@ -171,7 +240,82 @@ public struct SFKSelectableChip: View {
     /// colorful at rest; selected chips deepen the tint and pair with the
     /// semibold label + stroke for clear differentiation.
     private var glassTintColor: Color {
-        isSelected ? tintColor.opacity(0.34) : tintColor.opacity(0.10)
+        switch visualStyle {
+        case .standard:
+            return isSelected ? tintColor.opacity(0.34) : tintColor.opacity(0.10)
+        case .subtle:
+            return isSelected ? tintColor.opacity(0.18) : tintColor.opacity(0.06)
+        }
+    }
+
+    private var strokeColor: Color {
+        switch visualStyle {
+        case .standard:
+            return isSelected ? tintColor : .clear
+        case .subtle:
+            return isSelected ? tintColor.opacity(0.35) : Color.primary.opacity(0.06)
+        }
+    }
+
+    private var strokeWidth: CGFloat {
+        visualStyle == .standard ? 2 : 1
+    }
+
+    private var horizontalPadding: CGFloat {
+        visualStyle == .standard ? 14 : 12
+    }
+
+    private var verticalPadding: CGFloat {
+        visualStyle == .standard ? 10 : 8
+    }
+
+    private var labelFont: Font {
+        switch visualStyle {
+        case .standard:
+            return .subheadline.weight(isSelected ? .semibold : .regular)
+        case .subtle:
+            return .footnote.weight(.semibold)
+        }
+    }
+
+    private var iconFont: Font {
+        switch visualStyle {
+        case .standard:
+            return .subheadline.weight(isSelected ? .semibold : .regular)
+        case .subtle:
+            return .footnote.weight(.semibold)
+        }
+    }
+
+    private var trailingIconFont: Font {
+        switch visualStyle {
+        case .standard:
+            return .caption.weight(.bold)
+        case .subtle:
+            return .caption2.weight(.bold)
+        }
+    }
+
+    private var labelColor: Color {
+        switch visualStyle {
+        case .standard:
+            return .primary
+        case .subtle:
+            return .primary.opacity(0.82)
+        }
+    }
+
+    private var resolvedIconColor: Color {
+        if let iconTint {
+            return iconTint
+        }
+
+        switch visualStyle {
+        case .standard:
+            return tintColor
+        case .subtle:
+            return tintColor.opacity(0.9)
+        }
     }
 
     /// Renders the icon as an SF Symbol when the string maps to a valid system
@@ -229,10 +373,33 @@ public struct SFKSelectableChip: View {
             .font(.headline)
 
         SFKChipFlowLayout(spacing: 8) {
-            SFKSelectableChip(icon: "chart.line.uptrend.xyaxis", text: "Analytics", isSelected: selected == "Analytics", tintColor: .purple) { selected = "Analytics" }
-            SFKSelectableChip(icon: "bell.fill", text: "Notifications", isSelected: selected == "Notifications", tintColor: .purple) { selected = "Notifications" }
-            SFKSelectableChip(icon: "lock.fill", text: "Security", isSelected: selected == "Security", tintColor: .purple) { selected = "Security" }
+            SFKSelectableChip("Analytics", icon: "chart.line.uptrend.xyaxis", isSelected: selected == "Analytics", tintColor: .purple) {
+                selected = "Analytics"
+            }
+            SFKSelectableChip("Notifications", icon: "bell.fill", isSelected: selected == "Notifications", tintColor: .purple) {
+                selected = "Notifications"
+            }
+            SFKSelectableChip("Security", icon: "lock.fill", isSelected: selected == "Security", tintColor: .purple) {
+                selected = "Security"
+            }
         }
+    }
+    .padding(24)
+}
+
+#Preview("With Trailing Accessory") {
+    VStack(alignment: .leading, spacing: 16) {
+        Text("Picker style chip:")
+            .font(.headline)
+
+        SFKSelectableChip(
+            "USD",
+            icon: "$",
+            isSelected: true,
+            tintColor: .blue,
+            visualStyle: .subtle,
+            trailingAccessoryIcon: "chevron.down"
+        ) {}
     }
     .padding(24)
 }

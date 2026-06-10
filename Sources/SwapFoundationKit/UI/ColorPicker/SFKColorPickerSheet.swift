@@ -131,7 +131,20 @@ public struct SFKColorPickerSheet: View {
                 .toolbarBackground(.hidden, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        SFKButton(configuration: .close) {
+                        SFKButton(
+                            "Close".localized,
+                            leadingIconName: "xmark",
+                            fullWidth: false,
+                            titleColor: .primary,
+                            subtitleColor: .secondary,
+                            color: .white.opacity(0.12),
+                            spacing: 8,
+                            horizontalPadding: 12,
+                            verticalPadding: 5,
+                            titleFont: .footnote.weight(.semibold),
+                            subtitleFont: .caption2,
+                            iconFont: .footnote.weight(.bold)
+                        ) {
                             dismiss()
                         }
                     }

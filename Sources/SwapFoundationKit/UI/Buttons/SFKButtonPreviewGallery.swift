@@ -88,30 +88,40 @@ public struct SFKButtonPreviewGallery: View {
 
                 HStack(spacing: 12) {
                     SFKButton(
-                        configuration: SFKButtonConfigurator(
-                            leadingIconName: "slider.horizontal.3",
-                            title: "Filters",
-                            fullWidth: false,
-                            color: .white.opacity(0.14),
-                            chrome: .glass
-                        ),
+                        "Filters",
+                        leadingIconName: "slider.horizontal.3",
+                        fullWidth: false,
+                        color: .white.opacity(0.14),
+                        chrome: .glass,
                         action: {}
                     )
                     .disabled(!areButtonsEnabled)
 
                     SFKButton(
-                        configuration: SFKButtonConfigurator(
-                            leadingIconName: "doc.text",
-                            title: "Details",
-                            fullWidth: false,
-                            color: .clear,
-                            chrome: .plain
-                        ),
+                        "Details",
+                        leadingIconName: "doc.text",
+                        fullWidth: false,
+                        color: .clear,
+                        chrome: .plain,
                         action: {}
                     )
                     .disabled(!areButtonsEnabled)
 
-                    SFKButton(configuration: .close, action: {})
+                    SFKButton(
+                        "Close".localized,
+                        leadingIconName: "xmark",
+                        fullWidth: false,
+                        titleColor: .primary,
+                        subtitleColor: .secondary,
+                        color: .white.opacity(0.12),
+                        spacing: 8,
+                        horizontalPadding: 12,
+                        verticalPadding: 5,
+                        titleFont: .footnote.weight(.semibold),
+                        subtitleFont: .caption2,
+                        iconFont: .footnote.weight(.bold),
+                        action: {}
+                    )
                         .disabled(!areButtonsEnabled)
                 }
             }
@@ -124,11 +134,9 @@ public struct SFKButtonPreviewGallery: View {
                     .padding(.leading, 4)
 
                 SFKButton(
-                    configuration: SFKButtonConfigurator(
-                        title: "Saving Changes",
-                        isLoading: true,
-                        color: .blue
-                    ),
+                    "Saving Changes",
+                    isLoading: true,
+                    color: .blue,
                     action: {}
                 )
                 .disabled(!areButtonsEnabled)
