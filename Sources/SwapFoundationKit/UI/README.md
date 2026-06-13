@@ -7,8 +7,8 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Buttons
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKButton` | View | Configurable button with presets, loading states, haptics, glass chrome |
-| `SFKButtonConfigurator` | struct | Reusable button configuration with `.primary` and `.close` presets |
+| `SFKButton` | View | Configurable init-based button with loading states, haptics, and glass chrome |
+| `SFKCloseButton` | View | Standardized close or dismiss button built on top of `SFKButton` |
 | `SFKButtonChrome` | enum | glassProminent, glass, glassEffect, plain |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
 
@@ -94,6 +94,11 @@ SFKButton("Continue", leadingIconName: "arrow.right") {
     nextStep()
 }
 
+// Close / dismiss
+SFKCloseButton {
+    dismiss()
+}
+
 // Settings
 SFKSettingsScreen(
     sections: [
@@ -168,7 +173,7 @@ AlertController().showAlert(title: "Done", message: "Saved successfully")
 
 ## Source Files
 
-- `Buttons/` — SFKButton, SFKButtonConfigurator, SFKButtonPreviewGallery
+- `Buttons/` — SFKButton, SFKCloseButton, SFKButtonConfigurator, SFKButtonPreviewGallery
 - `ColorPicker/` — SFKColorPickerSheet, SFKColorPickerDelegate
 - `Settings/` — 14+ row type files, theme, action handler, screen
 - `Onboarding/` — Chip, layout, progress, typography, card, secondary button

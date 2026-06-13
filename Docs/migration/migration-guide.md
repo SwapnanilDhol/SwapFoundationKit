@@ -14,13 +14,12 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Analytics protocol surface: `AnalyticsEvent` (you define your app’s enum); simple fan-out to providers
 - App utilities: e.g., `AppLinkOpener`
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
-- SwiftUI Buttons: `SFKButton(...)` and `SFKButton(configuration: ...)`
-- Button configurators: `SFKButtonConfigurator` with reusable presets such as `.primary` and `.close`
+- SwiftUI Buttons: `SFKButton(...)` for general actions and `SFKCloseButton(...)` for standardized dismiss controls
 - Glass compatibility wrappers: `.glassProminentCompat()`, `.glassCompat()`, `.glassEffectCompat()`
 
 ## 4a) Consistent Close/Dismiss UI Pattern
 
-Prefer `SFKButton(configuration: .close)` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views. If you need a visible title, copy the preset and set `title`.
+Prefer `SFKCloseButton` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views.
 
 ## 4b) Item Picker (`SFKItemPickerView`)
 
@@ -199,7 +198,7 @@ struct MyModalView: View {
         VStack {
             // Place in top-left or top-right corner
             HStack {
-                SFKButton(configuration: .close, action: onClose)
+                SFKCloseButton(action: onClose)
                 Spacer()
             }
             .padding()
@@ -224,7 +223,7 @@ struct OnboardingScreen: View {
 
             VStack {
                 HStack {
-                    SFKButton(configuration: .close, action: onDismiss)
+                    SFKCloseButton(action: onDismiss)
                     Spacer()
                 }
                 .padding()
@@ -237,8 +236,8 @@ struct OnboardingScreen: View {
 ```
 
 **Rules:**
-- Prefer `SFKButton(configuration: .close)` instead of custom close button implementations
-- If the close affordance needs text, start from `SFKButtonConfigurator.close`, set `title`, and pass that configuration into `SFKButton`
+- Prefer `SFKCloseButton` instead of repeating custom close button styling
+- If the close affordance needs a different visible label, use `SFKCloseButton("Dismiss", action: ...)`
 - Never create custom close buttons using text + icon combinations
 - For UIKit modal presentations, use `SwapProManager` or the appropriate dismiss method
 - The close-button variants include haptic feedback and the same built-in button styling automatically
@@ -375,15 +374,15 @@ Validation:
 
 ## 3a) Migrate SwiftUI buttons to `SFKButton`
 
-Use `SFKButton(...)` for straightforward cases and `SFKButton(configuration: ...)` when the same setup should be reused across multiple screens.
+Use `SFKButton(...)` for straightforward cases. Use `SFKCloseButton(...)` for the shared close or dismiss treatment, and wrap `SFKButton(...)` in an app-local helper when another init-based style repeats across screens.
 
 Preferred mappings:
 
 - Full-width primary CTA -> `SFKButton("...", color: ..., action: ...)`
 - Primary CTA with icon or subtitle -> `SFKButton("...", leadingIconName: ..., subtitle: ..., action: ...)`
 - Inline loading CTA -> `SFKButton("...", isLoading: true, color: ..., action: ...)`
-- Reusable dismiss / close action -> `SFKButton(configuration: .close, action: ...)`
-- App-specific custom variants -> create an `SFKButtonConfigurator`, store it locally, and pass it into `SFKButton(configuration: ...)`
+- Reusable dismiss / close action -> `SFKCloseButton(action: ...)`
+- App-specific custom variants -> wrap `SFKButton(...)` in an app-local helper when the same init-based styling repeats
 
 Examples:
 
@@ -399,36 +398,20 @@ SFKButton(
     // action
 }
 
-var close = SFKButtonConfigurator.close
-close.title = "Close"
+SFKCloseButton {
+    dismiss()
+}
 
-SFKButton(configuration: close) { }
-
-let toolbarLike = SFKButtonConfigurator(
-    leadingIconName: "slider.horizontal.3",
-    title: "Filters",
-    fullWidth: false,
-    titleColor: .primary,
-    subtitleColor: .secondary,
-    color: .white.opacity(0.14),
-    spacing: 6,
-    horizontalPadding: 12,
-    verticalPadding: 8,
-    titleFont: .footnote.weight(.semibold),
-    subtitleFont: .caption,
-    iconFont: .footnote.weight(.semibold),
-    chrome: .glass,
-    hapticStyle: .light
-)
-
-SFKButton(configuration: toolbarLike) { }
+SFKCloseButton("Dismiss") {
+    dismiss()
+}
 ```
 
 Migration rules:
 
-- Prefer `SFKButton(...)` for simple one-off buttons and `SFKButton(configuration: ...)` for reusable styles
-- Use `SFKButtonConfigurator.close` as the default close-button starting point
-- Use the configurator to express color, spacing, fonts, shape, chrome, loading state, and haptics instead of adding app-local button subclasses
+- Prefer `SFKButton(...)` for simple one-off buttons and `SFKCloseButton(...)` for standardized dismiss actions
+- Use `SFKCloseButton` as the default close-button starting point
+- When another button style repeats, create an app-local wrapper around `SFKButton(...)` instead of copying the same init arguments everywhere
 - Height comes from `verticalPadding` instead of a fixed minimum height, so compact variants should be tuned through padding
 - Loading buttons disable taps, replace their label with a spinner, and temporarily stop being full-width
 
