@@ -168,21 +168,19 @@ public struct SFKColorPickerSheet: View {
                 Circle()
                     .fill(viewModel.selectedColor.opacity(0.2))
                     .frame(width: outerCircleSize, height: outerCircleSize)
-                    .glassEffectCompat(
-                        style: .regular,
+                    .sfkGlass(
                         color: viewModel.selectedColor,
                         isInteractive: true,
-                        in: .circle
+                        shape: .circle
                     )
 
                 Circle()
                     .fill(viewModel.selectedColor)
                     .frame(width: innerCircleSize, height: innerCircleSize)
-                    .glassEffectCompat(
-                        style: .regular,
+                    .sfkGlass(
                         color: viewModel.selectedColor,
                         isInteractive: true,
-                        in: .circle
+                        shape: .circle
                     )
             }
             .padding(.bottom, 8)
@@ -215,11 +213,10 @@ public struct SFKColorPickerSheet: View {
             }
         }
         .frame(width: 44, height: 44)
-        .glassEffectCompat(
-            style: .regular,
+        .sfkGlass(
             color: color,
             isInteractive: true,
-            in: Circle()
+            shape: .circle
         )
         .scaleEffect(isSelected ? 1.05 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.selectedColor)

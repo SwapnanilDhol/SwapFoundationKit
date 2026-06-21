@@ -18,23 +18,16 @@ public enum SFKButtonHapticStyle {
     case heavy
 }
 
-/// The shape used by `SFKButtonChrome.glassEffect`.
-public enum SFKButtonShape {
-    case roundedRectangle(cornerRadius: CGFloat)
-    case capsule
-    case circle
-}
-
 /// The visual chrome applied to an `SFKButton`.
 public enum SFKButtonChrome {
-    /// Applies the prominent Liquid Glass button style with a compatibility fallback.
+    /// Applies the prominent Liquid Glass button style with a pre-iOS-26 fallback.
     case glassProminent
-    /// Applies the regular Liquid Glass button style with a compatibility fallback.
+    /// Applies the regular Liquid Glass button style with a pre-iOS-26 fallback.
     case glass
-    /// Applies Liquid Glass directly to a custom shape with a compatibility fallback.
+    /// Applies Liquid Glass directly to a custom shape with a pre-iOS-26 fallback.
     case glassEffect(
-        style: GlassEffectCompatStyle = .regular,
-        shape: SFKButtonShape = .capsule,
+        style: SFKGlassStyle = .regular,
+        shape: SFKGlassShape = .capsule,
         isInteractive: Bool = true
     )
     /// Applies no extra chrome.

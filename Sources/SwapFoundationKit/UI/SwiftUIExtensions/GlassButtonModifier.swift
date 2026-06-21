@@ -11,139 +11,165 @@
 
 import SwiftUI
 
-public enum GlassEffectCompatStyle: Sendable {
+// MARK: - Public Configuration
+
+/// How prominent the glass treatment should be.
+///
+/// - `.prominent` uses the system `.glassProminent` button style — a filled, tinted glass
+///   surface. Use it for primary actions such as "Continue" or "Save".
+/// - `.regular` uses the system `.glass` button style — a translucent, tinted glass
+///   surface. Use it for secondary actions such as "Maybe Later" or filter chips.
+public enum SFKGlassEmphasis: Sendable {
+    case prominent
+    case regular
+}
+
+/// The system `Glass` preset to apply when `sfkGlass` is rendering a custom shape.
+///
+/// - `.regular` — standard Liquid Glass. The default.
+//// - `.clear` — more transparent; lets the content behind it read more clearly.
+/// - `.identity` — no glass effect; renders as a flat tinted shape.
+public enum SFKGlassStyle: Sendable {
     case regular
     case clear
     case identity
 }
 
-/// A compatibility wrapper around SwiftUI's `.glassProminent` button style.
-public struct GlassProminentCompatModifier: ViewModifier {
-    public let color: Color
-
-    public init(
-        color: Color = .accentColor
-    ) {
-        self.color = color
-    }
-
-    @ViewBuilder
-    public func body(content: Content) -> some View {
-        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
-            content
-                .buttonStyle(.glassProminent)
-                .tint(color)
-        } else {
-            content
-                .background(color)
-        }
-    }
+/// The shape the glass effect is applied to.
+///
+/// Pass `nil` to `sfkGlass(shape:)` to use the system button style
+/// (`.glassProminent` or `.glass`) instead of a custom-shape `.glassEffect`.
+public enum SFKGlassShape: Sendable {
+    case roundedRectangle(cornerRadius: CGFloat, style: RoundedCornerStyle = .continuous)
+    case capsule
+    case circle
 }
 
-/// A compatibility wrapper around SwiftUI's `.glass` button style.
-public struct GlassCompatModifier: ViewModifier {
-    public let color: Color
+// MARK: - Modifier
 
-    public init(
-        color: Color = .accentColor
-    ) {
-        self.color = color
-    }
-
-    @ViewBuilder
-    public func body(content: Content) -> some View {
-        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
-            content
-                .buttonStyle(.glass)
-                .tint(color)
-        } else {
-            content
-                .background(color)
-        }
-    }
-}
-
-/// A compatibility wrapper around SwiftUI's `glassEffect(_:in:)` modifier.
-public struct GlassEffectCompatModifier<S: Shape>: ViewModifier {
-    public let style: GlassEffectCompatStyle
-    public let color: Color
-    public let isInteractive: Bool
-    public let shape: S
-
-    public init(
-        style: GlassEffectCompatStyle = .regular,
-        color: Color = .white.opacity(0.18),
-        isInteractive: Bool = false,
-        shape: S
-    ) {
-        self.style = style
-        self.color = color
-        self.isInteractive = isInteractive
-        self.shape = shape
-    }
+private struct SFKGlassModifier: ViewModifier {
+    let emphasis: SFKGlassEmphasis
+    let color: Color
+    let style: SFKGlassStyle
+    let isInteractive: Bool
+    let shape: SFKGlassShape?
 
     @ViewBuilder
-    public func body(content: Content) -> some View {
+    func body(content: Content) -> some View {
         if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
-            content
-                .glassEffect(resolvedGlass, in: shape)
+            switch shape {
+            case .none:
+                switch emphasis {
+                case .prominent:
+                    content
+                        .buttonStyle(.glassProminent)
+                        .tint(color)
+                case .regular:
+                    content
+                        .buttonStyle(.glass)
+                        .tint(color)
+                }
+            case let shape?:
+                content
+                    .glassEffect(resolvedGlass, in: resolvedShape(shape))
+            }
         } else {
             content
-                .background(shape.fill(color))
+                .background(fallback(for: shape))
         }
     }
 
     @available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *)
     private var resolvedGlass: Glass {
-        let baseGlass: Glass = switch style {
-        case .regular:
-            .regular
-        case .clear:
-            .clear
-        case .identity:
-            .identity
+        let base: Glass = switch style {
+        case .regular: .regular
+        case .clear:   .clear
+        case .identity: .identity
         }
-
-        return baseGlass
+        return base
             .tint(color)
             .interactive(isInteractive)
+    }
+
+    @available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *)
+    private func resolvedShape(_ shape: SFKGlassShape) -> AnyShape {
+        switch shape {
+        case let .roundedRectangle(cornerRadius, style):
+            return AnyShape(RoundedRectangle(cornerRadius: cornerRadius, style: style))
+        case .capsule:
+            return AnyShape(Capsule())
+        case .circle:
+            return AnyShape(Circle())
+        }
+    }
+
+    @ViewBuilder
+    private func fallback(for shape: SFKGlassShape?) -> some View {
+        if let shape {
+            switch shape {
+            case let .roundedRectangle(cornerRadius, style):
+                RoundedRectangle(cornerRadius: cornerRadius, style: style).fill(color)
+            case .capsule:
+                Capsule().fill(color)
+            case .circle:
+                Circle().fill(color)
+            }
+        } else {
+            Rectangle().fill(color)
+        }
     }
 }
 
 public extension View {
-    /// Applies SwiftUI's `.glassProminent` button style with a pre-iOS 26 fallback background.
-    func glassProminentCompat(
-        color: Color = .accentColor
-    ) -> some View {
-        modifier(
-            GlassProminentCompatModifier(
-                color: color
-            )
-        )
-    }
-
-    /// Applies SwiftUI's `.glass` button style with a pre-iOS 26 fallback background.
-    func glassCompat(
-        color: Color = .accentColor
-    ) -> some View {
-        modifier(
-            GlassCompatModifier(
-                color: color
-            )
-        )
-    }
-
-    /// Applies SwiftUI's `glassEffect(_:in:)` modifier with a pre-iOS 26 fallback shape fill.
-    func glassEffectCompat<S: Shape>(
-        style: GlassEffectCompatStyle = .regular,
-        color: Color = .white.opacity(0.18),
+    /// Applies the Liquid Glass effect with a pre-iOS-26 fallback.
+    ///
+    /// Use the `emphasis` and `shape` parameters to pick the right treatment:
+    ///
+    /// - `shape: nil` — render the effect via a system button style.
+    ///   - `emphasis: .prominent` → `.glassProminent` (filled, tinted). Primary actions.
+    ///   - `emphasis: .regular`   → `.glass` (translucent, tinted). Secondary actions.
+    /// - `shape: <some shape>` — render the effect on a custom shape via
+    ///   `.glassEffect(...)`. Use this for non-button surfaces such as chips,
+    ///   color swatches, or decorative blobs. In this mode `emphasis` is ignored;
+    ///   control the look with `style:` and `isInteractive:`.
+    ///
+    /// On platforms older than iOS 26 / macOS 26, the modifier falls back to a
+    /// solid tinted background (or a shape-filled tint when `shape` is non-nil)
+    /// so the surface remains visible.
+    ///
+    /// Example — primary action:
+    /// ```swift
+    /// Button("Continue") {}
+    ///     .sfkGlass(emphasis: .prominent, color: .blue)
+    /// ```
+    ///
+    /// Example — secondary action:
+    /// ```swift
+    /// Button("Maybe Later") {}
+    ///     .sfkGlass(emphasis: .regular, color: .orange)
+    /// ```
+    ///
+    /// Example — interactive chip on a capsule:
+    /// ```swift
+    /// Text("Filters")
+    ///     .sfkGlass(
+    ///         color: .green,
+    ///         isInteractive: true,
+    ///         shape: .capsule
+    ///     )
+    /// ```
+    func sfkGlass(
+        emphasis: SFKGlassEmphasis = .regular,
+        color: Color = .accentColor,
+        style: SFKGlassStyle = .regular,
         isInteractive: Bool = false,
-        in shape: S
+        shape: SFKGlassShape? = nil
     ) -> some View {
         modifier(
-            GlassEffectCompatModifier(
-                style: style,
+            SFKGlassModifier(
+                emphasis: emphasis,
                 color: color,
+                style: style,
                 isInteractive: isInteractive,
                 shape: shape
             )
@@ -151,33 +177,43 @@ public extension View {
     }
 }
 
-#Preview("Glass Button Compat") {
+// MARK: - Previews
+
+#Preview("Buttons") {
     VStack(spacing: 16) {
         Button("Continue") {}
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
-            .glassProminentCompat(color: .blue)
+            .sfkGlass(emphasis: .prominent, color: .blue)
 
         Button("Maybe Later") {}
             .padding(.horizontal, 22)
             .padding(.vertical, 10)
-            .glassCompat(color: .orange)
+            .sfkGlass(emphasis: .regular, color: .orange)
     }
     .padding(24)
 }
 
-#Preview("Glass Effect Compat") {
+#Preview("Shapes") {
     HStack(spacing: 20) {
         Text("A")
             .font(.headline.weight(.bold))
             .frame(width: 56, height: 56)
-            .glassEffectCompat(style: .regular, color: .blue, isInteractive: true, in: Circle())
+            .sfkGlass(
+                color: .blue,
+                isInteractive: true,
+                shape: .circle
+            )
 
         Text("B")
             .font(.headline.weight(.bold))
             .frame(height: 44)
             .padding(.horizontal, 18)
-            .glassEffectCompat(style: .regular, color: .green, isInteractive: true, in: Capsule())
+            .sfkGlass(
+                color: .green,
+                isInteractive: true,
+                shape: .capsule
+            )
     }
     .padding(24)
 }

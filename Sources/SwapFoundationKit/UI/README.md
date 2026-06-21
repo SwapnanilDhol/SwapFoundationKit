@@ -66,12 +66,13 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | `SFKAuraLayer` | View | Accessibility-gated aura glow (respects reduce motion) |
 | `SFKAuraGlowBackground` | View | Full-screen atmospheric glow wrapping content |
 
-### Glass Compatibility
-| Modifier | Description |
-|----------|-------------|
-| `.glassProminentCompat(color:)` | Prominent glass button style (iOS 26+ with fallback) |
-| `.glassCompat(color:)` | Regular glass style |
-| `.glassEffectCompat(style:color:isInteractive:in:)` | Custom shape glass effect |
+### Glass
+| Type | Description |
+|------|-------------|
+| `.sfkGlass(emphasis:color:style:isInteractive:shape:)` | Unified Liquid Glass effect with a pre-iOS-26 fallback. Use `emphasis` for button styles and `shape:` for `.glassEffect` on a custom shape. |
+| `SFKGlassEmphasis` | `.prominent` (filled glass, primary actions) or `.regular` (translucent glass, secondary actions) |
+| `SFKGlassStyle` | `.regular` / `.clear` / `.identity` — the system `Glass` preset when `shape:` is non-nil |
+| `SFKGlassShape` | `.roundedRectangle(cornerRadius:style:)` / `.capsule` / `.circle` |
 
 ### Other
 | Type | Kind | Description |

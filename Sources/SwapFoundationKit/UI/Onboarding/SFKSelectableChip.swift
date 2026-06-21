@@ -226,11 +226,10 @@ public struct SFKSelectableChip: View {
                     lineWidth: strokeWidth
                 )
         )
-        .glassEffectCompat(
-            style: .regular,
+        .sfkGlass(
             color: glassTintColor,
             isInteractive: true,
-            in: Capsule()
+            shape: .capsule
         )
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }

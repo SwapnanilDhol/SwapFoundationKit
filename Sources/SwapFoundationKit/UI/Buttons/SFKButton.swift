@@ -190,36 +190,20 @@ private extension SFKButton {
         switch chrome {
         case .glassProminent:
             content
-                .glassProminentCompat(color: resolvedColor)
+                .sfkGlass(emphasis: .prominent, color: resolvedColor)
 
         case .glass:
             content
-                .glassCompat(color: resolvedColor)
+                .sfkGlass(emphasis: .regular, color: resolvedColor)
 
         case let .glassEffect(style, shape, isInteractive):
-            switch shape {
-            case let .roundedRectangle(cornerRadius):
-                content.glassEffectCompat(
-                    style: style,
+            content
+                .sfkGlass(
                     color: resolvedColor,
-                    isInteractive: isInteractive && isEnabled,
-                    in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                )
-            case .capsule:
-                content.glassEffectCompat(
                     style: style,
-                    color: resolvedColor,
                     isInteractive: isInteractive && isEnabled,
-                    in: Capsule()
+                    shape: shape
                 )
-            case .circle:
-                content.glassEffectCompat(
-                    style: style,
-                    color: resolvedColor,
-                    isInteractive: isInteractive && isEnabled,
-                    in: Circle()
-                )
-            }
 
         case .plain:
             content
