@@ -10,6 +10,12 @@ public extension String {
 
     // MARK: - Validation
 
+    /// Returns whether the string is a valid 6-digit hex color, with or without a leading `#`.
+    func isValidHexColor() -> Bool {
+        let text = hasPrefix("#") ? self : "#\(self)"
+        return text.matches(regex: "^#([A-Fa-f0-9]{6})$")
+    }
+
     var isBlank: Bool { trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     var isNotBlank: Bool { !isBlank }
     var isNumeric: Bool { Double(self) != nil }
@@ -41,6 +47,11 @@ public extension String {
         components(separatedBy: .whitespacesAndNewlines).joined()
     }
     var removingWhitespaces: String { withoutWhitespace }
+
+    /// Removes a leading `#` from a hex color string, if present.
+    var withHexRemoved: String {
+        replacingOccurrences(of: "#", with: "")
+    }
 
     func truncated(to maxLength: Int, with suffix: String = "...") -> String {
         guard count > maxLength else { return self }

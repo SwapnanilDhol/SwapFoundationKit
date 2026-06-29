@@ -12,6 +12,31 @@
 #if canImport(UIKit) && os(iOS)
 import UIKit
 
+// MARK: - Device Family
+
+public enum SFKDeviceFamily {
+    case phone
+    case pad
+    case mac
+}
+
+public extension UIDevice {
+    static var deviceFamily: SFKDeviceFamily {
+        #if targetEnvironment(macCatalyst)
+        return .mac
+        #else
+        switch UIDevice.current.userInterfaceIdiom {
+        case .phone:
+            return .phone
+        case .pad:
+            return .pad
+        default:
+            return .phone
+        }
+        #endif
+    }
+}
+
 // MARK: - DeviceInfo
 
 public enum DeviceInfo {

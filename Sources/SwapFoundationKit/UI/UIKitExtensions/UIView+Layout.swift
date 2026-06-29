@@ -18,6 +18,16 @@ import UIKit
 #if canImport(UIKit) && os(iOS)
 @MainActor
 public extension UIView {
+    /// Adds a full-size blur effect view pinned to the receiver's bounds.
+    @discardableResult
+    func addBlur(style: UIBlurEffect.Style = .extraLight) -> UIVisualEffectView {
+        let blurBackground = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        addSubview(blurBackground)
+        blurBackground.translatesAutoresizingMaskIntoConstraints = false
+        blurBackground.fillSuperview()
+        return blurBackground
+    }
+
     /// A struct to hold layout constraints for easy access and management.
     struct LayoutConstraints {
         var top, leading, bottom, trailing, width, height: NSLayoutConstraint?
