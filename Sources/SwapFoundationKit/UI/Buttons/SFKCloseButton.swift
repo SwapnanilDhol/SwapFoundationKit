@@ -25,14 +25,13 @@ public struct SFKCloseButton: View {
     }
 
     public var body: some View {
+        // Icon-only — no local circle fill. Toolbar Liquid Glass (iOS 26+)
+        // already wraps leading items; a second circle reads as button-in-button.
         Button(action: action) {
             Image(systemName: "xmark")
                 .font(.footnote.weight(.bold))
                 .foregroundStyle(.primary)
-                .padding(8)
-                .background(
-                    Circle().fill(Color.white.opacity(0.12))
-                )
+                .frame(width: 30, height: 30)
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
