@@ -38,6 +38,7 @@ public final class SwapFoundationKit {
 
     /// Shared deeplink handler instance for handling URLs and universal links.
     /// Returns nil if the framework has not been initialized.
+    @MainActor
     public var deeplinkHandler: DeeplinkHandler? {
         guard isInitialized else { return nil }
         return DefaultDeeplinkHandler.shared
@@ -118,9 +119,7 @@ public final class SwapFoundationKit {
 
         // Configure deeplink handler with supported routes
         if let routes = configuration?.supportedRoutes {
-            await MainActor.run {
-                DefaultDeeplinkHandler.shared.configure(with: routes)
-            }
+            await DefaultDeeplinkHandler.shared.configure(with: routes)
         }
 
         // Additional service initialization can be added here

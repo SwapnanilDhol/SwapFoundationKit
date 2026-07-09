@@ -20,7 +20,7 @@ import UIKit
 public extension UIApplication {
     /// Returns the safe area insets for the key window.
     var safeAreaInsets: UIEdgeInsets {
-        return keyWindow?.safeAreaInsets ?? .zero
+        return foregroundKeyWindow?.safeAreaInsets ?? .zero
     }
     
     /// Returns the top safe area inset.

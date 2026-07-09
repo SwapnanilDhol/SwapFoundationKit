@@ -22,6 +22,7 @@ import UIKit
 ///
 /// Implement this protocol to create a custom deeplink handler,
 /// or use the default `DefaultDeeplinkHandler` implementation.
+@MainActor
 public protocol DeeplinkHandler: AnyObject {
     /// Publisher that emits deeplink events.
     /// Subscribe to this to receive deeplink callbacks in your app.
@@ -92,7 +93,7 @@ public final class DefaultDeeplinkHandler: NSObject, DeeplinkHandler {
     // MARK: - Properties
 
     private let subject = PassthroughSubject<DeeplinkEvent, Never>()
-    private var supportedRoutes: [DeeplinkRoute.Type] = []
+    private var supportedRoutes: [any DeeplinkRoute.Type] = []
 
     // MARK: - DeeplinkHandler
 
@@ -137,7 +138,7 @@ public final class DefaultDeeplinkHandler: NSObject, DeeplinkHandler {
 
     /// Configures the handler with supported route types.
     /// - Parameter routes: Array of route types to register
-    public func configure(with routes: [DeeplinkRoute.Type]) {
+    public func configure(with routes: [any DeeplinkRoute.Type]) {
         self.supportedRoutes = routes
     }
 

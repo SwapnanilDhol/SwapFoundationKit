@@ -31,6 +31,10 @@ let package = Package(
             url: "https://github.com/kean/Pulse.git",
             exact: "5.1.2"
         ),
+        .package(
+            url: "https://github.com/TelemetryDeck/SwiftClient.git",
+            exact: "2.14.1"
+        ),
     ],
     targets: [
         .target(
@@ -40,6 +44,8 @@ let package = Package(
                 .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
                 .product(name: "PulseUI", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
                 .product(name: "PulseProxy", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
+                .product(name: "TelemetryClient", package: "SwiftClient", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
+                .product(name: "TelemetryDeck", package: "SwiftClient", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
             ]
         ),
         .target(

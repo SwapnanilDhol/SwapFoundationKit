@@ -22,12 +22,13 @@ public extension UIApplication {
     /// - Parameter rootViewController: The root view controller to start from. If nil, uses the first connected scene's root view controller.
     /// - Returns: The top-most view controller, or nil if not found.
     static func topViewController(
-        from rootViewController: UIViewController? = UIApplication.shared.connectedScenes
+        from rootViewController: UIViewController? = nil
+    ) -> UIViewController? {
+        let resolvedRoot = rootViewController ?? UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }
             .first?.rootViewController
-    ) -> UIViewController? {
 
-        guard let rootViewController = rootViewController else { return nil }
+        guard let rootViewController = resolvedRoot else { return nil }
 
         if let presentedViewController = rootViewController.presentedViewController {
             return topViewController(from: presentedViewController)

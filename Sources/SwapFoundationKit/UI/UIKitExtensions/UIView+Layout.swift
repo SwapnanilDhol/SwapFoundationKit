@@ -35,8 +35,8 @@ public extension UIView {
     
     /// The layout constraints for this view.
     var layoutConstraints: LayoutConstraints {
-        get { objc_getAssociatedObject(self, &AssociatedKeys.layoutConstraints) as? LayoutConstraints ?? LayoutConstraints() }
-        set { objc_setAssociatedObject(self, &AssociatedKeys.layoutConstraints, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &AssociatedKeys.layoutConstraintsKey) as? LayoutConstraints ?? LayoutConstraints() }
+        set { objc_setAssociatedObject(self, &AssociatedKeys.layoutConstraintsKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
     }
     
     /// Sets up Auto Layout constraints for the view.
@@ -207,7 +207,7 @@ public extension UIStackView {
     }
 }
 
-private struct AssociatedKeys {
-    nonisolated(unsafe) static var layoutConstraints = "layoutConstraints"
+private enum AssociatedKeys {
+    nonisolated(unsafe) static var layoutConstraintsKey: UInt8 = 0
 }
 #endif 

@@ -25,7 +25,7 @@ public protocol Coordinator: AnyObject {
     #endif
     
     /// Starts the coordinator's flow.
-    func start()
+    @MainActor func start()
 }
 
 #if canImport(UIKit) && os(iOS)

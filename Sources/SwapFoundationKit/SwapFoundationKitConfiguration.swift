@@ -60,7 +60,7 @@ public struct SwapFoundationKitConfiguration {
     public let customHTTPClient: HTTPClient?
 
     /// Route types that the deeplink handler should recognize
-    public let supportedRoutes: [DeeplinkRoute.Type]
+    public let supportedRoutes: [any DeeplinkRoute.Type]
 
     // MARK: - Initialization
     
@@ -92,7 +92,7 @@ public struct SwapFoundationKitConfiguration {
         customAnalyticsLogger: AnalyticsLogger? = nil,
         customStorageService: FileStorageService? = nil,
         customHTTPClient: HTTPClient? = nil,
-        supportedRoutes: [DeeplinkRoute.Type] = []
+        supportedRoutes: [any DeeplinkRoute.Type] = []
     ) {
         self.appMetadata = appMetadata
         self.enableWatchConnectivity = enableWatchConnectivity
