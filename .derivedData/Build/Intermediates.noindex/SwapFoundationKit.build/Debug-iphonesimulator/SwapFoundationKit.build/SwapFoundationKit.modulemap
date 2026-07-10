@@ -1,4 +1,0 @@
-module SwapFoundationKit {
-header "SwapFoundationKit-Swift.h"
-export *
-}

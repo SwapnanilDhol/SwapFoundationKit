@@ -1,10 +1,24 @@
 .DS_Store
-/.build
+.netrc
+
+# SwiftPM / local build outputs
+.build/
 **/.build/
-/build/
+.build-local/
+build/
 /Packages
+.build-ios.log
+*.log
+
+# Xcode
 xcuserdata/
 DerivedData/
+.derivedData/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# SwiftPM workspace noise
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-.netrc
+.swiftpm/xcode/xcuserdata/
