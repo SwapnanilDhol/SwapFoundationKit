@@ -21,6 +21,9 @@ suggesting replacements for helpers that are internal or too generic to audit re
 
 Prefer `SFKCloseButton` for all close/dismiss actions in modal sheets, onboarding flows, and any dismissible views.
 
+- Use the default `.toolbar` chrome inside navigation toolbars (Liquid Glass already wraps the control).
+- Use `SFKCloseButton(chrome: .glass)` for freeform chrome over content — full-bleed previews, camera overlays, custom top bars — where an icon-only control is hard to see.
+
 ## 4b) Item Picker (`SFKItemPickerView`)
 
 A generic picker view for selecting or managing items from a list, with support for single-select, multi-select, sections, searchable browsing, context-menu actions, and swipe actions.

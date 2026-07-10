@@ -80,6 +80,7 @@ domains:
     public_api:
       - SFKButton
       - SFKCloseButton
+      - SFKCloseButtonChrome
     docs:
       - Docs/migration/migration-guide.md
     examples:
@@ -90,6 +91,8 @@ domains:
       - CTA
       - dismiss button
       - close button
+      - glass close button
+      - toolbar close button
 
   - id: onboarding
     priority: 3
