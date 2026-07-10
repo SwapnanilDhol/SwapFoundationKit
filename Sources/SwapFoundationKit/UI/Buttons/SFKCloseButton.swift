@@ -32,13 +32,16 @@ public enum SFKCloseButtonChrome: Sendable {
 /// either `SFKCloseButton { ... }` or `SFKCloseButton(action: onClose)`.
 public struct SFKCloseButton: View {
     private let chrome: SFKCloseButtonChrome
+    private let foreground: Color
     private let action: () -> Void
 
     public init(
         chrome: SFKCloseButtonChrome = .toolbar,
+        foreground: Color = .primary,
         action: @escaping () -> Void
     ) {
         self.chrome = chrome
+        self.foreground = foreground
         self.action = action
     }
 
@@ -46,7 +49,7 @@ public struct SFKCloseButton: View {
         Button(action: action) {
             Image(systemName: "xmark")
                 .font(iconFont)
-                .foregroundStyle(.primary)
+                .foregroundStyle(foreground)
                 .frame(width: hitSize, height: hitSize)
                 .contentShape(Circle())
         }
@@ -110,7 +113,7 @@ private struct CloseChromeModifier: ViewModifier {
                     .foregroundStyle(.white)
             }
             HStack(spacing: 16) {
-                SFKCloseButton(chrome: .glass) { }
+                SFKCloseButton(chrome: .glass, foreground: .white) { }
                 Text("glass")
                     .foregroundStyle(.white)
             }

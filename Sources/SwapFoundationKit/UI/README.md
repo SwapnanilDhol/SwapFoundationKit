@@ -106,6 +106,11 @@ SFKCloseButton(chrome: .glass) {
     dismiss()
 }
 
+// Over a colored swatch — match icon to surface contrast
+SFKCloseButton(chrome: .glass, foreground: swatch.contrastingColor) {
+    dismiss()
+}
+
 // Settings
 SFKSettingsScreen(
     sections: [
