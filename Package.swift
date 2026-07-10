@@ -21,7 +21,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-            exact: "13.1.0"
+            exact: "13.6.0"
         ),
         .package(
             url: "https://github.com/BastiaanJansen/Toast-Swift.git",
@@ -29,7 +29,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/kean/Pulse.git",
-            exact: "5.1.2"
+            exact: "5.2.3"
         ),
         .package(
             url: "https://github.com/TelemetryDeck/SwiftClient.git",

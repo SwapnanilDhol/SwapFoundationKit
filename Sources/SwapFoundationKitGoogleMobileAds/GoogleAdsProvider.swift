@@ -290,7 +290,7 @@ private final class GoogleAdaptiveBannerViewController: UIViewController {
 
     private func loadBannerAd() {
         let viewWidth = max(view.bounds.inset(by: view.safeAreaInsets).width, UIScreen.main.bounds.width)
-        let adSize = currentOrientationAnchoredAdaptiveBanner(width: viewWidth)
+        let adSize = largeAnchoredAdaptiveBanner(width: viewWidth)
         widthConstraint?.constant = adSize.size.width
         heightConstraint?.constant = adSize.size.height
         bannerView.adSize = adSize

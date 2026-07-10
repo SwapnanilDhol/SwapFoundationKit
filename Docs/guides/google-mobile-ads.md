@@ -11,7 +11,7 @@ The core **`SwapFoundationKit`** library does **not** depend on Google Mobile Ad
 
 1. Add the same `SwapFoundationKit` package URL.
 2. Add library **`SwapFoundationKitGoogleMobileAds`** to targets that show ads.
-3. Add Google’s **`GoogleMobileAds`** package to that target if you want an explicit pin (match the version in this repo’s `Package.swift`, currently **13.1.0**).
+3. Add Google’s **`GoogleMobileAds`** package to that target if you want an explicit pin (match the version in this repo’s `Package.swift`, currently **13.6.0**).
 4. Set **`GADApplicationIdentifier`** in the app `Info.plist`.
 
 ## Migration from older SFK

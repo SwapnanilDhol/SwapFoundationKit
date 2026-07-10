@@ -6,8 +6,8 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 
 - **iOS**: 17.0+
 - **Swift**: 5.9+
-- **Dependencies (core)**: [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, [Pulse](https://github.com/kean/Pulse) 5.1.2
-- **Optional**: `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.1.0
+- **Dependencies (core)**: [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, [Pulse](https://github.com/kean/Pulse) 5.2.3, [TelemetryDeck](https://github.com/TelemetryDeck/SwiftClient) 2.14.1
+- **Optional**: `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
 
 ## Installation
 

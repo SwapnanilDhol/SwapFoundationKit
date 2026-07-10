@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Pulse.git",
       "state" : {
-        "revision" : "c102aaa266ac69a26d08ee6861da710283988e3b",
-        "version" : "5.1.2"
+        "revision" : "94b92731d370c129bb771e9c18f69b0a44ccca5c",
+        "version" : "5.2.3"
       }
     },
     {
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
       "state" : {
-        "revision" : "4458cfaeb502801c779dbb7fbd0121d198628f52",
-        "version" : "13.1.0"
+        "revision" : "7651abff585dc8dacd1744222d5f03bdd2a8532a",
+        "version" : "13.6.0"
       }
     },
     {
