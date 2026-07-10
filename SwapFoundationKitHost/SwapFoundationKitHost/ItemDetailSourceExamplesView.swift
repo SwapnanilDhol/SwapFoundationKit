@@ -21,7 +21,15 @@ struct ItemDetailSourceExamplesView: View {
             Section("Share Text") {
                 Button("Present Share Sheet") { isSharing = true }
                     .sheet(isPresented: $isSharing) {
-                        ShareSheet(items: [ShareItem(title: "Hello", subtitle: "World", url: URL(string: "https://example.com"), imageData: nil, text: "Hello from SwapFoundationKit!")])
+                        ShareSheet(items: [
+                            ShareItem(
+                                title: "Hello",
+                                subtitle: "World",
+                                url: URL(string: "https://example.com"),
+                                imageData: nil,
+                                text: "Hello from SwapFoundationKit!"
+                            ).makeActivityItem()
+                        ])
                     }
             }
         }
@@ -38,7 +46,7 @@ private struct ShareItem: ItemDetailSource {
 }
 
 private struct ShareSheet: UIViewControllerRepresentable {
-    let items: [ItemDetailSource]
+    let items: [UIActivityItemSource]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: items, applicationActivities: nil)

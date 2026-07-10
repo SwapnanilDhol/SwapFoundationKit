@@ -34,8 +34,9 @@ Application-level services for haptics, logging, analytics, Pulse inspection, us
 | `AppStoreSearchService` | class | iTunes Search API with debounce and task cancellation |
 | `FileExportService` | class | Share sheet presenter for data and Encodable objects |
 | `FileImportService` | class | Document picker for importing files with delegate |
-| `ItemDetailSource` | protocol | Shareable item with link metadata support |
+| `ItemDetailSource` | protocol | Shareable item metadata (title/text/image/url) |
 | `DefaultItemDetailSource` | struct | Concrete implementation of `ItemDetailSource` |
+| `ActivityItemDetailSource` | class | `UIActivityItemSource` bridge — use `makeActivityItem()` |
 | `SFKProGate` | enum | Closure-based IAP feature gating with automatic upsell |
 | `SFKNotificationService` | class | Generic `UNUserNotificationCenter` wrapper |
 | `SFKFirebaseLogger` | class | Pre-built `AnalyticsLogger` for Firebase |
@@ -118,6 +119,6 @@ Host-app integration guidance lives in [Docs/guides/pulse-integration.md](../../
 - `AppLinkOpener.swift` — URL opening
 - `AppStoreSearch/AppStoreSearchResult.swift` — iTunes search
 - `FileExportService.swift` + `FileImportService.swift` — File I/O
-- `ItemDetailSource.swift` + `DefaultItemDetailSource.swift` — Sharing
+- `ItemDetailSource.swift` + `DefaultItemDetailSource.swift` + `ActivityItemDetailSource` — Sharing (`makeActivityItem()`)
 - `SFKProGate.swift` — Feature gating
 - `SFKNotificationService.swift` — Local notifications
