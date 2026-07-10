@@ -23,7 +23,7 @@ struct DebouncerExamplesView: View {
             Section("Type to see debounced output (0.5s)") {
                 TextField("Type...", text: $text)
                     .textFieldStyle(.roundedBorder)
-                    .onChange(of: text) { newValue in
+                    .onChange(of: text) { _, newValue in
                         debouncer.call {
                             debouncedText = newValue
                         }

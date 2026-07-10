@@ -426,6 +426,11 @@ public final class HTTPClient {
     }
 }
 
+/// Holds a download task so cancellation handlers can reference it without capturing a mutable local.
+private final class DownloadTaskBox: @unchecked Sendable {
+    var task: URLSessionDownloadTask?
+}
+
 private extension HTTPClient {
     var usesCustomProtocolTransport: Bool {
         !(session.configuration.protocolClasses ?? []).isEmpty
@@ -452,7 +457,7 @@ private extension HTTPClient {
         progressHandler: ((Double) -> Void)?
     ) async throws -> (URL, URLResponse) {
         var observation: NSKeyValueObservation?
-        var task: URLSessionDownloadTask?
+        let taskBox = DownloadTaskBox()
         var lastReportedCompleted: Int64 = 0
 
         return try await withTaskCancellationHandler(operation: {
@@ -472,7 +477,7 @@ private extension HTTPClient {
 
                     continuation.resume(returning: (temporaryURL, response))
                 }
-                task = downloadTask
+                taskBox.task = downloadTask
 
                 if progress != nil || progressHandler != nil {
                     observation = downloadTask.progress.observe(\.completedUnitCount, options: [.initial, .new]) { taskProgress, change in
@@ -493,7 +498,7 @@ private extension HTTPClient {
                 downloadTask.resume()
             }
         }, onCancel: {
-            task?.cancel()
+            taskBox.task?.cancel()
         })
     }
 

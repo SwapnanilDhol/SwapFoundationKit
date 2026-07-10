@@ -224,7 +224,6 @@ final class UIColorExtensionsTests: XCTestCase {
 
     func testAddHSBA() {
         let red = UIColor(red: 1, green: 0, blue: 0, alpha: 1)
-        let blue = UIColor(red: 0, green: 0, blue: 1, alpha: 1)
 
         let result = red.add(hue: 0, saturation: 0, brightness: 0, alpha: 0)
         XCTAssertNotNil(result)

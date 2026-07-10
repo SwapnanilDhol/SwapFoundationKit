@@ -105,26 +105,18 @@ struct SettingsExamplesView: View {
         .padding(.vertical, 8)
     }
 
-    private func trailingView(for item: any SettingsItem) -> AnyView? {
+    private func trailingView(for item: any SettingsItem) -> SFKSettingsTrailing? {
         if let item = item as? AppSettingsItem {
             switch item {
             case .lastSync:
-                return AnyView(
-                    Text(lastSyncDate.formatted(date: .abbreviated, time: .shortened))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                )
+                return .value(lastSyncDate.formatted(date: .abbreviated, time: .shortened))
             case .notifications, .onboarding:
                 return nil
             }
         }
 
         if let item = item as? SFKInformationSectionItem, item == .version {
-            return AnyView(
-                Text("2.2.0 (1)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            )
+            return .value("2.2.0 (1)")
         }
 
         return nil
