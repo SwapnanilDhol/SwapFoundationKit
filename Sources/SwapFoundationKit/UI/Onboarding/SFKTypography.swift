@@ -42,10 +42,12 @@ public extension View {
 
     /// A medium-weight subtitle style using `.body` size with rounded design.
     /// Suitable for descriptive text below titles.
+    /// Uses primary at reduced opacity instead of `.secondary` so body copy stays
+    /// readable on light system backgrounds (≈4.5:1 on white).
     func sfkFlowSubtitleStyle() -> some View {
         self
             .font(.system(.body, design: .rounded).weight(.medium))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.primary.opacity(0.68))
     }
 
     /// A semibold card title style using `.headline` size with rounded design.
