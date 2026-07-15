@@ -30,8 +30,16 @@ public struct RGBAColorComponents {
         self.alpha = alpha
     }
 
+    /// WCAG 2.1 relative luminance.
+    /// Components are assumed to be in sRGB space; gamma correction is applied
+    /// before the linear combination so the result matches perception.
     public var luminance: CGFloat {
-        0.2126 * red + 0.7152 * green + 0.0722 * blue
+        let components = [red, green, blue].map { component -> CGFloat in
+            component <= 0.04045
+                ? component / 12.92
+                : pow((component + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * components[0] + 0.7152 * components[1] + 0.0722 * components[2]
     }
 
     public var rgb: [CGFloat] { [red, green, blue] }
@@ -142,7 +150,9 @@ public extension UIColor {
 
     // MARK: - Color Analysis
 
-    var isDark: Bool { rgba.luminance < 0.5 }
+    /// Threshold chosen to match the web playground's `preferredForeground`.
+    /// Colors darker than this get white text; lighter colors get near-black text.
+    var isDark: Bool { rgba.luminance < 0.42 }
 
     var isBlackOrWhite: Bool {
         let rgb = rgba.rgb
@@ -153,7 +163,9 @@ public extension UIColor {
     var isBlack: Bool { rgba.rgb.allSatisfy { $0 < 0.09 } }
     var isWhite: Bool { rgba.rgb.allSatisfy { $0 > 0.91 } }
 
-    var contrastingColor: UIColor { isDark ? .white : .black }
+    /// Foreground that matches the website's `preferredForeground` output:
+    /// white text on dark backgrounds, near-black (#1D1D1F) on light backgrounds.
+    var contrastingColor: UIColor { isDark ? .white : UIColor(red: 29.0 / 255.0, green: 29.0 / 255.0, blue: 31.0 / 255.0, alpha: 1.0) }
 
     func isDistinct(from color: UIColor) -> Bool {
         let bg = rgba.rgb
@@ -311,7 +323,7 @@ public extension Color {
 
     var isDark: Bool { uiColor.isDark }
     var contrastingColor: Color {
-        UIColor(self).isDark ? .white : .black
+        Color(uiColor.contrastingColor)
     }
 
     var uiColor: UIColor { UIColor(self) }
