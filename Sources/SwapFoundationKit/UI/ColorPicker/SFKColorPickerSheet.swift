@@ -116,7 +116,7 @@ public struct SFKColorPickerSheet: View {
                     
                     SFKButton(
                         applyButtonTitle,
-                        titleColor: viewModel.selectedColor.isDark ? .white : .black,
+                        titleColor: viewModel.selectedColor.contrastingColor,
                         color: viewModel.selectedColor,
                         verticalPadding: 8
                     ) {
@@ -209,7 +209,7 @@ public struct SFKColorPickerSheet: View {
                 Image(systemName: "checkmark")
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundStyle(color.isDark ? Color.white : Color.black)
+                    .foregroundStyle(color.contrastingColor)
             }
         }
         .frame(width: 44, height: 44)
