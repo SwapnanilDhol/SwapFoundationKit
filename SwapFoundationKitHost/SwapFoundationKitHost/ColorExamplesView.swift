@@ -14,6 +14,8 @@ import SwapFoundationKit
 
 /// Examples for `UIColor+` and SwiftUI interop.
 struct ColorExamplesView: View {
+    @State private var isShowingColorPicker = false
+
     private let color = UIColor(hex: "#FF5733") ?? .systemOrange
 
     var body: some View {
@@ -28,12 +30,24 @@ struct ColorExamplesView: View {
                 ColorRow(title: "Saturation +0.2", color: Color(color.adjusted(by: .saturation(0.2))))
                 ColorRow(title: "Brightness -0.2", color: Color(color.adjusted(by: .brightness(-0.2))))
             }
+            Section("Picker") {
+                Button("Show Color Picker") {
+                    isShowingColorPicker = true
+                }
+            }
         }
         .navigationTitle("Color / UIColor")
+        .sheet(isPresented: $isShowingColorPicker) {
+            SFKColorPickerSheet(
+                selectedColor: .red,
+                promptTitle: "Choose an example color",
+                promptMessage: "Pick a preset or open the color wheel."
+            )
+            .presentationDetents([.fraction(0.7)])
+        }
     }
 
     private func ColorRow(title: String, color: Color) -> some View {
         HStack { Text(title); Spacer(); Rectangle().fill(color).frame(width: 80, height: 24).cornerRadius(6) }
     }
 }
-

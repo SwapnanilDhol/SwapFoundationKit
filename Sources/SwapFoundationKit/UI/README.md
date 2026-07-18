@@ -8,8 +8,8 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | Type | Kind | Description |
 |------|------|-------------|
 | `SFKButton` | View | Configurable init-based button with loading states, haptics, and glass chrome |
-| `SFKCloseButton` | View | Standardized close/dismiss button (`toolbar` or `glass` chrome) |
-| `SFKCloseButtonChrome` | enum | `toolbar` (icon-only for nav bars), `glass` (circular capsule over content) |
+| `SFKCloseButton` | View | Standardized icon-only or labeled close/dismiss button (`toolbar` or `glass` chrome) |
+| `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKButtonChrome` | enum | glassProminent, glass, glassEffect, plain |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
 
@@ -103,6 +103,11 @@ SFKCloseButton {
 
 // Over full-bleed content (previews, camera chrome)
 SFKCloseButton(chrome: .glass) {
+    dismiss()
+}
+
+// Labeled glass capsule
+SFKCloseButton("Close", chrome: .glass) {
     dismiss()
 }
 
