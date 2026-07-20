@@ -10,9 +10,14 @@
  *****************************************************************************/
 
 import SwiftUI
+import SwapFoundationKit
 
 @main
 struct SwapFoundationKitHostApp: App {
+    init() {
+        SFKAppearanceManager.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
