@@ -62,6 +62,12 @@ struct MyApp: App {
 
 To inspect logs inside a host app, present `SFKPulseConsoleView()` in a sheet or push it inside a `NavigationStack`.
 
+## Component Catalog
+
+`SwapFoundationKitHost` is an installable iPhone and iPad catalog for browsing SFK's visual components and foundation APIs. It uses the local package directly, so component changes appear in the catalog on the next build.
+
+Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKitHost.xcodeproj) in Xcode, select the `SwapFoundationKitHost` scheme and your device, then Run. See the [catalog guide](SwapFoundationKitHost/README.md) for maintenance and installation details.
+
 ## Module Index
 
 | Module | Description |

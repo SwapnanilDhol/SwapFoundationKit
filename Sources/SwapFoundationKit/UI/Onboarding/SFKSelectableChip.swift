@@ -227,7 +227,8 @@ public struct SFKSelectableChip: View {
                 )
         )
         .sfkGlass(
-            color: glassTintColor,
+            material: .regular,
+            tint: glassTintColor,
             isInteractive: true,
             shape: .capsule
         )

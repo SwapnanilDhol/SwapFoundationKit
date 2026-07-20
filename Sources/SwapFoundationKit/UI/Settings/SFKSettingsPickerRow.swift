@@ -1,44 +1,41 @@
-//
-//  SFKSettingsPickerRow.swift
-//  SwapFoundationKit
-//
-//  Created by Swapnanil Dhol on 4/4/26.
-//
+/****************************************************************************
+ * SFKSettingsPickerRow.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2026 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
 
 import SwiftUI
 
-/// An option for a picker settings row.
-public struct SFKSettingsPickerOption: Identifiable, Hashable {
-    public let id: String
+/// A strongly typed option displayed by ``SFKSettingsPickerRow``.
+public struct SFKSettingsPickerOption<Value: Hashable>: Identifiable, Hashable {
+    public let value: Value
     public let label: String
 
-    public init(id: String = UUID().uuidString, label: String) {
-        self.id = id
+    public var id: Value { value }
+
+    public init(value: Value, label: String) {
+        self.value = value
         self.label = label
+    }
+
+    /// Compatibility spelling for callers that model the option value as its ID.
+    public init(id: Value, label: String) {
+        self.init(value: id, label: label)
     }
 }
 
-/// A settings row that presents a picker (selection from options) in a sheet.
-///
-/// ## Usage
-/// ```swift
-/// @State private var selectedUnit = "metric"
-///
-/// SFKSettingsPickerRow(
-///     title: "Units",
-///     subtitle: "Measurement system",
-///     icon: "ruler",
-///     tint: .green,
-///     options: [
-///         SFKSettingsPickerOption(id: "metric", label: "Metric"),
-///         SFKSettingsPickerOption(id: "imperial", label: "Imperial")
-///     ],
-///     selection: $selectedUnit,
-///     displayName: { id in
-///         options.first { $0.id == id }?.label ?? id
-///     }
-/// )
-/// ```
+/// How a settings picker presents its options.
+public enum SFKPickerStyle {
+    case actionSheet
+    case sheet
+}
+
+/// A settings row that presents a strongly typed single-selection picker.
 public struct SFKSettingsPickerRow<Selection: Hashable>: View {
     @Environment(\.sfkSettingsTheme) private var theme
 
@@ -46,29 +43,19 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
     private let subtitle: String
     private let icon: String
     private let tint: Color?
-    private let options: [SFKSettingsPickerOption]
+    private let options: [SFKSettingsPickerOption<Selection>]
     @Binding private var selection: Selection
     private let displayName: (Selection) -> String
     private let pickerStyle: SFKPickerStyle
 
     @State private var isPresented = false
 
-    /// Creates a picker settings row.
-    /// - Parameters:
-    ///   - title: Primary text label.
-    ///   - subtitle: Secondary text label.
-    ///   - icon: SF Symbol name for the icon.
-    ///   - tint: Tint color for the icon background and icon.
-    ///   - options: Available options to select from.
-    ///   - selection: Binding to the selected option.
-    ///   - displayName: Closure to convert an option ID to display string.
-    ///   - pickerStyle: How to present the picker (sheet or actionSheet).
     public init(
         title: String,
         subtitle: String,
         icon: String,
         tint: Color? = nil,
-        options: [SFKSettingsPickerOption],
+        options: [SFKSettingsPickerOption<Selection>],
         selection: Binding<Selection>,
         displayName: @escaping (Selection) -> String,
         pickerStyle: SFKPickerStyle = .sheet
@@ -84,15 +71,12 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
     }
 
     public var body: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        Button {
-            isPresented = true
-        } label: {
+        Button(action: presentPicker) {
             _SFKSettingsRowContent(
                 title: title,
                 subtitle: subtitle,
                 icon: icon,
-                tint: resolvedTint
+                tint: theme.resolvedTint(tint)
             ) {
                 Text(displayName(selection))
                     .font(theme.typography.valueFont)
@@ -107,33 +91,33 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
         .modifier(
-            SFKPickerPresentationModifier(
+            SFKSettingsPickerPresentation(
                 isPresented: $isPresented,
                 pickerStyle: pickerStyle,
                 title: title,
                 subtitle: subtitle,
                 options: options,
-                onSelect: selectOption
+                selection: $selection
             )
         )
     }
 
-    private func selectOption(_ option: SFKSettingsPickerOption) {
-        guard let typedSelection = option.id as? Selection else {
-            return
-        }
-        selection = typedSelection
+    private func presentPicker() {
+        isPresented = true
     }
 }
 
-private struct SFKPickerPresentationModifier: ViewModifier {
-    @Environment(\.sfkSettingsTheme) private var theme
+/// Compatibility alias. Sheet presentation is now a style of ``SFKSettingsPickerRow``.
+@available(*, deprecated, renamed: "SFKSettingsPickerRow")
+public typealias SFKSettingsPickerSheetRow<Selection: Hashable> = SFKSettingsPickerRow<Selection>
+
+private struct SFKSettingsPickerPresentation<Selection: Hashable>: ViewModifier {
     @Binding var isPresented: Bool
     let pickerStyle: SFKPickerStyle
     let title: String
     let subtitle: String
-    let options: [SFKSettingsPickerOption]
-    let onSelect: (SFKSettingsPickerOption) -> Void
+    let options: [SFKSettingsPickerOption<Selection>]
+    @Binding var selection: Selection
 
     func body(content: Content) -> some View {
         switch pickerStyle {
@@ -141,7 +125,7 @@ private struct SFKPickerPresentationModifier: ViewModifier {
             content.confirmationDialog(title, isPresented: $isPresented, titleVisibility: .visible) {
                 ForEach(options) { option in
                     Button(option.label) {
-                        onSelect(option)
+                        selection = option.value
                     }
                 }
                 Button("Cancel", role: .cancel) {}
@@ -150,191 +134,97 @@ private struct SFKPickerPresentationModifier: ViewModifier {
             }
         case .sheet:
             content.sheet(isPresented: $isPresented) {
-                NavigationStack {
-                    List {
-                        ForEach(options) { option in
-                            Button {
-                                onSelect(option)
-                                isPresented = false
-                            } label: {
-                                HStack {
-                                    Text(option.label)
-                                        .foregroundStyle(theme.colors.titleColor)
-                                    Spacer()
-                                }
-                            }
-                        }
-                    }
-                    .navigationTitle(title)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                isPresented = false
-                            }
-                        }
-                    }
-                }
-                .presentationDetents([.medium, .large])
+                SFKSettingsPickerSheet(
+                    title: title,
+                    options: options,
+                    selection: $selection,
+                    onDismiss: { isPresented = false }
+                )
             }
         }
     }
 }
 
-/// How to present the picker options.
-public enum SFKPickerStyle {
-    /// Present options in a confirmation dialog.
-    case actionSheet
-    /// Present options in a full sheet with a list.
-    case sheet
-}
-
-/// A settings row that presents a picker in a sheet with a List.
-public struct SFKSettingsPickerSheetRow<Selection: Hashable>: View {
-    @Environment(\.sfkSettingsTheme) private var theme
-
+private struct SFKSettingsPickerSheet<Selection: Hashable>: View {
     private let title: String
-    private let subtitle: String
-    private let icon: String
-    private let tint: Color?
-    private let options: [SFKSettingsPickerOption]
+    private let valuesByPickerID: [String: Selection]
     @Binding private var selection: Selection
-    private let displayName: (Selection) -> String
+    private let onDismiss: () -> Void
 
-    @State private var isPresented = false
+    @StateObject private var viewModel: SFKItemPickerViewModel
 
-    /// Creates a picker settings row with sheet presentation.
-    public init(
+    init(
         title: String,
-        subtitle: String,
-        icon: String,
-        tint: Color? = nil,
-        options: [SFKSettingsPickerOption],
+        options: [SFKSettingsPickerOption<Selection>],
         selection: Binding<Selection>,
-        displayName: @escaping (Selection) -> String
+        onDismiss: @escaping () -> Void
     ) {
+        let items = options.enumerated().map(SFKSettingsPickerItem.init)
+        let selectedItems = items.filter { $0.value == selection.wrappedValue }
+
         self.title = title
-        self.subtitle = subtitle
-        self.icon = icon
-        self.tint = tint
-        self.options = options
+        self.valuesByPickerID = Dictionary(uniqueKeysWithValues: items.map { ($0.pickableItemId, $0.value) })
         self._selection = selection
-        self.displayName = displayName
+        self.onDismiss = onDismiss
+        self._viewModel = StateObject(
+            wrappedValue: SFKItemPickerViewModel(
+                items: items,
+                selectionType: .single,
+                initialSelection: selectedItems
+            )
+        )
     }
 
-    public var body: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        Button {
-            isPresented = true
-        } label: {
-            _SFKSettingsRowContent(
-                title: title,
-                subtitle: subtitle,
-                icon: icon,
-                tint: resolvedTint
-            ) {
-                Text(displayName(selection))
-                    .font(theme.typography.valueFont)
-                    .foregroundStyle(theme.colors.valueColor)
-
-                Image(systemName: "chevron.right")
-                    .font(theme.typography.accessoryFont)
-                    .foregroundStyle(theme.colors.accessoryColor)
-            }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(SFKSettingsFormRowButtonStyle())
-        .sheet(isPresented: $isPresented) {
-            NavigationStack {
-                List {
-                    ForEach(options) { option in
-                        Button {
-                            selectOption(option)
-                            isPresented = false
-                        } label: {
-                            HStack {
-                                Text(option.label)
-                                    .foregroundStyle(theme.colors.titleColor)
-                                Spacer()
-                                if isSelected(option) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(theme.colors.accent)
-                                }
-                            }
-                        }
-                    }
-                }
-                .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            isPresented = false
-                        }
-                    }
-                }
-            }
-            .presentationDetents([.medium, .large])
-        }
+    var body: some View {
+        SFKItemPickerView(
+            pageTitle: title,
+            viewModel: viewModel,
+            onSelect: select,
+            onDismiss: onDismiss
+        )
+        .presentationDetents([.medium, .large])
     }
 
-    private func isSelected(_ option: SFKSettingsPickerOption) -> Bool {
-        guard let stringSelection = selection as? String else {
-            return false
-        }
-        return option.id == stringSelection
-    }
-
-    private func selectOption(_ option: SFKSettingsPickerOption) {
-        guard let typedSelection = option.id as? Selection else {
-            return
-        }
-        selection = typedSelection
+    private func select(_ item: any SFKPickableItem) {
+        guard let value = valuesByPickerID[item.pickableItemId] else { return }
+        selection = value
     }
 }
 
-// MARK: - Previews
+private struct SFKSettingsPickerItem<Value: Hashable>: SFKPickableItem {
+    let value: Value
+    let label: String
+    let index: Int
 
-private let previewPickerOptions = [
-    SFKSettingsPickerOption(id: "metric", label: "Metric"),
-    SFKSettingsPickerOption(id: "imperial", label: "Imperial"),
-    SFKSettingsPickerOption(id: "customary", label: "US Customary")
-]
+    init(offset: Int, element: SFKSettingsPickerOption<Value>) {
+        self.value = element.value
+        self.label = element.label
+        self.index = offset
+    }
 
-#Preview("SFKSettingsPickerRow") {
-    @Previewable @State var selection = "metric"
+    var id: String { pickableItemId }
+    var pickableItemId: String { String(index) }
+    var pickableItemIconKind: SFKPickableItemIconKind { .none }
+    var pickableItemTitle: String { label }
+    var pickableItemSubtitle: String? { nil }
+}
+
+#Preview("Typed Settings Picker") {
+    @Previewable @State var selection = 2
 
     List {
         SFKSettingsPickerRow(
-            title: "Units",
-            subtitle: "Choose the measurement system used across the app.",
-            icon: "ruler.fill",
-            tint: .green,
-            options: previewPickerOptions,
+            title: "Priority",
+            subtitle: "Choose a numeric priority.",
+            icon: "flag.fill",
+            tint: .orange,
+            options: [
+                SFKSettingsPickerOption(value: 1, label: "Low"),
+                SFKSettingsPickerOption(value: 2, label: "Normal"),
+                SFKSettingsPickerOption(value: 3, label: "High")
+            ],
             selection: $selection,
-            displayName: { id in
-                previewPickerOptions.first(where: { $0.id == id })?.label ?? id
-            },
-            pickerStyle: .actionSheet
-        )
-    }
-}
-
-#Preview("SFKSettingsPickerSheetRow") {
-    @Previewable @State var selection = "imperial"
-
-    List {
-        SFKSettingsPickerSheetRow(
-            title: "Default Units",
-            subtitle: "Present a full sheet when you have a longer options list.",
-            icon: "list.bullet.rectangle.fill",
-            tint: .blue,
-            options: previewPickerOptions,
-            selection: $selection,
-            displayName: { id in
-                previewPickerOptions.first(where: { $0.id == id })?.label ?? id
-            }
+            displayName: { String($0) }
         )
     }
 }

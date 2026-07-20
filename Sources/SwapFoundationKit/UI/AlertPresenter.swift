@@ -1,23 +1,17 @@
-/*****************************************************************************
+/****************************************************************************
  * AlertPresenter.swift
  * SwapFoundationKit
  *****************************************************************************
- * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
+ * Copyright (c) 2026 Swapnanil Dhol. All rights reserved.
  *
  * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
  *
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-import SwiftUI
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
-// MARK: - Alert Action
-
-/// Represents an action in an alert
+/// An action displayed by ``AlertPresenter``.
 public struct AlertAction: Identifiable, Equatable {
     public let id = UUID()
     public let title: String
@@ -39,253 +33,24 @@ public struct AlertAction: Identifiable, Equatable {
     }
 }
 
-/// Style for alert actions
+/// Semantic role for an alert action.
 public enum AlertActionStyle: Equatable {
     case `default`
     case cancel
     case destructive
 
-    #if canImport(UIKit) && os(iOS)
     var uiStyle: UIAlertAction.Style {
         switch self {
-        case .default: return .default
-        case .cancel: return .cancel
-        case .destructive: return .destructive
+        case .default: .default
+        case .cancel: .cancel
+        case .destructive: .destructive
         }
     }
-    #endif
 }
 
-// MARK: - Alert Text Field
-
-/// Represents a text field in an alert
-public struct AlertTextField: Identifiable, Equatable {
-    public let id = UUID()
-    public let placeholder: String?
-    public var text: String
-    public let keyboardType: KeyboardType?
-
-    public init(
-        placeholder: String? = nil,
-        text: String = "",
-        keyboardType: KeyboardType? = nil
-    ) {
-        self.placeholder = placeholder
-        self.text = text
-        self.keyboardType = keyboardType
-    }
-
-    public static func == (lhs: AlertTextField, rhs: AlertTextField) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
-/// Platform-agnostic keyboard type
-public enum KeyboardType: Equatable {
-    case `default`
-    case email
-    case number
-    case phone
-    case url
-
-    #if canImport(UIKit) && os(iOS)
-    var uiKeyboardType: UIKeyboardType {
-        switch self {
-        case .default: return .default
-        case .email: return .emailAddress
-        case .number: return .numberPad
-        case .phone: return .phonePad
-        case .url: return .URL
-        }
-    }
-    #endif
-}
-
-#if canImport(UIKit) && os(iOS)
-extension AlertTextField {
-    var uiKeyboardType: UIKeyboardType {
-        keyboardType?.uiKeyboardType ?? .default
-    }
-}
-#endif
-
-// MARK: - Alert Configuration
-
-/// Configuration for an alert
-public struct AlertConfiguration: Equatable {
-    public let id = UUID()
-    public var title: String
-    public var message: String?
-    public var actions: [AlertAction]
-    public var textFields: [AlertTextField]
-    public var preferredActionIndex: Int?
-
-    public init(
-        title: String,
-        message: String? = nil,
-        actions: [AlertAction] = [],
-        textFields: [AlertTextField] = [],
-        preferredActionIndex: Int? = nil
-    ) {
-        self.title = title
-        self.message = message
-        self.actions = actions
-        self.textFields = textFields
-        self.preferredActionIndex = preferredActionIndex
-    }
-
-    public static func == (lhs: AlertConfiguration, rhs: AlertConfiguration) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
-// MARK: - SwiftUI Alert Controller
-
-/// A SwiftUI-native alert controller that can be used with @StateObject/@ObservedObject
-/// Provides a declarative way to manage alerts in SwiftUI views
+/// The single SFK entry point for UIKit-backed alerts, confirmations, action sheets, and text input.
 @MainActor
-public final class AlertController: ObservableObject {
-
-    /// The current alert configuration (nil when no alert is shown)
-    @Published public var configuration: AlertConfiguration?
-
-    /// Whether an alert is currently being shown
-    public var isShowing: Bool {
-        configuration != nil
-    }
-
-    /// Callback invoked when any alert action is triggered
-    public var onAction: ((String, [String]) -> Void)?
-
-    public init() {}
-
-    /// Shows an alert with the given configuration
-    public func show(_ configuration: AlertConfiguration) {
-        self.configuration = configuration
-    }
-
-    /// Shows a simple alert with a single action
-    public func showAlert(
-        title: String,
-        message: String? = nil,
-        actionTitle: String = "OK",
-        actionStyle: AlertActionStyle = .default,
-        onDismiss: (() -> Void)? = nil
-    ) {
-        let config = AlertConfiguration(
-            title: title,
-            message: message,
-            actions: [AlertAction(actionTitle, style: actionStyle) { onDismiss?() }]
-        )
-        show(config)
-    }
-
-    /// Shows a confirmation alert with confirm and cancel actions
-    public func showConfirmation(
-        title: String,
-        message: String? = nil,
-        confirmTitle: String = "Confirm",
-        confirmStyle: AlertActionStyle = .default,
-        cancelTitle: String = "Cancel",
-        onConfirm: (() -> Void)? = nil,
-        onCancel: (() -> Void)? = nil
-    ) {
-        let config = AlertConfiguration(
-            title: title,
-            message: message,
-            actions: [
-                AlertAction(cancelTitle, style: .cancel) { onCancel?() },
-                AlertAction(confirmTitle, style: confirmStyle) { onConfirm?() }
-            ],
-            preferredActionIndex: 1
-        )
-        show(config)
-    }
-
-    /// Shows an alert with text fields
-    public func showTextInput(
-        title: String,
-        message: String? = nil,
-        placeholder: String? = nil,
-        prefilledText: String = "",
-        confirmTitle: String = "OK",
-        cancelTitle: String = "Cancel",
-        keyboardType: KeyboardType? = nil,
-        onSubmit: ((String) -> Void)? = nil,
-        onCancel: (() -> Void)? = nil
-    ) {
-        let textField = AlertTextField(
-            placeholder: placeholder,
-            text: prefilledText,
-            keyboardType: keyboardType
-        )
-        let config = AlertConfiguration(
-            title: title,
-            message: message,
-            actions: [
-                AlertAction(cancelTitle, style: .cancel) { onCancel?() },
-                AlertAction(confirmTitle, style: .default) {
-                    // Note: Text field values need to be captured separately
-                    onSubmit?(textField.text)
-                }
-            ],
-            textFields: [textField]
-        )
-        show(config)
-    }
-
-    /// Dismisses the current alert
-    public func dismiss() {
-        configuration = nil
-    }
-
-    /// Handles action callback from the alert presentation
-    fileprivate func handleAction(title: String, textFieldValues: [String] = []) {
-        onAction?(title, textFieldValues)
-        dismiss()
-    }
-}
-
-// MARK: - SwiftUI View Extension
-
-public extension View {
-    /// Attaches an AlertController to this view for presentation
-    func alert(
-        _ controller: AlertController,
-        textFieldValues: Binding<[String]>
-    ) -> some View {
-        self.alert(
-            controller.configuration?.title ?? "",
-            isPresented: Binding(
-                get: { controller.isShowing },
-                set: { if !$0 { controller.dismiss() } }
-            ),
-            presenting: controller.configuration
-        ) { config in
-            ForEach(Array(config.actions.enumerated()), id: \.element.id) { index, action in
-                Button(action.title) {
-                    let values = textFieldValues.wrappedValue
-                    action.handler?()
-                    controller.handleAction(title: action.title, textFieldValues: values)
-                }
-            }
-        } message: { config in
-            if let message = config.message {
-                Text(message)
-            }
-        }
-    }
-}
-
-// MARK: - AlertPresenter (UIKit wrappers)
-
-#if canImport(UIKit) && os(iOS)
-
-/// A SwiftUI-friendly way to present alerts and confirmations using UIKit
-public struct AlertPresenter {
-
-    /// Presents an action sheet using UIKit (works from SwiftUI)
-    @MainActor
+public enum AlertPresenter {
     public static func showActionSheet(
         title: String,
         message: String? = nil,
@@ -293,19 +58,25 @@ public struct AlertPresenter {
         sourceView: UIView? = nil,
         sourceRect: CGRect? = nil
     ) {
-        let uiActions = actions.map { item in
-            UIAlertAction(title: item.title, style: item.style.uiStyle) { _ in item.handler?() }
+        let controller = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        actions.forEach { action in
+            controller.addAction(
+                UIAlertAction(title: action.title, style: action.style.uiStyle) { _ in
+                    action.handler?()
+                }
+            )
         }
-        UIApplication.shared.presentActionSheet(
-            title: title,
-            message: message,
-            actions: uiActions,
+
+        guard let presenter = UIApplication.topViewController() else { return }
+        configurePopover(
+            for: controller,
+            presenter: presenter,
             sourceView: sourceView,
             sourceRect: sourceRect
         )
+        presenter.present(controller, animated: true)
     }
 
-    /// Presents a confirmation dialog using UIKit (works from SwiftUI)
     public static func showConfirmation(
         title: String,
         message: String,
@@ -315,55 +86,45 @@ public struct AlertPresenter {
         cancelTitle: String = "Cancel",
         onCancel: (() -> Void)? = nil
     ) {
-        DispatchQueue.main.async {
-            UIApplication.shared.presentConfirmation(
-                title: title,
-                message: message,
-                confirmTitle: confirmTitle,
-                confirmStyle: confirmStyle,
-                onConfirm: onConfirm,
-                cancelTitle: cancelTitle,
-                onCancel: onCancel
-            )
-        }
+        showAlert(
+            title: title,
+            message: message,
+            actions: [
+                (confirmTitle, confirmStyle, onConfirm),
+                (cancelTitle, .cancel, { onCancel?() })
+            ]
+        )
     }
 
-    /// Presents an alert using UIKit (works from SwiftUI)
     public static func showAlert(
         title: String,
         message: String,
         actionTitle: String = "OK",
         onDismiss: (() -> Void)? = nil
     ) {
-        DispatchQueue.main.async {
-            let action = UIAlertAction(title: actionTitle, style: .cancel) { _ in onDismiss?() }
-            UIApplication.shared.presentAlert(
-                title: title,
-                message: message,
-                actions: [action]
-            )
-        }
+        showAlert(
+            title: title,
+            message: message,
+            actions: [(actionTitle, .cancel, { onDismiss?() })]
+        )
     }
 
-    /// Presents an alert with multiple actions using UIKit
     public static func showAlert(
         title: String,
         message: String,
         actions: [(title: String, style: UIAlertAction.Style, handler: () -> Void)]
     ) {
-        DispatchQueue.main.async {
-            let uiActions = actions.map { item in
-                UIAlertAction(title: item.title, style: item.style) { _ in item.handler() }
-            }
-            UIApplication.shared.presentAlert(
-                title: title,
-                message: message,
-                actions: uiActions
+        let controller = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        actions.forEach { action in
+            controller.addAction(
+                UIAlertAction(title: action.title, style: action.style) { _ in
+                    action.handler()
+                }
             )
         }
+        present(controller)
     }
 
-    /// Presents an alert with a text field using UIKit
     public static func showTextInput(
         title: String,
         message: String,
@@ -375,35 +136,76 @@ public struct AlertPresenter {
         onSubmit: @escaping (String) -> Void,
         onCancel: (() -> Void)? = nil
     ) {
-        DispatchQueue.main.async {
-            guard let topViewController = UIApplication.topViewController() else { return }
-
-            let alertController = UIAlertController(
+        present(
+            makeTextInputAlert(
                 title: title,
                 message: message,
-                preferredStyle: .alert
+                placeholder: placeholder,
+                prefilledText: prefilledText,
+                keyboardType: keyboardType,
+                submitTitle: submitTitle,
+                cancelTitle: cancelTitle,
+                onSubmit: onSubmit,
+                onCancel: onCancel
             )
+        )
+    }
 
-            alertController.addTextField { textField in
-                textField.placeholder = placeholder
-                textField.text = prefilledText
-                textField.keyboardType = keyboardType
-            }
-
-            let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
+    static func makeTextInputAlert(
+        title: String,
+        message: String,
+        placeholder: String?,
+        prefilledText: String?,
+        keyboardType: UIKeyboardType,
+        submitTitle: String,
+        cancelTitle: String,
+        onSubmit: @escaping (String) -> Void,
+        onCancel: (() -> Void)?
+    ) -> UIAlertController {
+        let controller = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        controller.addTextField { textField in
+            textField.placeholder = placeholder
+            textField.text = prefilledText
+            textField.keyboardType = keyboardType
+        }
+        controller.addAction(
+            UIAlertAction(title: cancelTitle, style: .cancel) { _ in
                 onCancel?()
             }
-            alertController.addAction(cancelAction)
-
-            let submitAction = UIAlertAction(title: submitTitle, style: .default) { _ in
-                let text = alertController.textFields?.first?.text ?? ""
-                onSubmit(text)
+        )
+        controller.addAction(
+            UIAlertAction(title: submitTitle, style: .default) { [weak controller] _ in
+                onSubmit(textInputValue(from: controller))
             }
-            alertController.addAction(submitAction)
+        )
+        return controller
+    }
 
-            topViewController.present(alertController, animated: true)
+    static func textInputValue(from controller: UIAlertController?) -> String {
+        controller?.textFields?.first?.text ?? ""
+    }
+
+    private static func present(_ controller: UIViewController) {
+        UIApplication.topViewController()?.present(controller, animated: true)
+    }
+
+    private static func configurePopover(
+        for controller: UIAlertController,
+        presenter: UIViewController,
+        sourceView: UIView?,
+        sourceRect: CGRect?
+    ) {
+        guard let popover = controller.popoverPresentationController,
+              let resolvedSourceView = sourceView ?? presenter.view else {
+            return
         }
+
+        popover.sourceView = resolvedSourceView
+        popover.sourceRect = sourceRect ?? CGRect(
+            x: resolvedSourceView.bounds.midX,
+            y: resolvedSourceView.bounds.maxY - 1,
+            width: 1,
+            height: 1
+        )
     }
 }
-
-#endif

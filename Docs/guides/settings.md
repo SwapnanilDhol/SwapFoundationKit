@@ -10,7 +10,7 @@ The settings module is split into:
 - `SFKSettingsTheme` for injected colors, typography, and sizing
 - `SFKSettingsRow` and `SFKSettingsLabel` for static/tappable rows
 - `SFKSettingsTrailing` enum (`.value` / `.custom`) and `SFKSettingsValueText` for typed trailing content
-- `SFKSettingsToggle`, `SFKSettingsToggleRow`, `SFKSettingsDatePickerRow`, `SFKSettingsTimePickerRow`, `SFKSettingsInlineDatePicker`, `SFKSettingsPickerRow`, `SFKSettingsPickerSheetRow`, `SFKSettingsStepperRow`, `SFKSettingsSliderRow`, `SFKSettingsColorPickerRow`, and `SFKSettingsInlineColorPicker` for interactive controls
+- `SFKSettingsToggle`, `SFKSettingsToggleRow`, `SFKSettingsDatePickerRow`, `SFKSettingsTimePickerRow`, `SFKSettingsInlineDatePicker`, `SFKSettingsPickerRow`, `SFKSettingsStepperRow`, `SFKSettingsSliderRow`, `SFKSettingsColorPickerRow`, and `SFKSettingsInlineColorPicker` for interactive controls
 - `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for common reusable items
 - `SFKSettingsActionHandler`, `SFKInformationSectionHandler`, and `SFKDeveloperSectionHandler` for standard URL/share/review actions
 

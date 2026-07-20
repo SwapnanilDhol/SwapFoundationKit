@@ -36,6 +36,7 @@ public struct SFKSettingsSectionConfiguration: Identifiable {
     public let title: String
     public let items: [any SettingsItem]
     public let footer: String?
+    let rows: [SFKAnySettingsItem]
 
     /// Creates a section configuration.
     /// - Parameters:
@@ -50,6 +51,18 @@ public struct SFKSettingsSectionConfiguration: Identifiable {
         self.title = title
         self.items = items
         self.footer = footer
+        self.rows = items.map(SFKAnySettingsItem.init)
+    }
+}
+
+/// Internalizes existential settings items once while preserving their stable identity.
+struct SFKAnySettingsItem: Identifiable {
+    let id: String
+    let base: any SettingsItem
+
+    init(_ base: any SettingsItem) {
+        self.id = base.id
+        self.base = base
     }
 }
 
@@ -213,9 +226,8 @@ public struct SFKSettingsScreen: View {
 
             ForEach(sections) { section in
                 Section {
-                    ForEach(0..<section.items.count, id: \.self) { index in
-                        let item = section.items[index]
-                        rowView(for: item)
+                    ForEach(section.rows) { row in
+                        rowView(for: row.base)
                     }
                 } header: {
                     if !section.title.isEmpty {
@@ -361,7 +373,7 @@ public struct SFKSettingsScreen: View {
                     },
                     pickerStyle: .actionSheet
                 )
-                SFKSettingsPickerSheetRow(
+                SFKSettingsPickerRow(
                     title: "Navigation Mode",
                     subtitle: "Use a sheet picker for longer lists of options.",
                     icon: "list.bullet.rectangle.portrait.fill",

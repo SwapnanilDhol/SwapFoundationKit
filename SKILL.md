@@ -6,7 +6,7 @@ description: >
   analytics, UserDefaults, networking, security, backup, currency, image
   processor, debouncer, throttler, settings screen, onboarding, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
-  glass compatibility, UIKit extensions, ads manager, configuration service,
+  glass materials, UIKit extensions, ads manager, configuration service,
   environment, launch arguments, pro gate, notifications, Pulse, PulseUI,
   network inspector, debug console, appearance, rounded font, hosting
   controller, JSON codable, device info, async collections.

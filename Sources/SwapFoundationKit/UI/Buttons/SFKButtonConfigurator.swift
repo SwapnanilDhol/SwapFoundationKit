@@ -32,26 +32,31 @@ public enum SFKButtonChrome {
     )
     /// Applies no extra chrome.
     case plain
+
+    var defaultTitleColor: Color {
+        switch self {
+        case .glassProminent:
+            .white
+        case .glass, .glassEffect, .plain:
+            .primary
+        }
+    }
+
+    var defaultSubtitleColor: Color {
+        switch self {
+        case .glassProminent:
+            Color.white.opacity(0.8)
+        case .glass, .glassEffect, .plain:
+            .secondary
+        }
+    }
 }
 
-/// A reusable configuration object that defines the content, layout, styling, and interaction
-/// behavior for an `SFKButton`.
+/// Legacy button configuration retained for source compatibility.
 ///
-/// Use `SFKButtonConfigurator` when you want to:
-/// - reuse the same button style across multiple screens
-/// - start from a preset such as `.primary` or `.close`
-/// - mutate a button setup before passing it into `SFKButton(configuration:action:)`
-/// - control padding-driven sizing and loading behavior without introducing another button type
-///
-/// Example:
-/// ```swift
-/// var config = SFKButtonConfigurator.close
-/// config.title = "Close"
-///
-/// SFKButton(configuration: config) {
-///     dismiss()
-/// }
-/// ```
+/// New code should configure ``SFKButton`` directly with ``SFKButtonStyle`` and use
+/// ``SFKCloseButton`` for dismiss controls.
+@available(*, deprecated, message: "Configure SFKButton directly with SFKButtonStyle, or use SFKCloseButton for dismiss controls.")
 public struct SFKButtonConfigurator {
     public var leadingIconName: String?
     public var title: String?
@@ -83,8 +88,8 @@ public struct SFKButtonConfigurator {
         subtitle: String? = nil,
         isLoading: Bool = false,
         fullWidth: Bool = true,
-        titleColor: Color = .white,
-        subtitleColor: Color = Color.white.opacity(0.8),
+        titleColor: Color? = nil,
+        subtitleColor: Color? = nil,
         color: Color = .blue,
         spacing: CGFloat = 8,
         horizontalPadding: CGFloat = 16,
@@ -103,8 +108,8 @@ public struct SFKButtonConfigurator {
         self.subtitle = subtitle
         self.isLoading = isLoading
         self.fullWidth = fullWidth
-        self.titleColor = titleColor
-        self.subtitleColor = subtitleColor
+        self.titleColor = titleColor ?? chrome.defaultTitleColor
+        self.subtitleColor = subtitleColor ?? chrome.defaultSubtitleColor
         self.color = color
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding

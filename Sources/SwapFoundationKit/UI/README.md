@@ -7,10 +7,10 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Buttons
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKButton` | View | Configurable init-based button with loading states, haptics, and glass chrome |
-| `SFKCloseButton` | View | Standardized close/dismiss button (`toolbar` or `glass` chrome) |
-| `SFKCloseButtonChrome` | enum | `toolbar` (icon-only for nav bars), `glass` (circular capsule over content) |
-| `SFKButtonChrome` | enum | glassProminent, glass, glassEffect, plain |
+| `SFKButton` | View | Configurable button with loading states, haptics, and three semantic styles |
+| `SFKButtonStyle` | enum | `primary`, `secondary`, or `toolbar` |
+| `SFKCloseButton` | View | Standardized icon-only or labeled close/dismiss button (`toolbar` or `glass` chrome) |
+| `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
 
 ### Settings
@@ -26,7 +26,7 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | `SFKSettingsToggle` / `SFKSettingsToggleRow` | View | Toggle rows (direct / item-driven) |
 | `SFKSettingsDatePickerRow` / `SFKSettingsTimePickerRow` | View | Date/time pickers in sheet |
 | `SFKSettingsInlineDatePicker` | View | Inline date picker |
-| `SFKSettingsPickerRow` / `SFKSettingsPickerSheetRow` | View | Option pickers (action sheet / sheet) |
+| `SFKSettingsPickerRow` | View | Strongly typed option picker with action-sheet or searchable sheet presentation |
 | `SFKSettingsStepperRow` / `SFKSettingsSliderRow` | View | Numeric input rows |
 | `SFKSettingsColorPickerRow` / `SFKSettingsInlineColorPicker` | View | Color picker rows |
 | `SFKSettingsLinkRow` / `SFKSettingsDestructiveRow` / `SFKSettingsConfirmationRow` | View | Link, destructive, and confirmation rows |
@@ -41,7 +41,6 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | `SFKSelectableChip` | View | Selectable chip with glass effect, haptics, stroke |
 | `SFKChipItem` | protocol | Chip data: label, optional icon |
 | `SFKSegmentedProgress` | View | Capsule-style step progress indicator |
-| `SFKSecondaryButton` | View | Subtle text-only skip/dismiss button |
 | `SFKTypography` | (modifiers) | `.sfkFlowTitleStyle()`, `.sfkFlowSubtitleStyle()`, etc. |
 | `SFKCard` | View | Card container with icon, background, padding |
 
@@ -70,9 +69,8 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Glass
 | Type | Description |
 |------|-------------|
-| `.sfkGlass(emphasis:color:style:isInteractive:shape:)` | Unified Liquid Glass effect with a pre-iOS-26 fallback. Use `emphasis` for button styles and `shape:` for `.glassEffect` on a custom shape. |
-| `SFKGlassEmphasis` | `.prominent` (filled glass, primary actions) or `.regular` (translucent glass, secondary actions) |
-| `SFKGlassStyle` | `.regular` / `.clear` / `.identity` — the system `Glass` preset when `shape:` is non-nil |
+| `.sfkGlass(material:tint:isInteractive:shape:)` | Liquid Glass for a custom control or surface with a pre-iOS-26 fallback. Buttons should use `SFKButtonStyle`. |
+| `SFKGlassMaterial` | `.regular` for standard legibility or `.clear` over rich media |
 | `SFKGlassShape` | `.roundedRectangle(cornerRadius:style:)` / `.capsule` / `.circle` |
 
 ### Other
@@ -82,8 +80,8 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | `BarcodeScannerConfiguration` | struct | Scanner configuration |
 | `BarcodeScannerResult` | struct | Scan result payload |
 | `SFKProBannerView` | View | Pro upgrade banner |
-| `AlertController` | class | SwiftUI-native alert management |
-| `AlertPresenter` | struct | UIKit alert/confirmation/text-input presenter |
+| `AlertPresenter` | enum | Main-actor UIKit alert, confirmation, action-sheet, and text-input presenter |
+| `AlertAction` / `AlertActionStyle` | model | Typed action title, handler, and semantic role |
 | `PhotoPicker` | class | PHPickerViewController wrapper |
 | `SFKAppearanceManager` | enum | Global rounded UIKit typography configuration |
 | `SFKRoundedHostingController` | class | UIHostingController with `.fontDesign(.rounded)` |
@@ -91,18 +89,34 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ## Quick Examples
 
 ```swift
-// Button
-SFKButton("Continue", leadingIconName: "arrow.right") {
+// Primary action
+SFKButton("Continue", leadingIconName: "arrow.right", style: .primary) {
     nextStep()
 }
 
+// Secondary action
+SFKButton("Filters", style: .secondary) {
+    showFilters()
+}
+
+// System toolbar action
+SFKButton(leadingIconName: "ellipsis", style: .toolbar) {
+    showMoreActions()
+}
+
 // Close / dismiss
+// In a toolbar, the icon-only label stays native so iOS supplies one correctly sized control.
 SFKCloseButton {
     dismiss()
 }
 
 // Over full-bleed content (previews, camera chrome)
 SFKCloseButton(chrome: .glass) {
+    dismiss()
+}
+
+// Labeled glass capsule
+SFKCloseButton("Close", chrome: .glass) {
     dismiss()
 }
 
@@ -165,10 +179,11 @@ let pickerViewModel = SFKItemPickerViewModel(
 
 // Glass
 Text("Hello")
-    .glassProminentCompat(color: .blue)
+    .padding()
+    .sfkGlass(material: .regular, tint: .blue, shape: .capsule)
 
 // Alerts
-AlertController().showAlert(title: "Done", message: "Saved successfully")
+AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 ```
 
 ### UIKit Extensions
@@ -185,7 +200,7 @@ AlertController().showAlert(title: "Done", message: "Saved successfully")
 
 ## Source Files
 
-- `Buttons/` — SFKButton, SFKCloseButton, SFKButtonConfigurator, SFKButtonPreviewGallery
+- `Buttons/` — SFKButton, SFKCloseButton, semantic styles, and isolated legacy adapters
 - `ColorPicker/` — SFKColorPickerSheet, SFKColorPickerDelegate
 - `Settings/` — 14+ row type files, theme, action handler, screen
 - `Onboarding/` — Chip, layout, progress, typography, card, secondary button

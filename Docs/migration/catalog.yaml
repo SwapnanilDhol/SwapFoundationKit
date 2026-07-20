@@ -417,15 +417,9 @@ capabilities:
     audit_tier: exact
     confidence: medium
     replace_with:
-      - AlertController
       - AlertPresenter
-      - AlertConfiguration
       - AlertAction
-      - AlertTextField
     public_symbols:
-      - AlertController.showAlert(...)
-      - AlertController.showConfirmation(...)
-      - AlertController.showTextInput(...)
       - AlertPresenter.showAlert(...)
       - AlertPresenter.showConfirmation(...)
       - AlertPresenter.showTextInput(...)
@@ -535,18 +529,20 @@ capabilities:
     confidence: medium
     replace_with:
       - SFKButton
+      - SFKButtonStyle
       - SFKCloseButton
-      - glassButton modifiers
+      - View.sfkGlass(material:tint:isInteractive:shape:)
       - UIKit convenience extensions
       - SFKColorPickerSheet
     public_symbols:
       - SFKButton
+      - SFKButtonStyle
       - SFKCloseButton
       - SFKColorPickerDelegate
       - SFKColorPickerSheet
-      - View.glassCompat(color:)
-      - View.glassProminentCompat(color:)
-      - View.glassEffectCompat(style:color:isInteractive:in:)
+      - SFKGlassMaterial
+      - SFKGlassShape
+      - View.sfkGlass(material:tint:isInteractive:shape:)
       - UIColor.init(hex:)
       - Color.init(hex:)
     host_search_terms:

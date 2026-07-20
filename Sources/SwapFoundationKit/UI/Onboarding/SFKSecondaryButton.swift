@@ -21,6 +21,7 @@ import SwiftUI
 ///     dismiss()
 /// }
 /// ```
+@available(*, deprecated, message: "Use SFKButton(style: .secondary) or SFKButton(style: .toolbar) instead.")
 public struct SFKSecondaryButton: View {
     /// The button label text.
     public let title: String
@@ -59,17 +60,4 @@ public struct SFKSecondaryButton: View {
                 .foregroundStyle(color)
         }
     }
-}
-
-#Preview("SFKSecondaryButton") {
-    VStack(spacing: 20) {
-        SFKSecondaryButton("Skip for now") { }
-
-        SFKSecondaryButton("Not now", color: .red) { }
-
-        SFKSecondaryButton("Maybe later", font: .footnote) { }
-
-        SFKSecondaryButton("Dismiss", color: .blue, font: .caption.weight(.semibold)) { }
-    }
-    .padding(24)
 }
