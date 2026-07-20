@@ -76,7 +76,7 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, toasts, files, location, pro gating, notifications |
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |
-| [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Debouncer, Throttler, environment detection, launch arguments |
+| [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Persistent TTL storage, debounce/throttle, environment detection, launch arguments |
 | [Currency](Sources/SwapFoundationKit/Currency/README.md) | 35 currencies with flags/symbols, formatting, sorting, exchange rates |
 | [ImageProcessor](Sources/SwapFoundationKit/ImageProcessor/README.md) | Image resize, filters, caching, JPEG compression |
 | [ItemSync](Sources/SwapFoundationKit/ItemSync/README.md) | App Group data sync for widgets and extensions |

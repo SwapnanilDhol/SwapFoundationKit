@@ -1,6 +1,6 @@
 # Utilities
 
-Throttling, debouncing, environment detection, and launch argument parsing.
+Persistent TTL storage, throttling, debouncing, environment detection, and launch argument parsing.
 
 ## Public API
 
@@ -9,6 +9,7 @@ Throttling, debouncing, environment detection, and launch argument parsing.
 | `Debouncer` | class | Debounces actions — only the last call within the delay executes |
 | `Throttler` | class | Throttles execution — first call runs immediately, subsequent calls blocked until interval elapses |
 | `AsyncThrottler` | class | Async/await throttler with configurable interval and force-throttle override |
+| `PersistentTTLStore<Value>` | actor | Bounded, UserDefaults-backed Codable value store with automatic expiration |
 | `SFKAppEnvironment` | enum | Compile-time environment detection: `.debug`, `.release`, `.testing` |
 | `SFKLaunchArguments` | enum | CLI flag and environment variable parsing for test automation |
 
@@ -33,6 +34,14 @@ if let result = try await asyncThrottler.throttle({ try await fetchData() }) {
     // Executed
 }
 
+// Persistent cooldown/cache metadata
+let cooldowns = PersistentTTLStore<String>(
+    storageKey: "api-retry-cooldowns",
+    maximumEntryCount: 500
+)
+await cooldowns.set("unavailable", forKey: "resource-id", ttl: 12 * 60 * 60)
+let status = await cooldowns.value(forKey: "resource-id")
+
 // Environment
 if SFKAppEnvironment.current.isDebug {
     enableDebugTools()
@@ -51,5 +60,6 @@ if SFKLaunchArguments.isAutomationMode {
 
 - `Debouncer.swift` — Action debouncing
 - `Throttler.swift` — Sync and async throttling
+- `PersistentTTLStore.swift` — Actor-isolated expiring Codable value persistence
 - `SFKAppEnvironment.swift` — Environment detection
 - `SFKLaunchArguments.swift` — Launch argument parsing

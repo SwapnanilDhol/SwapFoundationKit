@@ -345,6 +345,34 @@ capabilities:
       - Sources/SwapFoundationKit/Utilities/Debouncer.swift
       - Sources/SwapFoundationKit/Utilities/Throttler.swift
 
+  - id: persistent_ttl_storage
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - PersistentTTLStore
+    public_symbols:
+      - PersistentTTLStore.init(userDefaults:storageKey:maximumEntryCount:now:)
+      - PersistentTTLStore.value(forKey:at:)
+      - PersistentTTLStore.set(_:forKey:ttl:at:)
+      - PersistentTTLStore.set(_:forKey:expiresAt:at:)
+      - PersistentTTLStore.removeValue(forKey:)
+      - PersistentTTLStore.removeAll()
+    host_search_terms:
+      - TTLStore
+      - ExpiringCache
+      - CooldownStore
+      - retry cooldown
+      - expiresAt
+      - cache expiration
+    suspicious_file_patterns:
+      - "*TTL*"
+      - "*Cooldown*"
+      - "*ExpiringCache*"
+    keep_custom_when:
+      - The host app needs large payload storage, encryption, cross-process transactions, or domain-specific migration policy above the generic persistence primitive.
+    source_files:
+      - Sources/SwapFoundationKit/Utilities/PersistentTTLStore.swift
+
   - id: item_sync
     audit_tier: exact
     confidence: high

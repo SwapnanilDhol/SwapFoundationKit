@@ -7,7 +7,8 @@ description: >
   processor, debouncer, throttler, settings screen, onboarding, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
   glass materials, UIKit extensions, ads manager, configuration service,
-  environment, launch arguments, pro gate, notifications, Pulse, PulseUI,
+  environment, launch arguments, persistent TTL store, expiring cache, cooldown,
+  pro gate, notifications, Pulse, PulseUI,
   network inspector, debug console, appearance, rounded font, hosting
   controller, JSON codable, device info, async collections.
 ---
@@ -80,7 +81,7 @@ Read files in this order:
 | Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager, UserDefault, DeeplinkHandler, ToastManager, SFKProGate, SFKNotificationService |
 | UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKButton, SFKSettingsScreen, SFKSegmentedProgress, SFKItemPickerView, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
-| Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
+| Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | PersistentTTLStore, Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
 | Currency | [Currency/README.md](Sources/SwapFoundationKit/Currency/README.md) | Currency, ExchangeRateManager |
 | ImageProcessor | [ImageProcessor/README.md](Sources/SwapFoundationKit/ImageProcessor/README.md) | ImageProcessor, SFKImageCompressor |
 | ItemSync | [ItemSync/README.md](Sources/SwapFoundationKit/ItemSync/README.md) | SyncableData, DataSyncService, ItemSyncServiceFactory |

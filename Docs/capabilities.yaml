@@ -255,6 +255,7 @@ domains:
       - URL extensions
       - Debouncer
       - Throttler
+      - PersistentTTLStore
     docs:
       - README.md
       - Docs/migration/migration-guide.md
@@ -274,6 +275,9 @@ domains:
       - app link
       - backup
       - import/export
+      - persistent cache
+      - ttl store
+      - cooldown
 
   - id: configuration_environment
     priority: 8
