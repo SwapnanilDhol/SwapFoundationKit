@@ -61,9 +61,15 @@ struct OnboardingExamplesView: View {
 
                 CatalogExampleGroup(
                     title: "Secondary Action",
-                    apiNames: ["SFKSecondaryButton"]
+                    apiNames: ["SFKButton"]
                 ) {
-                    SFKSecondaryButton("Skip for now") {}
+                    SFKButton(
+                        "Skip for now",
+                        fullWidth: false,
+                        titleColor: .secondary,
+                        color: .clear,
+                        style: .toolbar
+                    ) {}
                 }
             }
             .padding()

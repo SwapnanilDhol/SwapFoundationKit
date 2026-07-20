@@ -39,7 +39,6 @@ domains:
       - SFKSettingsTimePickerRow
       - SFKSettingsInlineDatePicker
       - SFKSettingsPickerRow
-      - SFKSettingsPickerSheetRow
       - SFKSettingsStepperRow
       - SFKSettingsSliderRow
       - SFKSettingsColorPickerRow
@@ -79,8 +78,12 @@ domains:
       - The button owns product-specific loading or domain logic beyond presentation
     public_api:
       - SFKButton
+      - SFKButtonStyle
       - SFKCloseButton
       - SFKCloseButtonChrome
+      - SFKGlassMaterial
+      - SFKGlassShape
+      - View.sfkGlass(material:tint:isInteractive:shape:)
     docs:
       - Docs/migration/migration-guide.md
     examples:
@@ -111,7 +114,6 @@ domains:
       - SFKSelectableChip
       - SFKChipItem
       - SFKSegmentedProgress
-      - SFKSecondaryButton
       - SFKTypography
       - SFKCard
     docs:
@@ -150,7 +152,6 @@ domains:
       - SFKItemPickerItemAction
       - SFKItemPickerItemActionPresentation
       - SFKSettingsPickerRow
-      - SFKSettingsPickerSheetRow
     docs:
       - Docs/migration/migration-guide.md
       - Docs/guides/settings.md

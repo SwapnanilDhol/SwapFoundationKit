@@ -130,7 +130,7 @@ public struct SFKColorPickerSheet: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        SFKCloseButton(chrome: .glass) {
+                        SFKCloseButton {
                             dismiss()
                         }
                     }
@@ -155,7 +155,8 @@ public struct SFKColorPickerSheet: View {
                     .fill(viewModel.selectedColor.opacity(0.2))
                     .frame(width: outerCircleSize, height: outerCircleSize)
                     .sfkGlass(
-                        color: viewModel.selectedColor,
+                        material: .regular,
+                        tint: viewModel.selectedColor,
                         isInteractive: true,
                         shape: .circle
                     )
@@ -164,7 +165,8 @@ public struct SFKColorPickerSheet: View {
                     .fill(viewModel.selectedColor)
                     .frame(width: innerCircleSize, height: innerCircleSize)
                     .sfkGlass(
-                        color: viewModel.selectedColor,
+                        material: .regular,
+                        tint: viewModel.selectedColor,
                         isInteractive: true,
                         shape: .circle
                     )
@@ -200,7 +202,8 @@ public struct SFKColorPickerSheet: View {
         }
         .frame(width: 44, height: 44)
         .sfkGlass(
-            color: color,
+            material: .regular,
+            tint: color,
             isInteractive: true,
             shape: .circle
         )

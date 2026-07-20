@@ -192,7 +192,7 @@ public struct SFKItemPickerView: View {
             leadingIconName: action.systemImage,
             fullWidth: false,
             titleColor: .primary,
-            chrome: .plain,
+            style: .toolbar,
             action: action.action
         )
     }

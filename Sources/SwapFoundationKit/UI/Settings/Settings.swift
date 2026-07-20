@@ -23,7 +23,6 @@
 /// - `SFKSettingsTimePickerRow` - Time picker in sheet
 /// - `SFKSettingsInlineDatePicker` - Inline date picker
 /// - `SFKSettingsPickerRow` - Option picker presented from a settings row
-/// - `SFKSettingsPickerSheetRow` - Option picker presented in a sheet list
 /// - `SFKSettingsStepperRow` - Numeric stepper row
 /// - `SFKSettingsSliderRow` - Slider row
 /// - `SFKSettingsColorPickerRow` - Color picker in sheet

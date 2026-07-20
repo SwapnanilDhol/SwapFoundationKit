@@ -23,9 +23,9 @@ struct ToolbarButtonExamplesView: View {
             }
 
             Section("Included APIs") {
-                Text("SFKCloseButton")
+                Text("SFKButton(style: .toolbar)")
                     .font(.body.monospaced())
-                Text("SFKCloseButtonChrome.toolbar")
+                Text("SFKCloseButton")
                     .font(.body.monospaced())
             }
 
@@ -45,8 +45,12 @@ struct ToolbarButtonExamplesView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                Button("More", systemImage: "ellipsis") {}
-                    .labelStyle(.iconOnly)
+                SFKButton(
+                    leadingIconName: "ellipsis",
+                    fullWidth: false,
+                    style: .toolbar
+                ) {}
+                .accessibilityLabel("More actions")
             }
         }
     }

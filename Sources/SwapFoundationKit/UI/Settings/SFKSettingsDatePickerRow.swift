@@ -85,14 +85,7 @@ public struct SFKSettingsDatePickerRow: View {
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 VStack(spacing: 20) {
-                    DatePicker(
-                        "Select Date",
-                        selection: $selection,
-                        displayedComponents: displayedComponents
-                    )
-                    .datePickerStyle(.graphical)
-                    .labelsHidden()
-                    .tint(resolvedTint)
+                    pickerContent(tint: resolvedTint)
 
                     Spacer()
                 }
@@ -106,22 +99,50 @@ public struct SFKSettingsDatePickerRow: View {
                     }
                 }
             }
-            .presentationDetents([.medium, .large])
+            .presentationDetents(presentationDetents)
             .presentationDragIndicator(.visible)
         }
     }
 
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        if displayedComponents.contains(.date) && displayedComponents.contains(.hourAndMinute) {
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-        } else if displayedComponents.contains(.date) {
-            formatter.dateStyle = .medium
+    @ViewBuilder
+    private func pickerContent(tint: Color) -> some View {
+        if isTimeOnly {
+            DatePicker(
+                "Select Time",
+                selection: $selection,
+                displayedComponents: .hourAndMinute
+            )
+            .datePickerStyle(.wheel)
+            .labelsHidden()
+            .tint(tint)
         } else {
-            formatter.timeStyle = .short
+            DatePicker(
+                "Select Date",
+                selection: $selection,
+                displayedComponents: displayedComponents
+            )
+            .datePickerStyle(.graphical)
+            .labelsHidden()
+            .tint(tint)
         }
-        return formatter.string(from: selection)
+    }
+
+    private var isTimeOnly: Bool {
+        displayedComponents.contains(.hourAndMinute) && !displayedComponents.contains(.date)
+    }
+
+    private var presentationDetents: Set<PresentationDetent> {
+        isTimeOnly ? [.large] : [.medium, .large]
+    }
+
+    private var formattedDate: String {
+        if displayedComponents.contains(.date) && displayedComponents.contains(.hourAndMinute) {
+            return selection.formatted(date: .abbreviated, time: .shortened)
+        } else if displayedComponents.contains(.date) {
+            return selection.formatted(date: .abbreviated, time: .omitted)
+        } else {
+            return selection.formatted(date: .omitted, time: .shortened)
+        }
     }
 }
 
@@ -140,15 +161,11 @@ public struct SFKSettingsDatePickerRow: View {
 /// )
 /// ```
 public struct SFKSettingsTimePickerRow: View {
-    @Environment(\.sfkSettingsTheme) private var theme
-
     private let title: String
     private let subtitle: String
     private let icon: String
     private let tint: Color?
     @Binding private var selection: Date
-
-    @State private var isPresented = false
 
     /// Creates a time picker settings row.
     /// - Parameters:
@@ -172,63 +189,14 @@ public struct SFKSettingsTimePickerRow: View {
     }
 
     public var body: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        Button {
-            isPresented = true
-        } label: {
-            _SFKSettingsRowContent(
-                title: title,
-                subtitle: subtitle,
-                icon: icon,
-                tint: resolvedTint
-            ) {
-                Text(formattedTime)
-                    .font(theme.typography.valueFont)
-                    .foregroundStyle(theme.colors.valueColor)
-                    .multilineTextAlignment(.trailing)
-
-                Image(systemName: "chevron.right")
-                    .font(theme.typography.accessoryFont)
-                    .foregroundStyle(theme.colors.accessoryColor)
-            }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(SFKSettingsFormRowButtonStyle())
-        .sheet(isPresented: $isPresented) {
-            NavigationStack {
-                VStack(spacing: 20) {
-                    DatePicker(
-                        "Select Time",
-                        selection: $selection,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .tint(resolvedTint)
-
-                    Spacer()
-                }
-                .padding()
-                .navigationTitle(title)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
-                            isPresented = false
-                        }
-                    }
-                }
-            }
-            // Wheel pickers need vertical room; `.medium` alone is often too cramped or blank.
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
-        }
-    }
-
-    private var formattedTime: String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: selection)
+        SFKSettingsDatePickerRow(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            tint: tint,
+            selection: $selection,
+            displayedComponents: .hourAndMinute
+        )
     }
 }
 

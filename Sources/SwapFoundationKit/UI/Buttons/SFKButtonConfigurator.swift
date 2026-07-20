@@ -52,24 +52,11 @@ public enum SFKButtonChrome {
     }
 }
 
-/// A reusable configuration object that defines the content, layout, styling, and interaction
-/// behavior for an `SFKButton`.
+/// Legacy button configuration retained for source compatibility.
 ///
-/// Use `SFKButtonConfigurator` when you want to:
-/// - reuse the same button style across multiple screens
-/// - start from a preset such as `.primary` or `.close`
-/// - mutate a button setup before passing it into `SFKButton(configuration:action:)`
-/// - control padding-driven sizing and loading behavior without introducing another button type
-///
-/// Example:
-/// ```swift
-/// var config = SFKButtonConfigurator.close
-/// config.title = "Close"
-///
-/// SFKButton(configuration: config) {
-///     dismiss()
-/// }
-/// ```
+/// New code should configure ``SFKButton`` directly with ``SFKButtonStyle`` and use
+/// ``SFKCloseButton`` for dismiss controls.
+@available(*, deprecated, message: "Configure SFKButton directly with SFKButtonStyle, or use SFKCloseButton for dismiss controls.")
 public struct SFKButtonConfigurator {
     public var leadingIconName: String?
     public var title: String?

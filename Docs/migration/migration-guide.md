@@ -14,8 +14,8 @@ suggesting replacements for helpers that are internal or too generic to audit re
 - Analytics protocol surface: `AnalyticsEvent` (you define your app’s enum); simple fan-out to providers
 - App utilities: e.g., `AppLinkOpener`
 - Data sync helpers (use an app wrapper like `AppSync` shown below)
-- SwiftUI Buttons: `SFKButton(...)` for general actions and `SFKCloseButton(...)` for standardized dismiss controls
-- Glass compatibility wrappers: `.glassProminentCompat()`, `.glassCompat()`, `.glassEffectCompat()`
+- SwiftUI Buttons: `SFKButton(..., style: .primary/.secondary/.toolbar)` for actions and `SFKCloseButton(...)` for standardized dismiss controls
+- Custom glass surfaces: `.sfkGlass(material: .regular/.clear, tint:isInteractive:shape:)`
 
 ## 4a) Consistent Close/Dismiss UI Pattern
 
@@ -244,7 +244,7 @@ struct OnboardingScreen: View {
 - Never create custom close buttons using text + icon combinations
 - For UIKit modal presentations, use `SwapProManager` or the appropriate dismiss method
 - The close-button variants include haptic feedback and the same built-in button styling automatically
-- Alert presentation: `AlertController` for SwiftUI-native declarative alerts, `AlertPresenter` for UIKit-based static methods, supporting multiple actions, text fields, and custom styles
+- Alert presentation: `AlertPresenter` is the single main-actor API for alerts, confirmations, action sheets, and text input
 - Settings UI: `SettingsItem` protocol, `SFKSettingsRow`, `SFKSettingsScreen` for building reusable settings screens; `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for standard section items
 - Toast notifications: `ToastManager` wrapping the Toast library, with `ToastType` protocol for app-specific types, `ToastStyle` for styling, and `ToastConfiguration` for display options
 - File Export/Import: `FileExportService` for presenting `UIActivityViewController` with data, `FileImportService` for `UIDocumentPickerViewController` with custom `UTType` registration

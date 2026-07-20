@@ -82,18 +82,23 @@ struct GlassExamplesView: View {
     private var buttonStyles: some View {
         CatalogExampleGroup(
             title: "Button Emphasis",
-            apiNames: ["buttonStyle(.glass)", "buttonStyle(.glassProminent)"]
+            apiNames: ["SFKButton(style: .secondary)", "SFKButton(style: .primary)"]
         ) {
             GlassDemoStage {
                 HStack(spacing: 12) {
-                    Button("Secondary") {}
-                        .buttonStyle(.glass)
+                    SFKButton(
+                        "Secondary",
+                        fullWidth: false,
+                        color: .white.opacity(0.14),
+                        style: .secondary
+                    ) {}
 
-                    Button("Primary") {}
-                        .buttonStyle(.glassProminent)
-                        .tint(.blue)
+                    SFKButton(
+                        "Primary",
+                        fullWidth: false,
+                        style: .primary
+                    ) {}
                 }
-                .controlSize(.large)
                 .padding(22)
             }
         }
@@ -108,19 +113,20 @@ struct GlassExamplesView: View {
                 HStack(spacing: 14) {
                     Image(systemName: "circle.fill")
                         .frame(width: 54, height: 54)
-                        .sfkGlass(color: .blue.opacity(0.12), shape: .circle)
+                        .sfkGlass(material: .regular, tint: .blue.opacity(0.12), shape: .circle)
 
                     Text("Capsule")
                         .font(.subheadline.weight(.semibold))
                         .frame(height: 54)
                         .padding(.horizontal, 16)
-                        .sfkGlass(color: .blue.opacity(0.12), shape: .capsule)
+                        .sfkGlass(material: .regular, tint: .blue.opacity(0.12), shape: .capsule)
 
                     Image(systemName: "rectangle.roundedtop.fill")
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
                         .sfkGlass(
-                            color: .blue.opacity(0.12),
+                            material: .regular,
+                            tint: .blue.opacity(0.12),
                             shape: .roundedRectangle(cornerRadius: 16)
                         )
                 }
@@ -149,7 +155,8 @@ struct GlassExamplesView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(isFavorite ? .white : .primary)
                 .sfkGlass(
-                    color: isFavorite ? .pink : .blue.opacity(0.14),
+                    material: .regular,
+                    tint: isFavorite ? .pink : .blue.opacity(0.14),
                     isInteractive: true,
                     shape: .capsule
                 )

@@ -23,7 +23,8 @@ struct PrimaryButtonExamplesView: View {
                     "Continue",
                     leadingIconName: "arrow.right",
                     isLoading: isLoading,
-                    color: .blue
+                    color: .blue,
+                    style: .primary
                 ) {}
                 .disabled(!isEnabled)
                 .padding(.vertical, 6)
@@ -35,7 +36,7 @@ struct PrimaryButtonExamplesView: View {
             }
 
             Section {
-                Text("SFKButton")
+                Text("SFKButton(style: .primary)")
                     .font(.body.monospaced())
             } footer: {
                 Text("Prominent glass is the default. Override the tint when product meaning requires success, warning, or destructive color.")

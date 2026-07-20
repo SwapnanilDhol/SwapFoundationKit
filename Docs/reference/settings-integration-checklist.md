@@ -37,7 +37,7 @@ Use this checklist to audit whether a host app has integrated `SFKSettings` clea
 
 - Toggles use `SFKSettingsToggle` or `SFKSettingsToggleRow`
 - Date and time settings use `SFKSettingsDatePickerRow`, `SFKSettingsTimePickerRow`, or `SFKSettingsInlineDatePicker`
-- Choice-based settings use `SFKSettingsPickerRow` or `SFKSettingsPickerSheetRow`
+- Choice-based settings use `SFKSettingsPickerRow` with `.sheet` or `.actionSheet` presentation
 - Numeric settings use `SFKSettingsStepperRow` or `SFKSettingsSliderRow`
 - Color settings use `SFKSettingsColorPickerRow` or `SFKSettingsInlineColorPicker`
 - Color picker rows do not introduce an unnecessary intermediate sheet

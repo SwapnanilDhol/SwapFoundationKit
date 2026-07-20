@@ -12,7 +12,7 @@ Generic, reusable SwiftUI components extracted from multi-step onboarding flows.
 | `SFKSegmentedProgress` | `SFKSegmentedProgress.swift` | Story-style segmented progress bar |
 | `SFKSelectableChip` | `SFKSelectableChip.swift` | Selectable capsule button with icon support |
 | `SFKChipItem` | `SFKSelectableChip.swift` | Protocol for model types used with chips |
-| `SFKSecondaryButton` | `SFKSecondaryButton.swift` | Text-only button for skip/dismiss actions |
+| `SFKButton` | `Buttons/SFKButton.swift` | Semantic primary, secondary, and toolbar actions |
 | `SFKTypography` | `SFKTypography.swift` | Six View-extension typography modifiers |
 | `SFKCard` | `SFKCard.swift` | Rounded-rectangle card container with optional icon |
 
@@ -158,24 +158,20 @@ enum Goal: String, CaseIterable, SFKChipItem {
 
 ---
 
-## SFKSecondaryButton
+## Secondary onboarding actions
 
-A text-only button styled for secondary actions like "Skip", "Not now", or "Dismiss".
+Use the shared semantic button instead of introducing a separate onboarding-only button type.
 
 ### Usage
 
 ```swift
 import SwapFoundationKit
 
-SFKSecondaryButton("Skip for now") {
+SFKButton("Skip for now", style: .secondary) {
     skipOnboarding()
 }
 
-SFKSecondaryButton("Not now", color: .red) {
-    dismiss()
-}
-
-SFKSecondaryButton("Maybe later", font: .footnote) {
+SFKButton("Not now", color: .red, style: .secondary) {
     dismiss()
 }
 ```
@@ -184,10 +180,7 @@ SFKSecondaryButton("Maybe later", font: .footnote) {
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `title` | `String` | — | Button label text |
-| `color` | `Color` | `.secondary` | Text color |
-| `font` | `Font` | `.subheadline` | Label font |
-| `action` | `() -> Void` | — | Closure executed on tap |
+Use `.secondary` for a supporting action with visible chrome and `.toolbar` for a compact text or icon control.
 
 ---
 
@@ -425,7 +418,7 @@ struct MyOnboardingView: View {
             SFKButton(
                 currentStep == totalSteps - 1 ? "Get Started" : "Continue",
                 color: .blue,
-                chrome: .glassProminent
+                style: .primary
             ) {
                 withAnimation {
                     currentStep = min(currentStep + 1, totalSteps - 1)
@@ -433,7 +426,7 @@ struct MyOnboardingView: View {
             }
 
             if currentStep > 0 {
-                SFKSecondaryButton("Skip") {
+                SFKButton("Skip", fullWidth: false, style: .toolbar) {
                     currentStep = totalSteps - 1
                 }
             }
@@ -456,7 +449,7 @@ If your app already has local onboarding components, replace them with the SFK e
 | `OnboardingChipFlowLayout` | `SFKChipFlowLayout` |
 | `OnboardingProgressBar` | `SFKSegmentedProgress` |
 | `GoalSelectionCard` / `SelectableChip` | `SFKSelectableChip` |
-| `OnboardingSecondaryButton` | `SFKSecondaryButton` |
+| `OnboardingSecondaryButton` | `SFKButton(style: .secondary)` |
 | `onboardingTitleStyle()` | `sfkFlowTitleStyle()` |
 | `onboardingSubtitleStyle()` | `sfkFlowSubtitleStyle()` |
 | `onboardingQuestionTitleStyle()` | `sfkFlowQuestionStyle()` |
@@ -473,7 +466,7 @@ If your app already has local onboarding components, replace them with the SFK e
 4. Replace `OnboardingChipFlowLayout` with `SFKChipFlowLayout`.
 5. Replace chip/selection cards with `SFKSelectableChip`.
 6. Make your model types conform to `SFKChipItem` instead of using app-specific chip protocols.
-7. Replace secondary buttons with `SFKSecondaryButton`.
+7. Replace secondary buttons with `SFKButton(style: .secondary)`.
 8. Delete the old local component files.
 9. Build and verify all screens render correctly.
 

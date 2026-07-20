@@ -11,6 +11,19 @@
 
 import SwiftUI
 
+enum SFKButtonRenderingStyle {
+    case primary
+    case secondary
+    case toolbar
+    case customGlass(material: SFKButtonLegacyGlassMaterial, shape: SFKGlassShape, isInteractive: Bool)
+}
+
+enum SFKButtonLegacyGlassMaterial {
+    case regular
+    case clear
+    case identity
+}
+
 @available(iOS 16, *)
 public struct SFKButton: View {
     @Environment(\.isEnabled) private var isEnabled
@@ -33,7 +46,7 @@ public struct SFKButton: View {
     private let textAlignment: HorizontalAlignment
     private let titleLineLimit: Int
     private let subtitleLineLimit: Int
-    private let chrome: SFKButtonChrome
+    private let renderingStyle: SFKButtonRenderingStyle
     private let hapticStyle: SFKButtonHapticStyle?
     private let action: () -> Void
 
@@ -55,8 +68,54 @@ public struct SFKButton: View {
         textAlignment: HorizontalAlignment = .center,
         titleLineLimit: Int = 1,
         subtitleLineLimit: Int = 1,
-        chrome: SFKButtonChrome = .glassProminent,
+        style: SFKButtonStyle = .primary,
         hapticStyle: SFKButtonHapticStyle? = .medium,
+        action: @escaping () -> Void
+    ) {
+        self.init(
+            title,
+            leadingIconName: leadingIconName,
+            subtitle: subtitle,
+            isLoading: isLoading,
+            fullWidth: fullWidth,
+            titleColor: titleColor ?? style.defaultTitleColor,
+            subtitleColor: subtitleColor ?? style.defaultSubtitleColor,
+            color: color,
+            spacing: spacing,
+            horizontalPadding: horizontalPadding,
+            verticalPadding: verticalPadding,
+            titleFont: titleFont,
+            subtitleFont: subtitleFont,
+            iconFont: iconFont,
+            textAlignment: textAlignment,
+            titleLineLimit: titleLineLimit,
+            subtitleLineLimit: subtitleLineLimit,
+            renderingStyle: style.renderingStyle,
+            hapticStyle: hapticStyle,
+            action: action
+        )
+    }
+
+    init(
+        _ title: String?,
+        leadingIconName: String?,
+        subtitle: String?,
+        isLoading: Bool,
+        fullWidth: Bool,
+        titleColor: Color,
+        subtitleColor: Color,
+        color: Color,
+        spacing: CGFloat,
+        horizontalPadding: CGFloat,
+        verticalPadding: CGFloat,
+        titleFont: Font,
+        subtitleFont: Font,
+        iconFont: Font,
+        textAlignment: HorizontalAlignment,
+        titleLineLimit: Int,
+        subtitleLineLimit: Int,
+        renderingStyle: SFKButtonRenderingStyle,
+        hapticStyle: SFKButtonHapticStyle?,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -64,8 +123,8 @@ public struct SFKButton: View {
         self.subtitle = subtitle
         self.isLoading = isLoading
         self.fullWidth = fullWidth
-        self.titleColor = titleColor ?? chrome.defaultTitleColor
-        self.subtitleColor = subtitleColor ?? chrome.defaultSubtitleColor
+        self.titleColor = titleColor
+        self.subtitleColor = subtitleColor
         self.color = color
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding
@@ -76,7 +135,7 @@ public struct SFKButton: View {
         self.textAlignment = textAlignment
         self.titleLineLimit = titleLineLimit
         self.subtitleLineLimit = subtitleLineLimit
-        self.chrome = chrome
+        self.renderingStyle = renderingStyle
         self.hapticStyle = hapticStyle
         self.action = action
     }
@@ -88,8 +147,8 @@ public struct SFKButton: View {
             action()
         } label: {
             buttonLabel
-                .padding(.horizontal, horizontalPadding)
-                .padding(.vertical, verticalPadding)
+                .padding(.horizontal, isToolbarButton ? 0 : horizontalPadding)
+                .padding(.vertical, isToolbarButton ? 0 : verticalPadding)
                 .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
                 .foregroundStyle(resolvedTitleColor)
                 .contentShape(Rectangle())
@@ -140,7 +199,16 @@ public struct SFKButton: View {
     }
 
     private var shouldUseFullWidth: Bool {
-        fullWidth && !isLoading
+        fullWidth && !isLoading && !isToolbarButton
+    }
+
+    private var isToolbarButton: Bool {
+        switch renderingStyle {
+        case .toolbar:
+            true
+        case .primary, .secondary, .customGlass:
+            false
+        }
     }
 
     private func triggerHapticIfNeeded() {
@@ -187,26 +255,83 @@ public struct SFKButton: View {
 private extension SFKButton {
     @ViewBuilder
     func styledButton<Content: View>(_ content: Content) -> some View {
-        switch chrome {
-        case .glassProminent:
-            content
-                .sfkGlass(emphasis: .prominent, color: resolvedColor)
-
-        case .glass:
-            content
-                .sfkGlass(emphasis: .regular, color: resolvedColor)
-
-        case let .glassEffect(style, shape, isInteractive):
-            content
-                .sfkGlass(
-                    color: resolvedColor,
-                    style: style,
-                    isInteractive: isInteractive && isEnabled,
-                    shape: shape
+        if #available(iOS 26, *) {
+            switch renderingStyle {
+            case .primary:
+                content
+                    .buttonStyle(.glassProminent)
+                    .tint(resolvedColor)
+            case .secondary:
+                content
+                    .buttonStyle(.glass)
+                    .tint(resolvedColor)
+            case .toolbar:
+                content
+            case let .customGlass(material, shape, isInteractive):
+                customGlass(
+                    content,
+                    material: material,
+                    shape: shape,
+                    isInteractive: isInteractive
                 )
+            }
+        } else {
+            switch renderingStyle {
+            case .primary:
+                content
+                    .buttonStyle(.borderedProminent)
+                    .tint(resolvedColor)
+            case .secondary:
+                content
+                    .buttonStyle(.bordered)
+                    .tint(resolvedColor)
+            case .toolbar:
+                content
+            case let .customGlass(material, shape, isInteractive):
+                customGlass(
+                    content,
+                    material: material,
+                    shape: shape,
+                    isInteractive: isInteractive
+                )
+            }
+        }
+    }
 
-        case .plain:
+    @ViewBuilder
+    private func customGlass<Content: View>(
+        _ content: Content,
+        material: SFKButtonLegacyGlassMaterial,
+        shape: SFKGlassShape,
+        isInteractive: Bool
+    ) -> some View {
+        switch material {
+        case .regular:
+            content.sfkGlass(
+                material: .regular,
+                tint: resolvedColor,
+                isInteractive: isInteractive && isEnabled,
+                shape: shape
+            )
+        case .clear:
+            content.sfkGlass(
+                material: .clear,
+                tint: resolvedColor,
+                isInteractive: isInteractive && isEnabled,
+                shape: shape
+            )
+        case .identity:
             content
+        }
+    }
+}
+
+private extension SFKButtonStyle {
+    var renderingStyle: SFKButtonRenderingStyle {
+        switch self {
+        case .primary: .primary
+        case .secondary: .secondary
+        case .toolbar: .toolbar
         }
     }
 }
@@ -276,7 +401,7 @@ private extension SFKButton {
                         titleFont: .footnote.weight(.semibold),
                         subtitleFont: .caption,
                         iconFont: .footnote.weight(.semibold),
-                        chrome: .glass,
+                        style: .secondary,
                         hapticStyle: .light
                     ) {
                     }
@@ -294,7 +419,7 @@ private extension SFKButton {
                         titleFont: .footnote.weight(.semibold),
                         subtitleFont: .caption2,
                         iconFont: .footnote.weight(.semibold),
-                        chrome: .plain,
+                        style: .toolbar,
                         hapticStyle: .light
                     ) {
                     }
@@ -311,7 +436,7 @@ private extension SFKButton {
                         titleFont: .headline,
                         subtitleFont: .caption,
                         iconFont: .headline.weight(.bold),
-                        chrome: .glassEffect(style: .regular, shape: .circle, isInteractive: true)
+                        style: .secondary
                     ) {
                     }
                 }

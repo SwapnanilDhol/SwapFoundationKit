@@ -13,22 +13,28 @@ import SwiftUI
 
 // MARK: - Public Configuration
 
-/// How prominent the glass treatment should be.
+/// The Liquid Glass material used by a custom glass surface.
 ///
-/// - `.prominent` uses the system `.glassProminent` button style — a filled, tinted glass
-///   surface. Use it for primary actions such as "Continue" or "Save".
-/// - `.regular` uses the system `.glass` button style — a translucent, tinted glass
-///   surface. Use it for secondary actions such as "Maybe Later" or filter chips.
+/// Button hierarchy is configured separately with ``SFKButtonStyle``.
+public enum SFKGlassMaterial: Sendable {
+    /// The default material, optimized for foreground legibility.
+    case regular
+    /// A highly translucent material intended for controls over rich media.
+    case clear
+}
+
+/// Legacy button-glass emphasis retained for source compatibility.
+///
+/// New button code should use ``SFKButtonStyle``.
 public enum SFKGlassEmphasis: Sendable {
     case prominent
     case regular
 }
 
-/// The system `Glass` preset to apply when `sfkGlass` is rendering a custom shape.
+/// Legacy custom-glass style retained for source compatibility.
 ///
-/// - `.regular` — standard Liquid Glass. The default.
-/// - `.clear` — more transparent; lets the content behind it read more clearly.
-/// - `.identity` — no glass effect; leaves the content visually unaffected.
+/// New custom surfaces should use ``SFKGlassMaterial``. Omitting the modifier replaces
+/// the former `identity` case.
 public enum SFKGlassStyle: Sendable {
     case regular
     case clear
@@ -36,16 +42,78 @@ public enum SFKGlassStyle: Sendable {
 }
 
 /// The shape the glass effect is applied to.
-///
-/// Pass `nil` to `sfkGlass(shape:)` to use the system button style
-/// (`.glassProminent` or `.glass`) instead of a custom-shape `.glassEffect`.
 public enum SFKGlassShape: Sendable {
     case roundedRectangle(cornerRadius: CGFloat, style: RoundedCornerStyle = .continuous)
     case capsule
     case circle
 }
 
-// MARK: - Modifier
+// MARK: - Custom Glass Surface
+
+private struct SFKGlassSurfaceModifier: ViewModifier {
+    let material: SFKGlassMaterial
+    let tint: Color?
+    let isInteractive: Bool
+    let shape: SFKGlassShape
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *) {
+            content
+                .glassEffect(resolvedGlass, in: resolvedShape(shape))
+        } else {
+            content
+                .background(fallback(for: shape))
+        }
+    }
+
+    @available(iOS 26, macOS 26, watchOS 26, tvOS 26, visionOS 26, *)
+    private var resolvedGlass: Glass {
+        let glass: Glass = switch material {
+        case .regular: .regular
+        case .clear: .clear
+        }
+
+        return glass
+            .tint(tint)
+            .interactive(isInteractive)
+    }
+
+    private func resolvedShape(_ shape: SFKGlassShape) -> AnyShape {
+        switch shape {
+        case let .roundedRectangle(cornerRadius, style):
+            AnyShape(RoundedRectangle(cornerRadius: cornerRadius, style: style))
+        case .capsule:
+            AnyShape(Capsule())
+        case .circle:
+            AnyShape(Circle())
+        }
+    }
+
+    @ViewBuilder
+    private func fallback(for shape: SFKGlassShape) -> some View {
+        switch shape {
+        case let .roundedRectangle(cornerRadius, style):
+            fallbackShape(RoundedRectangle(cornerRadius: cornerRadius, style: style))
+        case .capsule:
+            fallbackShape(Capsule())
+        case .circle:
+            fallbackShape(Circle())
+        }
+    }
+
+    private func fallbackShape<ShapeType: Shape>(_ shape: ShapeType) -> some View {
+        shape
+            .fill(.ultraThinMaterial)
+            .overlay {
+                if let tint {
+                    shape.fill(tint)
+                }
+            }
+    }
+}
+
+// MARK: - Legacy Compatibility
 
 private struct SFKGlassModifier: ViewModifier {
     let emphasis: SFKGlassEmphasis
@@ -121,6 +189,26 @@ private struct SFKGlassModifier: ViewModifier {
 }
 
 public extension View {
+    /// Applies Liquid Glass to a custom surface with a pre-iOS-26 fallback.
+    ///
+    /// Use ``SFKButton`` with ``SFKButtonStyle`` for buttons. This modifier is for
+    /// custom controls and surfaces that need an explicit shape.
+    func sfkGlass(
+        material: SFKGlassMaterial,
+        tint: Color? = nil,
+        isInteractive: Bool = false,
+        shape: SFKGlassShape
+    ) -> some View {
+        modifier(
+            SFKGlassSurfaceModifier(
+                material: material,
+                tint: tint,
+                isInteractive: isInteractive,
+                shape: shape
+            )
+        )
+    }
+
     /// Applies the Liquid Glass effect with a pre-iOS-26 fallback.
     ///
     /// Use the `emphasis` and `shape` parameters to pick the right treatment:
@@ -158,6 +246,7 @@ public extension View {
     ///         shape: .capsule
     ///     )
     /// ```
+    @available(*, deprecated, message: "Use SFKButton(style:) for buttons, or sfkGlass(material:tint:isInteractive:shape:) for custom surfaces.")
     func sfkGlass(
         emphasis: SFKGlassEmphasis = .regular,
         color: Color = .accentColor,
@@ -179,28 +268,14 @@ public extension View {
 
 // MARK: - Previews
 
-#Preview("Buttons") {
-    VStack(spacing: 16) {
-        Button("Continue") {}
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
-            .sfkGlass(emphasis: .prominent, color: .blue)
-
-        Button("Maybe Later") {}
-            .padding(.horizontal, 22)
-            .padding(.vertical, 10)
-            .sfkGlass(emphasis: .regular, color: .orange)
-    }
-    .padding(24)
-}
-
-#Preview("Shapes") {
+#Preview("Custom Glass Surfaces") {
     HStack(spacing: 20) {
         Text("A")
             .font(.headline.weight(.bold))
             .frame(width: 56, height: 56)
             .sfkGlass(
-                color: .blue,
+                material: .regular,
+                tint: .blue,
                 isInteractive: true,
                 shape: .circle
             )
@@ -210,7 +285,8 @@ public extension View {
             .frame(height: 44)
             .padding(.horizontal, 18)
             .sfkGlass(
-                color: .green,
+                material: .clear,
+                tint: .green,
                 isInteractive: true,
                 shape: .capsule
             )

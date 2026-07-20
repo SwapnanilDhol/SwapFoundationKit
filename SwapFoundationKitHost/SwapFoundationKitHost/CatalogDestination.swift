@@ -168,7 +168,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
 
     var apiNames: [String] {
         switch self {
-        case .buttons: ["SFKButton", "SFKCloseButton"]
+        case .buttons: ["SFKButton", "SFKButtonStyle", "SFKCloseButton"]
         case .settings: [
             "SFKSettingsScreen",
             "SFKSettingsRow",
@@ -179,7 +179,6 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
             "SFKSettingsTimePickerRow",
             "SFKSettingsInlineDatePicker",
             "SFKSettingsPickerRow",
-            "SFKSettingsPickerSheetRow",
             "SFKSettingsStepperRow",
             "SFKSettingsSliderRow",
             "SFKSettingsColorPickerRow",
@@ -189,12 +188,12 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
             "SFKSettingsConfirmationRow"
         ]
         case .colorPicker: ["SFKColorPickerSheet"]
-        case .onboarding: ["SFKCard", "SFKSelectableChip", "SFKChipFlowLayout", "SFKSegmentedProgress", "SFKSecondaryButton", "SFKTypography"]
+        case .onboarding: ["SFKCard", "SFKSelectableChip", "SFKChipFlowLayout", "SFKSegmentedProgress", "SFKTypography"]
         case .itemPicker: ["SFKItemPickerView", "SFKItemPickerRow", "SFKItemPickerSection"]
-        case .glass: ["sfkGlass", "SFKGlassStyle", "SFKGlassShape", "GlassEffectContainer"]
+        case .glass: ["sfkGlass", "SFKGlassMaterial", "SFKGlassShape", "GlassEffectContainer"]
         case .effects: ["TopAuraBackground", "SFKAuraLayer", "SFKAuraGlowBackground"]
         case .proBanner: ["SFKProBannerView"]
-        case .alerts: ["AlertController", "AlertPresenter"]
+        case .alerts: ["AlertPresenter", "AlertAction"]
         case .captureAndMedia: ["BarcodeScannerScreen", "BarcodeScannerView", "PhotoPicker"]
         case .appearance: ["SFKAppearanceManager", "SFKRoundedHostingController"]
         case .haptics: ["HapticsHelper"]

@@ -23,7 +23,7 @@ struct SecondaryButtonExamplesView: View {
                     leadingIconName: "doc.text",
                     fullWidth: false,
                     color: .primary.opacity(0.08),
-                    chrome: .glass
+                    style: .secondary
                 ) {}
                 .disabled(!isEnabled)
                 .padding(.vertical, 6)
@@ -34,7 +34,7 @@ struct SecondaryButtonExamplesView: View {
             }
 
             Section {
-                Text("SFKButton(chrome: .glass)")
+                Text("SFKButton(style: .secondary)")
                     .font(.body.monospaced())
             } footer: {
                 Text("Secondary actions use regular glass and semantic foreground colors, so they remain legible in light and dark appearances.")

@@ -45,9 +45,8 @@ struct AlertExamplesView: View {
 
             Section("Included APIs") {
                 Text("AlertPresenter").font(.body.monospaced())
-                Text("AlertController").font(.body.monospaced())
-                Text("AlertConfiguration").font(.body.monospaced())
                 Text("AlertAction").font(.body.monospaced())
+                Text("AlertActionStyle").font(.body.monospaced())
             }
         }
         .navigationTitle("Alerts")

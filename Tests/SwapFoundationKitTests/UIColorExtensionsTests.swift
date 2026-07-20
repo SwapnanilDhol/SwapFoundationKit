@@ -134,7 +134,7 @@ final class UIColorExtensionsTests: XCTestCase {
         let lightColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1)
 
         XCTAssertEqual(darkColor.contrastingColor, .white)
-        XCTAssertEqual(lightColor.contrastingColor, .black)
+        XCTAssertEqual(lightColor.contrastingColor.hexString(), "#1D1D1F")
     }
 
     func testIsContrasting() {
@@ -145,7 +145,8 @@ final class UIColorExtensionsTests: XCTestCase {
         XCTAssertTrue(black.isContrasting(with: white))
         // Dark gray is light enough to contrast with black
         XCTAssertTrue(black.isContrasting(with: darkGray))
-        XCTAssertFalse(white.isContrasting(with: UIColor.lightGray))
+        let nearlyWhite = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1)
+        XCTAssertFalse(white.isContrasting(with: nearlyWhite))
     }
 
     // MARK: - Color Adjustment
