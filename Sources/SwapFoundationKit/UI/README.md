@@ -96,7 +96,13 @@ SFKButton("Continue", leadingIconName: "arrow.right") {
     nextStep()
 }
 
+// Regular glass and plain chrome default to semantic primary text for contrast.
+SFKButton("Filters", chrome: .glass) {
+    showFilters()
+}
+
 // Close / dismiss
+// In a toolbar, the icon-only label stays native so iOS supplies one correctly sized control.
 SFKCloseButton {
     dismiss()
 }

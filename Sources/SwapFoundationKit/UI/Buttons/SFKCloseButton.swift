@@ -66,24 +66,56 @@ public struct SFKCloseButton: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: "xmark")
-                    .font(iconFont)
-
-                if let title {
-                    Text(title)
-                        .font(.footnote.weight(.semibold))
-                }
-            }
-                .foregroundStyle(foreground)
-                .frame(width: title == nil ? hitSize : nil, height: hitSize)
-                .padding(.horizontal, title == nil ? 0 : 12)
-                .fixedSize(horizontal: title != nil, vertical: false)
-                .contentShape(Capsule())
+            buttonLabel
         }
         .modifier(CloseButtonStyleModifier(chrome: chrome))
         .modifier(CloseChromeModifier(chrome: chrome, isLabeled: title != nil))
         .accessibilityLabel("Close")
+    }
+
+    @ViewBuilder
+    private var buttonLabel: some View {
+        if let title {
+            if #available(iOS 26, *) {
+                labeledContent(title)
+            } else {
+                labeledContent(title)
+                    .frame(height: hitSize)
+                    .padding(.horizontal, 12)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .contentShape(Capsule())
+            }
+        } else {
+            switch chrome {
+            case .toolbar:
+                Image(systemName: "xmark")
+                    .font(iconFont)
+                    .foregroundStyle(foreground)
+            case .glass:
+                if #available(iOS 26, *) {
+                    Image(systemName: "xmark")
+                        .font(iconFont)
+                        .foregroundStyle(foreground)
+                } else {
+                    Image(systemName: "xmark")
+                        .font(iconFont)
+                        .foregroundStyle(foreground)
+                        .frame(width: hitSize, height: hitSize)
+                        .contentShape(Circle())
+                }
+            }
+        }
+    }
+
+    private func labeledContent(_ title: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "xmark")
+                .font(iconFont)
+
+            Text(title)
+                .font(.footnote.weight(.semibold))
+        }
+        .foregroundStyle(foreground)
     }
 
     private var hitSize: CGFloat {
@@ -114,9 +146,11 @@ private struct CloseButtonStyleModifier: ViewModifier {
             // this is what supplies the system Liquid Glass capsule.
             content
         case .glass:
-            // Freeform glass owns its entire chrome and must not inherit a
-            // surrounding container's button treatment.
-            content.buttonStyle(.plain)
+            if #available(iOS 26, *) {
+                content.buttonStyle(.glass)
+            } else {
+                content.buttonStyle(.plain)
+            }
         }
     }
 }
@@ -131,27 +165,26 @@ private struct CloseChromeModifier: ViewModifier {
         case .toolbar:
             content
         case .glass:
-            if isLabeled {
-                content
-                    .background(Color.primary.opacity(0.10), in: Capsule())
-                    .sfkGlass(
-                        color: Color.primary.opacity(0.12),
-                        style: .regular,
-                        isInteractive: true,
-                        shape: .capsule
-                    )
-                    .overlay {
-                        Capsule()
-                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-                    }
+            if #available(iOS 26, *) {
+                if isLabeled {
+                    content
+                        .buttonBorderShape(.capsule)
+                } else {
+                    content
+                        .buttonBorderShape(.circle)
+                }
             } else {
-                content
-                    .sfkGlass(
-                        color: Color.primary.opacity(0.08),
-                        style: .regular,
-                        isInteractive: true,
-                        shape: .circle
-                    )
+                if isLabeled {
+                    content
+                        .background(Color.primary.opacity(0.10), in: Capsule())
+                        .overlay {
+                            Capsule()
+                                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                } else {
+                    content
+                        .background(Color.primary.opacity(0.10), in: Circle())
+                }
             }
         }
     }
@@ -185,5 +218,18 @@ private struct CloseChromeModifier: ViewModifier {
                     .foregroundStyle(.white)
             }
         }
+    }
+}
+
+#Preview("SFKCloseButton in Toolbar") {
+    NavigationStack {
+        Text("Content")
+            .navigationTitle("Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    SFKCloseButton {}
+                }
+            }
     }
 }

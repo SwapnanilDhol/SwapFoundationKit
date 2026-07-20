@@ -128,10 +128,9 @@ public struct SFKColorPickerSheet: View {
                 .background(Color(.systemGroupedBackground))
                 .navigationTitle(pageTitle)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(.hidden, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        SFKCloseButton("Close".localized, chrome: .glass) {
+                        SFKCloseButton(chrome: .glass) {
                             dismiss()
                         }
                     }

@@ -27,8 +27,8 @@ public enum SFKGlassEmphasis: Sendable {
 /// The system `Glass` preset to apply when `sfkGlass` is rendering a custom shape.
 ///
 /// - `.regular` — standard Liquid Glass. The default.
-//// - `.clear` — more transparent; lets the content behind it read more clearly.
-/// - `.identity` — no glass effect; renders as a flat tinted shape.
+/// - `.clear` — more transparent; lets the content behind it read more clearly.
+/// - `.identity` — no glass effect; leaves the content visually unaffected.
 public enum SFKGlassStyle: Sendable {
     case regular
     case clear

@@ -32,6 +32,24 @@ public enum SFKButtonChrome {
     )
     /// Applies no extra chrome.
     case plain
+
+    var defaultTitleColor: Color {
+        switch self {
+        case .glassProminent:
+            .white
+        case .glass, .glassEffect, .plain:
+            .primary
+        }
+    }
+
+    var defaultSubtitleColor: Color {
+        switch self {
+        case .glassProminent:
+            Color.white.opacity(0.8)
+        case .glass, .glassEffect, .plain:
+            .secondary
+        }
+    }
 }
 
 /// A reusable configuration object that defines the content, layout, styling, and interaction
@@ -83,8 +101,8 @@ public struct SFKButtonConfigurator {
         subtitle: String? = nil,
         isLoading: Bool = false,
         fullWidth: Bool = true,
-        titleColor: Color = .white,
-        subtitleColor: Color = Color.white.opacity(0.8),
+        titleColor: Color? = nil,
+        subtitleColor: Color? = nil,
         color: Color = .blue,
         spacing: CGFloat = 8,
         horizontalPadding: CGFloat = 16,
@@ -103,8 +121,8 @@ public struct SFKButtonConfigurator {
         self.subtitle = subtitle
         self.isLoading = isLoading
         self.fullWidth = fullWidth
-        self.titleColor = titleColor
-        self.subtitleColor = subtitleColor
+        self.titleColor = titleColor ?? chrome.defaultTitleColor
+        self.subtitleColor = subtitleColor ?? chrome.defaultSubtitleColor
         self.color = color
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding

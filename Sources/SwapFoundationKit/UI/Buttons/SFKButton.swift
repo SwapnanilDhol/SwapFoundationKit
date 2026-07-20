@@ -43,8 +43,8 @@ public struct SFKButton: View {
         subtitle: String? = nil,
         isLoading: Bool = false,
         fullWidth: Bool = true,
-        titleColor: Color = .white,
-        subtitleColor: Color = Color.white.opacity(0.8),
+        titleColor: Color? = nil,
+        subtitleColor: Color? = nil,
         color: Color = .blue,
         spacing: CGFloat = 8,
         horizontalPadding: CGFloat = 16,
@@ -64,8 +64,8 @@ public struct SFKButton: View {
         self.subtitle = subtitle
         self.isLoading = isLoading
         self.fullWidth = fullWidth
-        self.titleColor = titleColor
-        self.subtitleColor = subtitleColor
+        self.titleColor = titleColor ?? chrome.defaultTitleColor
+        self.subtitleColor = subtitleColor ?? chrome.defaultSubtitleColor
         self.color = color
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding
@@ -105,7 +105,7 @@ public struct SFKButton: View {
         if isLoading {
             ProgressView()
                 .progressViewStyle(.circular)
-                .tint(titleColor)
+                .tint(resolvedTitleColor)
         } else {
             HStack(spacing: spacing) {
                 if let leadingIconName, !leadingIconName.isEmpty {
@@ -159,15 +159,15 @@ public struct SFKButton: View {
     }
 
     private var resolvedTitleColor: Color {
-        isEnabled ? titleColor : Self.disabledTitleColor
+        isEnabled && !isLoading ? titleColor : Self.disabledTitleColor
     }
 
     private var resolvedSubtitleColor: Color {
-        isEnabled ? subtitleColor : Self.disabledSubtitleColor
+        isEnabled && !isLoading ? subtitleColor : Self.disabledSubtitleColor
     }
 
     private var resolvedColor: Color {
-        isEnabled ? color : Self.disabledColor
+        isEnabled && !isLoading ? color : Self.disabledColor
     }
 
     private static var disabledColor: Color {
