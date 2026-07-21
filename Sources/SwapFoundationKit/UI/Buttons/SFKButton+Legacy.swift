@@ -33,6 +33,7 @@ public extension SFKButton {
         textAlignment: HorizontalAlignment = .center,
         titleLineLimit: Int = 1,
         subtitleLineLimit: Int = 1,
+        controlSize: ControlSize = .regular,
         chrome: SFKButtonChrome,
         hapticStyle: SFKButtonHapticStyle? = .medium,
         action: @escaping () -> Void
@@ -55,6 +56,7 @@ public extension SFKButton {
             textAlignment: textAlignment,
             titleLineLimit: titleLineLimit,
             subtitleLineLimit: subtitleLineLimit,
+            controlSize: controlSize,
             renderingStyle: chrome.renderingStyle,
             hapticStyle: hapticStyle,
             action: action

@@ -46,6 +46,7 @@ public struct SFKButton: View {
     private let textAlignment: HorizontalAlignment
     private let titleLineLimit: Int
     private let subtitleLineLimit: Int
+    private let controlSize: ControlSize
     private let renderingStyle: SFKButtonRenderingStyle
     private let hapticStyle: SFKButtonHapticStyle?
     private let action: () -> Void
@@ -68,6 +69,7 @@ public struct SFKButton: View {
         textAlignment: HorizontalAlignment = .center,
         titleLineLimit: Int = 1,
         subtitleLineLimit: Int = 1,
+        controlSize: ControlSize = .regular,
         style: SFKButtonStyle = .primary,
         hapticStyle: SFKButtonHapticStyle? = .medium,
         action: @escaping () -> Void
@@ -90,6 +92,7 @@ public struct SFKButton: View {
             textAlignment: textAlignment,
             titleLineLimit: titleLineLimit,
             subtitleLineLimit: subtitleLineLimit,
+            controlSize: controlSize,
             renderingStyle: style.renderingStyle,
             hapticStyle: hapticStyle,
             action: action
@@ -114,6 +117,7 @@ public struct SFKButton: View {
         textAlignment: HorizontalAlignment,
         titleLineLimit: Int,
         subtitleLineLimit: Int,
+        controlSize: ControlSize,
         renderingStyle: SFKButtonRenderingStyle,
         hapticStyle: SFKButtonHapticStyle?,
         action: @escaping () -> Void
@@ -135,6 +139,7 @@ public struct SFKButton: View {
         self.textAlignment = textAlignment
         self.titleLineLimit = titleLineLimit
         self.subtitleLineLimit = subtitleLineLimit
+        self.controlSize = controlSize
         self.renderingStyle = renderingStyle
         self.hapticStyle = hapticStyle
         self.action = action
@@ -156,7 +161,7 @@ public struct SFKButton: View {
         .disabled(isLoading)
         .animation(.spring(response: 0.28, dampingFraction: 0.82), value: isLoading)
 
-        styledButton(button)
+        styledButton(button.controlSize(controlSize))
     }
 
     @ViewBuilder

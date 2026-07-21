@@ -7,7 +7,7 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Buttons
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKButton` | View | Configurable button with loading states, haptics, and three semantic styles |
+| `SFKButton` | View | Configurable button with loading states, haptics, semantic styles, and platform control sizing |
 | `SFKButtonStyle` | enum | `primary`, `secondary`, or `toolbar` |
 | `SFKCloseButton` | View | Standardized icon-only or labeled close/dismiss button (`toolbar` or `glass` chrome) |
 | `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
@@ -38,7 +38,7 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | Type | Kind | Description |
 |------|------|-------------|
 | `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds (iOS 16+) |
-| `SFKSelectableChip` | View | Selectable chip with glass effect, haptics, stroke |
+| `SFKSelectableChip` | View | Selectable chip with glass effect, haptics, stroke, and platform control sizing |
 | `SFKChipItem` | protocol | Chip data: label, optional icon |
 | `SFKSegmentedProgress` | View | Capsule-style step progress indicator |
 | `SFKTypography` | (modifiers) | `.sfkFlowTitleStyle()`, `.sfkFlowSubtitleStyle()`, etc. |
@@ -104,6 +104,11 @@ SFKButton(leadingIconName: "ellipsis", style: .toolbar) {
     showMoreActions()
 }
 
+// Compact inline action or chip
+SFKButton("Edit", fullWidth: false, controlSize: .small, style: .secondary) {
+    editItem()
+}
+
 // Close / dismiss
 // In a toolbar, the icon-only label stays native so iOS supplies one correctly sized control.
 SFKCloseButton {
@@ -137,7 +142,7 @@ SFKSettingsScreen(
 // Onboarding
 SFKSegmentedProgress(currentStep: 2, totalSteps: 5)
 SFKChipFlowLayout(spacing: 8) {
-    ForEach(items) { SFKSelectableChip(item: $0) }
+    ForEach(items) { SFKSelectableChip(item: $0, controlSize: .small) }
 }
 
 // Item Picker

@@ -415,7 +415,8 @@ Migration rules:
 - Prefer `SFKButton(...)` for simple one-off buttons and `SFKCloseButton(...)` for standardized dismiss actions
 - Use `SFKCloseButton` as the default close-button starting point
 - When another button style repeats, create an app-local wrapper around `SFKButton(...)` instead of copying the same init arguments everywhere
-- Height comes from `verticalPadding` instead of a fixed minimum height, so compact variants should be tuned through padding
+- Use `controlSize: .small` for compact inline actions and chips, then tune `verticalPadding` only when the label needs additional breathing room
+- `SFKSelectableChip` also accepts `controlSize: .small` for dense wrapping chip groups
 - Loading buttons disable taps, replace their label with a spinner, and temporarily stop being full-width
 
 ---

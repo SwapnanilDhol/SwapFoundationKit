@@ -29,7 +29,7 @@ struct OnboardingExamplesView: View {
                 }
 
                 CatalogExampleGroup(
-                    title: "Selectable Chips",
+                    title: "Compact Selectable Chips",
                     apiNames: ["SFKChipFlowLayout", "SFKSelectableChip", "SFKChipItem"]
                 ) {
                     SFKChipFlowLayout(spacing: 8) {
@@ -37,7 +37,8 @@ struct OnboardingExamplesView: View {
                             SFKSelectableChip(
                                 item: goal,
                                 isSelected: selectedGoals.contains(goal),
-                                tintColor: .blue
+                                tintColor: .blue,
+                                controlSize: .small
                             ) {
                                 toggle(goal)
                             }

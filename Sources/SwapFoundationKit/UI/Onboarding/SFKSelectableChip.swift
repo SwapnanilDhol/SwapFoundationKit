@@ -1,9 +1,13 @@
-//
-//  SFKSelectableChip.swift
-//  SwapFoundationKit
-//
-//  Created by Swapnanil Dhol on 4/30/26.
-//
+/****************************************************************************
+ * SFKSelectableChip.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2026 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
 
 import SwiftUI
 
@@ -74,6 +78,7 @@ public struct SFKSelectableChip: View {
     private let tintColor: Color
     private let iconTint: Color?
     private let visualStyle: VisualStyle
+    private let controlSize: ControlSize
     private let action: () -> Void
 
     /// Creates a chip from a conforming `SFKChipItem`.
@@ -83,6 +88,7 @@ public struct SFKSelectableChip: View {
     ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
     ///   - iconTint: Optional icon override. When `nil`, the chip uses its built-in tint logic.
     ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
+    ///   - controlSize: Platform-relative sizing. Use `.small` for dense chip groups.
     ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
     ///   - action: Closure executed when the chip is tapped.
     public init<Item: SFKChipItem>(
@@ -91,6 +97,7 @@ public struct SFKSelectableChip: View {
         tintColor: Color = .primary,
         iconTint: Color? = nil,
         visualStyle: VisualStyle = .standard,
+        controlSize: ControlSize = .regular,
         trailingAccessoryIcon: String? = nil,
         action: @escaping () -> Void
     ) {
@@ -101,6 +108,7 @@ public struct SFKSelectableChip: View {
             tintColor: tintColor,
             iconTint: iconTint,
             visualStyle: visualStyle,
+            controlSize: controlSize,
             trailingAccessoryIcon: trailingAccessoryIcon,
             action: action
         )
@@ -114,6 +122,7 @@ public struct SFKSelectableChip: View {
     ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
     ///   - iconTint: Optional icon override. When `nil`, the chip uses its built-in tint logic.
     ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
+    ///   - controlSize: Platform-relative sizing. Use `.small` for dense chip groups.
     ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
     ///   - action: Closure executed when the chip is tapped.
     public init(
@@ -123,6 +132,7 @@ public struct SFKSelectableChip: View {
         tintColor: Color = .primary,
         iconTint: Color? = nil,
         visualStyle: VisualStyle = .standard,
+        controlSize: ControlSize = .regular,
         trailingAccessoryIcon: String? = nil,
         action: @escaping () -> Void
     ) {
@@ -133,6 +143,7 @@ public struct SFKSelectableChip: View {
             tintColor: tintColor,
             iconTint: iconTint,
             visualStyle: visualStyle,
+            controlSize: controlSize,
             trailingAccessoryIcon: trailingAccessoryIcon,
             action: action
         )
@@ -142,6 +153,7 @@ public struct SFKSelectableChip: View {
     /// - Parameters:
     ///   - icon: An optional SF Symbol name.
     ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
+    ///   - controlSize: Platform-relative sizing. Use `.small` for dense chip groups.
     ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
     ///   - text: The label text.
     ///   - isSelected: Whether the chip is currently selected.
@@ -151,6 +163,7 @@ public struct SFKSelectableChip: View {
     public init(
         icon: String? = nil,
         visualStyle: VisualStyle = .standard,
+        controlSize: ControlSize = .regular,
         trailingAccessoryIcon: String? = nil,
         text: String,
         isSelected: Bool,
@@ -165,6 +178,7 @@ public struct SFKSelectableChip: View {
             tintColor: tintColor,
             iconTint: iconTint,
             visualStyle: visualStyle,
+            controlSize: controlSize,
             trailingAccessoryIcon: trailingAccessoryIcon,
             action: action
         )
@@ -177,6 +191,7 @@ public struct SFKSelectableChip: View {
         tintColor: Color,
         iconTint: Color?,
         visualStyle: VisualStyle,
+        controlSize: ControlSize,
         trailingAccessoryIcon: String?,
         action: @escaping () -> Void
     ) {
@@ -187,6 +202,7 @@ public struct SFKSelectableChip: View {
         self.tintColor = tintColor
         self.iconTint = iconTint
         self.visualStyle = visualStyle
+        self.controlSize = controlSize
         self.action = action
     }
 
@@ -195,7 +211,7 @@ public struct SFKSelectableChip: View {
             triggerHaptic()
             action()
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: contentSpacing) {
                 if let icon {
                     iconView(for: icon)
                         .font(iconFont)
@@ -219,6 +235,7 @@ public struct SFKSelectableChip: View {
             .padding(.vertical, verticalPadding)
         }
         .buttonStyle(.plain)
+        .controlSize(controlSize)
         .overlay(
             Capsule(style: .continuous)
                 .strokeBorder(
@@ -262,14 +279,28 @@ public struct SFKSelectableChip: View {
     }
 
     private var horizontalPadding: CGFloat {
-        visualStyle == .standard ? 14 : 12
+        guard !isCompact else { return 10 }
+        return visualStyle == .standard ? 14 : 12
     }
 
     private var verticalPadding: CGFloat {
-        visualStyle == .standard ? 10 : 8
+        guard !isCompact else { return 4 }
+        return visualStyle == .standard ? 10 : 8
+    }
+
+    private var contentSpacing: CGFloat {
+        isCompact ? 6 : 8
+    }
+
+    private var isCompact: Bool {
+        controlSize == .mini || controlSize == .small
     }
 
     private var labelFont: Font {
+        guard !isCompact else {
+            return .footnote.weight(isSelected ? .semibold : .medium)
+        }
+
         switch visualStyle {
         case .standard:
             return .subheadline.weight(isSelected ? .semibold : .regular)
@@ -279,6 +310,8 @@ public struct SFKSelectableChip: View {
     }
 
     private var iconFont: Font {
+        guard !isCompact else { return .caption.weight(.semibold) }
+
         switch visualStyle {
         case .standard:
             return .subheadline.weight(isSelected ? .semibold : .regular)
