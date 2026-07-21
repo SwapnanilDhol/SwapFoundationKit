@@ -1,14 +1,17 @@
-//
-//  SFKSegmentedProgress.swift
-//  SwapFoundationKit
-//
-//  Created by Swapnanil Dhol on 4/30/26.
-//
+/****************************************************************************
+ * SFKSegmentedProgress.swift
+ * SwapFoundationKit
+ *****************************************************************************
+ * Copyright (c) 2026 Swapnanil Dhol. All rights reserved.
+ *
+ * Authors: Swapnanil Dhol <swapnanildhol # gmail.com>
+ *
+ * Refer to the COPYING file of the official project for license.
+ *****************************************************************************/
 
 import SwiftUI
 
-/// A segmented progress indicator similar to story indicators, rendering capsule-shaped
-/// segments where completed steps are filled and remaining steps are dimmed.
+/// A compact segmented step indicator for short, guided flows.
 ///
 /// ## Usage
 /// ```swift
@@ -20,10 +23,12 @@ import SwiftUI
 ///     totalSteps: 4,
 ///     activeColor: .blue,
 ///     inactiveColor: .gray.opacity(0.2),
-///     height: 8
+///     width: 160
 /// )
 /// ```
 public struct SFKSegmentedProgress: View {
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+
     /// The index of the current step (0-based).
     public let currentStep: Int
 
@@ -42,21 +47,26 @@ public struct SFKSegmentedProgress: View {
     /// The spacing between segments.
     public var segmentSpacing: CGFloat
 
+    /// The total width of the indicator. Pass `nil` to fill the proposed width.
+    public var width: CGFloat?
+
     /// Creates a segmented progress indicator.
     /// - Parameters:
     ///   - currentStep: The index of the current step (0-based).
     ///   - totalSteps: The total number of steps.
-    ///   - activeColor: Color for completed segments. Defaults to `.primary`.
-    ///   - inactiveColor: Color for remaining segments. Defaults to `.gray.opacity(0.25)`.
-    ///   - height: Height of each segment. Defaults to 6.
-    ///   - spacing: Spacing between segments. Defaults to 6.
+    ///   - activeColor: Color for completed segments. Defaults to `.accentColor`.
+    ///   - inactiveColor: Color for remaining segments. Defaults to a subtle secondary tint.
+    ///   - height: Height of each segment. Defaults to 4.
+    ///   - spacing: Spacing between segments. Defaults to 5.
+    ///   - width: Total width of the compact indicator. Defaults to 128.
     public init(
         currentStep: Int,
         totalSteps: Int,
-        activeColor: Color = .primary,
-        inactiveColor: Color = .gray.opacity(0.25),
-        height: CGFloat = 6,
-        spacing: CGFloat = 6
+        activeColor: Color = .accentColor,
+        inactiveColor: Color = .secondary.opacity(0.18),
+        height: CGFloat = 4,
+        spacing: CGFloat = 5,
+        width: CGFloat? = 128
     ) {
         self.currentStep = currentStep
         self.totalSteps = totalSteps
@@ -64,18 +74,37 @@ public struct SFKSegmentedProgress: View {
         self.inactiveColor = inactiveColor
         self.height = height
         self.segmentSpacing = spacing
+        self.width = width
     }
 
     public var body: some View {
         HStack(spacing: segmentSpacing) {
-            ForEach(0..<totalSteps, id: \.self) { index in
+            ForEach(0..<safeTotalSteps, id: \.self) { index in
                 Capsule(style: .continuous)
-                    .fill(index <= currentStep ? activeColor : inactiveColor)
+                    .fill(index <= safeCurrentStep ? activeColor : inactiveColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: height)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: currentStep)
+        .frame(width: width)
+        .animation(progressAnimation, value: safeCurrentStep)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Progress")
+        .accessibilityValue("Step \(safeCurrentStep + 1) of \(safeTotalSteps)")
+    }
+
+    private var safeTotalSteps: Int {
+        max(totalSteps, 1)
+    }
+
+    private var safeCurrentStep: Int {
+        min(max(currentStep, 0), safeTotalSteps - 1)
+    }
+
+    private var progressAnimation: Animation {
+        accessibilityReduceMotion
+            ? .easeOut(duration: 0.15)
+            : .spring(response: 0.3, dampingFraction: 1)
     }
 }
 
@@ -111,7 +140,7 @@ public struct SFKSegmentedProgress: View {
             totalSteps: 6,
             activeColor: .blue,
             inactiveColor: .blue.opacity(0.15),
-            height: 8
+            width: 180
         )
 
         SFKSegmentedProgress(

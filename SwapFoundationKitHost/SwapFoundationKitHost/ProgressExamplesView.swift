@@ -16,10 +16,11 @@ struct ProgressExamplesView: View {
     @State private var isInspectorPresented = false
     @State private var currentStep = 1
     @State private var totalSteps = 4
-    @State private var activeColor = Color.blue
-    @State private var inactiveColor = Color.gray.opacity(0.25)
-    @State private var height = 6.0
-    @State private var spacing = 6.0
+    @State private var activeColor = Color.accentColor
+    @State private var inactiveColor = Color.secondary.opacity(0.18)
+    @State private var height = 4.0
+    @State private var spacing = 5.0
+    @State private var width = 128.0
 
     var body: some View {
         CatalogControlPlayground(
@@ -37,7 +38,8 @@ struct ProgressExamplesView: View {
                         activeColor: activeColor,
                         inactiveColor: inactiveColor,
                         height: height,
-                        spacing: spacing
+                        spacing: spacing,
+                        width: width
                     )
 
                     Text("Step \(currentStep + 1) of \(totalSteps)")
@@ -59,6 +61,7 @@ struct ProgressExamplesView: View {
                     ColorPicker("Inactive color", selection: $inactiveColor, supportsOpacity: true)
                     valueSlider("Height", value: $height, range: 2...16)
                     valueSlider("Spacing", value: $spacing, range: 0...20)
+                    valueSlider("Width", value: $width, range: 80...320)
                 }
             }
         }

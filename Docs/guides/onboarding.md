@@ -53,7 +53,7 @@ SFKChipFlowLayout(spacing: 8) {
 
 ## SFKSegmentedProgress
 
-A segmented progress indicator similar to iOS story indicators. Renders capsule-shaped segments where completed steps are filled and remaining steps are dimmed.
+A compact segmented step indicator for guided flows. It uses a compact 128-point footprint, thin capsule segments, the environment accent color, and a critically damped spring when the active step changes.
 
 ### Usage
 
@@ -72,14 +72,15 @@ SFKSegmentedProgress(currentStep: step, totalSteps: totalSteps)
 |-----------|------|---------|-------------|
 | `currentStep` | `Int` | — | Index of the current step (0-based) |
 | `totalSteps` | `Int` | — | Total number of steps |
-| `activeColor` | `Color` | `.primary` | Color for completed/active segments |
-| `inactiveColor` | `Color` | `.gray.opacity(0.25)` | Color for remaining segments |
-| `height` | `CGFloat` | `6` | Height of each segment capsule |
-| `spacing` | `CGFloat` | `6` | Gap between segments |
+| `activeColor` | `Color` | `.accentColor` | Color for completed/active segments |
+| `inactiveColor` | `Color` | `.secondary.opacity(0.18)` | Color for remaining segments |
+| `height` | `CGFloat` | `4` | Height of each segment capsule |
+| `spacing` | `CGFloat` | `5` | Gap between segments |
+| `width` | `CGFloat?` | `128` | Total indicator width; pass `nil` to fill the proposal |
 
 ### Animation
 
-Transitions between steps animate with `.easeInOut(duration: 0.2)` driven by the `currentStep` value.
+Transitions use a critically damped spring and fall back to a short ease-out animation when Reduce Motion is enabled. The component exposes its current and total step count through accessibility.
 
 ---
 
