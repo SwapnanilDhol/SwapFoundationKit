@@ -13,6 +13,7 @@ import SwapFoundationKit
 import SwiftUI
 
 struct ChipExamplesView: View {
+    @State private var isInspectorPresented = false
     @State private var chipKind = ChipKind.action
     @State private var title = "Category"
     @State private var showsLeadingIcon = true
@@ -32,34 +33,46 @@ struct ChipExamplesView: View {
     @State private var trailingAccessoryIcon = "chevron.down"
 
     var body: some View {
-        Form {
-            Section("Live Preview") {
-                preview
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
+        CatalogControlPlayground(
+            title: "Chips",
+            isInspectorPresented: $isInspectorPresented
+        ) {
+            CatalogExampleGroup(
+                title: "Live Preview",
+                apiNames: [chipKind.apiName]
+            ) {
+                VStack(spacing: 18) {
+                    preview
+                        .frame(maxWidth: .infinity, minHeight: 72)
 
-                switch chipKind {
-                case .action:
-                    LabeledContent("Taps", value: actionTapCount.formatted())
-                case .selectable:
-                    LabeledContent("State", value: isSelected ? "Selected" : "Not selected")
-                }
-            }
+                    Divider()
 
-            Section("Component") {
-                Picker("Chip type", selection: $chipKind) {
-                    ForEach(ChipKind.allCases) { kind in
-                        Text(kind.title).tag(kind)
+                    switch chipKind {
+                    case .action:
+                        LabeledContent("Taps", value: actionTapCount.formatted())
+                    case .selectable:
+                        LabeledContent("State", value: isSelected ? "Selected" : "Not selected")
                     }
                 }
-                .pickerStyle(.segmented)
+                .padding(16)
+                .background(.background, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             }
+        } configuration: {
+            Form {
+                Section("Component") {
+                    Picker("Chip type", selection: $chipKind) {
+                        ForEach(ChipKind.allCases) { kind in
+                            Text(kind.title).tag(kind)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
 
-            contentConfiguration
-            appearanceConfiguration
-            interactionConfiguration
+                contentConfiguration
+                appearanceConfiguration
+                interactionConfiguration
+            }
         }
-        .navigationTitle("Chips")
     }
 
     @ViewBuilder
@@ -194,6 +207,13 @@ private enum ChipKind: String, CaseIterable, Identifiable {
 
     var id: Self { self }
     var title: String { rawValue.capitalized }
+
+    var apiName: String {
+        switch self {
+        case .action: "SFKChip"
+        case .selectable: "SFKSelectableChip"
+        }
+    }
 }
 
 private enum ChipControlSize: String, CaseIterable, Identifiable {

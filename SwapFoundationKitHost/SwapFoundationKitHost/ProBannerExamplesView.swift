@@ -1,4 +1,4 @@
-/*****************************************************************************
+/****************************************************************************
  * ProBannerExamplesView.swift
  * SwapFoundationKit
  *****************************************************************************
@@ -9,35 +9,61 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-import SwiftUI
 import SwapFoundationKit
+import SwiftUI
 
 struct ProBannerExamplesView: View {
+    @State private var isInspectorPresented = false
     @State private var isProEnabled = false
+    @State private var proEnabledTitle = "Thanks for supporting the app"
+    @State private var proEnabledSubtitle = "Every premium feature is available."
+    @State private var proDisabledTitle = "Unlock the complete experience"
+    @State private var proDisabledSubtitle = "Upgrade once to access every premium feature."
+    @State private var upgradeButtonTitle = "Upgrade Now"
+    @State private var upgradeButtonFillColor = Color.purple
 
     var body: some View {
-        List {
-            Section {
-                Toggle("Pro enabled", isOn: $isProEnabled)
-            } footer: {
-                Text("Toggle the entitlement to inspect both component states.")
-            }
-
-            Section("Live Component") {
+        CatalogControlPlayground(
+            title: "Pro Banner",
+            isInspectorPresented: $isInspectorPresented
+        ) {
+            CatalogExampleGroup(
+                title: "Live Preview",
+                apiNames: ["SFKProBannerView"]
+            ) {
                 SFKProBannerView(
                     isProEnabled: isProEnabled,
-                    proEnabledTitle: "Thanks for supporting the app",
-                    proEnabledSubtitle: "Every premium feature is available.",
-                    proDisabledTitle: "Unlock the complete experience",
-                    proDisabledSubtitle: "Upgrade once to access every premium feature.",
-                    upgradeButtonFillColor: .purple
+                    proEnabledTitle: proEnabledTitle,
+                    proEnabledSubtitle: proEnabledSubtitle,
+                    proDisabledTitle: proDisabledTitle,
+                    proDisabledSubtitle: proDisabledSubtitle,
+                    upgradeButtonTitle: upgradeButtonTitle,
+                    upgradeButtonFillColor: upgradeButtonFillColor
                 ) {
                     isProEnabled = true
                 }
-                .listRowInsets(EdgeInsets())
+                .padding(.vertical, 8)
+                .background(.background, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+        } configuration: {
+            Form {
+                Section("State") {
+                    Toggle("Pro enabled", isOn: $isProEnabled)
+                }
+
+                Section("Pro Enabled") {
+                    TextField("Title", text: $proEnabledTitle)
+                    TextField("Subtitle", text: $proEnabledSubtitle, axis: .vertical)
+                }
+
+                Section("Pro Disabled") {
+                    TextField("Title", text: $proDisabledTitle)
+                    TextField("Subtitle", text: $proDisabledSubtitle, axis: .vertical)
+                    TextField("Button title", text: $upgradeButtonTitle)
+                    ColorPicker("Button color", selection: $upgradeButtonFillColor, supportsOpacity: true)
+                }
             }
         }
-        .navigationTitle("Pro Banner")
     }
 }
 

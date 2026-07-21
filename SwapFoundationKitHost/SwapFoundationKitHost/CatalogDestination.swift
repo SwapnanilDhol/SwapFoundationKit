@@ -176,7 +176,13 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
 
     var apiNames: [String] {
         switch self {
-        case .buttons: ["SFKButton", "SFKButtonStyle", "SFKCloseButton"]
+        case .buttons: [
+            "SFKButton",
+            "SFKButtonStyle",
+            "SFKButtonHapticStyle",
+            "SFKCloseButton",
+            "SFKCloseButtonChrome"
+        ]
         case .settings: [
             "SFKSettingsScreen",
             "SFKSettingsRow",
