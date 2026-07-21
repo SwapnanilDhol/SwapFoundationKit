@@ -23,7 +23,9 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     case buttons
     case settings
     case colorPicker
-    case onboarding
+    case chips
+    case progress
+    case cardsAndTypography
     case itemPicker
     case glass
     case effects
@@ -57,7 +59,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
 
     var section: CatalogSection {
         switch self {
-        case .buttons, .settings, .colorPicker, .onboarding, .itemPicker,
+        case .buttons, .settings, .colorPicker, .chips, .progress, .cardsAndTypography, .itemPicker,
              .glass, .effects, .proBanner, .alerts, .captureAndMedia, .appearance:
             return .components
         case .haptics, .analytics, .logging, .appLinks, .userDefaults:
@@ -73,7 +75,9 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .buttons: "Buttons"
         case .settings: "Settings"
         case .colorPicker: "Color Picker"
-        case .onboarding: "Onboarding"
+        case .chips: "Chips"
+        case .progress: "Progress"
+        case .cardsAndTypography: "Cards & Typography"
         case .itemPicker: "Item Picker"
         case .glass: "Liquid Glass"
         case .effects: "Aura Effects"
@@ -103,7 +107,9 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .buttons: "Primary actions, loading states, close controls, and button chrome."
         case .settings: "Settings shells, rows, toggles, pickers, and theme customization."
         case .colorPicker: "Preset and custom color selection with explicit apply behavior."
-        case .onboarding: "Cards, chips, progress, typography, and secondary actions."
+        case .chips: "Primary, secondary, and selectable chips with wrapping layouts."
+        case .progress: "Segmented progress for finite multi-step flows."
+        case .cardsAndTypography: "Reusable cards and semantic text treatments."
         case .itemPicker: "Searchable single- and multi-selection lists with row actions."
         case .glass: "Materials, shapes, button emphasis, tint, interaction, and morphing."
         case .effects: "Atmospheric aura and glow background treatments."
@@ -133,7 +139,9 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .buttons: "button.programmable"
         case .settings: "gearshape.2.fill"
         case .colorPicker: "paintpalette.fill"
-        case .onboarding: "rectangle.stack.fill"
+        case .chips: "capsule.fill"
+        case .progress: "chart.bar.fill"
+        case .cardsAndTypography: "rectangle.on.rectangle.angled"
         case .itemPicker: "checklist"
         case .glass: "circle.hexagongrid.fill"
         case .effects: "sun.max.trianglebadge.exclamationmark.fill"
@@ -188,7 +196,9 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
             "SFKSettingsConfirmationRow"
         ]
         case .colorPicker: ["SFKColorPickerSheet"]
-        case .onboarding: ["SFKCard", "SFKSelectableChip", "SFKChipFlowLayout", "SFKSegmentedProgress", "SFKTypography"]
+        case .chips: ["SFKChip", "SFKChipStyle", "SFKSelectableChip", "SFKChipFlowLayout", "SFKChipItem"]
+        case .progress: ["SFKSegmentedProgress"]
+        case .cardsAndTypography: ["SFKCard", "SFKTypography"]
         case .itemPicker: ["SFKItemPickerView", "SFKItemPickerRow", "SFKItemPickerSection"]
         case .glass: ["sfkGlass", "SFKGlassMaterial", "SFKGlassShape", "GlassEffectContainer"]
         case .effects: ["TopAuraBackground", "SFKAuraLayer", "SFKAuraGlowBackground"]

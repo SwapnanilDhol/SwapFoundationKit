@@ -13,6 +13,16 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
 
+### Chips
+| Type | Kind | Description |
+|------|------|-------------|
+| `SFKChip` | View | Capsule-shaped action chip with primary and secondary hierarchy |
+| `SFKChipStyle` | enum | `primary` or `secondary` action-chip emphasis |
+| `SFKChipHapticStyle` | enum | Optional light, medium, or heavy action-chip feedback |
+| `SFKSelectableChip` | View | State-driven selectable chip with glass effect, haptics, and stroke |
+| `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds (iOS 16+) |
+| `SFKChipItem` | protocol | Selectable-chip data: label and optional icon |
+
 ### Settings
 | Type | Kind | Description |
 |------|------|-------------|
@@ -37,9 +47,6 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Onboarding
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds (iOS 16+) |
-| `SFKSelectableChip` | View | Selectable chip with glass effect, haptics, stroke, and platform control sizing |
-| `SFKChipItem` | protocol | Chip data: label, optional icon |
 | `SFKSegmentedProgress` | View | Capsule-style step progress indicator |
 | `SFKTypography` | (modifiers) | `.sfkFlowTitleStyle()`, `.sfkFlowSubtitleStyle()`, etc. |
 | `SFKCard` | View | Card container with icon, background, padding |
@@ -104,9 +111,19 @@ SFKButton(leadingIconName: "ellipsis", style: .toolbar) {
     showMoreActions()
 }
 
-// Compact inline action or chip
+// Compact inline action
 SFKButton("Edit", fullWidth: false, controlSize: .small, style: .secondary) {
     editItem()
+}
+
+// Action chips
+SFKChipFlowLayout(spacing: 8) {
+    SFKChip("Recommended", leadingIconName: "star.fill", controlSize: .small, style: .primary) {
+        applyRecommendation()
+    }
+    SFKChip("Edit", leadingIconName: "pencil", controlSize: .small, style: .secondary) {
+        editItem()
+    }
 }
 
 // Close / dismiss
@@ -208,7 +225,8 @@ AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 - `Buttons/` — SFKButton, SFKCloseButton, semantic styles, and isolated legacy adapters
 - `ColorPicker/` — SFKColorPickerSheet, SFKColorPickerDelegate
 - `Settings/` — 14+ row type files, theme, action handler, screen
-- `Onboarding/` — Chip, layout, progress, typography, card, secondary button
+- `Chips/` — Primary and secondary action chips
+- `Onboarding/` — Selectable chips, flow layout, progress, typography, and cards
 - `ItemPicker/` — View, view model, delegate, row, models
 - `Effects/` — Aura layer, glow background, top aura
 - `SwiftUIExtensions/` — Glass button modifiers

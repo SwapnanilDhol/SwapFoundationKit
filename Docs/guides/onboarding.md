@@ -8,6 +8,7 @@ Generic, reusable SwiftUI components extracted from multi-step onboarding flows.
 
 | Component | File | Purpose |
 |-----------|------|---------|
+| `SFKChip` | `UI/Chips/SFKChip.swift` | Primary or secondary capsule-shaped action |
 | `SFKChipFlowLayout` | `SFKChipFlowLayout.swift` | Flex-wrap `Layout` for chips/tags |
 | `SFKSegmentedProgress` | `SFKSegmentedProgress.swift` | Story-style segmented progress bar |
 | `SFKSelectableChip` | `SFKSelectableChip.swift` | Selectable capsule button with icon support |

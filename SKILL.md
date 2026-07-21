@@ -4,7 +4,7 @@ description: >
   Use when the user mentions SwapFoundationKit, SFK, or wants to audit, migrate,
   or build with SwapFoundationKit components. Also triggers on: haptics, logger,
   analytics, UserDefaults, networking, security, backup, currency, image
-  processor, debouncer, throttler, settings screen, onboarding, alerts, item
+  processor, debouncer, throttler, settings screen, chips, SFKChip, onboarding, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
   glass materials, UIKit extensions, ads manager, configuration service,
   environment, launch arguments, persistent TTL store, expiring cache, cooldown,

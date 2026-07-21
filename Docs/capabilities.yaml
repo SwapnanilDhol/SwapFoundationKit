@@ -97,12 +97,42 @@ domains:
       - glass close button
       - toolbar close button
 
+  - id: chips
+    priority: 3
+    summary: Reusable action and selectable chips with shared sizing and wrapping layouts.
+    when_to_check:
+      - Adding compact capsule-shaped actions
+      - Building selectable chip groups
+      - Wrapping tags or chip controls across rows
+    prefer_when:
+      - The control is semantically a chip rather than a full button
+      - The host app needs consistent primary, secondary, or selectable chip treatments
+    keep_in_host_app_when:
+      - The chip visual intentionally diverges from the shared SFK treatment
+    public_api:
+      - SFKChip
+      - SFKChipStyle
+      - SFKChipHapticStyle
+      - SFKChipFlowLayout
+      - SFKSelectableChip
+      - SFKChipItem
+    docs:
+      - Docs/guides/chips.md
+    examples:
+      - Sources/SwapFoundationKit/UI/Chips/SFKChip.swift
+      - Sources/SwapFoundationKit/UI/Onboarding/SFKSelectableChip.swift
+    host_app_triggers:
+      - chip
+      - action chip
+      - selectable chip
+      - tag cloud
+
   - id: onboarding
     priority: 3
-    summary: Reusable onboarding components for chips, progress, secondary actions, typography, and cards.
+    summary: Reusable progress, typography, and card primitives for multi-step onboarding flows.
     when_to_check:
       - Building multi-step onboarding
-      - Adding chip selectors or story-style progress indicators
+      - Adding story-style progress indicators
       - Standardizing onboarding typography or card shells
     prefer_when:
       - The flow needs reusable onboarding primitives rather than a one-off screen
@@ -110,21 +140,16 @@ domains:
     keep_in_host_app_when:
       - The onboarding is deeply product-specific and only borrows some low-level UI patterns
     public_api:
-      - SFKChipFlowLayout
-      - SFKSelectableChip
-      - SFKChipItem
       - SFKSegmentedProgress
       - SFKTypography
       - SFKCard
     docs:
       - Docs/guides/onboarding.md
     examples:
-      - Sources/SwapFoundationKit/UI/Onboarding/SFKSelectableChip.swift
       - Sources/SwapFoundationKit/UI/Onboarding/SFKSegmentedProgress.swift
     host_app_triggers:
       - onboarding
       - multi-step flow
-      - chip selector
       - segmented progress
 
   - id: pickers

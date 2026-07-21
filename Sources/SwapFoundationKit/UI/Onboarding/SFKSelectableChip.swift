@@ -279,17 +279,17 @@ public struct SFKSelectableChip: View {
     }
 
     private var horizontalPadding: CGFloat {
-        guard !isCompact else { return 10 }
+        guard !isCompact else { return sizeMetrics.horizontalPadding }
         return visualStyle == .standard ? 14 : 12
     }
 
     private var verticalPadding: CGFloat {
-        guard !isCompact else { return 4 }
+        guard !isCompact else { return sizeMetrics.verticalPadding }
         return visualStyle == .standard ? 10 : 8
     }
 
     private var contentSpacing: CGFloat {
-        isCompact ? 6 : 8
+        isCompact ? sizeMetrics.contentSpacing : 8
     }
 
     private var isCompact: Bool {
@@ -298,7 +298,7 @@ public struct SFKSelectableChip: View {
 
     private var labelFont: Font {
         guard !isCompact else {
-            return .footnote.weight(isSelected ? .semibold : .medium)
+            return isSelected ? sizeMetrics.labelFont.weight(.semibold) : sizeMetrics.labelFont
         }
 
         switch visualStyle {
@@ -310,7 +310,7 @@ public struct SFKSelectableChip: View {
     }
 
     private var iconFont: Font {
-        guard !isCompact else { return .caption.weight(.semibold) }
+        guard !isCompact else { return sizeMetrics.iconFont }
 
         switch visualStyle {
         case .standard:
@@ -327,6 +327,10 @@ public struct SFKSelectableChip: View {
         case .subtle:
             return .caption2.weight(.bold)
         }
+    }
+
+    private var sizeMetrics: SFKChipSizeMetrics {
+        SFKChipSizeMetrics(controlSize: controlSize)
     }
 
     private var labelColor: Color {

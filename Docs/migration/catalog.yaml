@@ -559,6 +559,10 @@ capabilities:
       - SFKButton
       - SFKButtonStyle
       - SFKCloseButton
+      - SFKChip
+      - SFKChipStyle
+      - SFKChipHapticStyle
+      - SFKSelectableChip
       - View.sfkGlass(material:tint:isInteractive:shape:)
       - UIKit convenience extensions
       - SFKColorPickerSheet
@@ -566,6 +570,10 @@ capabilities:
       - SFKButton
       - SFKButtonStyle
       - SFKCloseButton
+      - SFKChip
+      - SFKChipStyle
+      - SFKChipHapticStyle
+      - SFKSelectableChip
       - SFKColorPickerDelegate
       - SFKColorPickerSheet
       - SFKGlassMaterial
@@ -577,6 +585,8 @@ capabilities:
       - PrimaryButton
       - SecondaryButton
       - PillButton
+      - ChipButton
+      - ActionChip
       - ToolbarButton
       - ColorPickerSheet
       - choose color
@@ -594,6 +604,8 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
       - Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift
+      - Sources/SwapFoundationKit/UI/Chips/SFKChip.swift
+      - Sources/SwapFoundationKit/UI/Onboarding/SFKSelectableChip.swift
       - Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift
       - Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift
       - Sources/SwapFoundationKit/UI/UIKitExtensions/UIView+Layout.swift
