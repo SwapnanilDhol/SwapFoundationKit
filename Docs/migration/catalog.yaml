@@ -588,6 +588,8 @@ capabilities:
       - ChipButton
       - ActionChip
       - ToolbarButton
+      - BackButton
+      - chevron.left
       - ColorPickerSheet
       - choose color
       - paintpalette

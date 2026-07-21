@@ -9,7 +9,7 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 |------|------|-------------|
 | `SFKButton` | View | Configurable button with loading states, haptics, semantic styles, and platform control sizing |
 | `SFKButtonStyle` | enum | `primary`, `secondary`, or `toolbar` |
-| `SFKCloseButton` | View | Standardized icon-only or labeled close/dismiss button (`toolbar` or `glass` chrome) |
+| `SFKCloseButton` | View | Standardized icon-only toolbar navigation or labeled close/dismiss button (`toolbar` or `glass` chrome) |
 | `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
 
@@ -130,6 +130,11 @@ SFKChipFlowLayout(spacing: 8) {
 // In a toolbar, the icon-only label stays native so iOS supplies one correctly sized control.
 SFKCloseButton {
     dismiss()
+}
+
+// Back navigation with the same standardized toolbar treatment
+SFKCloseButton(systemImage: "chevron.left", accessibilityLabel: "Back") {
+    navigateBack()
 }
 
 // Over full-bleed content (previews, camera chrome)

@@ -65,10 +65,11 @@ domains:
 
   - id: buttons
     priority: 2
-    summary: Reusable SFK button components, including standardized close/dismiss patterns.
+    summary: Reusable SFK button components, including standardized close, back, and dismiss patterns.
     when_to_check:
       - Building primary/secondary actions
       - Adding close buttons to sheets or onboarding
+      - Adding icon-only back buttons to navigation toolbars
       - Standardizing repeated button styling
     prefer_when:
       - The app needs consistent reusable button styling
@@ -94,6 +95,8 @@ domains:
       - CTA
       - dismiss button
       - close button
+      - back button
+      - chevron.left
       - glass close button
       - toolbar close button
 

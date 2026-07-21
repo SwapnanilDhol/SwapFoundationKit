@@ -385,6 +385,7 @@ Preferred mappings:
 - Primary CTA with icon or subtitle -> `SFKButton("...", leadingIconName: ..., subtitle: ..., action: ...)`
 - Inline loading CTA -> `SFKButton("...", isLoading: true, color: ..., action: ...)`
 - Reusable dismiss / close action -> `SFKCloseButton(action: ...)`
+- Icon-only toolbar back action -> `SFKCloseButton(systemImage: "chevron.left", accessibilityLabel: "Back", action: ...)`
 - App-specific custom variants -> wrap `SFKButton(...)` in an app-local helper when the same init-based styling repeats
 
 Examples:
@@ -405,6 +406,10 @@ SFKCloseButton {
     dismiss()
 }
 
+SFKCloseButton(systemImage: "chevron.left", accessibilityLabel: "Back") {
+    navigateBack()
+}
+
 SFKCloseButton("Dismiss") {
     dismiss()
 }
@@ -412,7 +417,7 @@ SFKCloseButton("Dismiss") {
 
 Migration rules:
 
-- Prefer `SFKButton(...)` for simple one-off buttons and `SFKCloseButton(...)` for standardized dismiss actions
+- Prefer `SFKButton(...)` for simple one-off buttons and `SFKCloseButton(...)` for standardized dismiss and icon-only toolbar navigation actions
 - Use `SFKCloseButton` as the default close-button starting point
 - When another button style repeats, create an app-local wrapper around `SFKButton(...)` instead of copying the same init arguments everywhere
 - Use `controlSize: .small` for compact inline actions and chips, then tune `verticalPadding` only when the label needs additional breathing room

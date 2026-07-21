@@ -22,26 +22,34 @@ public enum SFKCloseButtonChrome: Sendable {
     case glass
 }
 
-/// A reusable close button that renders an `xmark` glyph.
+/// A reusable toolbar control that renders an `xmark` glyph by default.
 ///
 /// Use ``SFKCloseButtonChrome/toolbar`` (default) inside navigation toolbars,
 /// and ``SFKCloseButtonChrome/glass`` when the control sits over content
 /// without system toolbar chrome.
+/// Override `systemImage` and `accessibilityLabel` when the same standardized
+/// icon-only treatment represents navigation, such as a back button.
 ///
 /// Mirrors the standard `Button(action:)` initializer so callers can use
 /// either `SFKCloseButton { ... }` or `SFKCloseButton(action: onClose)`.
 public struct SFKCloseButton: View {
     private let title: String?
+    private let systemImage: String
+    private let accessibilityLabel: LocalizedStringKey
     private let chrome: SFKCloseButtonChrome
     private let foreground: Color
     private let action: () -> Void
 
     public init(
+        systemImage: String = "xmark",
+        accessibilityLabel: LocalizedStringKey = "Close",
         chrome: SFKCloseButtonChrome = .toolbar,
         foreground: Color = .primary,
         action: @escaping () -> Void
     ) {
         self.title = nil
+        self.systemImage = systemImage
+        self.accessibilityLabel = accessibilityLabel
         self.chrome = chrome
         self.foreground = foreground
         self.action = action
@@ -59,6 +67,8 @@ public struct SFKCloseButton: View {
         action: @escaping () -> Void
     ) {
         self.title = title
+        self.systemImage = "xmark"
+        self.accessibilityLabel = "Close"
         self.chrome = chrome
         self.foreground = foreground
         self.action = action
@@ -70,7 +80,7 @@ public struct SFKCloseButton: View {
         }
         .modifier(CloseButtonStyleModifier(chrome: chrome))
         .modifier(CloseChromeModifier(chrome: chrome, isLabeled: title != nil))
-        .accessibilityLabel("Close")
+        .accessibilityLabel(accessibilityLabel)
     }
 
     @ViewBuilder
@@ -88,16 +98,16 @@ public struct SFKCloseButton: View {
         } else {
             switch chrome {
             case .toolbar:
-                Image(systemName: "xmark")
+                Image(systemName: systemImage)
                     .font(iconFont)
                     .foregroundStyle(foreground)
             case .glass:
                 if #available(iOS 26, *) {
-                    Image(systemName: "xmark")
+                    Image(systemName: systemImage)
                         .font(iconFont)
                         .foregroundStyle(foreground)
                 } else {
-                    Image(systemName: "xmark")
+                    Image(systemName: systemImage)
                         .font(iconFont)
                         .foregroundStyle(foreground)
                         .frame(width: hitSize, height: hitSize)
@@ -205,6 +215,15 @@ private struct CloseChromeModifier: ViewModifier {
             HStack(spacing: 16) {
                 SFKCloseButton(chrome: .toolbar) { }
                 Text("toolbar")
+                    .foregroundStyle(.white)
+            }
+            HStack(spacing: 16) {
+                SFKCloseButton(
+                    systemImage: "chevron.left",
+                    accessibilityLabel: "Back",
+                    chrome: .toolbar
+                ) { }
+                Text("back")
                     .foregroundStyle(.white)
             }
             HStack(spacing: 16) {
