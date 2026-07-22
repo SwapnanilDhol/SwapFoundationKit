@@ -27,6 +27,7 @@ struct CatalogDestinationView: View {
         case .glass: GlassExamplesView()
         case .effects: EffectsExamplesView()
         case .proBanner: ProBannerExamplesView()
+        case .emptyState: EmptyStateExamplesView()
         case .alerts: AlertExamplesView()
         case .captureAndMedia: CaptureExamplesView()
         case .appearance: AppearanceExamplesView()

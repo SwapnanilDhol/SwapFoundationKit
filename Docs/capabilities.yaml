@@ -130,6 +130,32 @@ domains:
       - selectable chip
       - tag cloud
 
+  - id: empty_state
+    priority: 3
+    summary: Centered empty and error placeholders with optional primary CTA via SFKButton.
+    when_to_check:
+      - Building list or screen empty states
+      - Adding retry or first-action CTAs on blank screens
+      - Replacing ContentUnavailableView with branded empty UI
+    prefer_when:
+      - The empty state is generic (icon, title, message, optional action)
+      - The host app only needs to supply copy, symbol, and accent color
+    keep_in_host_app_when:
+      - The empty state embeds domain-specific charts, previews, or multi-step onboarding
+    public_api:
+      - SFKEmptyStateView
+    docs:
+      - Docs/capabilities.yaml
+    examples:
+      - Sources/SwapFoundationKit/UI/EmptyState/SFKEmptyStateView.swift
+      - SwapFoundationKitHost/SwapFoundationKitHost/EmptyStateExamplesView.swift
+    host_app_triggers:
+      - empty state
+      - no data
+      - no items yet
+      - ContentUnavailableView
+      - retry empty screen
+
   - id: onboarding
     priority: 3
     summary: Reusable progress, typography, and card primitives for multi-step onboarding flows.

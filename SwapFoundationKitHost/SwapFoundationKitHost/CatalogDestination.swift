@@ -30,6 +30,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     case glass
     case effects
     case proBanner
+    case emptyState
     case alerts
     case captureAndMedia
     case appearance
@@ -60,7 +61,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     var section: CatalogSection {
         switch self {
         case .buttons, .settings, .colorPicker, .chips, .progress, .cardsAndTypography, .itemPicker,
-             .glass, .effects, .proBanner, .alerts, .captureAndMedia, .appearance:
+             .glass, .effects, .proBanner, .emptyState, .alerts, .captureAndMedia, .appearance:
             return .components
         case .haptics, .analytics, .logging, .appLinks, .userDefaults:
             return .services
@@ -82,6 +83,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .glass: "Liquid Glass"
         case .effects: "Aura Effects"
         case .proBanner: "Pro Banner"
+        case .emptyState: "Empty State"
         case .alerts: "Alerts"
         case .captureAndMedia: "Capture & Media"
         case .appearance: "Appearance"
@@ -114,6 +116,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .glass: "Materials, shapes, button emphasis, tint, interaction, and morphing."
         case .effects: "Atmospheric aura and glow background treatments."
         case .proBanner: "Reusable premium upgrade and thank-you states."
+        case .emptyState: "Centered empty and error placeholders with optional CTA."
         case .alerts: "Alert, confirmation, action-sheet, and text-input presentation."
         case .captureAndMedia: "Live barcode scanning and photo-library selection."
         case .appearance: "Rounded UIKit and SwiftUI typography configuration."
@@ -146,6 +149,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .glass: "circle.hexagongrid.fill"
         case .effects: "sun.max.trianglebadge.exclamationmark.fill"
         case .proBanner: "sparkles"
+        case .emptyState: "tray"
         case .alerts: "exclamationmark.bubble.fill"
         case .captureAndMedia: "camera.viewfinder"
         case .appearance: "textformat"
@@ -209,6 +213,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .glass: ["sfkGlass", "SFKGlassMaterial", "SFKGlassShape", "GlassEffectContainer"]
         case .effects: ["TopAuraBackground", "SFKAuraLayer", "SFKAuraGlowBackground"]
         case .proBanner: ["SFKProBannerView"]
+        case .emptyState: ["SFKEmptyStateView"]
         case .alerts: ["AlertPresenter", "AlertAction"]
         case .captureAndMedia: ["BarcodeScannerScreen", "BarcodeScannerView", "PhotoPicker"]
         case .appearance: ["SFKAppearanceManager", "SFKRoundedHostingController"]
