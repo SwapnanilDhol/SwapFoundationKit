@@ -47,7 +47,7 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 ### Onboarding
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKSegmentedProgress` | View | Capsule-style step progress indicator |
+| `SFKSegmentedProgress` | View | Capsule-style step progress indicator with a configurable expanded current segment |
 | `SFKTypography` | (modifiers) | `.sfkFlowTitleStyle()`, `.sfkFlowSubtitleStyle()`, etc. |
 | `SFKCard` | View | Card container with icon, background, padding |
 
@@ -162,7 +162,11 @@ SFKSettingsScreen(
 )
 
 // Onboarding
-SFKSegmentedProgress(currentStep: 2, totalSteps: 5)
+SFKSegmentedProgress(
+    currentStep: 2,
+    totalSteps: 5,
+    currentSegmentWidthMultiplier: 1.75
+)
 SFKChipFlowLayout(spacing: 8) {
     ForEach(items) { SFKSelectableChip(item: $0, controlSize: .small) }
 }

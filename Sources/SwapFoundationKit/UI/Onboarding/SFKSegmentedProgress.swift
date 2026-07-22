@@ -23,6 +23,7 @@ import SwiftUI
 ///     totalSteps: 4,
 ///     activeColor: .blue,
 ///     inactiveColor: .gray.opacity(0.2),
+///     currentSegmentWidthMultiplier: 1.75,
 ///     width: 160
 /// )
 /// ```
@@ -47,6 +48,9 @@ public struct SFKSegmentedProgress: View {
     /// The spacing between segments.
     public var segmentSpacing: CGFloat
 
+    /// The current segment's width relative to every other segment.
+    public var currentSegmentWidthMultiplier: CGFloat
+
     /// The total width of the indicator. Pass `nil` to fill the proposed width.
     public var width: CGFloat?
 
@@ -58,6 +62,7 @@ public struct SFKSegmentedProgress: View {
     ///   - inactiveColor: Color for remaining segments. Defaults to a subtle secondary tint.
     ///   - height: Height of each segment. Defaults to 4.
     ///   - spacing: Spacing between segments. Defaults to 5.
+    ///   - currentSegmentWidthMultiplier: Current segment width relative to the other segments. Defaults to 1.75.
     ///   - width: Total width of the compact indicator. Defaults to 128.
     public init(
         currentStep: Int,
@@ -66,6 +71,7 @@ public struct SFKSegmentedProgress: View {
         inactiveColor: Color = .secondary.opacity(0.18),
         height: CGFloat = 4,
         spacing: CGFloat = 5,
+        currentSegmentWidthMultiplier: CGFloat = 1.75,
         width: CGFloat? = 128
     ) {
         self.currentStep = currentStep
@@ -74,19 +80,22 @@ public struct SFKSegmentedProgress: View {
         self.inactiveColor = inactiveColor
         self.height = height
         self.segmentSpacing = spacing
+        self.currentSegmentWidthMultiplier = max(currentSegmentWidthMultiplier, 1)
         self.width = width
     }
 
     public var body: some View {
-        HStack(spacing: segmentSpacing) {
-            ForEach(0..<safeTotalSteps, id: \.self) { index in
-                Capsule(style: .continuous)
-                    .fill(index <= safeCurrentStep ? activeColor : inactiveColor)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: height)
+        GeometryReader { proxy in
+            HStack(spacing: segmentSpacing) {
+                ForEach(0..<safeTotalSteps, id: \.self) { index in
+                    Capsule(style: .continuous)
+                        .fill(index <= safeCurrentStep ? activeColor : inactiveColor)
+                        .frame(width: segmentWidth(in: proxy.size.width, at: index))
+                        .frame(height: height)
+                }
             }
         }
-        .frame(width: width)
+        .frame(width: width, height: height)
         .animation(progressAnimation, value: safeCurrentStep)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Progress")
@@ -99,6 +108,13 @@ public struct SFKSegmentedProgress: View {
 
     private var safeCurrentStep: Int {
         min(max(currentStep, 0), safeTotalSteps - 1)
+    }
+
+    private func segmentWidth(in availableWidth: CGFloat, at index: Int) -> CGFloat {
+        let totalSpacing = segmentSpacing * CGFloat(max(safeTotalSteps - 1, 0))
+        let segmentUnits = CGFloat(max(safeTotalSteps - 1, 0)) + currentSegmentWidthMultiplier
+        let unitWidth = max(availableWidth - totalSpacing, 0) / segmentUnits
+        return unitWidth * (index == safeCurrentStep ? currentSegmentWidthMultiplier : 1)
     }
 
     private var progressAnimation: Animation {
@@ -140,6 +156,7 @@ public struct SFKSegmentedProgress: View {
             totalSteps: 6,
             activeColor: .blue,
             inactiveColor: .blue.opacity(0.15),
+            currentSegmentWidthMultiplier: 1.75,
             width: 180
         )
 

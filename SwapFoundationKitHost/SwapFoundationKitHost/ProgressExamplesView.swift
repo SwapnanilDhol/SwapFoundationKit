@@ -20,6 +20,7 @@ struct ProgressExamplesView: View {
     @State private var inactiveColor = Color.secondary.opacity(0.18)
     @State private var height = 4.0
     @State private var spacing = 5.0
+    @State private var currentSegmentWidthMultiplier = 1.75
     @State private var width = 128.0
 
     var body: some View {
@@ -39,6 +40,7 @@ struct ProgressExamplesView: View {
                         inactiveColor: inactiveColor,
                         height: height,
                         spacing: spacing,
+                        currentSegmentWidthMultiplier: currentSegmentWidthMultiplier,
                         width: width
                     )
 
@@ -61,6 +63,7 @@ struct ProgressExamplesView: View {
                     ColorPicker("Inactive color", selection: $inactiveColor, supportsOpacity: true)
                     valueSlider("Height", value: $height, range: 2...16)
                     valueSlider("Spacing", value: $spacing, range: 0...20)
+                    valueSlider("Current width", value: $currentSegmentWidthMultiplier, range: 1...3, step: 0.05)
                     valueSlider("Width", value: $width, range: 80...320)
                 }
             }
@@ -73,11 +76,12 @@ struct ProgressExamplesView: View {
     private func valueSlider(
         _ title: String,
         value: Binding<Double>,
-        range: ClosedRange<Double>
+        range: ClosedRange<Double>,
+        step: Double = 1
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             LabeledContent(title, value: value.wrappedValue.formatted(.number.precision(.fractionLength(0))))
-            Slider(value: value, in: range, step: 1)
+            Slider(value: value, in: range, step: step)
         }
     }
 }

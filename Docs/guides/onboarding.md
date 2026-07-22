@@ -53,7 +53,7 @@ SFKChipFlowLayout(spacing: 8) {
 
 ## SFKSegmentedProgress
 
-A compact segmented step indicator for guided flows. It uses a compact 128-point footprint, thin capsule segments, the environment accent color, and a critically damped spring when the active step changes.
+A compact segmented step indicator for guided flows. It uses a compact 128-point footprint, thin capsule segments, an expanded current segment, the environment accent color, and a critically damped spring when the active step changes.
 
 ### Usage
 
@@ -76,6 +76,7 @@ SFKSegmentedProgress(currentStep: step, totalSteps: totalSteps)
 | `inactiveColor` | `Color` | `.secondary.opacity(0.18)` | Color for remaining segments |
 | `height` | `CGFloat` | `4` | Height of each segment capsule |
 | `spacing` | `CGFloat` | `5` | Gap between segments |
+| `currentSegmentWidthMultiplier` | `CGFloat` | `1.75` | Current segment width relative to every other segment |
 | `width` | `CGFloat?` | `128` | Total indicator width; pass `nil` to fill the proposal |
 
 ### Animation
