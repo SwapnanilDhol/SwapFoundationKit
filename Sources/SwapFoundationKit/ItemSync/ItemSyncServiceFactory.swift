@@ -16,22 +16,26 @@ import Foundation
 ///
 /// ## Usage Examples
 /// ```swift
-/// // NEW: Centralized configuration (recommended)
-/// let syncService = ItemSyncServiceFactory.create()
-///
-/// // Legacy: Quick setup with just app group identifier
+/// // Recommended: resolve storage straight from the app group identifier.
+/// // Takes no global state, so it works identically in the app, widgets,
+/// // intents, and App Clips.
 /// let syncService = ItemSyncServiceFactory.create(
 ///     appGroupIdentifier: "group.com.yourapp.widget"
 /// )
 ///
-/// // Legacy: Setup with Watch connectivity (iOS only)
+/// // Recommended for the host app: same, plus Watch connectivity (iOS only)
 /// #if os(iOS)
 /// let syncService = ItemSyncServiceFactory.createWithWatch(
 ///     appGroupIdentifier: "group.com.yourapp.widget"
 /// )
 /// #endif
 ///
-/// // Legacy: Custom configuration
+/// // Convenience: reuse the centralized configuration. Only valid once
+/// // SwapFoundationKit.shared.start(with:) has completed, so it is not
+/// // usable from an app extension.
+/// let syncService = try ItemSyncServiceFactory.create()
+///
+/// // Custom configuration
 /// let storage = AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget")
 /// let watchService = WatchConnectivityServiceImpl()
 /// let syncService = ItemSyncServiceFactory.create(
@@ -43,18 +47,26 @@ public final class ItemSyncServiceFactory {
     
     // MARK: - Factory Methods
     
-    /// Creates a sync service using the centralized framework configuration
+    /// Creates a sync service using the centralized framework configuration.
+    ///
+    /// Requires `SwapFoundationKit.shared.start(with:)` to have completed. App
+    /// extensions never run the host app's bootstrap, so prefer
+    /// ``create(appGroupIdentifier:)`` there — it needs no global state and
+    /// cannot fail.
+    ///
     /// - Returns: Configured DataSyncService instance
-    /// - Note: Requires SwapFoundationKit.shared.start(with:) to be called first
-    public static func create() -> DataSyncService {
+    /// - Throws: `DataSyncError.frameworkNotInitialized` if the framework has
+    ///   not been started, or `DataSyncError.itemSyncDisabled` if the active
+    ///   configuration set `enableItemSync: false`.
+    public static func create() throws -> DataSyncService {
         guard let config = SwapFoundationKit.shared.getConfiguration() else {
-            fatalError("SwapFoundationKit not initialized. Call SwapFoundationKit.shared.start(with:) first.")
+            throw DataSyncError.frameworkNotInitialized
         }
-        
+
         guard config.enableItemSync else {
-            fatalError("ItemSync is disabled in the current configuration.")
+            throw DataSyncError.itemSyncDisabled
         }
-        
+
         let storage: FileStorageService
         
         if let customStorage = config.customStorageService {
@@ -78,7 +90,12 @@ public final class ItemSyncServiceFactory {
         return DataSyncServiceImpl(storage: storage)
     }
     
-    /// Creates a sync service with the default App Group storage
+    /// Creates a sync service with the default App Group storage.
+    ///
+    /// Preferred entry point. Depends on nothing but the identifier you pass,
+    /// so it behaves identically in the host app and in app extensions, and
+    /// has no failure mode.
+    ///
     /// - Parameter appGroupIdentifier: Your app group identifier
     /// - Returns: Configured DataSyncService instance
     public static func create(appGroupIdentifier: String) -> DataSyncService {
