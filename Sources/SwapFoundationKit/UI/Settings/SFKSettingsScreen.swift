@@ -9,21 +9,24 @@ import SwiftUI
 
 /// Configuration for a custom section within the settings screen.
 public struct SFKSettingsCustomSection: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let footer: String?
     public let content: AnyView
 
     /// Creates a custom section with arbitrary SwiftUI content.
     /// - Parameters:
+    ///   - id: A stable identifier for the section.
     ///   - title: The section header title. Empty string hides the header.
     ///   - footer: Optional footer text displayed below the section.
     ///   - content: Arbitrary SwiftUI content rendered inside the section.
     public init<Content: View>(
+        id: String = UUID().uuidString,
         title: String = "",
         footer: String? = nil,
         @ViewBuilder content: () -> Content
     ) {
+        self.id = id
         self.title = title
         self.footer = footer
         self.content = AnyView(content())
@@ -32,7 +35,7 @@ public struct SFKSettingsCustomSection: Identifiable {
 
 /// Configuration for an individual section within the settings screen.
 public struct SFKSettingsSectionConfiguration: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let items: [any SettingsItem]
     public let footer: String?
@@ -40,14 +43,17 @@ public struct SFKSettingsSectionConfiguration: Identifiable {
 
     /// Creates a section configuration.
     /// - Parameters:
+    ///   - id: A stable identifier for the section.
     ///   - title: The section header title. Empty string hides the header.
     ///   - items: The settings items to display in this section.
     ///   - footer: Optional footer text displayed below the section.
     public init(
+        id: String = UUID().uuidString,
         title: String,
         items: [any SettingsItem],
         footer: String? = nil
     ) {
+        self.id = id
         self.title = title
         self.items = items
         self.footer = footer
