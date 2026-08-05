@@ -52,6 +52,7 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
     case MUR
     case ARS
     case LKR
+    case AED
 
     public var description: LocalizedStringResource {
         switch self {
@@ -129,6 +130,8 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "Argentine peso"
         case .LKR:
             return "Sri Lankan Rupee"
+        case .AED:
+            return "UAE Dirham"
         }
     }
 
@@ -208,6 +211,8 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "🇦🇷"
         case .LKR:
             return "🇱🇰"
+        case .AED:
+            return "🇦🇪"
         }
     }
 
@@ -287,6 +292,8 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "$"
         case .LKR:
             return "Rs"
+        case .AED:
+            return "AED"
         }
     }
 }
@@ -334,7 +341,8 @@ extension Currency {
         .BWP: 14.5,
         .MUR: 50.0,
         .ARS: 950.0,
-        .LKR: 330.0
+        .LKR: 330.0,
+        .AED: 3.97
     ])
 }
 
