@@ -52,8 +52,6 @@ struct BackupServiceTests {
         }
 
         try await service.performBackup(Payload(marker: "older"), fileType: .data)
-        // `BackupService.FileType.fileName` uses second resolution; two backups in the same second overwrite.
-        try await Task.sleep(nanoseconds: 1_100_000_000)
         try await service.performBackup(Payload(marker: "newer"), fileType: .data)
 
         let restored = try service.restoreBackup(Payload.self, fileType: .data)
@@ -81,5 +79,58 @@ struct BackupServiceTests {
         #expect(throws: BackupService.BackupError.self) {
             try service.restoreBackup(String.self, fileType: .data)
         }
+    }
+
+    @Test func restoreBackup_fallsBackWhenNewestFileIsCorrupt() async throws {
+        let root = try makeIsolatedBackupRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let service = BackupService(documentsDirectoryOverride: root)
+        struct Payload: Codable, Equatable, Sendable { let marker: String }
+        try await service.performBackup(Payload(marker: "valid"), fileType: .data)
+
+        let corruptURL = root
+            .appendingPathComponent("data", isDirectory: true)
+            .appendingPathComponent("dataBackup-newest.backup")
+        try Data("not-json".utf8).write(to: corruptURL, options: .atomic)
+
+        let futureDate = Date().addingTimeInterval(60)
+        try FileManager.default.setAttributes(
+            [.modificationDate: futureDate],
+            ofItemAtPath: corruptURL.path
+        )
+
+        let restored = try service.restoreBackup(Payload.self, fileType: .data)
+        #expect(restored.marker == "valid")
+        #expect(service.listBackupFiles(for: .data).count == 2)
+    }
+
+    @Test func performBackup_retainsExactlyTenNewestFiles() async throws {
+        let root = try makeIsolatedBackupRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let service = BackupService(documentsDirectoryOverride: root)
+        for value in 0..<12 {
+            try await service.performBackup(value, fileType: .data)
+        }
+
+        #expect(service.listBackupFiles(for: .data).count == 10)
+    }
+
+    @Test func concurrentBackupsDoNotOverwriteEachOther() async throws {
+        let root = try makeIsolatedBackupRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let service = BackupService(documentsDirectoryOverride: root)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for value in 0..<8 {
+                group.addTask {
+                    try await service.performBackup(value, fileType: .data)
+                }
+            }
+            try await group.waitForAll()
+        }
+
+        #expect(service.listBackupFiles(for: .data).count == 8)
     }
 }
