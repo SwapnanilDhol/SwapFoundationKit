@@ -497,6 +497,34 @@ domains:
       - async collection
       - await forEach
 
+  - id: remote_ai
+    priority: 14
+    summary: Client for a backend AI generation endpoint — identity headers, snake_case coding, HTTP status to typed error mapping, and cancellation.
+    when_to_check:
+      - Calling an app backend that returns AI-generated structured content
+      - Adding a Pro-gated "generate" or "summarize" feature backed by a worker
+      - Replacing a hand-rolled NetworkRequest enum for an AI endpoint
+    prefer_when:
+      - The model, prompt, and output schema live on the backend, not the client
+      - The app only needs to POST a typed request and decode a typed response
+    keep_in_host_app_when:
+      - Request and response models, which are domain models
+      - User-facing error copy, which is product wording and localized per app
+    public_api:
+      - RemoteAIClient
+      - RemoteAIConfiguration
+      - RemoteAIError
+    docs:
+      - README.md
+    examples:
+      - Sources/SwapFoundationKit/RemoteAI/RemoteAIClient.swift
+      - Sources/SwapFoundationKit/RemoteAI/RemoteAIConfiguration.swift
+    host_app_triggers:
+      - ai briefing
+      - ai generation
+      - generate endpoint
+      - llm backend
+
 agent_workflow:
   feature_first_sequence:
     - Read Docs/capabilities.yaml first.

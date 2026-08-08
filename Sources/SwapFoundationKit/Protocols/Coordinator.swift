@@ -110,6 +110,7 @@ public extension Coordinator {
         autoDismissOnSingleSelection: Bool = true,
         showsCloseButton: Bool = true,
         toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil,
         onSelect: ((any SFKPickableItem) -> Void)? = nil,
         onDismiss: ((SFKItemPickerViewModel) -> Void)? = nil,
         actionsProvider: ((any SFKPickableItem) -> [SFKItemPickerItemAction])? = nil
@@ -125,6 +126,7 @@ public extension Coordinator {
             autoDismissOnSingleSelection: autoDismissOnSingleSelection,
             showsCloseButton: showsCloseButton,
             toolbarActions: toolbarActions,
+            emptyState: emptyState,
             onSelect: onSelect,
             onDismiss: onDismiss,
             actionsProvider: actionsProvider
@@ -143,6 +145,7 @@ public extension Coordinator {
     ///   - autoDismissOnSingleSelection: Whether single-select taps dismiss automatically.
     ///   - showsCloseButton: Whether the picker renders the standard close button.
     ///   - toolbarActions: Optional navigation bar actions rendered by the picker.
+    ///   - emptyState: Content shown when the picker has no items. Pass `nil` to render an empty list.
     ///   - onSelect: Closure called when an item is tapped.
     ///   - onDismiss: Closure called before the picker dismisses.
     ///   - actionsProvider: Optional per-row action provider.
@@ -157,6 +160,7 @@ public extension Coordinator {
         autoDismissOnSingleSelection: Bool = true,
         showsCloseButton: Bool = true,
         toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil,
         onSelect: ((any SFKPickableItem) -> Void)? = nil,
         onDismiss: ((SFKItemPickerViewModel) -> Void)? = nil,
         actionsProvider: ((any SFKPickableItem) -> [SFKItemPickerItemAction])? = nil
@@ -175,6 +179,7 @@ public extension Coordinator {
             autoDismissOnSingleSelection: autoDismissOnSingleSelection,
             showsCloseButton: showsCloseButton,
             toolbarActions: toolbarActions,
+            emptyState: emptyState,
             onSelect: onSelect,
             onDismiss: onDismiss,
             actionsProvider: actionsProvider
@@ -191,6 +196,7 @@ public extension Coordinator {
     ///   - autoDismissOnSingleSelection: Whether single-select taps dismiss automatically.
     ///   - showsCloseButton: Whether the picker renders the standard close button.
     ///   - toolbarActions: Optional navigation bar actions rendered by the picker.
+    ///   - emptyState: Content shown when the picker has no items. Pass `nil` to render an empty list.
     ///   - onSelect: Closure called when an item is tapped.
     ///   - onDismiss: Closure called before the picker dismisses.
     ///   - actionsProvider: Optional per-row action provider.
@@ -202,6 +208,7 @@ public extension Coordinator {
         autoDismissOnSingleSelection: Bool = true,
         showsCloseButton: Bool = true,
         toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil,
         onSelect: ((any SFKPickableItem) -> Void)? = nil,
         onDismiss: ((SFKItemPickerViewModel) -> Void)? = nil,
         actionsProvider: ((any SFKPickableItem) -> [SFKItemPickerItemAction])? = nil
@@ -214,6 +221,7 @@ public extension Coordinator {
             autoDismissOnSingleSelection: autoDismissOnSingleSelection,
             showsCloseButton: showsCloseButton,
             toolbarActions: toolbarActions,
+            emptyState: emptyState,
             onSelect: onSelect,
             onDismiss: {
                 onDismiss?(viewModel)

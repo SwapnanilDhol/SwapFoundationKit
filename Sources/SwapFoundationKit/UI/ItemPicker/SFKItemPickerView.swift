@@ -47,6 +47,7 @@ public struct SFKItemPickerView: View {
     let autoDismissOnSingleSelection: Bool
     let showsCloseButton: Bool
     let toolbarActions: [SFKItemPickerToolbarAction]
+    let emptyState: SFKItemPickerEmptyState?
 
     public init(
         pageTitle: String,
@@ -56,6 +57,7 @@ public struct SFKItemPickerView: View {
         autoDismissOnSingleSelection: Bool = true,
         showsCloseButton: Bool = true,
         toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil,
         onSelect: ((any SFKPickableItem) -> Void)? = nil,
         onDismiss: (() -> Void)? = nil,
         actionsProvider: ((any SFKPickableItem) -> [SFKItemPickerItemAction])? = nil
@@ -69,6 +71,7 @@ public struct SFKItemPickerView: View {
         self.autoDismissOnSingleSelection = autoDismissOnSingleSelection
         self.showsCloseButton = showsCloseButton
         self.toolbarActions = toolbarActions
+        self.emptyState = emptyState
 
         if pageSubtitle.isEmpty {
             switch viewModel.selectionType {
@@ -105,6 +108,13 @@ public struct SFKItemPickerView: View {
                             }
                         }
                     }
+                }
+            }
+            .overlay {
+                if viewModel.items.isEmpty, let emptyState {
+                    emptyStateView(emptyState)
+                } else if viewModel.filteredSections.isEmpty {
+                    ContentUnavailableView.search(text: viewModel.searchText)
                 }
             }
             .navigationTitle(pageTitle)
@@ -171,6 +181,27 @@ public struct SFKItemPickerView: View {
         }
     }
 
+    @ViewBuilder
+    private func emptyStateView(_ emptyState: SFKItemPickerEmptyState) -> some View {
+        if let actionTitle = emptyState.actionTitle, let action = emptyState.action {
+            ContentUnavailableView {
+                Label(emptyState.title, systemImage: emptyState.systemImage)
+            } description: {
+                if let description = emptyState.description {
+                    Text(description)
+                }
+            } actions: {
+                Button(actionTitle, action: action)
+            }
+        } else {
+            ContentUnavailableView(
+                emptyState.title,
+                systemImage: emptyState.systemImage,
+                description: emptyState.description.map { Text($0) }
+            )
+        }
+    }
+
     private var resolvedSubtitle: String {
         if viewModel.selectionType == .multi && !viewModel.selectedItems.isEmpty {
             return "\(viewModel.selectedItems.count) Selected"
@@ -178,12 +209,22 @@ public struct SFKItemPickerView: View {
         return pageSubtitle
     }
 
+    /// `toolbarActions`, minus the empty-state's own action button when it's already
+    /// covering the same ground (an empty list showing a "no items" prompt with an
+    /// "Add" button doesn't also need an "Add" button in the nav bar).
+    private var visibleToolbarActions: [SFKItemPickerToolbarAction] {
+        guard viewModel.items.isEmpty, let emptyState, emptyState.action != nil else {
+            return toolbarActions
+        }
+        return []
+    }
+
     private var leadingToolbarActions: [SFKItemPickerToolbarAction] {
-        toolbarActions.filter { $0.placement == .topBarLeading }
+        visibleToolbarActions.filter { $0.placement == .topBarLeading }
     }
 
     private var trailingToolbarActions: [SFKItemPickerToolbarAction] {
-        toolbarActions.filter { $0.placement == .topBarTrailing }
+        visibleToolbarActions.filter { $0.placement == .topBarTrailing }
     }
 
     private func toolbarButton(for action: SFKItemPickerToolbarAction) -> some View {

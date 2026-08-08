@@ -154,7 +154,10 @@ public struct SFKButton: View {
             buttonLabel
                 .padding(.horizontal, isToolbarButton ? 0 : horizontalPadding)
                 .padding(.vertical, isToolbarButton ? 0 : verticalPadding)
-                .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
+                .frame(
+                    maxWidth: shouldUseFullWidth ? .infinity : nil,
+                    alignment: Alignment(horizontal: textAlignment, vertical: .center)
+                )
                 .foregroundStyle(resolvedTitleColor)
                 .contentShape(Rectangle())
         }
