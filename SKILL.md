@@ -7,6 +7,7 @@ description: >
   processor, debouncer, throttler, settings screen, chips, SFKChip, onboarding, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
   glass materials, UIKit extensions, ads manager, configuration service,
+  text field, TextField, SecureField, form input, validation field,
   environment, launch arguments, persistent TTL store, expiring cache, cooldown,
   pro gate, notifications, Pulse, PulseUI,
   network inspector, debug console, appearance, rounded font, hosting
@@ -21,7 +22,7 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 
 Read files in this order:
 
-1. `Docs/capabilities.yaml` — Agent-first discovery catalog (13 domains)
+1. `Docs/capabilities.yaml` — Agent-first discovery catalog (14 domains)
 2. `README.md` — Parent index with links to all 12 module READMEs
 3. Module READMEs under `Sources/SwapFoundationKit/` — Per-module API references
 4. `Docs/migration/catalog.yaml` — Curated audit catalog (60+ capabilities with tiers)
@@ -79,7 +80,7 @@ Read files in this order:
 |--------|--------|-----------|
 | Core | [Core/README.md](Sources/SwapFoundationKit/Core/README.md) | HTTPClient, SecurityService, BackupService, ConfigurationService |
 | Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager, UserDefault, DeeplinkHandler, ToastManager, SFKProGate, SFKNotificationService |
-| UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKButton, SFKSettingsScreen, SFKSegmentedProgress, SFKItemPickerView, BarcodeScannerScreen, SFKAppearanceManager |
+| UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKButton, SFKTextField, SFKSettingsScreen, SFKSegmentedProgress, SFKItemPickerView, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
 | Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | PersistentTTLStore, Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
 | Currency | [Currency/README.md](Sources/SwapFoundationKit/Currency/README.md) | Currency, ExchangeRateManager |

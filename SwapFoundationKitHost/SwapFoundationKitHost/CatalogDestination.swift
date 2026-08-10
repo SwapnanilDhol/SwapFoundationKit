@@ -21,6 +21,7 @@ enum CatalogSection: String, CaseIterable, Identifiable {
 
 enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     case buttons
+    case textFields
     case settings
     case colorPicker
     case chips
@@ -60,7 +61,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
 
     var section: CatalogSection {
         switch self {
-        case .buttons, .settings, .colorPicker, .chips, .progress, .cardsAndTypography, .itemPicker,
+        case .buttons, .textFields, .settings, .colorPicker, .chips, .progress, .cardsAndTypography, .itemPicker,
              .glass, .effects, .proBanner, .emptyState, .alerts, .captureAndMedia, .appearance:
             return .components
         case .haptics, .analytics, .logging, .appLinks, .userDefaults:
@@ -74,6 +75,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     var title: String {
         switch self {
         case .buttons: "Buttons"
+        case .textFields: "Text Fields"
         case .settings: "Settings"
         case .colorPicker: "Color Picker"
         case .chips: "Chips"
@@ -107,6 +109,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     var summary: String {
         switch self {
         case .buttons: "Primary actions, loading states, close controls, and button chrome."
+        case .textFields: "Consistent text, secure, validation, focus, and accessory states."
         case .settings: "Settings shells, rows, toggles, pickers, and theme customization."
         case .colorPicker: "Preset and custom color selection with explicit apply behavior."
         case .chips: "Primary, secondary, and selectable chips with wrapping layouts."
@@ -140,6 +143,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
     var symbolName: String {
         switch self {
         case .buttons: "button.programmable"
+        case .textFields: "character.cursor.ibeam"
         case .settings: "gearshape.2.fill"
         case .colorPicker: "paintpalette.fill"
         case .chips: "capsule.fill"
@@ -187,6 +191,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
             "SFKCloseButton",
             "SFKCloseButtonChrome"
         ]
+        case .textFields: ["SFKTextField", "SFKTextFieldStatus", "SFKTextFieldAppearance"]
         case .settings: [
             "SFKSettingsScreen",
             "SFKSettingsRow",

@@ -1,6 +1,6 @@
 version: 2
 module: SwapFoundationKit
-last_reviewed: "2026-05-20"
+last_reviewed: "2026-08-10"
 purpose: >
   Source-of-truth inventory for host-app redundancy audits. Use this file before
   the README examples when deciding whether an app-local abstraction should be
@@ -552,6 +552,35 @@ capabilities:
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsColorPickerRow.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsLinkRow.swift
 
+  - id: text_fields
+    audit_tier: exact
+    confidence: high
+    replace_with:
+      - SFKTextField
+      - SFKTextFieldStatus
+      - SFKTextFieldAppearance
+    public_symbols:
+      - SFKTextField
+      - SFKTextFieldStatus
+      - SFKTextFieldAppearance
+    host_search_terms:
+      - TextField
+      - SecureField
+      - FormTextField
+      - FloatingTextField
+      - AppFormTextField
+      - EmailField
+      - PasswordField
+    suspicious_file_patterns:
+      - "*TextField*"
+      - "*FormField*"
+      - "*InputField*"
+    keep_custom_when:
+      - The host app needs a rich-text, code, search-token, or multi-line editor rather than a standard field.
+      - The host wrapper adds domain validation while rendering SFKTextField underneath it.
+    source_files:
+      - Sources/SwapFoundationKit/UI/TextField/SFKTextField.swift
+
   - id: ui_components
     audit_tier: heuristic
     confidence: medium
@@ -559,6 +588,9 @@ capabilities:
       - SFKButton
       - SFKButtonStyle
       - SFKCloseButton
+      - SFKTextField
+      - SFKTextFieldStatus
+      - SFKTextFieldAppearance
       - SFKChip
       - SFKChipStyle
       - SFKChipHapticStyle
@@ -570,6 +602,9 @@ capabilities:
       - SFKButton
       - SFKButtonStyle
       - SFKCloseButton
+      - SFKTextField
+      - SFKTextFieldStatus
+      - SFKTextFieldAppearance
       - SFKChip
       - SFKChipStyle
       - SFKChipHapticStyle
@@ -588,6 +623,9 @@ capabilities:
       - ChipButton
       - ActionChip
       - ToolbarButton
+      - TextField
+      - SecureField
+      - FormTextField
       - BackButton
       - chevron.left
       - ColorPickerSheet
@@ -597,6 +635,7 @@ capabilities:
       - safeAreaInsets
     suspicious_file_patterns:
       - "*Button*"
+      - "*TextField*"
       - "*ColorPicker*"
       - "*Layout*"
       - "*UIView+*"
@@ -606,6 +645,7 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
       - Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift
+      - Sources/SwapFoundationKit/UI/TextField/SFKTextField.swift
       - Sources/SwapFoundationKit/UI/Chips/SFKChip.swift
       - Sources/SwapFoundationKit/UI/Onboarding/SFKSelectableChip.swift
       - Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift

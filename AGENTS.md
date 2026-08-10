@@ -12,7 +12,7 @@ This repository ships an LLM-friendly workflow for:
 
 Read files in this order:
 
-1. `Docs/capabilities.yaml` — Agent-first capability catalog (13 domains)
+1. `Docs/capabilities.yaml` — Agent-first capability catalog (14 domains)
 2. `Docs/migration/catalog.yaml` — Curated audit catalog (60+ capabilities with tiers)
 3. Module READMEs under `Sources/SwapFoundationKit/` — Per-module API references
 4. `README.md` — Quick reference with module index
@@ -131,7 +131,7 @@ SwapFoundationKit/
 ├── Package.swift
 ├── Docs/
 │   ├── README.md                         ← Documentation index
-│   ├── capabilities.yaml                ← Feature discovery catalog (13 domains)
+│   ├── capabilities.yaml                ← Feature discovery catalog (14 domains)
 │   ├── migration/
 │   │   ├── catalog.yaml                 ← Audit catalog (60+ capabilities)
 │   │   └── migration-guide.md

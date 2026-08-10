@@ -33,7 +33,7 @@ Each module has its own README with full API reference and code examples:
 | Resource | Description |
 |----------|-------------|
 | [Audit Catalog](migration/catalog.yaml) | 60+ capabilities with tier classifications for auditing host apps |
-| [Capabilities Catalog](capabilities.yaml) | Agent-first index (13 domains) for checking SFK before building host-app features |
+| [Capabilities Catalog](capabilities.yaml) | Agent-first index (14 domains) for checking SFK before building host-app features |
 | [Agent Workflow](development/agents.md) | LLM agent workflow for auditing and migration |
 | [Feature Discovery Workflow](development/feature-discovery.md) | How agents should check SFK first during host-app development |
 

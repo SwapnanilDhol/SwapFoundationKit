@@ -18,6 +18,7 @@ struct CatalogDestinationView: View {
     var body: some View {
         switch destination {
         case .buttons: ButtonExamplesView()
+        case .textFields: TextFieldExamplesView()
         case .settings: SettingsExamplesView()
         case .colorPicker: ColorExamplesView()
         case .chips: ChipExamplesView()

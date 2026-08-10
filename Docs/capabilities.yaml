@@ -1,6 +1,6 @@
 version: 2
 module: SwapFoundationKit
-last_reviewed: "2026-05-20"
+last_reviewed: "2026-08-10"
 purpose: >
   Agent-first capability index for host-app feature development. Use this file
   before implementing new UI, utilities, or app infrastructure in a host app.
@@ -99,6 +99,38 @@ domains:
       - chevron.left
       - glass close button
       - toolbar close button
+
+  - id: text_inputs
+    priority: 2
+    summary: Reusable single-line and secure text fields with shared styling, validation, focus, accessories, and semantic keyboard configuration.
+    when_to_check:
+      - Adding a name, email, URL, search, or other text field
+      - Building a sign-in, profile, checkout, or data-entry form
+      - Adding inline validation or supporting text
+      - Standardizing input styling across apps
+    prefer_when:
+      - The app needs a standard single-line or secure text input
+      - The app needs consistent focus, error, success, disabled, and accessibility behavior
+    keep_in_host_app_when:
+      - The input is a domain-specific editor such as code, rich text, or a multi-line composer
+      - The field requires a platform control that cannot be expressed through SwiftUI TextField or SecureField
+    public_api:
+      - SFKTextField
+      - SFKTextFieldStatus
+      - SFKTextFieldAppearance
+    docs:
+      - Sources/SwapFoundationKit/UI/README.md
+    examples:
+      - Sources/SwapFoundationKit/UI/TextField/SFKTextField.swift
+      - SwapFoundationKitHost/SwapFoundationKitHost/TextFieldExamplesView.swift
+    host_app_triggers:
+      - TextField
+      - SecureField
+      - email field
+      - name field
+      - password field
+      - form input
+      - validation message
 
   - id: chips
     priority: 3

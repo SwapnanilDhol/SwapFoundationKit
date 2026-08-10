@@ -13,6 +13,13 @@ Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers
 | `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
 
+### Text Fields
+| Type | Kind | Description |
+|------|------|-------------|
+| `SFKTextField` | View | Consistent single-line or secure input with semantic keyboard configuration, focus binding, accessories, supporting copy, and validation |
+| `SFKTextFieldStatus` | enum | Normal, error, and success presentation states |
+| `SFKTextFieldAppearance` | struct | Shared colors and layout tokens for host-app theming |
+
 ### Chips
 | Type | Kind | Description |
 |------|------|-------------|
@@ -115,6 +122,19 @@ SFKButton(leadingIconName: "ellipsis", style: .toolbar) {
 SFKButton("Edit", fullWidth: false, controlSize: .small, style: .secondary) {
     editItem()
 }
+
+// Semantic text input with inline validation
+SFKTextField(
+    "Email",
+    text: $email,
+    placeholder: "you@example.com",
+    leadingSystemImage: "envelope",
+    status: isEmailValid ? .normal : .error("Enter a valid email."),
+    keyboardType: .emailAddress,
+    contentType: .emailAddress,
+    textInputAutocapitalization: .never,
+    autocorrectionDisabled: true
+)
 
 // Action chips
 SFKChipFlowLayout(spacing: 8) {
@@ -232,6 +252,7 @@ AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 ## Source Files
 
 - `Buttons/` — SFKButton, SFKCloseButton, semantic styles, and isolated legacy adapters
+- `TextField/` — SFKTextField, validation states, focus synchronization, and appearance tokens
 - `ColorPicker/` — SFKColorPickerSheet, SFKColorPickerDelegate
 - `Settings/` — 14+ row type files, theme, action handler, screen
 - `Chips/` — Primary and secondary action chips
