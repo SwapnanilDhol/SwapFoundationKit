@@ -132,6 +132,35 @@ domains:
       - form input
       - validation message
 
+  - id: user_feedback
+    priority: 2
+    summary: Reusable feedback contract, attachment processing, form UI, coordinator, and backend client with host-app configuration seams.
+    when_to_check:
+      - Adding in-app feedback, bug reporting, or idea submission
+      - Sending optional screenshots and user context to a feedback backend
+      - Standardizing feedback forms across apps
+    prefer_when:
+      - The app uses the shared v1 feedback ingestion contract
+      - Product-specific analytics and subscription context can be injected
+    keep_in_host_app_when:
+      - Navigation, analytics event mapping, RevenueCat SDK access, or privacy copy is product-specific
+    public_api:
+      - SFKFeedbackCoordinator
+      - SFKFeedbackConfiguration
+      - SFKFeedbackCopy
+      - SFKFeedbackUserContextProvider
+      - SFKFeedbackUserContext
+      - SFKFeedbackInstallationIdentifierStore
+    docs:
+      - Sources/SwapFoundationKitFeedback/README.md
+    examples:
+      - Sources/SwapFoundationKitFeedback/SFKFeedbackCoordinator.swift
+    host_app_triggers:
+      - user feedback
+      - send feedback
+      - bug report form
+      - feedback screenshot
+
   - id: chips
     priority: 3
     summary: Reusable action and selectable chips with shared sizing and wrapping layouts.

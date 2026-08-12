@@ -2,6 +2,9 @@
 
 Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers, glass effects, aura backgrounds, barcode scanning, pro banners, and app appearance.
 
+The separate `SwapFoundationKitFeedback` product provides the reusable in-app
+feedback flow while keeping RevenueCat and product analytics in host apps.
+
 ## Public API
 
 ### Buttons
