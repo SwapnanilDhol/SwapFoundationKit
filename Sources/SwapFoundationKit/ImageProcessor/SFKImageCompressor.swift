@@ -33,11 +33,42 @@ public enum SFKImageCompressor {
     ///   - maxBytes: The target maximum size in bytes.
     /// - Returns: Compressed JPEG data, or `nil` if compression fails.
     public static func compressToSize(_ image: UIImage, maxBytes: Int) -> Data? {
-        let resizedImage = resize(image, maxDimension: maxDimension)
-        var quality = compressionQuality
+        compressToSize(
+            image,
+            maxBytes: maxBytes,
+            maxDimension: maxDimension,
+            quality: compressionQuality,
+            qualityFloor: 0.1
+        )
+    }
+
+    /// Compresses an image to a target maximum file size using per-call options.
+    ///
+    /// This overload does not read or mutate the process-wide defaults, which makes
+    /// it safe for concurrent callers with different image policies.
+    /// - Parameters:
+    ///   - image: The source image.
+    ///   - maxBytes: The target maximum size in bytes.
+    ///   - maxDimension: The maximum width or height after resizing.
+    ///   - quality: The initial JPEG quality.
+    ///   - qualityFloor: The lowest JPEG quality to try.
+    /// - Returns: Compressed JPEG data, or `nil` if compression fails.
+    public static func compressToSize(
+        _ image: UIImage,
+        maxBytes: Int,
+        maxDimension: CGFloat,
+        quality: CGFloat,
+        qualityFloor: CGFloat = 0.1
+    ) -> Data? {
+        let resizedImage = resize(
+            image,
+            maxDimension: max(1, maxDimension)
+        )
+        var quality = min(1, max(0, quality))
+        let floor = min(quality, max(0.1, min(1, qualityFloor)))
         var data = resizedImage.jpegData(compressionQuality: quality)
-        while let currentData = data, currentData.count > maxBytes, quality > 0.1 {
-            quality -= 0.1
+        while let currentData = data, currentData.count > maxBytes, quality > floor {
+            quality = max(floor, quality - 0.1)
             data = resizedImage.jpegData(compressionQuality: quality)
         }
         return data

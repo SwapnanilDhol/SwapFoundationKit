@@ -1026,8 +1026,9 @@ capabilities:
     replace_with:
       - SFKImageCompressor
     public_symbols:
-      - SFKImageCompressor.compress(_:)
+      - SFKImageCompressor.compress(_:) 
       - SFKImageCompressor.compressToSize(_:maxBytes:)
+      - SFKImageCompressor.compressToSize(_:maxBytes:maxDimension:quality:qualityFloor:)
       - SFKImageCompressor.maxDimension
       - SFKImageCompressor.compressionQuality
     host_search_terms:

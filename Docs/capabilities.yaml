@@ -496,6 +496,7 @@ domains:
       - The app needs format-specific compression (PNG, HEIC)
     public_api:
       - SFKImageCompressor
+      - SFKImageCompressor.compressToSize(_:maxBytes:maxDimension:quality:qualityFloor:)
     docs:
       - README.md
     examples:

@@ -30,6 +30,7 @@ Image manipulation, caching, and compression utilities.
 | `.compressionQuality` | JPEG quality (default: 0.7) |
 | `.compress(_:)` | Resize + JPEG compress |
 | `.compressToSize(_:maxBytes:)` | Compress to target file size |
+| `.compressToSize(_:maxBytes:maxDimension:quality:qualityFloor:)` | Compress with isolated per-call options |
 
 ```swift
 // Process
