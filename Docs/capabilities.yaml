@@ -328,6 +328,7 @@ domains:
       - SFKPulseConsoleView
       - AnalyticsManager
       - UserDefault
+      - SharedUserDefaults
       - AppLinkOpener
       - BackupService
       - FileExportService

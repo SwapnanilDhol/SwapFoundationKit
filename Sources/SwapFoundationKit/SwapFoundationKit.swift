@@ -54,20 +54,45 @@ public final class SwapFoundationKit {
     /// - Parameter config: Configuration containing all necessary settings
     /// - Throws: SwapFoundationKitError if initialization fails
     public func start(with config: SwapFoundationKitConfiguration) async throws {
+        try configure(with: config)
+        try await start()
+    }
+
+    /// Makes configuration-backed APIs available before asynchronous service startup.
+    ///
+    /// Call this synchronously during app bootstrap when an API such as
+    /// ``SharedUserDefaults`` must resolve app metadata before
+    /// `start()` finishes.
+    ///
+    /// - Parameter config: Configuration containing all necessary settings.
+    /// - Throws: `SwapFoundationKitError.alreadyInitialized` when configuration
+    ///   has already been installed, or a validation error for invalid values.
+    public func configure(with config: SwapFoundationKitConfiguration) throws {
+        guard configuration == nil, !isInitialized else {
+            throw SwapFoundationKitError.alreadyInitialized
+        }
+
+        try validateConfiguration(config)
+        configuration = config
+    }
+
+    /// Starts services using configuration previously installed by `configure(with:)`.
+    /// - Throws: `SwapFoundationKitError.notInitialized` when configuration is missing.
+    public func start() async throws {
         guard !isInitialized else {
             throw SwapFoundationKitError.alreadyInitialized
         }
-        
-        // Validate configuration
-        try validateConfiguration(config)
-        
-        self.configuration = config
+
+        guard configuration != nil else {
+            throw SwapFoundationKitError.notInitialized
+        }
+
         try await initializeServices()
         isInitialized = true
     }
     
-    /// Returns the current configuration if the framework is initialized
-    /// - Returns: Current configuration or nil if not initialized
+    /// Returns configuration once it has been installed, including before service startup completes.
+    /// - Returns: Current configuration, or `nil` before `configure(with:)`.
     public func getConfiguration() -> SwapFoundationKitConfiguration? {
         return configuration
     }
@@ -144,7 +169,7 @@ public enum SwapFoundationKitError: Error, LocalizedError {
         case .alreadyInitialized:
             return "SwapFoundationKit has already been initialized"
         case .notInitialized:
-            return "SwapFoundationKit has not been initialized. Call start(with:) first"
+            return "SwapFoundationKit is not configured. Call configure(with:) or start(with:) first"
         case .invalidConfiguration(let message):
             return "Invalid configuration: \(message)"
         }

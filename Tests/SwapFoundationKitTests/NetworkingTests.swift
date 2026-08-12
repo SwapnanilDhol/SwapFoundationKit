@@ -876,6 +876,25 @@ final class NetworkingTests: XCTestCase {
 
     // MARK: - Integration Tests
 
+    func testConfigureMakesSharedDefaultsWrapperAvailableBeforeServiceStart() throws {
+        let suiteName = "group.test.defaults.\(UUID().uuidString)"
+        let config = SwapFoundationKitConfiguration.basic(
+            appMetadata: AppMetaData(appGroupIdentifier: suiteName)
+        )
+
+        try SwapFoundationKit.shared.configure(with: config)
+        let preferences = SharedDefaultsTestPreferences()
+        preferences.configured = true
+
+        XCTAssertEqual(
+            SwapFoundationKit.shared.getConfiguration()?.appMetadata.appGroupIdentifier,
+            suiteName
+        )
+        XCTAssertTrue(UserDefaults(suiteName: suiteName)?.bool(forKey: "configured") == true)
+
+        UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
+    }
+
     func testFrameworkIntegration() async throws {
         // Given
         let config = SwapFoundationKitConfiguration(
@@ -894,6 +913,17 @@ final class NetworkingTests: XCTestCase {
         // Cleanup
         // Note: In a real scenario, you might want to reset the framework state
     }
+}
+
+private enum SharedDefaultsTestKey: String, UserDefaultKeyProtocol {
+    case configured
+
+    var keyString: String { rawValue }
+}
+
+private struct SharedDefaultsTestPreferences {
+    @SharedUserDefaults(SharedDefaultsTestKey.configured, default: false)
+    var configured: Bool
 }
 
 // MARK: - Mock URL Protocol

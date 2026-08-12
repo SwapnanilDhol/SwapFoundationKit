@@ -20,6 +20,7 @@ Application-level services for haptics, logging, analytics, Pulse inspection, us
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
 | `DefaultAnalyticsEvent` | struct | Concrete event for ad-hoc tracking |
 | `UserDefault` | property wrapper | Type-safe, observable UserDefaults with SwiftUI binding support |
+| `SharedUserDefaults` | property wrapper | Type-safe app-group defaults resolved from configured app metadata |
 | `UserDefaultKeyProtocol` | protocol | Enum-based key definition for UserDefaults |
 | `ToastManager` | class | Type-safe toast presentation via `SFKToastKind` |
 | `SFKToastKind` | protocol | App-specific toast type definition |
@@ -74,6 +75,17 @@ enum AppKeys: String, UserDefaultKeyProtocol {
     var keyString: String { rawValue }
 }
 @UserDefault(AppKeys.hasOnboarded, default: false) var hasOnboarded
+
+@SharedUserDefaults(AppKeys.hasOnboarded, default: false)
+var sharedHasOnboarded
+
+// App bootstrap: make metadata-backed stores available synchronously.
+let config = SwapFoundationKitConfiguration.basic(
+    appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app")
+)
+try SwapFoundationKit.shared.configure(with: config)
+Task { try await SwapFoundationKit.shared.start() }
+sharedHasOnboarded = true
 
 // Deeplink
 enum AppRoute: DeeplinkRoute {

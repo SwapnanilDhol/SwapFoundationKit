@@ -34,16 +34,19 @@ struct MyApp: App {
         let config = SwapFoundationKitConfiguration(
             appMetadata: AppMetaData(
                 appGroupIdentifier: "group.com.yourapp.widget",
-                appName: "MyApp",
-                appVersion: "1.0.0"
+                appName: "MyApp"
             ),
             enableWatchConnectivity: true,
             enableAnalytics: true,
             enableItemSync: true,
             enableNetworking: true
         )
+
+        // Synchronous configuration makes metadata-backed APIs such as
+        // @SharedUserDefaults available immediately.
+        try? SwapFoundationKit.shared.configure(with: config)
         Task {
-            try? await SwapFoundationKit.shared.start(with: config)
+            try? await SwapFoundationKit.shared.start()
             await ExchangeRateManager.shared.start()
         }
 

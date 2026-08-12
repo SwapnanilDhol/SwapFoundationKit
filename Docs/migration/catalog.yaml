@@ -138,6 +138,7 @@ capabilities:
     public_symbols:
       - UserDefault
       - UserDefaultKeyProtocol
+      - SharedUserDefaults
       - UserDefaults codable helpers
       - AppStorage bridge helpers
     host_search_terms:
