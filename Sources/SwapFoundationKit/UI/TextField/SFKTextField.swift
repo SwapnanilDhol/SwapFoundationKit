@@ -112,6 +112,10 @@ public struct SFKTextField: View {
     private let textInputAutocapitalization: TextInputAutocapitalization
     private let autocorrectionDisabled: Bool
     private let submitLabel: SubmitLabel
+    private let axis: Axis
+    private let lineLimit: ClosedRange<Int>?
+    private let textAlignment: TextAlignment
+    private let font: Font
     private let externalFocus: Binding<Bool>?
     private let accessibilityIdentifier: String?
     private let appearance: SFKTextFieldAppearance
@@ -135,6 +139,10 @@ public struct SFKTextField: View {
         textInputAutocapitalization: TextInputAutocapitalization = .sentences,
         autocorrectionDisabled: Bool = false,
         submitLabel: SubmitLabel = .done,
+        axis: Axis = .horizontal,
+        lineLimit: ClosedRange<Int>? = nil,
+        textAlignment: TextAlignment = .leading,
+        font: Font = .body,
         isFocused: Binding<Bool>? = nil,
         accessibilityIdentifier: String? = nil,
         appearance: SFKTextFieldAppearance = .standard,
@@ -157,6 +165,10 @@ public struct SFKTextField: View {
         self.textInputAutocapitalization = textInputAutocapitalization
         self.autocorrectionDisabled = autocorrectionDisabled
         self.submitLabel = submitLabel
+        self.axis = axis
+        self.lineLimit = lineLimit
+        self.textAlignment = textAlignment
+        self.font = font
         externalFocus = isFocused
         self.accessibilityIdentifier = accessibilityIdentifier
         self.appearance = appearance
@@ -239,15 +251,26 @@ public struct SFKTextField: View {
                 TextField(
                     "",
                     text: $text,
-                    prompt: Text(placeholder).foregroundStyle(.secondary)
+                    prompt: Text(placeholder).foregroundStyle(.secondary),
+                    axis: axis
                 )
             )
         }
     }
 
+    @ViewBuilder
     private func configuredInput<Input: View>(_ input: Input) -> some View {
+        if let lineLimit {
+            configuredBaseInput(input)
+                .lineLimit(lineLimit)
+        } else {
+            configuredBaseInput(input)
+        }
+    }
+
+    private func configuredBaseInput<Input: View>(_ input: Input) -> some View {
         input
-            .font(.body)
+            .font(font)
             .foregroundStyle(.primary)
             .tint(tint)
             .keyboardType(keyboardType)
@@ -255,6 +278,7 @@ public struct SFKTextField: View {
             .textInputAutocapitalization(textInputAutocapitalization)
             .autocorrectionDisabled(autocorrectionDisabled)
             .submitLabel(submitLabel)
+            .multilineTextAlignment(textAlignment)
             .focused($isInternallyFocused)
             .onSubmit(onSubmit)
             .accessibilityIdentifier(accessibilityIdentifier ?? "")

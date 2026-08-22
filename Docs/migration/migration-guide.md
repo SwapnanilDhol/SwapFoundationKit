@@ -146,6 +146,15 @@ SFKItemPickerView(
     }
 )
 
+// Pushed inside an existing navigation stack or UIKit navigation controller
+SFKItemPickerView(
+    pageTitle: "Accounts",
+    viewModel: accountPickerViewModel,
+    selectsItems: false,
+    showsCloseButton: false,
+    embedsInNavigationStack: false
+)
+
 // Sectioned picker example
 let viewModel = SFKItemPickerViewModel(
     sections: [
@@ -179,7 +188,7 @@ extension Currency: SFKPickableItem {
 
 ### Components
 
-- **`SFKItemPickerView`** — main picker/list view with NavigationStack, close button, search, selection, and optional row actions
+- **`SFKItemPickerView`** — main picker/list view with an optional NavigationStack container, close button, search, selection, and optional row actions
 - **`SFKItemPickerSection`** — optional section wrapper with header/footer strings and pickable items
 - **`SFKItemPickerRow`** — individual row with icon, title, subtitle, optional badge, and checkmark; includes haptic feedback on selection
 - **`SFKItemPickerToolbarAction`** — navigation bar action rendered inside the picker toolbar

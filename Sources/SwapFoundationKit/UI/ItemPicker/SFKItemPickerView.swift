@@ -46,6 +46,7 @@ public struct SFKItemPickerView: View {
     let selectsItems: Bool
     let autoDismissOnSingleSelection: Bool
     let showsCloseButton: Bool
+    let embedsInNavigationStack: Bool
     let toolbarActions: [SFKItemPickerToolbarAction]
     let emptyState: SFKItemPickerEmptyState?
 
@@ -56,6 +57,7 @@ public struct SFKItemPickerView: View {
         selectsItems: Bool = true,
         autoDismissOnSingleSelection: Bool = true,
         showsCloseButton: Bool = true,
+        embedsInNavigationStack: Bool = true,
         toolbarActions: [SFKItemPickerToolbarAction] = [],
         emptyState: SFKItemPickerEmptyState? = nil,
         onSelect: ((any SFKPickableItem) -> Void)? = nil,
@@ -70,6 +72,7 @@ public struct SFKItemPickerView: View {
         self.selectsItems = selectsItems
         self.autoDismissOnSingleSelection = autoDismissOnSingleSelection
         self.showsCloseButton = showsCloseButton
+        self.embedsInNavigationStack = embedsInNavigationStack
         self.toolbarActions = toolbarActions
         self.emptyState = emptyState
 
@@ -86,58 +89,68 @@ public struct SFKItemPickerView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            List {
-                ForEach(viewModel.filteredSections) { section in
-                    if section.title == nil && section.footer == nil {
+        Group {
+            if embedsInNavigationStack {
+                NavigationStack {
+                    pickerContent
+                }
+            } else {
+                pickerContent
+            }
+        }
+    }
+
+    private var pickerContent: some View {
+        List {
+            ForEach(viewModel.filteredSections) { section in
+                if section.title == nil && section.footer == nil {
+                    ForEach(section.items, id: \.pickableItemId) { item in
+                        itemRow(for: item)
+                    }
+                } else {
+                    Section {
                         ForEach(section.items, id: \.pickableItemId) { item in
                             itemRow(for: item)
                         }
-                    } else {
-                        Section {
-                            ForEach(section.items, id: \.pickableItemId) { item in
-                                itemRow(for: item)
-                            }
-                        } header: {
-                            if let title = section.title {
-                                Text(title)
-                            }
-                        } footer: {
-                            if let footer = section.footer {
-                                Text(footer)
-                            }
+                    } header: {
+                        if let title = section.title {
+                            Text(title)
+                        }
+                    } footer: {
+                        if let footer = section.footer {
+                            Text(footer)
                         }
                     }
                 }
             }
-            .overlay {
-                if viewModel.items.isEmpty, let emptyState {
-                    emptyStateView(emptyState)
-                } else if viewModel.filteredSections.isEmpty {
-                    ContentUnavailableView.search(text: viewModel.searchText)
+        }
+        .overlay {
+            if viewModel.items.isEmpty, let emptyState {
+                emptyStateView(emptyState)
+            } else if viewModel.filteredSections.isEmpty {
+                ContentUnavailableView.search(text: viewModel.searchText)
+            }
+        }
+        .navigationTitle(pageTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .compatibleNavigationSubtitle(resolvedSubtitle)
+        .searchable(text: $viewModel.searchText)
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarLeading) {
+                if showsCloseButton {
+                    SFKCloseButton {
+                        onDismiss?()
+                    }
+                }
+
+                ForEach(leadingToolbarActions) { action in
+                    toolbarButton(for: action)
                 }
             }
-            .navigationTitle(pageTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .compatibleNavigationSubtitle(resolvedSubtitle)
-            .searchable(text: $viewModel.searchText)
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarLeading) {
-                    if showsCloseButton {
-                        SFKCloseButton {
-                            onDismiss?()
-                        }
-                    }
 
-                    ForEach(leadingToolbarActions) { action in
-                        toolbarButton(for: action)
-                    }
-                }
-
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    ForEach(trailingToolbarActions) { action in
-                        toolbarButton(for: action)
-                    }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                ForEach(trailingToolbarActions) { action in
+                    toolbarButton(for: action)
                 }
             }
         }

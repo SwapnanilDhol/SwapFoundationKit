@@ -19,7 +19,7 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 ### Text Fields
 | Type | Kind | Description |
 |------|------|-------------|
-| `SFKTextField` | View | Consistent single-line or secure input with semantic keyboard configuration, focus binding, accessories, supporting copy, and validation |
+| `SFKTextField` | View | Consistent single-line, multiline, or secure input with semantic keyboard configuration, focus binding, accessories, supporting copy, and validation |
 | `SFKTextFieldStatus` | enum | Normal, error, and success presentation states |
 | `SFKTextFieldAppearance` | struct | Shared colors and layout tokens for host-app theming |
 
@@ -139,6 +139,14 @@ SFKTextField(
     autocorrectionDisabled: true
 )
 
+// Composer-style multiline input
+SFKTextField(
+    text: $message,
+    placeholder: "Describe your transaction",
+    axis: .vertical,
+    lineLimit: 1...6
+)
+
 // Action chips
 SFKChipFlowLayout(spacing: 8) {
     SFKChip("Recommended", leadingIconName: "star.fill", controlSize: .small, style: .primary) {
@@ -229,6 +237,15 @@ let pickerViewModel = SFKItemPickerViewModel(
         SFKItemPickerSection(title: "System", items: systemItems),
         SFKItemPickerSection(title: "Custom", items: customItems)
     ]
+)
+
+// Pushed inside an existing navigation context
+SFKItemPickerView(
+    pageTitle: "Accounts",
+    viewModel: viewModel,
+    selectsItems: false,
+    showsCloseButton: false,
+    embedsInNavigationStack: false
 )
 
 // Glass
