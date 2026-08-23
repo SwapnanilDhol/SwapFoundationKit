@@ -33,6 +33,12 @@ public struct SFKTextFieldAppearance {
     public var focusedBackgroundColor: Color
     public var disabledBackgroundColor: Color
     public var borderColor: Color
+    /// Border colour while the field is focused. `nil` uses the field's `tint`.
+    ///
+    /// Set it to `.clear` for a field that should not draw a focus ring — one embedded in a
+    /// `Form` row, say, where the row already carries the surface and a ring inside it reads
+    /// as a stray rectangle.
+    public var focusedBorderColor: Color?
     public var labelColor: Color
     public var supportingTextColor: Color
     public var errorColor: Color
@@ -47,6 +53,7 @@ public struct SFKTextFieldAppearance {
         focusedBackgroundColor: Color = Color(.systemBackground),
         disabledBackgroundColor: Color = Color(.tertiarySystemFill),
         borderColor: Color = Color.primary.opacity(0.12),
+        focusedBorderColor: Color? = nil,
         labelColor: Color = .primary,
         supportingTextColor: Color = .secondary,
         errorColor: Color = .red,
@@ -60,6 +67,7 @@ public struct SFKTextFieldAppearance {
         self.focusedBackgroundColor = focusedBackgroundColor
         self.disabledBackgroundColor = disabledBackgroundColor
         self.borderColor = borderColor
+        self.focusedBorderColor = focusedBorderColor
         self.labelColor = labelColor
         self.supportingTextColor = supportingTextColor
         self.errorColor = errorColor
@@ -330,7 +338,8 @@ public struct SFKTextField: View {
     private var resolvedBorderColor: Color {
         switch status {
         case .normal:
-            return isInternallyFocused ? tint : appearance.borderColor
+            guard isInternallyFocused else { return appearance.borderColor }
+            return appearance.focusedBorderColor ?? tint
         case .error:
             return appearance.errorColor
         case .success:
