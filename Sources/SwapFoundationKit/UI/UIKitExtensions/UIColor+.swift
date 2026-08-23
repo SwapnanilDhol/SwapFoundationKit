@@ -163,9 +163,36 @@ public extension UIColor {
     var isBlack: Bool { rgba.rgb.allSatisfy { $0 < 0.09 } }
     var isWhite: Bool { rgba.rgb.allSatisfy { $0 > 0.91 } }
 
-    /// Foreground that matches the website's `preferredForeground` output:
-    /// white text on dark backgrounds, near-black (#1D1D1F) on light backgrounds.
-    var contrastingColor: UIColor { isDark ? .white : UIColor(red: 29.0 / 255.0, green: 29.0 / 255.0, blue: 31.0 / 255.0, alpha: 1.0) }
+    /// The near-black used for foreground text on light surfaces.
+    static var preferredDarkForeground: UIColor {
+        UIColor(red: 29.0 / 255.0, green: 29.0 / 255.0, blue: 31.0 / 255.0, alpha: 1.0)
+    }
+
+    /// Whichever of white or near-black (#1D1D1F) reads better on the receiver.
+    ///
+    /// Chosen by measured WCAG contrast rather than by a luminance threshold. A threshold
+    /// misjudges an entire band of mid-luminance colours: any colour sitting just below it
+    /// receives white, even where near-black would be far more legible. A palette whose
+    /// values were derived to a uniform contrast against black clusters tightly in exactly
+    /// that band — six such colours measured ~0.40 luminance and each took white at 2.33:1
+    /// where near-black gives 7.21:1.
+    ///
+    /// Comparing both candidates costs one extra luminance calculation and cannot pick the
+    /// worse of the two.
+    var contrastingColor: UIColor {
+        let light = contrastRatio(with: .white)
+        let dark = contrastRatio(with: Self.preferredDarkForeground)
+        return light >= dark ? .white : Self.preferredDarkForeground
+    }
+
+    /// WCAG 2.1 contrast ratio between two colours, from 1 (identical) to 21 (black on white).
+    ///
+    /// AA wants 4.5 for body text and 3 for large text and non-text UI.
+    func contrastRatio(with color: UIColor) -> CGFloat {
+        let first = rgba.luminance
+        let second = color.rgba.luminance
+        return (max(first, second) + 0.05) / (min(first, second) + 0.05)
+    }
 
     func isDistinct(from color: UIColor) -> Bool {
         let bg = rgba.rgb
@@ -182,10 +209,7 @@ public extension UIColor {
     }
 
     func isContrasting(with color: UIColor) -> Bool {
-        let bgLum = rgba.luminance
-        let fgLum = color.rgba.luminance
-        let contrast = max((bgLum + 0.05) / (fgLum + 0.05), (fgLum + 0.05) / (bgLum + 0.05))
-        return contrast > 1.6
+        contrastRatio(with: color) > 1.6
     }
 
     // MARK: - Color Adjustment

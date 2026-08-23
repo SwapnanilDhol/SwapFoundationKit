@@ -137,6 +137,64 @@ final class UIColorExtensionsTests: XCTestCase {
         XCTAssertEqual(lightColor.contrastingColor.hexString(), "#1D1D1F")
     }
 
+    /// Regression: `contrastingColor` used to pick by a luminance threshold of 0.42, so
+    /// colours sitting just under it took white text even where near-black was far more
+    /// legible. These six are a real palette derived to a uniform contrast against black,
+    /// which clusters them at ~0.40 — each measured 2.33:1 on white against 7.21:1 on
+    /// near-black.
+    func testContrastingColorPrefersLegibilityOverThresholdForMidLuminanceColors() {
+        let midLuminance = ["#EC9555", "#6CB7AB", "#8EA7F9", "#F18BA6", "#BA9BEC", "#95B371"]
+
+        for hex in midLuminance {
+            guard let color = UIColor(hex: hex) else {
+                return XCTFail("\(hex) should parse")
+            }
+
+            XCTAssertEqual(
+                color.contrastingColor.hexString(),
+                "#1D1D1F",
+                "\(hex) reads better with near-black"
+            )
+            XCTAssertGreaterThan(
+                color.contrastRatio(with: color.contrastingColor),
+                4.5,
+                "\(hex) should clear AA with the colour it was given"
+            )
+        }
+    }
+
+    /// The guarantee the threshold could not make: never return the worse of the two.
+    func testContrastingColorNeverPicksTheLessLegibleOption() {
+        for red in stride(from: 0.0, through: 1.0, by: 0.25) {
+            for green in stride(from: 0.0, through: 1.0, by: 0.25) {
+                for blue in stride(from: 0.0, through: 1.0, by: 0.25) {
+                    let color = UIColor(red: red, green: green, blue: blue, alpha: 1)
+                    let chosen = color.contrastRatio(with: color.contrastingColor)
+                    let white = color.contrastRatio(with: .white)
+                    let dark = color.contrastRatio(with: UIColor.preferredDarkForeground)
+
+                    XCTAssertEqual(chosen, max(white, dark), accuracy: 0.001)
+                }
+            }
+        }
+    }
+
+    // MARK: - Contrast Ratio
+
+    func testContrastRatioBounds() {
+        XCTAssertEqual(UIColor.black.contrastRatio(with: .white), 21, accuracy: 0.01)
+        XCTAssertEqual(UIColor.white.contrastRatio(with: .black), 21, accuracy: 0.01)
+        XCTAssertEqual(UIColor.white.contrastRatio(with: .white), 1, accuracy: 0.01)
+    }
+
+    func testContrastRatioIsSymmetric() {
+        guard let a = UIColor(hex: "#B05715"), let b = UIColor(hex: "#EC9555") else {
+            return XCTFail("fixtures should parse")
+        }
+
+        XCTAssertEqual(a.contrastRatio(with: b), b.contrastRatio(with: a), accuracy: 0.0001)
+    }
+
     func testIsContrasting() {
         let black = UIColor.black
         let white = UIColor.white
