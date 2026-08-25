@@ -16,6 +16,8 @@ Foundation-level services for networking, security, backup, and configuration.
 | `NetworkLogLevel` | enum | Request/response logging verbosity (none through debug) |
 | `NetworkService` | class | Legacy reachability-aware network service |
 | `SecurityService` | class | AES encryption with persistent Keychain key, keychain CRUD, SHA256 hashing |
+| `AppAttestService` | actor | App Attest key, attestation, and assertion client |
+| `AppAttestKeyStore` | protocol | Injectable persistence boundary for the App Attest key identifier |
 | `BackupService` | class | JSON backup/restore with timestamped files and automatic retention |
 | `ConfigurationService` | class | Environment-aware key-value config from Info.plist |
 
@@ -40,6 +42,11 @@ let encrypted = try SecurityService().encrypt(data)
 let decrypted = try SecurityService().decrypt(encrypted)
 SecurityService().storeInKeychain(secret, forKey: "api-token")
 
+// App Attest — the server owns the challenge and identity policy.
+let appAttest = AppAttestService()
+let attestation = try await appAttest.attest(clientData: challenge)
+let assertion = try await appAttest.assertion(clientData: challenge)
+
 // Backup
 try await BackupService().performBackup(myData, fileType: .data)
 let restored: MyType = try BackupService().restoreBackup(MyType.self, fileType: .data)
@@ -54,5 +61,6 @@ let isDebug = ConfigurationService.shared.isDebugMode()
 - `Networking.swift` — HTTPClient, NetworkRequest, NetworkResponse, NetworkDownloadResponse, NetworkDownloadProgress, NetworkError
 - `NetworkService.swift` — Legacy network service
 - `SecurityService.swift` — Encryption, keychain, hashing
+- `AppAttestService.swift` — App Attest key persistence, attestation, and assertions
 - `BackupService.swift` — Data backup and restore
 - `ConfigurationService.swift` — App configuration from Info.plist

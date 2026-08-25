@@ -232,6 +232,7 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/Core/SecurityService.swift
       - Sources/SwapFoundationKit/Extensions/Data+Crypto.swift
+      - Sources/SwapFoundationKit/Core/AppAttestService.swift
 
   - id: backup
     audit_tier: exact
