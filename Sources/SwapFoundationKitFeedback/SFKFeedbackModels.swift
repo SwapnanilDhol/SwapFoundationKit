@@ -117,6 +117,16 @@ public struct SFKFeedbackDraft: Equatable, Sendable {
     }
 }
 
+public struct SFKFeedbackContact: Equatable, Sendable {
+    public let name: String?
+    public let email: String?
+
+    public init(name: String?, email: String?) {
+        self.name = name
+        self.email = email
+    }
+}
+
 public struct SFKFeedbackReceipt: Decodable, Equatable, Sendable {
     public let feedbackID: UUID
     public let duplicate: Bool

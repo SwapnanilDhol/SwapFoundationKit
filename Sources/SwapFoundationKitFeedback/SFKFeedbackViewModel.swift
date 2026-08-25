@@ -17,7 +17,7 @@ final class SFKFeedbackViewModel: ObservableObject {
     private let service: SFKFeedbackService
     private let eventHandler: @MainActor @Sendable (SFKFeedbackEvent) -> Void
     private let attachmentProcessor = SFKFeedbackAttachmentProcessor()
-    private let onAccepted: @MainActor (SFKFeedbackReceipt) -> Void
+    private let onAccepted: @MainActor (SFKFeedbackReceipt, SFKFeedbackContact) -> Void
     private let onFailure: @MainActor (SFKFeedbackFailureReason) -> Void
     private var hasLoggedOpen = false
     private var pendingAttempt: (id: UUID, draft: SFKFeedbackDraft)?
@@ -25,7 +25,7 @@ final class SFKFeedbackViewModel: ObservableObject {
     init(
         analyticsSource: String,
         configuration: SFKFeedbackConfiguration,
-        onAccepted: @escaping @MainActor (SFKFeedbackReceipt) -> Void,
+        onAccepted: @escaping @MainActor (SFKFeedbackReceipt, SFKFeedbackContact) -> Void,
         onFailure: @escaping @MainActor (SFKFeedbackFailureReason) -> Void
     ) {
         self.analyticsSource = analyticsSource
@@ -146,7 +146,10 @@ final class SFKFeedbackViewModel: ObservableObject {
                 isSubmitting = false
                 pendingAttempt = nil
                 eventHandler(.succeeded(category: draft.category))
-                onAccepted(receipt)
+                onAccepted(
+                    receipt,
+                    SFKFeedbackContact(name: draft.name, email: draft.replyEmail)
+                )
             } catch {
                 isSubmitting = false
                 let reason = Self.failureReason(for: error)

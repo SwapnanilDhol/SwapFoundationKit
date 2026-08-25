@@ -4,6 +4,14 @@ import Testing
 
 @Suite("SFK feedback contract")
 struct SFKFeedbackContractTests {
+    @Test("Accepted feedback exposes optional contact details")
+    func acceptedContact() {
+        let contact = SFKFeedbackContact(name: "Swapnanil", email: "hello@example.com")
+
+        #expect(contact.name == "Swapnanil")
+        #expect(contact.email == "hello@example.com")
+    }
+
     @Test("Submission uses the v1 snake-case wire contract")
     func submissionEncoding() throws {
         let submission = SFKFeedbackSubmission(

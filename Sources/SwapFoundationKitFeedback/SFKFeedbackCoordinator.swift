@@ -5,6 +5,7 @@ import UIKit
 @MainActor
 public final class SFKFeedbackCoordinator: NSObject {
     public var onFinish: (() -> Void)?
+    public var onAccepted: (@MainActor (SFKFeedbackReceipt, SFKFeedbackContact) -> Void)?
 
     private let configuration: SFKFeedbackConfiguration
     private weak var controller: UIViewController?
@@ -19,7 +20,9 @@ public final class SFKFeedbackCoordinator: NSObject {
         let viewModel = SFKFeedbackViewModel(
             analyticsSource: analyticsSource,
             configuration: configuration,
-            onAccepted: { [weak self] receipt in self?.didAccept(receipt) },
+            onAccepted: { [weak self] receipt, contact in
+                self?.didAccept(receipt, contact: contact)
+            },
             onFailure: { [weak self] reason in self?.didFail(reason) }
         )
         let controller = UIHostingController(
@@ -48,7 +51,8 @@ public final class SFKFeedbackCoordinator: NSObject {
         presenter.present(navigation, animated: true)
     }
 
-    private func didAccept(_ receipt: SFKFeedbackReceipt) {
+    private func didAccept(_ receipt: SFKFeedbackReceipt, contact: SFKFeedbackContact) {
+        onAccepted?(receipt, contact)
         AlertPresenter.showAlert(
             title: "Feedback sent",
             message: "Thank you. Your feedback reference is \(receipt.feedbackID.uuidString.prefix(8).uppercased()).",
