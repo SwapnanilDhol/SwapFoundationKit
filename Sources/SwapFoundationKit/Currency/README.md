@@ -6,7 +6,7 @@ Currency model with 35+ ISO 4217 codes, flags, symbols, formatting, sorting, loc
 
 | Type | Kind | Description |
 |------|------|-------------|
-| `Currency` | enum | 35 currency cases with `symbol`, `currencySymbol`, `description` |
+| `Currency` | enum | 39 currency cases with `symbol`, `currencySymbol`, `description` |
 | `CurrencyRates` | struct | Thread-safe exchange rate dictionary |
 | `ExchangeRateManager` | actor | ECB daily XML fetcher with JSON cache, retry, TTL |
 

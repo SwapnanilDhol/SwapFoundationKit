@@ -20,7 +20,7 @@ Each module has its own README with full API reference and code examples:
 | [UI](../Sources/SwapFoundationKit/UI/README.md) | Buttons, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](../Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSON, async |
 | [Utilities](../Sources/SwapFoundationKit/Utilities/README.md) | Debouncer, Throttler, environment, launch arguments |
-| [Currency](../Sources/SwapFoundationKit/Currency/README.md) | 35 currencies, exchange rate management |
+| [Currency](../Sources/SwapFoundationKit/Currency/README.md) | 39 currencies, exchange rate management |
 | [ImageProcessor](../Sources/SwapFoundationKit/ImageProcessor/README.md) | Image manipulation, caching, compression |
 | [ItemSync](../Sources/SwapFoundationKit/ItemSync/README.md) | App Group sync for widgets and extensions |
 | [WatchSync](../Sources/SwapFoundationKit/WatchSync/README.md) | Type-safe Watch Connectivity |
