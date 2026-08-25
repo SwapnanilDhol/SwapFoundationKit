@@ -33,4 +33,22 @@ struct CurrencyTests {
         #expect(ngnRate == 1570.66)
         #expect(convertedValue == 1570.66)
     }
+
+    @Test
+    func serbianDinarIsSupported() {
+        #expect(Currency.allCases.contains(.RSD))
+        #expect(Currency.RSD.description.key == "Serbian dinar")
+        #expect(Currency.RSD.symbol == "🇷🇸")
+        #expect(Currency.RSD.currencySymbol == "дин.")
+    }
+
+    @Test
+    func serbianDinarUsesManualFallbackRate() async {
+        let manager = ExchangeRateManager(exchangeRateURL: URL(string: "https://invalid.example")!)
+        let rsdRate = await manager.exchangeRates[.RSD]
+        let convertedValue = await manager.convert(value: 1, fromCurrency: .EUR, toCurrency: .RSD)
+
+        #expect(rsdRate == 117.3717)
+        #expect(convertedValue == 117.3717)
+    }
 }

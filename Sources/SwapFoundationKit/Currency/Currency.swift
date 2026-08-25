@@ -54,6 +54,7 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
     case LKR
     case AED
     case NGN
+    case RSD
 
     public var description: LocalizedStringResource {
         switch self {
@@ -135,6 +136,8 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "UAE Dirham"
         case .NGN:
             return "Nigerian naira"
+        case .RSD:
+            return "Serbian dinar"
         }
     }
 
@@ -218,6 +221,8 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "🇦🇪"
         case .NGN:
             return "🇳🇬"
+        case .RSD:
+            return "🇷🇸"
         }
     }
 
@@ -301,6 +306,8 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "AED"
         case .NGN:
             return "₦"
+        case .RSD:
+            return "дин."
         }
     }
 }
@@ -351,7 +358,9 @@ extension Currency {
         .LKR: 330.0,
         .AED: 3.97,
         // Manual fallback: ECB daily XML does not publish an NGN rate.
-        .NGN: 1570.66
+        .NGN: 1570.66,
+        // Manual fallback: ECB daily XML does not publish an RSD rate.
+        .RSD: 117.3717
     ])
 }
 
