@@ -16,7 +16,7 @@ Application-level services for haptics, logging, analytics, Pulse inspection, us
 | `SFKPulseConsoleView` | struct | Ready-made SwiftUI console screen backed by PulseUI |
 | `SFKPulseConsoleMode` | enum | all, logs, network |
 | `AnalyticsManager` | class | Protocol-based fan-out to multiple `AnalyticsLogger` providers |
-| `AnalyticsLogger` | protocol | Implement to forward events to Firebase, TelemetryDeck, PostHog, etc. |
+| `AnalyticsLogger` | protocol | Implement to forward events to the host app's analytics provider. |
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
 | `DefaultAnalyticsEvent` | struct | Concrete event for ad-hoc tracking |
 | `UserDefault` | property wrapper | Type-safe, observable UserDefaults with SwiftUI binding support |
@@ -41,7 +41,6 @@ Application-level services for haptics, logging, analytics, Pulse inspection, us
 | `SFKProGate` | enum | Closure-based IAP feature gating with automatic upsell |
 | `SFKNotificationService` | class | Generic `UNUserNotificationCenter` wrapper |
 | `SFKFirebaseLogger` | class | Pre-built `AnalyticsLogger` for Firebase |
-| `SFKTelemetryLogger` | class | Pre-built `AnalyticsLogger` for TelemetryDeck |
 
 ## Quick Examples
 
@@ -111,7 +110,6 @@ Host-app integration guidance lives in [Docs/guides/pulse-integration.md](../../
 ### Analytics
 - `AnalyticsProtocol.swift` — AnalyticsManager, AnalyticsLogger, AnalyticsEvent
 - `Analytics/SFKFirebaseLogger.swift` — Firebase adapter
-- `Analytics/SFKTelemetryLogger.swift` — TelemetryDeck adapter
 
 ### Deeplinks
 - `DeeplinkHandler/DeeplinkHandler.swift` — DefaultDeeplinkHandler

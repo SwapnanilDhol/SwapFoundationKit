@@ -1,5 +1,5 @@
 {
-  "originHash" : "4a09f376c1fcd86afba57e990562f42f5086715c616d667cd6aeb2fc27d130d6",
+  "originHash" : "536b0d6b36a518c82149317b8fb112fe64ff23d9a54e1b7ad21c431d6a8888a2",
   "pins" : [
     {
       "identity" : "pulse",
@@ -26,15 +26,6 @@
       "state" : {
         "revision" : "13b248eaa73b7826f0efb1bcf455e251d65ecb1b",
         "version" : "3.1.0"
-      }
-    },
-    {
-      "identity" : "swiftclient",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/TelemetryDeck/SwiftClient.git",
-      "state" : {
-        "revision" : "ad4a03ec7ea7416a4081370f21c86e55b02a5b88",
-        "version" : "2.14.1"
       }
     },
     {

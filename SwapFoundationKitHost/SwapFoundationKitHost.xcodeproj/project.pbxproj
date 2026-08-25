@@ -349,7 +349,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		44EBEC8B2E45F28600E1CA90 /* XCLocalSwiftPackageReference "../../SwapFoundationKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../SwapFoundationKit;
+			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 

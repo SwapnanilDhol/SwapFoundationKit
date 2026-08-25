@@ -1002,24 +1002,18 @@ capabilities:
     confidence: medium
     replace_with:
       - SFKFirebaseLogger
-      - SFKTelemetryLogger
     public_symbols:
       - SFKFirebaseLogger
-      - SFKTelemetryLogger
     host_search_terms:
       - FirebaseLogger
-      - TelemetryLogger
       - AnalogicsLogger
       - Analytics.logEvent
-      - TelemetryDeck
     suspicious_file_patterns:
       - "*FirebaseLogger*"
-      - "*TelemetryLogger*"
     keep_custom_when:
       - The host app uses a different analytics provider not covered by SFK's pre-built loggers.
     source_files:
       - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
-      - Sources/SwapFoundationKit/Services/Analytics/SFKTelemetryLogger.swift
 
   - id: image_compressor
     audit_tier: exact
