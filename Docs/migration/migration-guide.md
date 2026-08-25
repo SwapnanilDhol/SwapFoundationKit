@@ -468,7 +468,7 @@ public enum AppEvent: AnalyticsEvent {
 }
 ```
 
-Step B — Implement an analytics manager that fans out to providers (Telemetry/Mixpanel/Firebase):
+Step B — Implement an analytics manager that fans out to the providers your app has selected (for example, Mixpanel or Firebase):
 
 ```swift
 #if os(iOS)
@@ -476,17 +476,7 @@ import Mixpanel
 #if canImport(Firebase)
 import Firebase
 #endif
-#if canImport(FirebaseAnalytics)
-import FirebaseAnalytics
-#endif
-import TelemetryClient
 import SwapFoundationKit
-
-final class TelemetryLogger {
-    func logEvent(event: AnalyticsEvent) {
-        TelemetryManager.shared.send(event.rawValue, with: event.parameters ?? [:])
-    }
-}
 
 final class FirebaseLogger {
     func logEvent(event: AnalyticsEvent) {
@@ -504,21 +494,16 @@ final class MixpanelLogger {
 
 final class AppAnalyticsManager {
     static let shared = AppAnalyticsManager()
-    private let telemetryLogger = TelemetryLogger()
     private let firebaseLogger = FirebaseLogger()
     private let mixpanelLogger = MixpanelLogger()
     private init() {}
 
     public func setupAnalytics() {
-        let telemetryAppID = /* load from Info.plist or config */ ""
-        let configuration = TelemetryManagerConfiguration(appID: telemetryAppID)
-        TelemetryManager.initialize(with: configuration)
         Mixpanel.initialize(token: "YOUR_MIXPANEL_TOKEN", trackAutomaticEvents: true)
         // Firebase: configure in AppDelegate if present
     }
 
     public func logEvent(event: AppEvent) {
-        telemetryLogger.logEvent(event: event)
         firebaseLogger.logEvent(event: event)
         mixpanelLogger.logEvent(event: event)
     }
@@ -533,7 +518,7 @@ Step C — Migrate call sites to use dot shorthand:
 
 Imports cleanup:
 
-- Only analytics infrastructure should import `TelemetryClient`; remove elsewhere if unused
+- Keep only the selected analytics provider imports in the analytics infrastructure; remove unused provider imports.
 
 Validation:
 
@@ -608,7 +593,6 @@ Validation:
 - Analytics:
 
   - `logEvent(event: AppEvent.` → `logEvent(event: .`
-  - Keep `TelemetryClient` imports in analytics stack only
 
 - File deletion:
   - Remove redundant local helpers once unused
@@ -622,7 +606,7 @@ Validation:
   - No `WidgetCenter.shared.reloadAllTimelines(` outside `AppSync.swift`
   - No `HapticsHelper.shared`
   - No `HapticsHelper().success()` (should be `successNotification()`)
-  - No stray `import TelemetryClient` outside analytics stack
+  - No unused analytics provider imports
 - Functional smoke tests:
   - Haptics fire at tap points without crashes
   - Analytics events log as expected
