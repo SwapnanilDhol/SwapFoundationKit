@@ -481,6 +481,35 @@ domains:
       - show pro sheet
       - is pro enabled
 
+  - id: app_attest
+    priority: 10
+    summary: Generic actor-isolated App Attest client for installation enrollment and request assertions.
+    when_to_check:
+      - Binding a backend session to a genuine app installation
+      - Adding App Attest enrollment or request signing
+      - Reusing App Attest across host applications
+    prefer_when:
+      - The server owns challenges, identity binding, and authorization policy
+      - The host app only needs Apple's key, attestation, and assertion APIs
+    keep_in_host_app_when:
+      - The flow includes RevenueCat, StoreKit purchase validation, backend URLs, or app-specific authorization policy
+    public_api:
+      - AppAttestService
+      - AppAttestProviding
+      - AppAttestAttestation
+      - AppAttestAssertion
+      - AppAttestKeyStore
+      - KeychainAppAttestKeyStore
+    docs:
+      - Sources/SwapFoundationKit/Core/README.md
+    examples:
+      - Sources/SwapFoundationKit/Core/AppAttestService.swift
+    host_app_triggers:
+      - App Attest
+      - app attestation
+      - device attestation
+      - installation identity
+
   - id: notifications
     priority: 11
     summary: Generic UNUserNotificationCenter wrapper for authorization, posting, scheduling, badge management, and category registration.
