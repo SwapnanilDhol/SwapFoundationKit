@@ -80,7 +80,7 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, text fields, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |
 | [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Persistent TTL storage, debounce/throttle, environment detection, launch arguments |
-| [Currency](Sources/SwapFoundationKit/Currency/README.md) | 40 currencies with flags/symbols, formatting, sorting, exchange rates |
+| [Currency](Sources/SwapFoundationKit/Currency/README.md) | 58 currencies with flags/symbols, formatting, sorting, exchange rates |
 | [ImageProcessor](Sources/SwapFoundationKit/ImageProcessor/README.md) | Image resize, filters, caching, JPEG compression |
 | [ItemSync](Sources/SwapFoundationKit/ItemSync/README.md) | App Group data sync for widgets and extensions |
 | [WatchSync](Sources/SwapFoundationKit/WatchSync/README.md) | Type-safe Watch Connectivity transport |

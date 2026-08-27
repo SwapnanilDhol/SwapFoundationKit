@@ -53,6 +53,24 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
     case ARS
     case LKR
     case AED
+    case TWD
+    case VND
+    case PKR
+    case BDT
+    case COP
+    case CLP
+    case PEN
+    case EGP
+    case QAR
+    case KWD
+    case OMR
+    case BHD
+    case JOD
+    case MAD
+    case KES
+    case GHS
+    case UAH
+    case SAR
     case NGN
     case RSD
 
@@ -134,6 +152,42 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "Sri Lankan Rupee"
         case .AED:
             return "UAE Dirham"
+        case .TWD:
+            return "New Taiwan dollar"
+        case .VND:
+            return "Vietnamese dong"
+        case .PKR:
+            return "Pakistani rupee"
+        case .BDT:
+            return "Bangladeshi taka"
+        case .COP:
+            return "Colombian peso"
+        case .CLP:
+            return "Chilean peso"
+        case .PEN:
+            return "Peruvian sol"
+        case .EGP:
+            return "Egyptian pound"
+        case .QAR:
+            return "Qatari riyal"
+        case .KWD:
+            return "Kuwaiti dinar"
+        case .OMR:
+            return "Omani rial"
+        case .BHD:
+            return "Bahraini dinar"
+        case .JOD:
+            return "Jordanian dinar"
+        case .MAD:
+            return "Moroccan dirham"
+        case .KES:
+            return "Kenyan shilling"
+        case .GHS:
+            return "Ghanaian cedi"
+        case .UAH:
+            return "Ukrainian hryvnia"
+        case .SAR:
+            return "Saudi Riyal"
         case .NGN:
             return "Nigerian naira"
         case .RSD:
@@ -219,6 +273,42 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "🇱🇰"
         case .AED:
             return "🇦🇪"
+        case .TWD:
+            return "🇹🇼"
+        case .VND:
+            return "🇻🇳"
+        case .PKR:
+            return "🇵🇰"
+        case .BDT:
+            return "🇧🇩"
+        case .COP:
+            return "🇨🇴"
+        case .CLP:
+            return "🇨🇱"
+        case .PEN:
+            return "🇵🇪"
+        case .EGP:
+            return "🇪🇬"
+        case .QAR:
+            return "🇶🇦"
+        case .KWD:
+            return "🇰🇼"
+        case .OMR:
+            return "🇴🇲"
+        case .BHD:
+            return "🇧🇭"
+        case .JOD:
+            return "🇯🇴"
+        case .MAD:
+            return "🇲🇦"
+        case .KES:
+            return "🇰🇪"
+        case .GHS:
+            return "🇬🇭"
+        case .UAH:
+            return "🇺🇦"
+        case .SAR:
+            return "🇸🇦"
         case .NGN:
             return "🇳🇬"
         case .RSD:
@@ -304,6 +394,42 @@ public enum Currency: String, CaseIterable, Hashable, Codable, Sendable {
             return "Rs"
         case .AED:
             return "AED"
+        case .TWD:
+            return "NT$"
+        case .VND:
+            return "₫"
+        case .PKR:
+            return "₨"
+        case .BDT:
+            return "৳"
+        case .COP:
+            return "COL$"
+        case .CLP:
+            return "CLP$"
+        case .PEN:
+            return "S/"
+        case .EGP:
+            return "E£"
+        case .QAR:
+            return "ر.ق"
+        case .KWD:
+            return "د.ك"
+        case .OMR:
+            return "ر.ع."
+        case .BHD:
+            return ".د.ب"
+        case .JOD:
+            return "د.ا"
+        case .MAD:
+            return "د.م."
+        case .KES:
+            return "KSh"
+        case .GHS:
+            return "GH₵"
+        case .UAH:
+            return "₴"
+        case .SAR:
+            return "﷼"
         case .NGN:
             return "₦"
         case .RSD:
@@ -357,6 +483,26 @@ extension Currency {
         .ARS: 950.0,
         .LKR: 330.0,
         .AED: 3.97,
+        // Manual fallbacks: ECB daily XML does not publish these rates.
+        .TWD: 34.8,
+        .VND: 30000.0,
+        .PKR: 320.0,
+        .BDT: 140.0,
+        .COP: 4700.0,
+        .CLP: 1050.0,
+        .PEN: 3.75,
+        .EGP: 57.0,
+        .QAR: 3.93,
+        .KWD: 0.33,
+        .OMR: 0.42,
+        .BHD: 0.42,
+        .JOD: 0.77,
+        .MAD: 10.7,
+        .KES: 150.0,
+        .GHS: 12.5,
+        .UAH: 48.0,
+        // Manual fallback: ECB daily XML does not publish a SAR rate.
+        .SAR: 4.05,
         // Manual fallback: ECB daily XML does not publish an NGN rate.
         .NGN: 1570.66,
         // Manual fallback: ECB daily XML does not publish an RSD rate.

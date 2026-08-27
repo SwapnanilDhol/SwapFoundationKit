@@ -1,12 +1,12 @@
 # Currency
 
-Currency model with 35+ ISO 4217 codes, flags, symbols, formatting, sorting, locale detection, and exchange rate management.
+Currency model with 58 ISO 4217 codes, flags, symbols, formatting, sorting, locale detection, and exchange rate management.
 
 ## Public API
 
 | Type | Kind | Description |
 |------|------|-------------|
-| `Currency` | enum | 40 currency cases with `symbol`, `currencySymbol`, `description` |
+| `Currency` | enum | 58 currency cases with `symbol`, `currencySymbol`, `description` |
 | `CurrencyRates` | struct | Thread-safe exchange rate dictionary |
 | `ExchangeRateManager` | actor | ECB daily XML fetcher with JSON cache, retry, TTL |
 
