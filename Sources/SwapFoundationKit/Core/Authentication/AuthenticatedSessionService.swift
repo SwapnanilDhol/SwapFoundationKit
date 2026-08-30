@@ -71,9 +71,17 @@ public actor AuthenticatedSessionService {
         return session
     }
 
+    /// Rebinds the current proof, refreshing it even when a binding is cached,
+    /// so a new purchase or restore reaches the server.
+    public func bindCurrentProof() async throws {
+        guard configuration.appAttestEnabled, await appAttest.isSupported() else {
+            throw AuthenticatedSessionError.appAttestUnsupported
+        }
+        try await ensureBinding(forceRefresh: true)
+    }
+
     public func bindCurrentProofIfPossible() async {
-        guard configuration.appAttestEnabled, await appAttest.isSupported() else { return }
-        do { try await ensureBinding(forceRefresh: true) } catch { }
+        do { try await bindCurrentProof() } catch { }
     }
 
     public func invalidateSession() async {
