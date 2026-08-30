@@ -197,7 +197,7 @@ capabilities:
       - "*Endpoint*"
       - "*HTTP*"
     keep_custom_when:
-      - The host app has auth-refresh, request-signing, or middleware requirements that should remain in an app-level facade above SFK.
+      - The host has app-specific routing or entitlement policy requiring a thin facade; use AuthenticatedHTTPClient for the shared authentication and refresh mechanics.
     source_files:
       - Sources/SwapFoundationKit/Core/Networking.swift
       - Sources/SwapFoundationKit/Core/NetworkService.swift
@@ -240,7 +240,9 @@ capabilities:
     capability_notes: >-
       AppAttestService hashes server challenge data once and preserves unsupported,
       keyInvalid, transientAppleFailure, and keyStoreFailure errors. keyInvalid is
-      stage-dependent; the host must reconcile enrollment before bounded recovery.
+      stage-dependent. AuthenticatedSessionService coordinates reconciliation and
+      bounded recovery for the shared backend protocol; direct primitive callers
+      must supply their own equivalent lifecycle.
     replace_with:
       - AppAttestService
       - AppAttestProviding
@@ -256,9 +258,47 @@ capabilities:
     suspicious_file_patterns:
       - "*AppAttest*"
     keep_custom_when:
-      - Backend session policy, purchase binding, retry budgets, and enrollment reconciliation belong to the host app.
+      - App-specific authorization policy and identity/proof sources belong to the host; generic session lifecycle and transport belong to SFK.
     source_files:
       - Sources/SwapFoundationKit/Core/AppAttestService.swift
+
+  - id: authenticated_sessions
+    audit_tier: exact
+    confidence: high
+    capability_notes: >-
+      An explicitly configured session actor and HTTP client share enrollment,
+      session refresh, proof-binding coordination, per-waiter cancellation,
+      secure storage and safe pre-execution retries. No app singleton, vendor
+      purchase SDK, entitlement policy or analytics dependency is required.
+      The default backend adapter implements the shared App Attest HTTP contract;
+      other backends can implement AuthenticatedSessionBackend.
+    replace_with:
+      - AuthenticatedSessionService
+      - AuthenticatedHTTPClient
+      - AppAttestSessionHTTPBackend
+    public_symbols:
+      - AuthenticatedSessionService
+      - AuthenticatedSessionConfiguration
+      - AuthenticatedSessionBackend
+      - AppAttestSessionHTTPBackend
+      - SessionBindingProof
+      - AuthenticatedHTTPClient
+    host_search_terms:
+      - BackendSessionService
+      - BackendAuthenticatedTransport
+      - authenticatedHeaders
+      - ensurePurchaseBinding
+      - app-attest-enrolled
+    suspicious_file_patterns:
+      - "*BackendSession*"
+      - "*AuthenticatedTransport*"
+      - "*BackendAuthStorage*"
+    keep_custom_when:
+      - The host wrapper only supplies identity/proof adapters, legacy record decoding, configuration, route policy, analytics or UI.
+    source_files:
+      - Sources/SwapFoundationKit/Core/Authentication/AuthenticatedSessionService.swift
+      - Sources/SwapFoundationKit/Core/Authentication/AppAttestSessionHTTPBackend.swift
+      - Sources/SwapFoundationKit/Core/Authentication/AuthenticatedHTTPClient.swift
 
   - id: backup
     audit_tier: exact

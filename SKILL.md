@@ -10,7 +10,8 @@ description: >
   text field, TextField, SecureField, form input, validation field,
   environment, launch arguments, persistent TTL store, expiring cache, cooldown,
   pro gate, notifications, Pulse, PulseUI,
-  network inspector, debug console, appearance, rounded font, hosting
+  network inspector, debug console, App Attest, authenticated sessions,
+  session refresh, purchase binding, authenticated transport, appearance, rounded font, hosting
   controller, JSON codable, device info, async collections.
 ---
 
@@ -78,7 +79,7 @@ Read files in this order:
 
 | Module | README | Key Types |
 |--------|--------|-----------|
-| Core | [Core/README.md](Sources/SwapFoundationKit/Core/README.md) | HTTPClient, SecurityService, BackupService, ConfigurationService |
+| Core | [Core/README.md](Sources/SwapFoundationKit/Core/README.md) | HTTPClient, SecurityService, AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient, BackupService, ConfigurationService |
 | Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager, UserDefault, DeeplinkHandler, ToastManager, SFKProGate, SFKNotificationService |
 | UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKButton, SFKTextField, SFKSettingsScreen, SFKSegmentedProgress, SFKItemPickerView, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |

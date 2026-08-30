@@ -75,7 +75,7 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 
 | Module | Description |
 |--------|-------------|
-| [Core](Sources/SwapFoundationKit/Core/README.md) | Networking, security, backup, configuration |
+| [Core](Sources/SwapFoundationKit/Core/README.md) | Networking, security, App Attest authenticated sessions, backup, configuration |
 | [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, toasts, files, location, pro gating, notifications |
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, text fields, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |

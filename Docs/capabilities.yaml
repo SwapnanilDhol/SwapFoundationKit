@@ -483,16 +483,17 @@ domains:
 
   - id: app_attest
     priority: 10
-    summary: Generic actor-isolated App Attest client for installation enrollment and request assertions.
+    summary: Reusable App Attest primitives, authenticated installation sessions, and origin-restricted HTTP transport.
     when_to_check:
       - Binding a backend session to a genuine app installation
       - Adding App Attest enrollment or request signing
       - Reusing App Attest across host applications
+      - Coordinating enrollment, cached sessions, refresh, and proof binding across apps
     prefer_when:
       - The server owns challenges, identity binding, and authorization policy
-      - The host app only needs Apple's key, attestation, and assertion APIs
+      - The host app needs Apple's primitives or the shared challenge/enroll/session/bind client protocol
     keep_in_host_app_when:
-      - The flow includes RevenueCat, StoreKit purchase validation, backend URLs, or app-specific authorization policy
+      - App-specific authorization policy, identity/proof sources, configuration values, analytics, or UI must remain in a thin host adapter
     public_api:
       - AppAttestService
       - AppAttestProviding
@@ -501,6 +502,12 @@ domains:
       - AppAttestAssertion
       - AppAttestKeyStore
       - KeychainAppAttestKeyStore
+      - AuthenticatedSessionService
+      - AuthenticatedSessionConfiguration
+      - AuthenticatedSessionBackend
+      - AppAttestSessionHTTPBackend
+      - SessionBindingProof
+      - AuthenticatedHTTPClient
     docs:
       - Sources/SwapFoundationKit/Core/README.md
     examples:
@@ -510,6 +517,8 @@ domains:
       - app attestation
       - device attestation
       - installation identity
+      - backend session refresh
+      - authenticated transport
 
   - id: notifications
     priority: 11

@@ -18,6 +18,12 @@ Foundation-level services for networking, security, backup, and configuration.
 | `SecurityService` | class | AES encryption with persistent Keychain key, keychain CRUD, SHA256 hashing |
 | `AppAttestService` | actor | App Attest key, attestation, and assertion client; preserves typed unsupported, transient, and key-invalid failures |
 | `AppAttestKeyStore` | protocol | Injectable persistence boundary for the App Attest key identifier |
+| `AuthenticatedSessionService` | actor | Configured installation-session lifecycle, enrollment reconciliation, shared refresh and proof-binding coordination |
+| `AuthenticatedSessionConfiguration` | struct | Explicit app/environment namespace, backend origin, storage compatibility and timing configuration |
+| `AuthenticatedSessionBackend` | protocol | Typed challenge, enrollment, session issuance and binding boundary |
+| `AppAttestSessionHTTPBackend` | struct | Adapter for the shared App Attest HTTP backend contract |
+| `SessionBindingProof` | struct | In-memory encoded proof, identity and stable binding fingerprint supplied by the host |
+| `AuthenticatedHTTPClient` | class | Origin-restricted authenticated requests with strict defaults and bounded pre-execution retry |
 | `BackupService` | class | JSON backup/restore with timestamped files and automatic retention |
 | `ConfigurationService` | class | Environment-aware key-value config from Info.plist |
 
@@ -70,5 +76,30 @@ let isDebug = ConfigurationService.shared.isDebugMode()
 - `NetworkService.swift` — Legacy network service
 - `SecurityService.swift` — Encryption, keychain, hashing
 - `AppAttestService.swift` — App Attest key persistence, attestation, and assertions
+- `Authentication/` — Shared authenticated-session engine, backend adapter, secure persistence and HTTP client
 - `BackupService.swift` — Data backup and restore
 - `ConfigurationService.swift` — App configuration from Info.plist
+
+## Authenticated sessions: shared engine, thin host policy
+
+Use `AppAttestService` directly only when a different lifecycle is intentional. Apps using the shared challenge/enroll/session/bind contract should configure `AuthenticatedSessionService` and `AuthenticatedHTTPClient`, rather than copying an enrollment/session state machine into each app.
+
+The session service returns credentials; the HTTP client owns security-header assembly and exact-origin dispatch. These are explicitly configured instances, not global singletons. The package does not read an app's backend URL, purchase state or identity from global app objects, and it does not automatically enroll existing SFK consumers.
+
+The host supplies:
+
+- App/environment/origin configuration and any exact legacy storage-key overrides.
+- The current identity source and, where needed, a purchase-proof adapter.
+- Product policy: which requests require a bound session and which explicitly permit legacy compatibility behavior.
+- Purchase/restore callbacks, analytics and user-facing recovery.
+
+SFK owns shared in-flight session work, per-waiter cancellation, expiry, bounded retries, enrollment reconciliation, generic binding coordination and secure storage. Subscription SDKs and entitlement decisions remain outside SFK. The server independently verifies every proof and decides authorization; neither an identity string nor a client-side binding fingerprint grants access.
+
+### Adoption safeguards
+
+- Configure different storage namespaces for different apps, attestation environments and backend origins, including ports. Supply existing storage keys and migration adapters when adopting in a shipped app; an extraction should not force re-enrollment.
+- Keep binding proof payloads in memory only; persist only the binding metadata/fingerprint. Do not log credentials, assertions, attestation payloads or purchase proof bodies.
+- Authentication endpoints reject redirects. Protected requests must not forward credentials across origins. Shared authentication must not alter `HTTPClient.shared` or turn on network body logging.
+- Strict authentication is the default. Compatibility behavior must be explicitly selected by the host for the request and must retain capability metadata. Identity conflicts and arbitrary server failures do not trigger an unauthenticated replay.
+- The HTTP adapter implements a documented common protocol; it is not a universal adapter for arbitrary authentication servers. Other protocols should implement `AuthenticatedSessionBackend`.
+- Package and simulator tests establish client behavior, not real-device or production attestation readiness. Deployment and enforcement remain an explicit server-side rollout decision.
