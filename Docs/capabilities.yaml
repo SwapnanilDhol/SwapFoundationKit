@@ -496,6 +496,7 @@ domains:
     public_api:
       - AppAttestService
       - AppAttestProviding
+      - AppAttestError
       - AppAttestAttestation
       - AppAttestAssertion
       - AppAttestKeyStore

@@ -234,6 +234,32 @@ capabilities:
       - Sources/SwapFoundationKit/Extensions/Data+Crypto.swift
       - Sources/SwapFoundationKit/Core/AppAttestService.swift
 
+  - id: app_attest
+    audit_tier: exact
+    confidence: high
+    capability_notes: >-
+      AppAttestService hashes server challenge data once and preserves unsupported,
+      keyInvalid, transientAppleFailure, and keyStoreFailure errors. keyInvalid is
+      stage-dependent; the host must reconcile enrollment before bounded recovery.
+    replace_with:
+      - AppAttestService
+      - AppAttestProviding
+    public_symbols:
+      - AppAttestService.attest(clientData:)
+      - AppAttestService.assertion(clientData:)
+      - AppAttestService.resetKey()
+      - AppAttestError.keyInvalid
+      - AppAttestError.transientAppleFailure
+    host_search_terms:
+      - DCAppAttestService
+      - AppAttest
+    suspicious_file_patterns:
+      - "*AppAttest*"
+    keep_custom_when:
+      - Backend session policy, purchase binding, retry budgets, and enrollment reconciliation belong to the host app.
+    source_files:
+      - Sources/SwapFoundationKit/Core/AppAttestService.swift
+
   - id: backup
     audit_tier: exact
     confidence: medium

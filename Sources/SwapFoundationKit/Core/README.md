@@ -16,7 +16,7 @@ Foundation-level services for networking, security, backup, and configuration.
 | `NetworkLogLevel` | enum | Request/response logging verbosity (none through debug) |
 | `NetworkService` | class | Legacy reachability-aware network service |
 | `SecurityService` | class | AES encryption with persistent Keychain key, keychain CRUD, SHA256 hashing |
-| `AppAttestService` | actor | App Attest key, attestation, and assertion client |
+| `AppAttestService` | actor | App Attest key, attestation, and assertion client; preserves typed unsupported, transient, and key-invalid failures |
 | `AppAttestKeyStore` | protocol | Injectable persistence boundary for the App Attest key identifier |
 | `BackupService` | class | JSON backup/restore with timestamped files and automatic retention |
 | `ConfigurationService` | class | Environment-aware key-value config from Info.plist |
@@ -46,6 +46,14 @@ SecurityService().storeInKeychain(secret, forKey: "api-token")
 let appAttest = AppAttestService()
 let attestation = try await appAttest.attest(clientData: challenge)
 let assertion = try await appAttest.assertion(clientData: challenge)
+
+// A key-invalid result is intentionally stage-dependent. The host must
+// reconcile enrollment state before choosing its bounded reset policy.
+do {
+    _ = try await appAttest.assertion(clientData: challenge)
+} catch AppAttestError.keyInvalid {
+    // Do not blindly reset a key whose enrollment response may be in flight.
+}
 
 // Backup
 try await BackupService().performBackup(myData, fileType: .data)
