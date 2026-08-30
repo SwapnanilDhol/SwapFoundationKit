@@ -111,6 +111,13 @@ public enum AppAttestError: Error, LocalizedError, Sendable, Equatable {
     case attestationFailed
     case assertionFailed
     case keyStoreFailure
+    /// Apple rejected use of the key. This is stage-dependent: for example,
+    /// an assertion against an unattested key and a genuinely invalid key use
+    /// the same Apple error. The host must not blindly reset on this case.
+    case keyInvalid
+    /// Apple could not complete the operation at this time. Retrying the same
+    /// operation later is safe; callers must not rotate the key for this case.
+    case transientAppleFailure
 
     public var errorDescription: String? {
         switch self {
@@ -128,6 +135,10 @@ public enum AppAttestError: Error, LocalizedError, Sendable, Equatable {
             return "The App Attest assertion could not be generated."
         case .keyStoreFailure:
             return "The App Attest key identifier could not be stored."
+        case .keyInvalid:
+            return "The App Attest key could not be used."
+        case .transientAppleFailure:
+            return "The App Attest service is temporarily unavailable."
         }
     }
 }
@@ -187,14 +198,14 @@ public actor AppAttestService: AppAttestProviding {
             generatedKeyID = try await withCheckedThrowingContinuation { continuation in
                 service.generateKey { keyID, error in
                     guard let keyID, !keyID.isEmpty else {
-                        continuation.resume(throwing: error ?? AppAttestError.keyGenerationFailed)
+                        continuation.resume(throwing: Self.mapAppleError(error, fallback: .keyGenerationFailed))
                         return
                     }
                     continuation.resume(returning: keyID)
                 }
             }
         } catch {
-            throw AppAttestError.keyGenerationFailed
+            throw Self.mapAppleError(error, fallback: .keyGenerationFailed)
         }
 
         do {
@@ -217,7 +228,7 @@ public actor AppAttestService: AppAttestProviding {
                 (continuation: CheckedContinuation<Data, Error>) in
                 service.attestKey(keyID, clientDataHash: clientDataHash) { data, error in
                     guard let data, !data.isEmpty else {
-                        continuation.resume(throwing: error ?? AppAttestError.attestationFailed)
+                        continuation.resume(throwing: Self.mapAppleError(error, fallback: .attestationFailed))
                         return
                     }
                     continuation.resume(returning: data)
@@ -229,7 +240,7 @@ public actor AppAttestService: AppAttestProviding {
                 clientDataHash: clientDataHash
             )
         } catch {
-            throw AppAttestError.attestationFailed
+            throw Self.mapAppleError(error, fallback: .attestationFailed)
         }
     }
 
@@ -243,7 +254,7 @@ public actor AppAttestService: AppAttestProviding {
                 (continuation: CheckedContinuation<Data, Error>) in
                 service.generateAssertion(keyID, clientDataHash: clientDataHash) { data, error in
                     guard let data, !data.isEmpty else {
-                        continuation.resume(throwing: error ?? AppAttestError.assertionFailed)
+                        continuation.resume(throwing: Self.mapAppleError(error, fallback: .assertionFailed))
                         return
                     }
                     continuation.resume(returning: data)
@@ -255,7 +266,7 @@ public actor AppAttestService: AppAttestProviding {
                 clientDataHash: clientDataHash
             )
         } catch {
-            throw AppAttestError.assertionFailed
+            throw Self.mapAppleError(error, fallback: .assertionFailed)
         }
     }
 
@@ -270,5 +281,25 @@ public actor AppAttestService: AppAttestProviding {
 
     private func ensureSupported() throws {
         guard service.isSupported else { throw AppAttestError.unsupported }
+    }
+
+    static func mapAppleError(_ error: Error?, fallback: AppAttestError) -> AppAttestError {
+        guard let error else { return fallback }
+        if let appAttestError = error as? AppAttestError { return appAttestError }
+        let nsError = error as NSError
+        guard nsError.domain == DCErrorDomain else { return fallback }
+
+        switch nsError.code {
+        case DCError.invalidKey.rawValue:
+            return .keyInvalid
+        case DCError.serverUnavailable.rawValue, DCError.unknownSystemFailure.rawValue:
+            return .transientAppleFailure
+        case DCError.featureUnsupported.rawValue:
+            return .unsupported
+        case DCError.invalidInput.rawValue:
+            return .invalidClientData
+        default:
+            return fallback
+        }
     }
 }
