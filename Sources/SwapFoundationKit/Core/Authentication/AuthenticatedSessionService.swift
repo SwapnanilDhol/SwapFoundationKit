@@ -544,13 +544,25 @@ public actor AuthenticatedSessionService {
 
     private func loadEnrollmentState() throws -> EnrollmentState {
         guard let data = try storage.loadData(forKey: configuration.storageKeys.enrollment) else {
-            guard let legacy = try storage.loadLegacyData(forKey: configuration.storageKeys.enrollment), let decoded = try configuration.legacyMigration?.decodeEnrollment?(legacy) else { return .none }
-            let state: EnrollmentState = decoded ? .enrolled : .none
-            try saveEnrollmentState(state)
+            guard let legacy = try storage.loadLegacyData(forKey: configuration.storageKeys.enrollment),
+                  let state = try migratedEnrollmentState(from: legacy) else {
+                return .none
+            }
             return state
         }
-        guard let value = try? JSONDecoder().decode(EnrollmentState.self, from: data) else { return .pending }
-        return value
+        if let value = try? JSONDecoder().decode(EnrollmentState.self, from: data) { return value }
+        // A host adopting this engine may already store an enrollment marker in
+        // its own format under the same key. Migrating it here is what keeps an
+        // extraction from re-enrolling every shipped installation.
+        if let state = try migratedEnrollmentState(from: data) { return state }
+        return .pending
+    }
+
+    private func migratedEnrollmentState(from data: Data) throws -> EnrollmentState? {
+        guard let decoded = try configuration.legacyMigration?.decodeEnrollment?(data) else { return nil }
+        let state: EnrollmentState = decoded ? .enrolled : .none
+        try saveEnrollmentState(state)
+        return state
     }
 
     private func saveEnrollmentState(_ state: EnrollmentState) throws {

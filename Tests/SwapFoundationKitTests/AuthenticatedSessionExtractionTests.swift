@@ -237,6 +237,16 @@ struct AuthenticatedSessionExtractionTests {
         #expect(first.storageKeys != second.storageKeys)
     }
 
+    @Test func hostEnrollmentMarkerUnderTheSameKeyMigratesInsteadOfReattesting() async throws {
+        let context = TestContext(legacyMigration: AuthenticatedSessionLegacyMigration(
+            decodeEnrollment: { $0 == Data("1".utf8) ? true : nil }
+        ))
+        context.storage.setRaw(Data("1".utf8), forKey: context.config.storageKeys.enrollment)
+        #expect((try await context.makeService().currentSession()).token == "token-1")
+        #expect(await context.attest.attestationCount == 0)
+        #expect(await context.backend.count(path: "enroll") == 0)
+    }
+
     @Test func hostLegacyBindingDecoderReturnsOnlyGenericMetadata() throws {
         let migration = AuthenticatedSessionLegacyMigration(decodeBinding: { data in
             guard let value = try? JSONSerialization.jsonObject(with: data) as? [String: String], let key = value["keyID"], let identity = value["appUserID"] else { return nil }
@@ -378,8 +388,18 @@ private final class TestContext: @unchecked Sendable {
     let attest = RecordingAttest()
     let identity: MutableIdentity
 
-    init(baseURL: URL = URL(string: "https://staging.example.test")!, identity: String = "customer-1") {
-        config = AuthenticatedSessionConfiguration(baseURL: baseURL, appIdentifier: "com.example.app", environment: "production", operationTimeout: 15)
+    init(
+        baseURL: URL = URL(string: "https://staging.example.test")!,
+        identity: String = "customer-1",
+        legacyMigration: AuthenticatedSessionLegacyMigration? = nil
+    ) {
+        config = AuthenticatedSessionConfiguration(
+            baseURL: baseURL,
+            appIdentifier: "com.example.app",
+            environment: "production",
+            operationTimeout: 15,
+            legacyMigration: legacyMigration
+        )
         self.identity = MutableIdentity(identity)
     }
 
