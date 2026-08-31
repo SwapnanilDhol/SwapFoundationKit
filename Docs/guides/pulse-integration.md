@@ -2,6 +2,8 @@
 
 Guide for integrating `SFKPulseService` and `SFKPulseConsoleView` into host apps that use SwapFoundationKit.
 
+Pulse is an opt-in product. Add the `SwapFoundationKitPulse` product as a dependency (alongside `SwapFoundationKit`) and `import SwapFoundationKitPulse` wherever these APIs are used — the default `SwapFoundationKit` target does not depend on Pulse.
+
 ## What SFK provides
 
 The Pulse capability lives in the `services` domain and uses a **use_sfk_directly** reuse strategy for host apps.
@@ -21,7 +23,7 @@ Configure Pulse once during app launch, then expose `SFKPulseConsoleView` from a
 
 ```swift
 import SwiftUI
-import SwapFoundationKit
+import SwapFoundationKitPulse
 
 @main
 struct ExampleApp: App {
@@ -59,7 +61,7 @@ Example:
 
 ```swift
 import SwiftUI
-import SwapFoundationKit
+import SwapFoundationKitPulse
 
 struct DeveloperToolsView: View {
     var body: some View {

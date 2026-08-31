@@ -31,6 +31,7 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
     private static let retryBaseDelay: TimeInterval = 1.0
 
     private let exchangeRateURL: URL
+    private let transport: ExchangeRateTransport
     private let cacheFileName = "exchangeRatesCache.json"
 
     /// Duration for which cached rates are considered valid before re-fetching.
@@ -47,12 +48,24 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
 
     private override init() {
         self.exchangeRateURL = Self.defaultExchangeRateURL
+        self.transport = HTTPClientExchangeRateTransport(client: .shared)
     }
 
     /// Creates a manager that fetches from a custom URL.
     /// - Parameter exchangeRateURL: URL returning ECB-style XML.
     public init(exchangeRateURL: URL) {
         self.exchangeRateURL = exchangeRateURL
+        self.transport = HTTPClientExchangeRateTransport(client: .shared)
+    }
+
+    /// Test-only initializer that injects a fake transport instead of the real `HTTPClient`.
+    /// Not part of the public API.
+    /// - Parameters:
+    ///   - exchangeRateURL: URL returning ECB-style XML.
+    ///   - transport: Fake transport for unit tests.
+    init(exchangeRateURL: URL, transport: ExchangeRateTransport) {
+        self.exchangeRateURL = exchangeRateURL
+        self.transport = transport
     }
 
     /// Loads cached rates if available and fresh, then fetches if stale.
@@ -119,14 +132,56 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
     }
 
     private func fetchAndParse() async throws {
-        let (data, response) = try await URLSession.shared.data(from: exchangeRateURL)
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw URLError(.badServerResponse)
+        let data: Data
+        do {
+            let (fetchedData, httpResponse) = try await transport.data(from: exchangeRateURL)
+            guard (200...299).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
+            data = fetchedData
+        } catch {
+            throw Self.mapTransportError(error)
         }
+
         let parser = XMLParser(data: data)
         parser.delegate = self
         guard parser.parse() else {
             throw URLError(.cannotParseResponse)
+        }
+    }
+
+    /// Test-only: exposes `fetchAndParse()`'s thrown error type directly, so unit tests can assert
+    /// on the `URLError`s it throws without waiting through `performFetchWithRetry`'s backoff.
+    /// Not part of the public API.
+    func fetchAndParseForTesting() async throws {
+        try await fetchAndParse()
+    }
+
+    /// Routing through `HTTPClient` means transport failures surface as `NetworkError`, not the
+    /// `URLError`s `performFetchWithRetry`'s callers previously observed directly from
+    /// `URLSession`. Map back so `fetchAndParse` keeps throwing the same `URLError` family
+    /// (`.badServerResponse` for a non-2xx/non-HTTP response, `.cannotParseResponse` for
+    /// unparseable XML, and the closest equivalent for other transport failures).
+    private static func mapTransportError(_ error: Error) -> Error {
+        if let urlError = error as? URLError {
+            return urlError
+        }
+
+        guard let networkError = error as? NetworkError else {
+            return error
+        }
+
+        switch networkError {
+        case .httpError, .invalidResponse, .invalidURL, .decodingError:
+            return URLError(.badServerResponse)
+        case .timeout:
+            return URLError(.timedOut)
+        case .noInternetConnection:
+            return URLError(.notConnectedToInternet)
+        case .cancelled:
+            return URLError(.cancelled)
+        case .requestFailed(let underlying):
+            return (underlying as? URLError) ?? URLError(.unknown)
         }
     }
 
@@ -181,5 +236,49 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
         } catch {
             return nil
         }
+    }
+}
+
+// MARK: - Exchange Rate Transport
+
+/// Abstraction over the transport used to fetch the ECB exchange rate XML feed, so `fetchAndParse`
+/// can be unit-tested with a fake and production code routes through the package's canonical
+/// `HTTPClient` instead of `URLSession.shared` (feature code must not call `URLSession.shared`
+/// directly; see `SFKNetworkInstrumentation`, which lets opt-in products like
+/// `SwapFoundationKitPulse` observe `HTTPClient` traffic).
+protocol ExchangeRateTransport: Sendable {
+    func data(from url: URL) async throws -> (Data, HTTPURLResponse)
+}
+
+/// Default `ExchangeRateTransport` backed by the package's canonical `HTTPClient`.
+struct HTTPClientExchangeRateTransport: ExchangeRateTransport {
+    let client: HTTPClient
+
+    func data(from url: URL) async throws -> (Data, HTTPURLResponse) {
+        let response = try await client.execute(ExchangeRateFetchRequest(url: url))
+        return (response.data, response.response)
+    }
+}
+
+/// Builds a GET `NetworkRequest` from the configured exchange rate URL.
+private struct ExchangeRateFetchRequest: NetworkRequest {
+    let scheme: String
+    let baseURL: String
+    let path: String
+    let method: HTTPMethod = .get
+    let parameters: [String: String]?
+    let headers: [String: String]? = nil
+    let body: Data? = nil
+
+    init(url: URL) {
+        self.scheme = url.scheme ?? "https"
+        let host = url.host ?? ""
+        if let port = url.port {
+            self.baseURL = "\(host):\(port)"
+        } else {
+            self.baseURL = host
+        }
+        self.path = url.path.isEmpty ? "/" : url.path
+        self.parameters = url.queryParameters
     }
 }

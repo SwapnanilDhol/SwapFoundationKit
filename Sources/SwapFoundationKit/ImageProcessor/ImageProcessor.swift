@@ -21,6 +21,7 @@ public class ImageProcessor {
 
     private let cache = NSCache<NSString, UIImage>()
     private let fileManager = FileManager.default
+    private let transport: ImageProcessorTransport
 
     // MARK: - Shared Storage Configuration
 
@@ -39,7 +40,13 @@ public class ImageProcessor {
         return sharedContainerURL.appendingPathComponent("ImageCache")
     }
 
-    private init() {
+    /// - Parameter transport: Fetches remote image bytes. Defaults to the package's canonical
+    ///   `HTTPClient` (feature code must not call `URLSession.shared` directly — see the v4
+    ///   Media ownership rule). Not exposed as a public setter: this is a module-internal
+    ///   initializer so `ImageProcessor.shared` keeps using real networking while tests can
+    ///   construct a private instance with a fake transport via `@testable import`.
+    init(transport: ImageProcessorTransport = HTTPClientImageTransport(client: .shared)) {
+        self.transport = transport
         setupCache()
     }
 
@@ -204,12 +211,18 @@ public class ImageProcessor {
     /// This stores the processed image in memory cache and, when shared storage is
     /// configured, also persists it to the app group container for widgets/extensions.
     ///
+    /// Fetches go through `HTTPClient` (via the injected transport), not `URLSession.shared`. A
+    /// non-2xx HTTP response is treated as `.downloadFailed`, not `.invalidRemoteImageData`: we
+    /// never received usable image bytes, so it's a download failure rather than a decode failure.
+    ///
     /// - Parameters:
     ///   - url: The remote image URL to fetch.
     ///   - targetSize: Optional target size to resize the image before caching.
     ///   - quality: JPEG compression quality used for shared storage persistence.
     /// - Returns: The processed image.
-    /// - Throws: `ImageProcessorError` if downloading or decoding fails.
+    /// - Throws: `ImageProcessorError.downloadFailed` if the transport fails or the response is
+    ///   non-2xx; `ImageProcessorError.invalidRemoteImageData` if a 2xx response body cannot be
+    ///   decoded as an image.
     @discardableResult
     public func cacheImage(
         from url: URL,
@@ -223,7 +236,7 @@ public class ImageProcessor {
         let key = cacheKey(for: url, targetSize: targetSize)
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await transport.data(from: url)
 
             guard let image = UIImage(data: data) else {
                 throw ImageProcessorError.invalidRemoteImageData
@@ -240,6 +253,16 @@ public class ImageProcessor {
             return processedImage
         } catch let error as ImageProcessorError {
             throw error
+        } catch let error as NetworkError {
+            // Routing through `HTTPClient` means a non-2xx response (e.g. a 404 error page)
+            // throws `NetworkError.httpError` before we ever see response bytes, instead of
+            // falling through to `UIImage(data:)` and failing decode as `.invalidRemoteImageData`
+            // the way the old direct `URLSession.shared.data(from:)` call did. We deliberately
+            // surface this as `.downloadFailed` (we never received usable image bytes) rather
+            // than `.invalidRemoteImageData` (bytes were received but weren't a decodable image),
+            // so callers can tell "server refused/failed to serve the image" apart from
+            // "server returned garbage".
+            throw ImageProcessorError.downloadFailed(error)
         } catch {
             throw ImageProcessorError.downloadFailed(error)
         }
@@ -392,9 +415,56 @@ public enum ImageProcessorError: Error, LocalizedError {
             return "Shared storage is not configured. Call configure(shouldCacheToSharedStorage:appGroupIdentifier:) first"
         case .invalidRemoteImageData:
             return "Failed to decode remote image data"
+        // Also thrown for non-2xx HTTP responses (surfaced as a wrapped `NetworkError`), e.g. a
+        // 404 error page — see the doc comment on `cacheImage(from:targetSize:quality:)`.
         case .downloadFailed(let error):
             return "Failed to download remote image: \(error.localizedDescription)"
         }
+    }
+}
+
+// MARK: - Remote Image Transport
+
+/// Abstraction over the transport used to fetch remote image bytes, so
+/// `cacheImage(from:targetSize:quality:)` can be unit-tested with a fake and production code
+/// routes through the package's canonical `HTTPClient` instead of `URLSession.shared` (feature
+/// code must not call `URLSession.shared` directly; see the v4 Media ownership rule and
+/// `SFKNetworkInstrumentation`, which lets opt-in products like `SwapFoundationKitPulse` observe
+/// `HTTPClient` traffic).
+protocol ImageProcessorTransport: Sendable {
+    func data(from url: URL) async throws -> (Data, HTTPURLResponse)
+}
+
+/// Default `ImageProcessorTransport` backed by the package's canonical `HTTPClient`.
+struct HTTPClientImageTransport: ImageProcessorTransport {
+    let client: HTTPClient
+
+    func data(from url: URL) async throws -> (Data, HTTPURLResponse) {
+        let response = try await client.execute(RemoteImageFetchRequest(url: url))
+        return (response.data, response.response)
+    }
+}
+
+/// Builds a GET `NetworkRequest` from an arbitrary remote image URL.
+private struct RemoteImageFetchRequest: NetworkRequest {
+    let scheme: String
+    let baseURL: String
+    let path: String
+    let method: HTTPMethod = .get
+    let parameters: [String: String]?
+    let headers: [String: String]? = nil
+    let body: Data? = nil
+
+    init(url: URL) {
+        self.scheme = url.scheme ?? "https"
+        let host = url.host ?? ""
+        if let port = url.port {
+            self.baseURL = "\(host):\(port)"
+        } else {
+            self.baseURL = host
+        }
+        self.path = url.path.isEmpty ? "/" : url.path
+        self.parameters = url.queryParameters
     }
 }
 
