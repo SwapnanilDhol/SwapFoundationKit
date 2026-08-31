@@ -37,6 +37,14 @@ Each module has its own README with full API reference and code examples:
 | [Agent Workflow](development/agents.md) | LLM agent workflow for auditing and migration |
 | [Feature Discovery Workflow](development/feature-discovery.md) | How agents should check SFK first during host-app development |
 
+## Refactoring and Migration Planning
+
+| Document | Description |
+|----------|-------------|
+| [v4 Simplification Refactoring Plan](development/v4-simplification-refactoring-plan.md) | Maintainer-facing architecture, API, sequencing, acceptance criteria, and rollback plan |
+| [v4 Simplification Migration Guide](migration/v4-simplification-migration-guide.md) | Staged v3-to-v4 procedure for package maintainers and host applications |
+| [v4 API Ledger](development/v4-api-ledger.md) | Authoritative Phase 0 public-API inventory, symbol-by-symbol disposition, and CI surface/dependency gates |
+
 ## Agent Files
 
 | File | Purpose |
