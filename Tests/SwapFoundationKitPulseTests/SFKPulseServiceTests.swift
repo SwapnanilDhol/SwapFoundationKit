@@ -1,6 +1,6 @@
 /*****************************************************************************
  * SFKPulseServiceTests.swift
- * SwapFoundationKit
+ * SwapFoundationKitPulseTests
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *
@@ -14,7 +14,8 @@ import Combine
 #if canImport(Pulse)
 import Pulse
 #endif
-@testable import SwapFoundationKit
+import SwapFoundationKit
+@testable import SwapFoundationKitPulse
 
 #if canImport(Pulse)
 final class SFKPulseServiceTests: XCTestCase {

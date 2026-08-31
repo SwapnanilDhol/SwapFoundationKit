@@ -1,6 +1,6 @@
 /*****************************************************************************
  * SFKPulseConsoleView.swift
- * SwapFoundationKit
+ * SwapFoundationKitPulse
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *

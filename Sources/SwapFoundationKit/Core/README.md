@@ -7,6 +7,9 @@ Foundation-level services for networking, security, backup, and configuration.
 | Type | Kind | Description |
 |------|------|-------------|
 | `HTTPClient` | class | Async/await HTTP client with logging, default headers, JSON decoding, and file downloads |
+| `SFKURLSessionPerforming` | protocol | Abstraction over `URLSession.data(for:)` used to instrument `HTTPClient` requests |
+| `SFKInstrumentedSession` | struct | A `URLSession` paired with the performer `HTTPClient` should execute requests through |
+| `SFKNetworkInstrumentation` | enum | Registry opt-in products (like `SwapFoundationKitPulse`) use to supply `HTTPClient`'s session; a plain `URLSession` is used when nothing is registered |
 | `NetworkRequest` | protocol | Declarative request builder with URL, method, headers, body |
 | `NetworkResponse` | struct | Response wrapper with status code, content type, helpers |
 | `NetworkDownloadResponse` | struct | Download result wrapper with file URL, status code, and response metadata |
@@ -73,6 +76,7 @@ let isDebug = ConfigurationService.shared.isDebugMode()
 ## Source Files
 
 - `Networking.swift` — HTTPClient, NetworkRequest, NetworkResponse, NetworkDownloadResponse, NetworkDownloadProgress, NetworkError
+- `SFKNetworkInstrumentation.swift` — SFKURLSessionPerforming, SFKInstrumentedSession, SFKNetworkInstrumentation (opt-in instrumentation seam for `HTTPClient`)
 - `NetworkService.swift` — Legacy network service
 - `SecurityService.swift` — Encryption, keychain, hashing
 - `AppAttestService.swift` — App Attest key persistence, attestation, and assertions

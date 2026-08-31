@@ -1,20 +1,21 @@
 # Services
 
-Application-level services for haptics, logging, analytics, Pulse inspection, user defaults, deeplinks, toasts, file I/O, pasteboard, location, app links, notifications, and Pro gating.
+Application-level services for haptics, logging, analytics, user defaults, deeplinks, file I/O, pasteboard, location, app links, notifications, and Pro gating.
+
+Pulse-backed log/network inspection and toast presentation are opt-in products —
+`SwapFoundationKitPulse` and `SwapFoundationKitToast` — and are no longer part of this default
+target. See [SFKPulseService and ToastManager have moved](#sfkpulseservice-and-toastmanager-have-moved)
+below.
 
 ## Public API
 
 | Type | Kind | Description |
 |------|------|-------------|
 | `HapticsHelper` | class | Impact (light/medium/heavy/custom) and notification haptics |
-| `Logger` | enum | Colored console logging with emoji prefixes, analytics fan-out on errors |
+| `Logger` | enum | Colored console logging with emoji prefixes, log-sink and analytics fan-out on errors |
 | `LogLevel` | enum | debug, info, warning, error |
-| `SFKPulseService` | enum | Configures Pulse-backed log persistence and network capture for SFK |
-| `SFKPulseConfiguration` | struct | Controls store location, network capture mode, redaction, and remote logging |
-| `SFKPulseNetworkCaptureMode` | enum | disabled, SFK HTTPClient only, or debug proxy for all URLSessions |
-| `SFKPulseStoreLocation` | enum | Shared Pulse store or custom store URL |
-| `SFKPulseConsoleView` | struct | Ready-made SwiftUI console screen backed by PulseUI |
-| `SFKPulseConsoleMode` | enum | all, logs, network |
+| `SFKLogSink` | protocol | Destination that receives every `Logger.log` message |
+| `SFKLogSinkRegistry` | enum | Registers `SFKLogSink` destinations; `SwapFoundationKitPulse` registers into it |
 | `AnalyticsManager` | class | Protocol-based fan-out to multiple `AnalyticsLogger` providers |
 | `AnalyticsLogger` | protocol | Implement to forward events to the host app's analytics provider. |
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
@@ -22,9 +23,6 @@ Application-level services for haptics, logging, analytics, Pulse inspection, us
 | `UserDefault` | property wrapper | Type-safe, observable UserDefaults with SwiftUI binding support |
 | `SharedUserDefaults` | property wrapper | Type-safe app-group defaults resolved from configured app metadata |
 | `UserDefaultKeyProtocol` | protocol | Enum-based key definition for UserDefaults |
-| `ToastManager` | class | Type-safe toast presentation via `SFKToastKind` |
-| `SFKToastKind` | protocol | App-specific toast type definition |
-| `SFKToastConfiguration` | struct | Toast display timing configuration |
 | `DeeplinkHandler` | protocol | URL and user activity handling with Combine publisher |
 | `DeeplinkRoute` | protocol | Parsable route types for deeplink routing |
 | `DeeplinkEvent` | struct | Emitted event with route, URL, and source |
@@ -54,15 +52,13 @@ helper.successNotification()
 Logger.info("User signed in", context: "Auth")
 Logger.error("Network timeout", context: "API")
 
-// Pulse
-SFKPulseService.configure(
-    SFKPulseConfiguration(
-        networkCaptureMode: .sfkHTTPClientOnly,
-        enableRemoteLogging: true
-    )
-)
-// Present SFKPulseConsoleView() from a sheet or NavigationStack destination
-// Use hidesCloseButton: true when the console is pushed inside your own navigation stack
+// Log sink (opt-in products like SwapFoundationKitPulse register into this)
+struct MySink: SFKLogSink {
+    func record(level: LogLevel, message: String, context: String?, function: String, file: String, line: Int) {
+        // forward elsewhere
+    }
+}
+SFKLogSinkRegistry.register(MySink())
 
 // Analytics
 AnalyticsManager.shared.addLogger(SFKFirebaseLogger())
@@ -103,7 +99,19 @@ await SFKNotificationService.shared.requestAuthorization()
 await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 ```
 
-Host-app integration guidance lives in [Docs/guides/pulse-integration.md](../../../Docs/guides/pulse-integration.md).
+## SFKPulseService and ToastManager have moved
+
+`SFKPulseService`, `SFKPulseConfiguration`, `SFKPulseConsoleView`, and their supporting enums now
+ship in the opt-in `SwapFoundationKitPulse` product. `ToastManager`, `SFKToastKind`, and
+`SFKToastConfiguration` now ship in the opt-in `SwapFoundationKitToast` product. Add the product
+you need and change `import SwapFoundationKit` to `import SwapFoundationKitPulse` /
+`import SwapFoundationKitToast` at call sites — the APIs themselves are unchanged. See
+[Docs/migration/v4-phase-1-product-extraction.md](../../../Docs/migration/v4-phase-1-product-extraction.md).
+
+This target still owns the seams those products plug into: `SFKLogSink`/`SFKLogSinkRegistry`
+here, and `SFKURLSessionPerforming`/`SFKNetworkInstrumentation` in `Core/`.
+
+Host-app Pulse integration guidance lives in [Docs/guides/pulse-integration.md](../../../Docs/guides/pulse-integration.md).
 
 ## Source Files
 
@@ -119,9 +127,7 @@ Host-app integration guidance lives in [Docs/guides/pulse-integration.md](../../
 ### Other
 - `HapticsHelper.swift` — Haptic feedback
 - `Logger.swift` — Colored logging
-- `SFKPulseService.swift` — Pulse integration for logs and networking
-- `SFKPulseConsoleView.swift` — In-app Pulse console view
-- `ToastManager.swift` — Toast notifications
+- `SFKLogSink.swift` — Log sink protocol and registry (`SwapFoundationKitPulse` registers into this)
 - `UserDefault.swift` + `UserDefaults+.swift` — Type-safe defaults
 - `PasteboardService.swift` — Clipboard access
 - `LocationSearchService.swift` — MapKit search

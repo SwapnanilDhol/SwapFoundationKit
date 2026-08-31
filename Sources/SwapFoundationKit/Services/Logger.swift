@@ -90,7 +90,7 @@ public enum Logger {
         let color = level.color
         let reset = "\u{001B}[0m"
         print("\(color)\(level.emoji) [\(projectName)][\(timestamp)][\(level.rawValue)] [\(fileName):\(line) \(function)] [\(thread)]\(contextString) - \(message)\(reset)")
-        SFKPulseService.recordMessage(
+        SFKLogSinkRegistry.broadcast(
             level: level,
             message: message,
             context: context,

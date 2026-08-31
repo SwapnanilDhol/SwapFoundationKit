@@ -1,6 +1,6 @@
 /*****************************************************************************
  * SFKPulseService.swift
- * SwapFoundationKit
+ * SwapFoundationKitPulse
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
  *
@@ -10,18 +10,13 @@
  *****************************************************************************/
 
 import Foundation
+import SwapFoundationKit
 #if canImport(Pulse)
 import Pulse
 #endif
 #if canImport(PulseProxy)
 import PulseProxy
 #endif
-
-internal protocol SFKURLSessionPerforming {
-    func data(for request: URLRequest) async throws -> (Data, URLResponse)
-}
-
-extension URLSession: SFKURLSessionPerforming {}
 
 #if canImport(Pulse)
 extension URLSessionProxy: SFKURLSessionPerforming {}
@@ -94,6 +89,8 @@ public enum SFKPulseService {
 
     /// Enables Pulse for SFK logs and networking.
     public static func configure(_ configuration: SFKPulseConfiguration = .init()) {
+        _ = registerSeamsOnce
+
         #if canImport(Pulse)
         let store = makeStore(for: configuration.storeLocation)
 
@@ -133,7 +130,18 @@ public enum SFKPulseService {
         #endif
     }
 
-    internal static func makeSession(configuration: URLSessionConfiguration) -> (session: URLSession, performer: any SFKURLSessionPerforming) {
+    /// Registers this service's network and logging seams with the default target exactly once,
+    /// the first time `configure(_:)` is called. Both seam factories read this service's live,
+    /// lock-guarded state on every invocation, so a single registration keeps behaving correctly
+    /// across later calls to `configure(_:)`.
+    private static let registerSeamsOnce: Void = {
+        SFKNetworkInstrumentation.register { configuration in
+            makeInstrumentedSession(configuration: configuration)
+        }
+        SFKLogSinkRegistry.register(SFKPulseLogSink())
+    }()
+
+    private static func makeInstrumentedSession(configuration: URLSessionConfiguration) -> SFKInstrumentedSession {
         #if canImport(Pulse)
         let pulseConfiguration = lock.withLock {
             isConfigured ? self.configuration : nil
@@ -143,14 +151,14 @@ public enum SFKPulseService {
         switch captureMode {
         case .disabled:
             let session = URLSession(configuration: configuration)
-            return (session, session)
+            return SFKInstrumentedSession(session: session, performer: session)
         case .sfkHTTPClientOnly, .debugProxyAllURLSessions:
             let proxy = URLSessionProxy(configuration: configuration, logger: NetworkLogger.shared)
-            return (proxy.session, proxy)
+            return SFKInstrumentedSession(session: proxy.session, performer: proxy)
         }
         #else
         let session = URLSession(configuration: configuration)
-        return (session, session)
+        return SFKInstrumentedSession(session: session, performer: session)
         #endif
     }
 
@@ -208,6 +216,28 @@ public enum SFKPulseService {
         }
     }
     #endif
+}
+
+/// Forwards `Logger.log` messages into Pulse's `LoggerStore` via the default target's
+/// `SFKLogSink` seam. Registered once by `SFKPulseService.configure(_:)`.
+private struct SFKPulseLogSink: SFKLogSink {
+    func record(
+        level: LogLevel,
+        message: String,
+        context: String?,
+        function: String,
+        file: String,
+        line: Int
+    ) {
+        SFKPulseService.recordMessage(
+            level: level,
+            message: message,
+            context: context,
+            function: function,
+            file: file,
+            line: line
+        )
+    }
 }
 
 private extension NSLock {

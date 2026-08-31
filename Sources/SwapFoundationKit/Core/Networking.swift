@@ -273,9 +273,9 @@ public final class HTTPClient {
 
     /// Initialize with custom URLSession configuration
     public init(configuration: URLSessionConfiguration = .default) {
-        let components = SFKPulseService.makeSession(configuration: configuration)
-        self.session = components.session
-        self.sessionPerformer = components.performer
+        let instrumented = SFKNetworkInstrumentation.makeSession(configuration: configuration)
+        self.session = instrumented.session
+        self.sessionPerformer = instrumented.performer
     }
 
     /// Execute a network request
