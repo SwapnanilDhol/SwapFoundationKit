@@ -6,8 +6,11 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 
 - **iOS**: 17.0+
 - **Swift**: 5.9+
-- **Dependencies (core)**: [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, [Pulse](https://github.com/kean/Pulse) 5.2.3
-- **Optional**: `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
+- **Dependencies (default product)**: none
+- **Optional products**: `SwapFoundationKitPulse` + [Pulse](https://github.com/kean/Pulse) 5.2.3, `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
+
+`SFKFirebaseLogger` is a temporary guarded compatibility adapter; Firebase will
+move to a planned explicit `SwapFoundationKitFirebase` product before v4.
 
 ## Installation
 
@@ -35,24 +38,44 @@ struct MyApp: App {
             appMetadata: AppMetaData(
                 appGroupIdentifier: "group.com.yourapp.widget",
                 appName: "MyApp"
-            ),
-            enableWatchConnectivity: true,
-            enableAnalytics: true,
-            enableItemSync: true,
-            enableNetworking: true
+            )
         )
-
-        // Synchronous configuration makes metadata-backed APIs such as
-        // @SharedUserDefaults available immediately.
         try? SwapFoundationKit.shared.configure(with: config)
         Task {
             try? await SwapFoundationKit.shared.start()
             await ExchangeRateManager.shared.start()
         }
+    }
 
+    var body: some Scene {
+        WindowGroup { ContentView() }
+    }
+}
+```
+
+### Optional Pulse integration
+
+Add the `SwapFoundationKitPulse` product only when the app needs Pulse. Configure it before
+constructing `HTTPClient` instances or touching `SwapFoundationKit.shared`, so those instances
+use the Pulse instrumentation seam:
+
+```swift
+import SwapFoundationKit
+import SwapFoundationKitPulse
+
+@main
+struct MyApp: App {
+    init() {
         SFKPulseService.configure(
-            SFKPulseConfiguration(
-                networkCaptureMode: .sfkHTTPClientOnly
+            SFKPulseConfiguration(networkCaptureMode: .sfkHTTPClientOnly)
+        )
+        _ = HTTPClient()
+        try? SwapFoundationKit.shared.configure(
+            with: SwapFoundationKitConfiguration(
+                appMetadata: AppMetaData(
+                    appGroupIdentifier: "group.com.yourapp.widget",
+                    appName: "MyApp"
+                )
             )
         )
     }
@@ -63,7 +86,7 @@ struct MyApp: App {
 }
 ```
 
-To inspect logs inside a host app, present `SFKPulseConsoleView()` in a sheet or push it inside a `NavigationStack`.
+To inspect logs, present `SFKPulseConsoleView()` from a host-owned debug entry point.
 
 ## Component Catalog
 
@@ -76,7 +99,7 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | Module | Description |
 |--------|-------------|
 | [Core](Sources/SwapFoundationKit/Core/README.md) | Networking, security, App Attest authenticated sessions, backup, configuration |
-| [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, toasts, files, location, pro gating, notifications |
+| [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, files, location, pro gating, notifications (Pulse and Toast are opt-in products) |
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, text fields, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |
 | [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Persistent TTL storage, debounce/throttle, environment detection, launch arguments |
@@ -87,6 +110,8 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | [Compatibility](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |
+| [Pulse](Sources/SwapFoundationKitPulse/README.md) | Pulse network logging and debug console (optional product) |
+| [Toast](Sources/SwapFoundationKitToast/README.md) | Toast presentation (optional product) |
 
 ## Documentation
 
@@ -113,7 +138,7 @@ For LLM agents working with this package:
 
 - **Protocol-Oriented**: Easy to implement, test, and extend
 - **Modern Swift**: async/await, actors, Swift concurrency
-- **Modular**: 12 subdirectories with clear boundaries
+- **Modular**: clearly bounded core modules plus explicit opt-in products
 - **SFK prefix**: Public UI types use `SFK` prefix; protocols and services do not
 
 ## Support

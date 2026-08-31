@@ -68,14 +68,16 @@ let package = Package(
                 .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
                 .product(name: "PulseUI", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
                 .product(name: "PulseProxy", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
-            ]
+            ],
+            exclude: ["README.md"]
         ),
         .target(
             name: "SwapFoundationKitToast",
             dependencies: [
                 "SwapFoundationKit",
                 .product(name: "Toast", package: "Toast-Swift"),
-            ]
+            ],
+            exclude: ["README.md"]
         ),
         .testTarget(
             name: "SwapFoundationKitTests",

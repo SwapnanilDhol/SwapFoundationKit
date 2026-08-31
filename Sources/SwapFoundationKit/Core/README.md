@@ -10,14 +10,17 @@ Foundation-level services for networking, security, backup, and configuration.
 | `SFKURLSessionPerforming` | protocol | Abstraction over `URLSession.data(for:)` used to instrument `HTTPClient` requests |
 | `SFKInstrumentedSession` | struct | A `URLSession` paired with the performer `HTTPClient` should execute requests through |
 | `SFKNetworkInstrumentation` | enum | Registry opt-in products (like `SwapFoundationKitPulse`) use to supply `HTTPClient`'s session; a plain `URLSession` is used when nothing is registered |
-| `NetworkRequest` | protocol | Declarative request builder with URL, method, headers, body |
+| `NetworkRequest` | protocol | Declarative request builder with URL, method, headers, body, explicit URL preservation, and default-header opt-out |
+| `NetworkRequest.explicitURL` | property | Optional verbatim URL for presigned, XML, or otherwise non-losslessly-decomposable URLs |
+| `NetworkRequest.usesClientDefaultHeaders` | property | Defaults to `true`; set `false` when the request must not merge `HTTPClient.defaultHeaders` |
 | `NetworkResponse` | struct | Response wrapper with status code, content type, helpers |
 | `NetworkDownloadResponse` | struct | Download result wrapper with file URL, status code, and response metadata |
 | `NetworkDownloadProgress` | struct | Rich progress payload with bytes written, expected size, and fractional completion |
 | `NetworkError` | enum | Structured errors: invalidURL, httpError, timeout, noInternet, etc. |
 | `HTTPMethod` | enum | GET, POST, PUT, DELETE, PATCH, HEAD |
 | `NetworkLogLevel` | enum | Request/response logging verbosity (none through debug) |
-| `NetworkService` | class | Legacy reachability-aware network service |
+| `NetworkService` | class | Legacy reachability-aware network service with origin-scoped backend headers |
+| `SFKBackendOriginRegistry` | enum | Explicit exact-origin registry controlling where `NetworkService.backendDefaultHeaders` may be sent |
 | `SecurityService` | class | AES encryption with persistent Keychain key, keychain CRUD, SHA256 hashing |
 | `AppAttestService` | actor | App Attest key, attestation, and assertion client; preserves typed unsupported, transient, and key-invalid failures |
 | `AppAttestKeyStore` | protocol | Injectable persistence boundary for the App Attest key identifier |
@@ -35,6 +38,7 @@ Foundation-level services for networking, security, backup, and configuration.
 ```swift
 // Networking
 let client = HTTPClient()
+NetworkService.registerBackendOrigin(host: "api.example.com")
 let response = try await client.get(baseURL: "api.example.com", path: "/users")
 let users: [User] = try await client.executeAndDecode(request)
 let download = try await client.download(
@@ -73,11 +77,37 @@ let apiURL = try ConfigurationService.shared.getAPIBaseURL()
 let isDebug = ConfigurationService.shared.isDebugMode()
 ```
 
+`NetworkRequest.explicitURL` preserves the caller's URL at the URL construction
+boundary, which matters for signed URLs and XML resources. Set
+`usesClientDefaultHeaders` to `false` for requests that must not advertise the
+client's JSON defaults. Backend defaults are only merged for an exact registered
+scheme/host/port origin; a `nil` registered port resolves to HTTPS 443 or HTTP
+80 and never means “any port.” `NetworkService.downloadFile` remains an explicit
+legacy bypass and does not apply backend defaults.
+
+For a conformer that already owns a complete URL, keep the protocol witness
+optional so ordinary decomposed requests retain their defaults:
+
+```swift
+let explicitURL: URL? = signedURL
+```
+
+When backend defaults are attached, request redirects are rejected if they would
+leave the registered origin. This keeps identity/entitlement headers from being
+forwarded cross-origin while preserving ordinary requests' existing behavior.
+
+Custom `SFKURLSessionPerforming` implementations used with origin-scoped backend
+headers must implement `data(for:delegate:)` and forward or enforce the supplied
+delegate. A performer that cannot honor a non-`nil` delegate fails closed with
+`URLError(.unsupportedURL)`, which `HTTPClient` may wrap as `NetworkError`.
+Ordinary `data(for:)` requests are unchanged; `URLSession` and Pulse support the
+delegate path.
+
 ## Source Files
 
 - `Networking.swift` — HTTPClient, NetworkRequest, NetworkResponse, NetworkDownloadResponse, NetworkDownloadProgress, NetworkError
 - `SFKNetworkInstrumentation.swift` — SFKURLSessionPerforming, SFKInstrumentedSession, SFKNetworkInstrumentation (opt-in instrumentation seam for `HTTPClient`)
-- `NetworkService.swift` — Legacy network service
+- `NetworkService.swift` — Legacy network service, backend-origin registration, and header policy
 - `SecurityService.swift` — Encryption, keychain, hashing
 - `AppAttestService.swift` — App Attest key persistence, attestation, and assertions
 - `Authentication/` — Shared authenticated-session engine, backend adapter, secure persistence and HTTP client

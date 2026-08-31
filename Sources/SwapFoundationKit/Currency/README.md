@@ -35,6 +35,10 @@ Currency model with 58 ISO 4217 codes, flags, symbols, formatting, sorting, loca
 | `.fetchAndCacheExchangeRates()` | Force re-fetch |
 | `.cacheValidityInterval` | TTL in seconds (default: 300) |
 
+The ECB XML request uses the package `HTTPClient` transport with the original
+URL preserved via `explicitURL`, JSON default headers disabled, and a 60-second
+timeout. This avoids rewriting feed URLs or advertising JSON content negotiation.
+
 ```swift
 await ExchangeRateManager.shared.start()
 let usd = ExchangeRateManager.shared.convert(value: 100, fromCurrency: .EUR, toCurrency: .USD)

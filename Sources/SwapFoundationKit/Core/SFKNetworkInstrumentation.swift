@@ -16,6 +16,21 @@ import Foundation
 /// default target depending on any third-party vendor.
 public protocol SFKURLSessionPerforming: Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
+
+    /// Executes a request with an optional task delegate. Performers that cannot honor a
+    /// delegate must fail closed when one is supplied instead of silently following redirects
+    /// without the delegate's policy. The default keeps existing custom performers source
+    /// compatible for ordinary requests.
+    func data(for request: URLRequest, delegate: URLSessionTaskDelegate?) async throws -> (Data, URLResponse)
+}
+
+public extension SFKURLSessionPerforming {
+    func data(for request: URLRequest, delegate: URLSessionTaskDelegate?) async throws -> (Data, URLResponse) {
+        guard delegate == nil else {
+            throw URLError(.unsupportedURL)
+        }
+        return try await data(for: request)
+    }
 }
 
 extension URLSession: SFKURLSessionPerforming {}

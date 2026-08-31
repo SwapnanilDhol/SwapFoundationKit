@@ -1,6 +1,6 @@
 version: 2
 module: SwapFoundationKit
-last_reviewed: "2026-08-10"
+last_reviewed: "2026-08-31"
 purpose: >
   Agent-first capability index for host-app feature development. Use this file
   before implementing new UI, utilities, or app infrastructure in a host app.
@@ -308,6 +308,44 @@ domains:
       - destructive action
       - reset dialog
 
+  - id: networking
+    priority: 6
+    module: SwapFoundationKit (current; Networking opt-in product is a v4 design target)
+    summary: Async HTTP requests, typed request/response contracts, downloads, and origin-scoped backend headers.
+    when_to_check:
+      - Adding an API client or download flow
+      - Replacing direct URLSession request code
+      - Supplying identity or entitlement headers to a known backend
+    prefer_when:
+      - The host needs generic HTTP execution and typed request construction
+      - Backend-only headers must be restricted to explicitly registered origins
+    keep_in_host_app_when:
+      - The host owns domain routing, authorization policy, or a deliberately different transport
+    public_api:
+      - HTTPClient
+      - NetworkRequest
+      - NetworkResponse
+      - NetworkDownloadResponse
+      - NetworkDownloadProgress
+      - NetworkError
+      - NetworkService
+      - SFKBackendOriginRegistry
+      - NetworkRequest.explicitURL
+      - NetworkRequest.usesClientDefaultHeaders
+      - NetworkService.registerBackendOrigin(host:scheme:port:)
+    docs:
+      - Sources/SwapFoundationKit/Core/README.md
+      - Docs/guides/networking-rfc.md
+    examples:
+      - Sources/SwapFoundationKit/Core/Networking.swift
+      - Sources/SwapFoundationKit/Core/NetworkService.swift
+    host_app_triggers:
+      - HTTP client
+      - API client
+      - URLSession
+      - backend headers
+      - origin registration
+
   - id: sync_shared_storage
     priority: 6
     summary: Shared storage, widget sync, and Watch sync primitives for app data propagation.
@@ -340,7 +378,7 @@ domains:
 
   - id: utilities
     priority: 7
-    summary: Broad utility layer for haptics, logging, analytics, Pulse inspection, defaults, URLs, backup, file import/export, pasteboard, location, and foundational extensions.
+    summary: Broad utility layer for haptics, logging, analytics, defaults, URLs, backup, file import/export, pasteboard, location, and foundational extensions.
     when_to_check:
       - Adding common app infrastructure
       - Replacing thin wrappers around standard iOS utilities
@@ -353,8 +391,6 @@ domains:
     public_api:
       - HapticsHelper
       - Logger
-      - SFKPulseService
-      - SFKPulseConsoleView
       - AnalyticsManager
       - UserDefault
       - SharedUserDefaults
@@ -384,9 +420,6 @@ domains:
       - haptics
       - logging
       - analytics
-      - pulse
-      - in-app logs
-      - network inspector
       - user defaults
       - app link
       - backup
@@ -431,9 +464,68 @@ domains:
       - appearance
       - hosting controller
 
+  - id: pulse_inspection
+    priority: 8
+    module: SwapFoundationKitPulse
+    summary: Opt-in Pulse-backed network logging and debug console integration.
+    when_to_check:
+      - Adding an in-app network inspector
+      - Adding a Pulse debug console
+      - Capturing HTTPClient requests during development
+    prefer_when:
+      - The host wants Pulse's existing network store and console UI
+      - The host can make an explicit opt-in product dependency
+    keep_in_host_app_when:
+      - The host intentionally uses another observability or log-viewing backend
+    public_api:
+      - SFKPulseService
+      - SFKPulseConfiguration
+      - SFKPulseNetworkCaptureMode
+      - SFKPulseStoreLocation
+      - SFKPulseConsoleView
+      - SFKPulseConsoleMode
+    docs:
+      - Docs/migration/v4-phase-1-product-extraction.md
+      - Sources/SwapFoundationKitPulse/README.md
+    examples:
+      - Sources/SwapFoundationKitPulse/SFKPulseService.swift
+      - Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift
+    host_app_triggers:
+      - Pulse
+      - PulseUI
+      - network inspector
+      - debug console
+
+  - id: toast_presentation
+    priority: 8
+    module: SwapFoundationKitToast
+    summary: Opt-in Toast-backed presentation for transient user feedback.
+    when_to_check:
+      - Adding transient toast notifications
+      - Replacing a host-local ToastManager wrapper
+    prefer_when:
+      - The host can make an explicit opt-in Toast product dependency
+    keep_in_host_app_when:
+      - The host's design-system toast intentionally diverges from SFK's presentation
+    public_api:
+      - ToastManager
+      - SFKToastKind
+      - SFKToastStyle
+      - SFKToastConfiguration
+    docs:
+      - Docs/migration/v4-phase-1-product-extraction.md
+      - Sources/SwapFoundationKitToast/README.md
+    examples:
+      - Sources/SwapFoundationKitToast/ToastManager.swift
+    host_app_triggers:
+      - toast
+      - ToastManager
+      - transient notification
+
   - id: analytics_loggers
     priority: 9
-    summary: Pre-built AnalyticsLogger implementation for Firebase.
+    module: SwapFoundationKitFirebase (planned opt-in product)
+    summary: Pre-built AnalyticsLogger implementation for Firebase, retained as a temporary guarded adapter until the opt-in product is extracted.
     when_to_check:
       - Adding analytics tracking
       - Wiring up Firebase
@@ -449,6 +541,7 @@ domains:
       - SFKFirebaseLogger
     docs:
       - README.md
+      - Docs/migration/v4-simplification-migration-guide.md
     examples:
       - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
     host_app_triggers:

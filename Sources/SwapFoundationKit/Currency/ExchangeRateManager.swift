@@ -269,8 +269,14 @@ private struct ExchangeRateFetchRequest: NetworkRequest {
     let parameters: [String: String]?
     let headers: [String: String]? = nil
     let body: Data? = nil
+    /// Preserve the exact feed URL, including query ordering, escapes, fragments, and trailing
+    /// slash. XML feeds are not JSON requests, so HTTPClient's JSON defaults are disabled.
+    let timeoutInterval: TimeInterval = 60
+    let explicitURL: URL?
+    let usesClientDefaultHeaders: Bool = false
 
     init(url: URL) {
+        self.explicitURL = url
         self.scheme = url.scheme ?? "https"
         let host = url.host ?? ""
         if let port = url.port {

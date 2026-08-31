@@ -12,7 +12,7 @@ This guide complements the [v4 simplification refactoring plan](../development/v
 - Keep host-specific identity, authorization, entitlement, analytics, and UI policy in the host.
 - Do not remove a deprecated symbol until the declared v4 breaking release and the supported host apps have passed the relevant gate.
 
-The audit baseline is 171 Swift files, 22,198 lines, 1,200 public declarations, and 220 public types in the main target; all Swift sources total 182 files, 23,789 lines, and 1,281 public declarations. These numbers are measurement baselines, not migration targets by themselves. The target is a smaller default dependency graph and a substantially smaller conceptual API surface.
+The historical audit baseline is 171 Swift files, 22,198 lines, 1,200 public declarations, and 220 public types in the main target; all Swift sources total 182 files, 23,789 lines, and 1,281 public declarations. These numbers are measurement baselines, not migration targets by themselves. The current branch has 170 default-target Swift files and 184 Swift files across all five first-party products; declaration/type counts are tracked by the [API ledger](../development/v4-api-ledger.md) after the pinned-toolchain regeneration. The target is a smaller default dependency graph and a substantially smaller conceptual API surface.
 
 ## 2. Release model: v3 compatibility, then v4 breaking
 

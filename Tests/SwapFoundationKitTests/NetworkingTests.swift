@@ -61,6 +61,59 @@ final class NetworkingTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://api.example.com/users/123?expand=details")
     }
 
+    func testNetworkRequestExplicitURLTakesPrecedenceWithoutRebuilding() throws {
+        let explicit = URL(string: "https://cdn.example.com/assets/%2Ftoken/?first=1&dup=a&dup=b&raw&last=#fragment")!
+
+        struct SignedRequest: NetworkRequest {
+            let explicitURL: URL?
+
+            var scheme: String { "https" }
+            var baseURL: String { "invalid.example.com" }
+            var path: String { "/this-must-not-be-used" }
+            var method: HTTPMethod { .get }
+            var parameters: [String: String]? { ["replaced": "query"] }
+            var headers: [String: String]? { nil }
+            var body: Data? { nil }
+        }
+
+        let request = SignedRequest(explicitURL: explicit)
+        XCTAssertEqual(request.url, explicit)
+        XCTAssertEqual(request.request?.url, explicit)
+    }
+
+    func testLegacySessionPerformerDispatchesNormallyButFailsClosedForDelegateRequests() async throws {
+        SFKNetworkInstrumentation.resetForTesting()
+        defer { SFKNetworkInstrumentation.resetForTesting() }
+
+        let performer = LegacySessionPerformer()
+        SFKNetworkInstrumentation.register { configuration in
+            let session = URLSession(configuration: configuration)
+            return SFKInstrumentedSession(session: session, performer: performer)
+        }
+        let client = HTTPClient(configuration: .ephemeral)
+
+        struct Request: NetworkRequest {
+            let scheme = "https"
+            let baseURL = "api.example.com"
+            let path = "/ping"
+            let method: HTTPMethod = .get
+            let parameters: [String: String]? = nil
+            let headers: [String: String]? = nil
+            let body: Data? = nil
+        }
+
+        _ = try await client.execute(Request())
+        let callCount = await performer.callCount
+        XCTAssertEqual(callCount, 1)
+
+        do {
+            _ = try await client.execute(Request(), delegate: TestTaskDelegate())
+            XCTFail("A legacy performer must reject delegate-required execution")
+        } catch NetworkError.requestFailed(let underlying) {
+            XCTAssertEqual((underlying as? URLError)?.code, .unsupportedURL)
+        }
+    }
+
     func testNetworkRequestURLBuildingWithCustomScheme() {
         // Given
         struct TestRequest: NetworkRequest {
@@ -693,6 +746,22 @@ final class NetworkingTests: XCTestCase {
         } catch {
             XCTFail("Expected NetworkError.invalidURL, got \(error)")
         }
+        XCTAssertNil(MockURLProtocol.lastRequest)
+    }
+
+    @MainActor
+    func testNetworkServiceRejectsRelativeURLBeforeDispatch() async {
+        let service = NetworkService(client: client)
+
+        do {
+            _ = try await service.get(from: URL(string: "relative/path")!)
+            XCTFail("Expected invalid URL error")
+        } catch NetworkError.invalidURL {
+            // Success
+        } catch {
+            XCTFail("Expected NetworkError.invalidURL, got \(error)")
+        }
+        XCTAssertNil(MockURLProtocol.lastRequest)
     }
 
     @MainActor
@@ -954,6 +1023,20 @@ class MockURLProtocol: URLProtocol {
 
     override func stopLoading() {}
 }
+
+private actor LegacySessionPerformer: SFKURLSessionPerforming {
+    private(set) var callCount = 0
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        callCount += 1
+        return (
+            Data("ok".utf8),
+            HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        )
+    }
+}
+
+private final class TestTaskDelegate: NSObject, URLSessionTaskDelegate {}
 
 // MARK: - Test Models
 

@@ -5,9 +5,10 @@
 # APPROACH (real symbol graph, not grep):
 #   This script builds each first-party library scheme with
 #   `-emit-symbol-graph -emit-symbol-graph-dir <dir>` via xcodebuild
-#   (iOS Simulator destination, matching the project's working build gate:
+#   (representative arm64 iOS Simulator destination, matching the project's working build gate:
 #   `xcodebuild -scheme SwapFoundationKit -destination 'generic/platform=iOS
-#   Simulator' -configuration Debug CODE_SIGNING_ALLOWED=NO build`), then
+#   Simulator' -configuration Debug ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
+#   CODE_SIGNING_ALLOWED=NO build`), then
 #   parses the emitted SymbolGraph JSON with python3.
 #
 #   A symbol is counted as part of the public surface iff:
@@ -57,8 +58,12 @@
 #       breakdown for the default SwapFoundationKit target);
 #     - a SYMBOLS section (one line per public, located declaration:
 #       target | kind | file | line | symbol path).
-#   No timestamps or machine-specific paths are written, so an unchanged
-#   tree produces byte-identical output on any machine.
+#   No timestamps or machine-specific paths are written. Output is byte-stable
+#   for an unchanged tree only when Xcode/SDK/SwiftPM configuration is held
+#   constant; symbol-graph inventories can legitimately differ across
+#   toolchains. This report is not an ABI or full source-compatibility checker:
+#   it does not encode declaration signatures, defaults, availability, or
+#   compiler settings.
 #
 # USAGE:
 #   bash Scripts/api-baseline.sh            # regenerate Docs/development/api-baseline.txt
@@ -70,6 +75,9 @@
 #                                             # directory instead of rebuilding (fast local
 #                                             # iteration on the parser only; do not use
 #                                             # this mode to produce a committed baseline).
+#   bash Scripts/api-baseline.sh --derived-data-path <dir>
+#                                             # use an existing DerivedData checkout (useful
+#                                             # when a private build would exceed local disk).
 #
 # REQUIREMENTS: Xcode (xcodebuild), python3. Both are present on macOS CI
 # runners and on the dev machine this was authored/tested on (Xcode 26.6).
@@ -82,11 +90,12 @@ BASELINE_FILE="$REPO_ROOT/Docs/development/api-baseline.txt"
 
 # First-party library schemes to inventory. Deliberately excludes the host
 # app scheme (SwapFoundationKitHost) and third-party vendor schemes.
-TARGETS=(SwapFoundationKit SwapFoundationKitFeedback SwapFoundationKitGoogleMobileAds)
+TARGETS=(SwapFoundationKit SwapFoundationKitFeedback SwapFoundationKitGoogleMobileAds SwapFoundationKitPulse SwapFoundationKitToast)
 
 MODE="write"
 SKIP_BUILD="0"
 SYMBOL_GRAPH_DIR=""
+DERIVED_DATA_PATH=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -100,6 +109,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --symbol-graph-dir)
       SYMBOL_GRAPH_DIR="$2"
+      shift 2
+      ;;
+    --derived-data-path)
+      DERIVED_DATA_PATH="$2"
       shift 2
       ;;
     -h|--help)
@@ -138,10 +151,16 @@ if [[ "$SKIP_BUILD" == "0" ]]; then
   # agents/CI jobs) are touching the same repo checkout; a shared DerivedData
   # build database will lock and fail with "database is locked" under
   # concurrent builds. A dedicated path avoids that contention entirely.
-  PRIVATE_DERIVED_DATA="$WORK_DIR/derived"
-  mkdir -p "$PRIVATE_DERIVED_DATA"
+  if [[ -z "$DERIVED_DATA_PATH" ]]; then
+    PRIVATE_DERIVED_DATA="$WORK_DIR/derived"
+    mkdir -p "$PRIVATE_DERIVED_DATA"
+  else
+    PRIVATE_DERIVED_DATA="$DERIVED_DATA_PATH"
+    mkdir -p "$PRIVATE_DERIVED_DATA"
+    echo "api-baseline: using caller-provided DerivedData at $PRIVATE_DERIVED_DATA (not cleaned)" >&2
+  fi
   echo "api-baseline: emitting symbol graphs to $SYMBOL_GRAPH_DIR" >&2
-  echo "api-baseline: using private DerivedData at $PRIVATE_DERIVED_DATA" >&2
+  echo "api-baseline: using DerivedData at $PRIVATE_DERIVED_DATA" >&2
   for scheme in "${TARGETS[@]}"; do
     echo "api-baseline: building scheme $scheme ..." >&2
     LOG_FILE="$WORK_DIR/build-$scheme.log"
@@ -150,6 +169,8 @@ if [[ "$SKIP_BUILD" == "0" ]]; then
         -destination 'generic/platform=iOS Simulator' \
         -configuration Debug \
         -derivedDataPath "$PRIVATE_DERIVED_DATA" \
+        ARCHS=arm64 \
+        ONLY_ACTIVE_ARCH=YES \
         CODE_SIGNING_ALLOWED=NO \
         OTHER_SWIFT_FLAGS="-emit-symbol-graph -emit-symbol-graph-dir $SYMBOL_GRAPH_DIR" \
         build > "$LOG_FILE" 2>&1; then

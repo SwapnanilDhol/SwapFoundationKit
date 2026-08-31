@@ -14,7 +14,10 @@ import Combine
 #if canImport(Pulse)
 import Pulse
 #endif
-import SwapFoundationKit
+#if canImport(PulseProxy)
+import PulseProxy
+#endif
+@testable import SwapFoundationKit
 @testable import SwapFoundationKitPulse
 
 #if canImport(Pulse)
@@ -68,5 +71,41 @@ final class SFKPulseServiceTests: XCTestCase {
 
         XCTAssertTrue(protocolClasses.contains { NSStringFromClass($0).contains("MockingURLProtocol") })
     }
+
+    func testURLSessionProxyHonorsDelegateExecutionWitness() async throws {
+        SFKPulseService.configure(
+            SFKPulseConfiguration(networkCaptureMode: .sfkHTTPClientOnly)
+        )
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PulseTransportURLProtocol.self]
+        let instrumented = SFKNetworkInstrumentation.makeSession(configuration: configuration)
+        let request = URLRequest(url: URL(string: "https://pulse.example.com/ping")!)
+
+        // A legacy performer would hit SFKURLSessionPerforming's fail-closed default here. A
+        // successful response proves URLSessionProxy's concrete delegate overload is selected.
+        let (data, _) = try await instrumented.performer.data(
+            for: request,
+            delegate: PulseTaskDelegate()
+        )
+
+        XCTAssertEqual(data, Data("ok".utf8))
+    }
+}
+
+private final class PulseTaskDelegate: NSObject, URLSessionTaskDelegate {}
+
+private final class PulseTransportURLProtocol: URLProtocol {
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data("ok".utf8))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }
 #endif

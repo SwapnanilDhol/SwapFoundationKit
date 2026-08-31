@@ -1,6 +1,6 @@
 version: 2
 module: SwapFoundationKit
-last_reviewed: "2026-08-10"
+last_reviewed: "2026-08-31"
 purpose: >
   Source-of-truth inventory for host-app redundancy audits. Use this file before
   the README examples when deciding whether an app-local abstraction should be
@@ -68,6 +68,7 @@ capabilities:
   - id: pulse_logging_console
     audit_tier: exact
     confidence: high
+    module: SwapFoundationKitPulse
     replace_with:
       - SFKPulseService
       - SFKPulseConsoleView
@@ -95,8 +96,8 @@ capabilities:
     keep_custom_when:
       - The host app intentionally uses a different log viewer or must support a custom observability backend instead of Pulse.
     source_files:
-      - Sources/SwapFoundationKit/Services/SFKPulseService.swift
-      - Sources/SwapFoundationKit/Services/SFKPulseConsoleView.swift
+      - Sources/SwapFoundationKitPulse/SFKPulseService.swift
+      - Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift
 
   - id: analytics
     audit_tier: exact
@@ -171,6 +172,7 @@ capabilities:
       - NetworkDownloadResponse
       - NetworkDownloadProgress
       - NetworkError
+      - SFKBackendOriginRegistry
     public_symbols:
       - HTTPClient.execute(_:)
       - HTTPClient.executeAndDecode(_:)
@@ -181,6 +183,10 @@ capabilities:
       - NetworkService.get/post/put/delete
       - NetworkService.downloadFile(from:to:progressHandler:)
       - NetworkRequest.request
+      - NetworkRequest.explicitURL
+      - NetworkRequest.usesClientDefaultHeaders
+      - NetworkService.registerBackendOrigin(host:scheme:port:)
+      - SFKBackendOriginRegistry.register(host:scheme:port:)
     host_search_terms:
       - APIClient
       - NetworkManager
@@ -754,6 +760,7 @@ capabilities:
   - id: toast
     audit_tier: exact
     confidence: high
+    module: SwapFoundationKitToast
     replace_with:
       - ToastManager
       - SFKToastKind
@@ -777,7 +784,7 @@ capabilities:
     keep_custom_when:
       - The host app uses a design-system-specific toast UI that intentionally diverges from SFK's presentation.
     source_files:
-      - Sources/SwapFoundationKit/Services/ToastManager.swift
+      - Sources/SwapFoundationKitToast/ToastManager.swift
 
   - id: file_export_import
     audit_tier: exact
@@ -1067,6 +1074,7 @@ capabilities:
   - id: analytics_loggers
     audit_tier: exact
     confidence: medium
+    module: SwapFoundationKitFirebase (planned opt-in product; temporary guarded adapter remains in default target)
     replace_with:
       - SFKFirebaseLogger
     public_symbols:
@@ -1079,6 +1087,8 @@ capabilities:
       - "*FirebaseLogger*"
     keep_custom_when:
       - The host app uses a different analytics provider not covered by SFK's pre-built loggers.
+    notes:
+      - Move this adapter to the explicit SwapFoundationKitFirebase product before v4; do not treat the temporary default-target exception as permanent.
     source_files:
       - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
 

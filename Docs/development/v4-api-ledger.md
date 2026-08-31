@@ -1,6 +1,6 @@
 # SwapFoundationKit v4 API Ledger
 
-Status: Phase 0 deliverable (see [v4 simplification refactoring plan](v4-simplification-refactoring-plan.md), section 7)
+Status: Phase 0 deliverable plus the Phase 1 product-boundary checkpoint (see [v4 simplification refactoring plan](v4-simplification-refactoring-plan.md), section 7)
 
 This is the authoritative inventory of SwapFoundationKit's public API surface and the
 symbol-by-symbol disposition that drives the v4 refactor. It supersedes the counts in
@@ -23,7 +23,9 @@ is marked `unclassified` and listed in "Needs maintainer decision" rather than g
 - `bash Scripts/api-baseline.sh --check` regenerates it into a temp file, diffs against
   the committed copy, and exits non-zero with the diff printed if they differ. This is
   the same command the CI "API surface gate" (`.github/workflows/api-surface.yml`) runs.
-- The script uses a real Swift symbol graph (`swiftc -emit-symbol-graph`, driven through
+- The script inventories all five first-party library schemes: `SwapFoundationKit`,
+  `SwapFoundationKitFeedback`, `SwapFoundationKitGoogleMobileAds`,
+  `SwapFoundationKitPulse`, and `SwapFoundationKitToast`. It uses a real Swift symbol graph (`swiftc -emit-symbol-graph`, driven through
   `xcodebuild`), not a grep. Its header comment documents exactly what it does and does
   not count; read it before trusting a number here to more precision than it has.
 - Any PR that adds, removes, or moves a public declaration must re-run the script and
@@ -33,38 +35,43 @@ is marked `unclassified` and listed in "Needs maintainer decision" rather than g
 
 ## 2. Baseline: measured today vs. the old audit vs. acceptance targets
 
-All counts below are from a real run of `Scripts/api-baseline.sh` on this branch,
-2026-08-31 (Xcode 26.6), against `Docs/development/api-baseline.txt` committed alongside
-this document. "Declarations" = every public/`open` symbol with an explicit source
+The source-file counts below were recounted on this branch on 2026-08-31. The five-target
+symbol-graph regeneration was run with Xcode 26.6 arm64 iOS Simulator settings.
+"Declarations" = every public/`open` symbol with an explicit source
 location (own type + own extension-of-foreign-type declarations); "types" = top-level
 `class`/`struct`/`enum`/`protocol`/`typealias` only (no nested types, no compiler-
 synthesized conformance witnesses). See `Scripts/api-baseline.sh`'s header for exactly
 why those two exclusions matter and what they under/over-count.
 
+**Validation state:** `api-baseline.txt` now records all five products, and an independent
+`bash Scripts/api-baseline.sh --check` passed. The full simulator suite passed
+(289 tests, 0 failures; 293 parameterized executions). Focused
+authentication and production image/XML transport coverage also passed, including
+same-origin/cross-origin redirect handling and Pulse's delegate witness. A negative
+isolated mutation run reproduced the expected URL/header/timeout regressions, confirming
+those tests detect accidental reversions.
+
 | Scope | Swift files | Declarations (symbol graph, located) | Top-level types (symbol graph) | Public decls (grep, task baseline) | Public types (grep, task baseline) |
 |---|---:|---:|---:|---:|---:|
-| `SwapFoundationKit` (default target) | 171 | 2,273 | 235 | 1,220 | 244 |
+| `SwapFoundationKit` (default target) | 170 | 2,279 | 235 | 1,220 | 244 |
 | `SwapFoundationKitFeedback` | 8 | 82 | 15 | — | — |
 | `SwapFoundationKitGoogleMobileAds` | 3 | 13 | 2 | — | — |
-| All Swift sources | 182 | — | — | — | — |
+| `SwapFoundationKitPulse` (opt-in) | 2 | 27 | 6 | — | — |
+| `SwapFoundationKitToast` (opt-in) | 1 | 18 | 4 | — | — |
+| All Swift sources | 184 | — | — | — | — |
 
 **Drift from the plan's section 2 table.** That table records 171 files / 22,198 lines /
 1,200 public declarations / 220 public types for the default target, and 182 files /
 23,789 lines / 1,281 public declarations for all sources, as the audit baseline. The
 grep-level re-measurement done for this Phase-0 pass (see task baseline columns above)
-already shows drift to 1,220 public declarations and 244 public types — the surface grew
-between the audit and this ledger, it did not shrink. This ledger's symbol-graph counts
-(2,273 declarations / 235 types) are *not* the same measurement as either grep pass —
-symbol-graph counting is per-declaration (each enum case, each property is its own
-symbol) where a grep pass is roughly per-`public`-keyword-line — so the two numbers are
-not directly comparable and neither is "wrong". The type counts are the ones worth
-trusting for cross-checking: 235 (symbol graph, top-level only) vs. 244 (grep) is a
-~4% spread explainable by nested/extension-declared types counted differently, and both
-agree closely with the plan's original 220 having grown. **Treat 235–244 public types
-and ~1,220–2,273 declarations (depending on counting method) as the current true
-baseline, not the plan's original 220/1,200.** All future comparisons should use this
-ledger's `api-baseline.txt`, produced the same way every time, rather than re-deriving
-a number by hand.
+already showed drift to 1,220 public declarations and 244 public types — the surface grew
+between the audit and this ledger, it did not shrink. The prior three-target symbol-graph
+run reported 2,273 declarations / 235 types for the default target; the five-target run
+supersedes those values after the Phase 1 source moves. Symbol-graph counting is per-declaration
+(each enum case, each property is its own symbol), while a grep pass is roughly per-
+`public`-keyword-line, so the methods are not directly comparable. All future comparisons
+should use this ledger's `api-baseline.txt`, produced with the pinned toolchain, rather
+than re-deriving a number by hand.
 
 **UI matches exactly.** The task's independently grep-measured "92 public types under
 UI" and this ledger's symbol-graph top-level type count for the `UI` domain (92) agree
@@ -78,7 +85,7 @@ extension attribution).
 |---|---|---:|---|
 | Default product public types | ~60–75 | 235 | needs ~-68% to -74% |
 | UI public types | below 40 (from ~94) | 92 | needs ~-57% |
-| Total public types (all first-party) | ≥40% reduction | 235 (default) + 15 (Feedback) + 2 (Ads) = 252 | reduction not yet started |
+| Total public types (all first-party) | ≥40% reduction | 262 (235 + 15 + 2 + 6 + 4) | reduction not yet started |
 | Default product third-party dependencies | zero | 0 (as of this commit) — see `Package.swift` | **met on this branch as of this commit.** A concurrent workstream extracted Toast/Pulse/PulseUI/PulseProxy from the default `SwapFoundationKit` target into `SwapFoundationKitToast`/`SwapFoundationKitPulse` while this ledger was being written; verified via `swift package describe --type json` and a repo-wide import grep (see section 7). Treat this as a point-in-time confirmation, not a permanent guarantee — the CI dependency gate is what keeps it true going forward. |
 
 ## 3. Per-domain breakdown (default `SwapFoundationKit` target)
@@ -88,7 +95,7 @@ From `Docs/development/api-baseline.txt`, generated by `Scripts/api-baseline.sh`
 | Domain (`Sources/SwapFoundationKit/<dir>`) | Files | Declarations | Top-level types | v4 direction (summary; detail in section 4) |
 |---|---:|---:|---:|---|
 | UI | 64 | 920 | 92 | biggest reduction target — semantic roles + modifiers, internalize view models, drop delegate protocols |
-| Core | 34 | 399 | 51 | split: Authentication → own product (keep, unchanged behavior); HTTP/NetworkService → Networking product; `ConfigurationService` → remove |
+| Core | 34 | 405 | 51 | split: Authentication → own product (keep, unchanged behavior); HTTP/NetworkService → Networking product; `ConfigurationService` → remove |
 | Services | 23 | 223 | 36 | mixed — logging/analytics/haptics/deeplinks stay (injectable), Toast leaves, pro-gating becomes an injected policy |
 | Extensions | 11 | 208 | 3 | prune broad conveniences per plan section 6; keep small high-value ones |
 | ItemSync | 9 | 98 | 14 | move to Sync product; collapse duplicate `WatchConnectivityService` with WatchSync's |
@@ -122,12 +129,15 @@ security invariants).
 | `SwapFoundationKitConfiguration` | `SwapFoundationKit` (root) | deprecate → remove (split) | feature-owning product (Networking/Authentication/Sync/Media typed configs) | per-feature typed configuration structs | next v3.x | v4.0.0 |
 | `ConfigurationService` | `Core/ConfigurationService.swift` | remove | host application | host-owned typed environment/config | next v3.x (deprecated) | v4.0.0 |
 | `HTTPClient` and the HTTP surface of `NetworkService` | `Core/Networking.swift`, `Core/NetworkService.swift` | move; narrow `NetworkService` to reachability only | `SwapFoundationKitNetworking` | `HTTPClient` (moved, unchanged contract) + `NetworkMonitor` (reachability only) | next v3.x (opt-in Networking product ships, old symbols forward) | v4.0.0 |
+| `SFKURLSessionPerforming`, `SFKInstrumentedSession`, `SFKNetworkInstrumentation` | `Core/SFKNetworkInstrumentation.swift` | keep (instrumentation seam) | Networking/Pulse boundary | Optional session performer registration; no registration preserves plain `URLSession` behavior | current branch | n/a |
+| `NetworkRequest.explicitURL`, `NetworkRequest.usesClientDefaultHeaders`, `SFKBackendOriginRegistry` | `Core/Networking.swift`, `Core/NetworkService.swift` | keep (compatibility seams) | Networking boundary | Verbatim URL preservation, per-request default-header opt-out, and exact scheme/host/effective-port backend registration | current branch (source-compatible additions) | n/a |
 | `AppAttestService`, `AppAttestKeyStore`/`KeychainAppAttestKeyStore`, App Attest attestation/assertion types | `Core/AppAttestService.swift`, `Core/Networking.swift` (App Attest payload types) | keep, move | `SwapFoundationKitAuthentication` | same types, relocated; behavior/wire format frozen per migration guide 5.5 | next v3.x (opt-in Authentication product ships) | v4.0.0 (old import path only) |
 | `AuthenticatedSessionService` and the `Core/Authentication/*` family (28 files: backend, transport, storage, clock, sleeper, credential, identity, binding, legacy migration, error types) | `Core/Authentication/` | keep, move | `SwapFoundationKitAuthentication` | same types, relocated; construction simplified only, per migration guide 5.5 invariants (origin restriction, keychain namespaces, proof confidentiality, strict binding, identity binding, key-invalid handling, transient-failure/retry/cancellation semantics, legacy migration) — none of these may change during the move | next v3.x | v4.0.0 |
-| `SecurityService`, `BackupService`, `SFKNetworkInstrumentation` | `Core/` | unclassified | — | — | — | — |
-| Toast presentation surface (wherever `Toast`/`ToastManager`-adjacent public API lives in `Services/`) | `Services/` | move | `SwapFoundationKitToast` (opt-in) or small internal presenter | opt-in product per plan section 6 "Pulse and Toast" | next v3.x | v4.0.0 |
-| Pulse/PulseUI/PulseProxy integration points | `SwapFoundationKit` (wherever wired) | move | `SwapFoundationKitPulse` (opt-in) | opt-in product | next v3.x | v4.0.0 |
-| `AnalyticsProtocol`, `SFKFirebaseLogger`, `Logger`, `SFKLogSink` | `Services/` | keep (injectable) | Services (stays in default, becomes injected instance/actor, `.shared` only as transitional convenience) | same protocol/type, no forced global reach | none required (behavior-preserving) | n/a unless `.shared` convenience is removed, then v4.0.0 |
+| `SecurityService`, `BackupService` | `Core/` | unclassified | — | — | — | — |
+| Toast presentation surface (`ToastManager`, `SFKToastKind`, `SFKToastStyle`, `SFKToastConfiguration`) | `SwapFoundationKitToast/` | move (implemented, source-breaking, no shim) | `SwapFoundationKitToast` (opt-in) | explicit product dependency and import | current branch checkpoint; not released tag yet | v4.0.0 |
+| Pulse/PulseUI/PulseProxy integration points | `SwapFoundationKitPulse/` | move (implemented, source-breaking, no shim) | `SwapFoundationKitPulse` (opt-in) | explicit product dependency and import | current branch checkpoint; not released tag yet | v4.0.0 |
+| `AnalyticsProtocol`, `Logger`, `SFKLogSink` | `Services/` | keep (injectable) | Services (stays in default, becomes injected instance/actor, `.shared` only as transitional convenience) | same protocol/type, no forced global reach | none required (behavior-preserving) | n/a unless `.shared` convenience is removed, then v4.0.0 |
+| `SFKFirebaseLogger` | `Services/Analytics/` | move (temporary guarded exception) | `SwapFoundationKitFirebase` (planned opt-in) | explicit Firebase product; current default-target adapter is allowed only under `#if canImport(FirebaseAnalytics)` | current branch checkpoint; not permanent | v4.0.0 |
 | `SFKProGate` and pro-gating closures | `Services/SFKProGate.swift` | deprecate → move | host layer, via injected `SFKAccessPolicy` (design target) | `SFKAccessPolicy` adapter, host-owned entitlement decisions | next v3.x (new policy type ships alongside) | v4.0.0 |
 | `DeeplinkHandler`, `DeeplinkEvent`, `DeeplinkRoute`, `AppLinkOpener` | `Services/DeeplinkHandler/`, `Services/AppLinkOpener.swift` | keep | Services (one opener; `AppMetaData` stays pure data per Protocols row below) | same types; consolidate to one opener if more than one exists today | none required unless a second opener is found and merged | v4.0.0 if a duplicate is merged |
 | `HapticsHelper`, `SFKNotificationService`, `PasteboardService`, `DeviceInfo`, `FileExportService`, `FileImportService`, `LocationSearchService`, `ItemDetailSource`/`DefaultItemDetailSource`, `AppStoreSearchResult`, `UserDefault`/`UserDefaults+` | `Services/` | unclassified | — | — | — | — |
@@ -192,8 +202,9 @@ table and section 3 ownership rules do not name a disposition for these areas:
   are out of scope for this ledger and should be tracked separately (or as a follow-up
   to this document) before Phase 0 is declared fully complete.
 - **`SwapFoundationKitHost` and other consumer apps are not inventoried.** This ledger
-  only covers the three first-party library schemes (`SwapFoundationKit`,
-  `SwapFoundationKitFeedback`, `SwapFoundationKitGoogleMobileAds`). It does not include
+  only covers the five first-party library schemes (`SwapFoundationKit`,
+  `SwapFoundationKitFeedback`, `SwapFoundationKitGoogleMobileAds`,
+  `SwapFoundationKitPulse`, and `SwapFoundationKitToast`). It does not include
   the host sample app's own public surface (it has none relevant here) or any real
   downstream consumer's call-site inventory, which migration guide section 4 step 1
   ("Inventory") calls for per-host-app, not per-package.
@@ -213,9 +224,12 @@ table and section 3 ownership rules do not name a disposition for these areas:
   parameter type is a Pulse or Toast type) into the default target's signature surface.
   The CI dependency gate (section 7 below) checks *imports*, not *signature leakage*,
   which is a narrower and more mechanical check.
-- **`api-baseline.txt` currently only lists the three first-party library schemes' own
-  declarations**, not their transitive re-exports or `@_exported import` surface (none
-  are currently present, but the script does not specifically verify their absence).
+- **`api-baseline.txt` lists the five first-party library schemes' own declarations**,
+  not their transitive re-exports or `@_exported import` surface (none are currently
+  present, but the script does not specifically verify their absence). The report's
+  rows contain symbol path/kind/file:line only; it does not capture declaration
+  signatures, defaults, availability, or ABI. `--check` therefore detects inventory
+  drift, not every source/API compatibility change.
 
 ## 7. CI gates
 
@@ -225,11 +239,12 @@ Two new CI checks accompany this ledger (`.github/workflows/`):
   the diff, if `Docs/development/api-baseline.txt` does not match a fresh symbol-graph
   extraction. This is the mechanism that makes a new public symbol a deliberate,
   reviewed act (Phase 0 item 5).
-- **`dependency-gate.yml`** — fails if `Sources/SwapFoundationKit/` (the *default*
-  target only) contains an `import Pulse`, `import PulseUI`, `import PulseProxy`,
-  `import Toast`, `import GoogleMobileAds`, or `import Firebase`; and fails if
-  `swift package describe`'s `SwapFoundationKit` target reports any third-party
-  `product_dependencies`. **This gate is written against the target v4 state described
+- **`dependency-gate.yml`** — runs the reusable `Scripts/dependency-gate.sh`, which fails
+  if `Sources/SwapFoundationKit/` (the *default* target only) contains a vendor import
+  (including import attributes/access modifiers/selective imports), with the sole
+  exact-path exception for the guarded `SFKFirebaseLogger` FirebaseAnalytics adapter;
+  and fails if `swift package describe` reports a third-party product reachable through
+  any local target dependency. **This gate is written against the target v4 state described
   in plan section 8** ("the default product has zero third-party dependencies"). At the
   start of this Phase-0 workstream, `Package.swift` still declared Toast/Pulse/PulseUI/
   PulseProxy as dependencies of the default `SwapFoundationKit` target; a concurrent

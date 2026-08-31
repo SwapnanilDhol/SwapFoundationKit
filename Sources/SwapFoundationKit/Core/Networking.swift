@@ -64,6 +64,16 @@ public protocol NetworkRequest {
     var timeoutInterval: TimeInterval { get }
     /// Cache policy for the request
     var cachePolicy: URLRequest.CachePolicy { get }
+    /// When non-nil, used verbatim instead of reconstructing from the decomposed URL fields.
+    /// Use this for signed/CDN URLs whose escapes, query order, duplicates, valueless items,
+    /// trailing slash, or fragment must survive unchanged.
+    var explicitURL: URL? { get }
+    /// Whether `HTTPClient.defaultHeaders` (currently `Content-Type`/`Accept: application/json`)
+    /// should be merged into this request's headers. Defaults to `true`. Set `false` for requests
+    /// that must not advertise a JSON content negotiation — e.g. fetching an arbitrary binary or
+    /// XML resource — so only the request's own `headers` (or none, letting the transport supply
+    /// its own default `Accept`) go on the wire.
+    var usesClientDefaultHeaders: Bool { get }
 }
 
 public extension NetworkRequest {
@@ -71,6 +81,12 @@ public extension NetworkRequest {
     var timeoutInterval: TimeInterval { 30.0 }
     /// Default cache policy (.useProtocolCachePolicy)
     var cachePolicy: URLRequest.CachePolicy { .useProtocolCachePolicy }
+    /// Default: no explicit URL override — `url` is reconstructed from `scheme`/`baseURL`/`path`/
+    /// `parameters` as before. Source-compatible with every existing conformer.
+    var explicitURL: URL? { nil }
+    /// Default: merge in `HTTPClient.defaultHeaders`, matching existing behavior for every
+    /// existing conformer.
+    var usesClientDefaultHeaders: Bool { true }
 
     /// Computed URLRequest from the network request properties
     var request: URLRequest? {
@@ -91,6 +107,13 @@ public extension NetworkRequest {
 
     /// Computed URL from the network request properties
     var url: URL? {
+        // An explicit URL wins outright, before any decomposition/rebuild logic runs, so a
+        // caller-supplied URL is never reordered, re-encoded, or otherwise mutated. See
+        // `explicitURL`'s doc comment for why the rebuild below is lossy.
+        if let explicitURL {
+            return explicitURL
+        }
+
         // Validate required components
         guard !scheme.isEmpty, !baseURL.isEmpty else {
             return nil
@@ -283,11 +306,23 @@ public final class HTTPClient {
     /// - Returns: NetworkResponse containing the result
     /// - Throws: NetworkError if the request fails
     public func execute(_ request: NetworkRequest) async throws -> NetworkResponse {
+        try await execute(request, delegate: nil)
+    }
+
+    /// Internal execution seam used by origin-scoped callers that need URLSession to enforce a
+    /// redirect policy. Public callers continue to use `execute(_:)` and retain the old behavior.
+    func execute(_ request: NetworkRequest, delegate: URLSessionTaskDelegate?) async throws -> NetworkResponse {
         let finalRequest = try makeURLRequest(from: request)
         logRequest(finalRequest)
 
         do {
-            let (data, response) = try await sessionPerformer.data(for: finalRequest)
+            let result: (Data, URLResponse)
+            if let delegate {
+                result = try await sessionPerformer.data(for: finalRequest, delegate: delegate)
+            } else {
+                result = try await sessionPerformer.data(for: finalRequest)
+            }
+            let (data, response) = result
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 log(.error, "Received non-HTTP response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
@@ -443,9 +478,12 @@ private extension HTTPClient {
         }
 
         var finalRequest = urlRequest
-        var allHeaders = defaultHeaders
+        var allHeaders = request.usesClientDefaultHeaders ? defaultHeaders : [:]
         if let requestHeaders = request.headers {
-            allHeaders.merge(requestHeaders) { (_, new) in new }
+            // HTTP field names are case-insensitive. Remove an existing field regardless of
+            // spelling before applying an override, otherwise URLRequest can retain two keys
+            // for one logical header and the resulting value depends on dictionary iteration.
+            allHeaders = sfkMergedHTTPHeaders(allHeaders, overriding: requestHeaders)
         }
         finalRequest.allHTTPHeaderFields = allHeaders
         return finalRequest
@@ -597,6 +635,26 @@ private extension HTTPClient {
         }
         return " | body: \(formattedBody(data, maxLength: 512))"
     }
+}
+
+/// Merges HTTP headers using their case-insensitive field-name semantics while keeping caller
+/// overrides deterministic. This is shared by HTTPClient and NetworkService.
+func sfkMergedHTTPHeaders(_ defaults: [String: String], overriding overrides: [String: String]) -> [String: String] {
+    var merged: [String: String] = [:]
+
+    for (key, value) in defaults.sorted(by: { $0.key < $1.key }) {
+        for existingKey in Array(merged.keys) where existingKey.caseInsensitiveCompare(key) == .orderedSame {
+            merged.removeValue(forKey: existingKey)
+        }
+        merged[key] = value
+    }
+    for (key, value) in overrides.sorted(by: { $0.key < $1.key }) {
+        for existingKey in Array(merged.keys) where existingKey.caseInsensitiveCompare(key) == .orderedSame {
+            merged.removeValue(forKey: existingKey)
+        }
+        merged[key] = value
+    }
+    return merged
 }
 
 /// Convenience methods for common HTTP operations

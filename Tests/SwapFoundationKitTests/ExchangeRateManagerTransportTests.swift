@@ -26,6 +26,31 @@ final class ExchangeRateManagerTransportTests: XCTestCase {
     </Cube>
     """
 
+    func testHTTPClientExchangeRateTransportPreservesURLHeadersAndTimeout() async throws {
+        defer {
+            MockURLProtocol.mockResponse = nil
+            MockURLProtocol.lastRequest = nil
+        }
+        let url = URL(string: "https://exchange.example.com/feed/%2Fdaily/?first=1&dup=a&dup=b&raw&last=#fragment")!
+        MockURLProtocol.mockResponse = (
+            data: Data(Self.validECBXML.utf8),
+            response: HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!,
+            error: nil
+        )
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        let client = HTTPClient(configuration: config)
+        let transport = HTTPClientExchangeRateTransport(client: client)
+
+        _ = try await transport.data(from: url)
+
+        let request = try XCTUnwrap(MockURLProtocol.lastRequest)
+        XCTAssertEqual(request.url?.absoluteString, url.absoluteString)
+        XCTAssertEqual(request.timeoutInterval, 60, accuracy: 0.001)
+        XCTAssertNil(request.value(forHTTPHeaderField: "Accept"))
+        XCTAssertNil(request.value(forHTTPHeaderField: "Content-Type"))
+    }
+
     func testFetchAndParseUsesInjectedTransportOnSuccess() async throws {
         let url = URL(string: "https://exchange.example.com/rates.xml")!
         let transport = FakeExchangeRateTransport(

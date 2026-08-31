@@ -27,10 +27,12 @@ public final class NetworkService: ObservableObject {
     @Published public private(set) var isConnected = false
     @Published public private(set) var connectionType: ConnectionType = .unknown
 
-    /// Headers included on requests whose origin matches one registered via
-    /// `registerBackendOrigin(host:scheme:port:)`.
-    /// X-App-User-ID is always sent to enable server-side rate limiting and entitlement validation.
-    /// Set `backendHeadersProvider` at app launch to supply these headers.
+    /// Raw headers returned by `backendHeadersProvider`.
+    ///
+    /// `get(from:)` and `post(to:)` scope these headers to an exact origin registered via
+    /// `registerBackendOrigin(host:scheme:port:)` immediately before sending. This property is
+    /// only the provider output; reading it does not perform origin filtering. `downloadFile`
+    /// currently bypasses this backend-header merge entirely.
     public var backendDefaultHeaders: [String: String] {
         Self.backendHeadersProvider?() ?? [:]
     }
@@ -39,10 +41,10 @@ public final class NetworkService: ObservableObject {
     /// Example: { ["X-App-User-ID": AppUserID.headerValue] }
     ///
     /// Setting this alone is not enough for headers to reach the wire: `get(from:)`/`post(to:)`
-    /// accept arbitrary URLs, so `backendDefaultHeaders` are only merged into requests whose
-    /// origin was registered via `registerBackendOrigin(host:scheme:port:)`. Without a registered
-    /// origin, headers are computed but never applied — call `registerBackendOrigin` alongside
-    /// this at app launch.
+    /// accept arbitrary URLs, so the provider's output is only merged into requests whose origin
+    /// was registered via `registerBackendOrigin(host:scheme:port:)`. Without a registered origin,
+    /// headers are computed but never applied — call `registerBackendOrigin` alongside this at app
+    /// launch. `downloadFile` does not currently apply these headers.
     public static var backendHeadersProvider: (() -> [String: String])?
 
     /// Registers a backend origin that should receive `backendDefaultHeaders` (e.g. `X-App-User-ID`).
@@ -55,7 +57,8 @@ public final class NetworkService: ObservableObject {
     /// - Parameters:
     ///   - host: The backend host, e.g. `"api.example.com"`.
     ///   - scheme: The scheme to match. Defaults to `"https"`.
-    ///   - port: Optional port to match. When `nil`, any port for the host/scheme matches.
+    ///   - port: Optional port to match. When `nil`, the scheme's default port is matched
+    ///     (`443` for HTTPS and `80` for HTTP).
     public static func registerBackendOrigin(host: String, scheme: String = "https", port: Int? = nil) {
         SFKBackendOriginRegistry.register(host: host, scheme: scheme, port: port)
     }
@@ -127,7 +130,9 @@ public final class NetworkService: ObservableObject {
     /// - Throws: NetworkError
     public func post(to url: URL, body: Data, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
         var requestHeaders = headers
-        requestHeaders["Content-Type"] = requestHeaders["Content-Type"] ?? "application/json"
+        if !requestHeaders.keys.contains(where: { $0.caseInsensitiveCompare("Content-Type") == .orderedSame }) {
+            requestHeaders["Content-Type"] = "application/json"
+        }
 
         return try await performRequest(
             BasicURLNetworkRequest(
@@ -150,7 +155,9 @@ public final class NetworkService: ObservableObject {
     /// - Throws: NetworkError
     public func put(to url: URL, body: Data, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
         var requestHeaders = headers
-        requestHeaders["Content-Type"] = requestHeaders["Content-Type"] ?? "application/json"
+        if !requestHeaders.keys.contains(where: { $0.caseInsensitiveCompare("Content-Type") == .orderedSame }) {
+            requestHeaders["Content-Type"] = "application/json"
+        }
 
         return try await performRequest(
             BasicURLNetworkRequest(
@@ -238,6 +245,9 @@ public final class NetworkService: ObservableObject {
     /// - Returns: The downloaded file URL
     /// - Throws: NetworkError
     public func downloadFile(from url: URL, to destination: URL, expectedBytes: Int64? = nil, progressHandler: ((Double) -> Void)? = nil) async throws -> URL {
+        guard Self.isValidHTTPURL(url) else {
+            throw NetworkError.invalidURL
+        }
         let request = BasicURLNetworkRequest(url: url, method: .get)
         let response = try await client.download(request, to: destination, progressHandler: progressHandler)
 
@@ -255,7 +265,11 @@ public final class NetworkService: ObservableObject {
     // MARK: - Private Methods
 
     private func performRequest(_ request: NetworkRequest) async throws -> Data {
-        let headers = mergedHeaders(for: request)
+        guard let url = request.url, Self.isValidHTTPURL(url) else {
+            throw NetworkError.invalidURL
+        }
+        let scopedBackendHeaders = backendHeaders(for: request)
+        let headers = sfkMergedHTTPHeaders(scopedBackendHeaders, overriding: request.headers ?? [:])
 
         let finalRequest: NetworkRequest
         if headers.isEmpty {
@@ -264,20 +278,29 @@ public final class NetworkService: ObservableObject {
             finalRequest = HeaderOverrideRequest(base: request, headers: headers)
         }
 
-        let response = try await client.execute(finalRequest)
+        let redirectDelegate: URLSessionTaskDelegate?
+        if scopedBackendHeaders.isEmpty {
+            redirectDelegate = nil
+        } else {
+            guard let url = request.url,
+                  let delegate = SameOriginRedirectDelegate(url: url) else {
+                throw NetworkError.invalidURL
+            }
+            redirectDelegate = delegate
+        }
+
+        let response = try await client.execute(finalRequest, delegate: redirectDelegate)
         return response.data
     }
 
-    /// Merges `backendDefaultHeaders` (only when the request's origin is a registered backend
-    /// origin) with per-request headers, with per-request headers winning on conflict.
-    private func mergedHeaders(for request: NetworkRequest) -> [String: String] {
-        var headers = backendHeaders(for: request)
-        if let requestHeaders = request.headers {
-            for (key, value) in requestHeaders {
-                headers[key] = value
-            }
+    private static func isValidHTTPURL(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = url.host,
+              !host.isEmpty else {
+            return false
         }
-        return headers
+        return true
     }
 
     /// Returns `backendDefaultHeaders` only when a provider is set and the request's URL matches
@@ -297,9 +320,7 @@ public final class NetworkService: ObservableObject {
     }
 }
 
-/// Wraps a `NetworkRequest`, overriding only its `headers`. Used by `NetworkService.performRequest`
-/// to apply the origin-scoped, precedence-respecting merged header set computed in
-/// `mergedHeaders(for:)` without needing to know the request's concrete type.
+/// Wraps a request to apply merged headers without knowing its concrete request type.
 private struct HeaderOverrideRequest: NetworkRequest {
     let base: NetworkRequest
     let headers: [String: String]?
@@ -312,6 +333,70 @@ private struct HeaderOverrideRequest: NetworkRequest {
     var body: Data? { base.body }
     var timeoutInterval: TimeInterval { base.timeoutInterval }
     var cachePolicy: URLRequest.CachePolicy { base.cachePolicy }
+    var explicitURL: URL? { base.explicitURL }
+    var usesClientDefaultHeaders: Bool { base.usesClientDefaultHeaders }
+}
+
+private struct HTTPOrigin: Hashable {
+    let scheme: String
+    let host: String
+    let port: Int
+
+    init?(url: URL) {
+        guard let scheme = url.scheme?.lowercased(),
+              let host = url.host?.lowercased(),
+              let defaultPort = Self.defaultPort(for: scheme),
+              url.user == nil,
+              url.password == nil else { return nil }
+        self.scheme = scheme
+        self.host = host
+        self.port = url.port ?? defaultPort
+    }
+
+    init?(host: String, scheme: String, port: Int?) {
+        let normalizedScheme = scheme.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let normalizedHost = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard let defaultPort = Self.defaultPort(for: normalizedScheme),
+              !normalizedHost.isEmpty else { return nil }
+        let normalizedPort = port ?? defaultPort
+        guard (1...65_535).contains(normalizedPort) else { return nil }
+        self.scheme = normalizedScheme
+        self.host = normalizedHost
+        self.port = normalizedPort
+    }
+
+    private static func defaultPort(for scheme: String) -> Int? {
+        switch scheme {
+        case "https": return 443
+        case "http": return 80
+        default: return nil
+        }
+    }
+}
+
+/// Prevents origin-scoped backend headers from following a redirect to a different effective
+/// scheme, host, or port. Returning `nil` cancels the redirect before URLSession sends it.
+private final class SameOriginRedirectDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    private let origin: HTTPOrigin
+
+    init?(url: URL) {
+        guard let origin = HTTPOrigin(url: url) else { return nil }
+        self.origin = origin
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        guard let destination = request.url, let destinationOrigin = HTTPOrigin(url: destination), destinationOrigin == origin else {
+            completionHandler(nil)
+            return
+        }
+        completionHandler(request)
+    }
 }
 
 /// Registry that lets a host app declare which origins should receive
@@ -329,14 +414,8 @@ private struct HeaderOverrideRequest: NetworkRequest {
 /// registration boundary explicit and prevents arbitrary call sites from silently mutating shared
 /// state.
 public enum SFKBackendOriginRegistry {
-    private struct Origin: Hashable {
-        let scheme: String
-        let host: String
-        let port: Int?
-    }
-
     private static let lock = NSLock()
-    private static var origins: Set<Origin> = []
+    private static var origins: Set<HTTPOrigin> = []
     private static var didWarnAboutUnmatchedOrigin = false
 
     /// Registers a backend origin that should receive `NetworkService.backendDefaultHeaders`.
@@ -344,30 +423,27 @@ public enum SFKBackendOriginRegistry {
     /// - Parameters:
     ///   - host: The backend host, e.g. `"api.example.com"`.
     ///   - scheme: The scheme to match. Defaults to `"https"`.
-    ///   - port: Optional port to match. When `nil`, any port for the host/scheme matches.
+    ///   - port: Optional port to match. When `nil`, the scheme's default port is matched
+    ///     (`443` for HTTPS and `80` for HTTP).
     public static func register(host: String, scheme: String = "https", port: Int? = nil) {
-        let origin = Origin(scheme: scheme.lowercased(), host: host.lowercased(), port: port)
+        guard let origin = HTTPOrigin(host: host, scheme: scheme, port: port) else { return }
         lock.lock()
         origins.insert(origin)
         lock.unlock()
     }
 
     static func matches(_ url: URL) -> Bool {
-        guard let host = url.host?.lowercased() else { return false }
-        let scheme = (url.scheme ?? "https").lowercased()
-        let port = url.port
+        guard let origin = HTTPOrigin(url: url) else { return false }
 
         lock.lock()
         let registered = origins
         lock.unlock()
 
-        return registered.contains { origin in
-            origin.scheme == scheme && origin.host == host && (origin.port == nil || origin.port == port)
-        }
+        return registered.contains(origin)
     }
 
     /// Emits a one-time (per process) warning explaining that backend headers were skipped for
-    /// `url` because no registered origin matched it. Rate-limited so a host that forgot to
+    /// the URL origin because no registered origin matched it. Rate-limited so a host that forgot to
     /// register an origin doesn't get spammed with a warning per request.
     static func warnAboutUnmatchedOriginIfNeeded(for url: URL) {
         lock.lock()
@@ -378,9 +454,18 @@ public enum SFKBackendOriginRegistry {
         guard !alreadyWarned else { return }
 
         Logger.warning(
-            "backendHeadersProvider is set, but \(url.absoluteString) did not match a registered backend origin, so backend default headers (e.g. X-App-User-ID) were skipped for this request. Call NetworkService.registerBackendOrigin(host:scheme:port:) with your backend's origin to fix this. (Logged once per process.)",
+            "backendHeadersProvider is set, but origin \(originDescription(for: url)) did not match a registered backend origin, so backend default headers (e.g. X-App-User-ID) were skipped for this request. Call NetworkService.registerBackendOrigin(host:scheme:port:) with your backend's origin to fix this. (Logged once per process.)",
             context: "NetworkService"
         )
+    }
+
+    private static func originDescription(for url: URL) -> String {
+        if let origin = HTTPOrigin(url: url) {
+            return "\(origin.scheme)://\(origin.host):\(origin.port)"
+        }
+        let scheme = url.scheme?.lowercased() ?? "unknown"
+        let host = url.host?.lowercased() ?? "unknown"
+        return "\(scheme)://\(host)"
     }
 
     /// Test-only support to restore default behavior between test cases. Not part of the public API.
@@ -402,6 +487,7 @@ private struct BasicURLNetworkRequest: NetworkRequest {
     let body: Data?
     let timeoutInterval: TimeInterval
     let cachePolicy: URLRequest.CachePolicy
+    let explicitURL: URL?
 
     init(
         url: URL,
@@ -426,6 +512,7 @@ private struct BasicURLNetworkRequest: NetworkRequest {
         self.body = body
         self.timeoutInterval = timeoutInterval
         self.cachePolicy = cachePolicy
+        self.explicitURL = url
     }
 }
 

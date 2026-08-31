@@ -1,11 +1,17 @@
 # v4 Phase 1: Pulse and Toast product extraction
 
-Status: shipped on `refactor/v4-phase-0-1` (Workstream A)
+Status: implemented on `refactor/v4-phase-0-1` (Workstream A); this is an
+in-progress phase checkpoint, not the completed v4 release.
 
 This is a host-facing migration note for one specific Phase 1 change described in the
 [v4 simplification refactoring plan](../development/v4-simplification-refactoring-plan.md#7-phased-implementation-order)
 and the [migration guide's integrations section](v4-simplification-migration-guide.md#58-links-logging-analytics-pro-gating-and-integrations):
 Pulse and Toast are no longer dependencies of the default `SwapFoundationKit` product.
+
+The general v3 guidance in the primary refactoring plan and migration guide says to
+add forwarding shims where feasible. This phase is the deliberate exception: forwarding
+Pulse/Toast from the default module would restore their vendor dependencies, so this
+source-breaking move has no shim.
 
 ## This is a deliberate source break, not a deprecation
 
@@ -32,6 +38,7 @@ update your imports. The fix is mechanical — see below — but it is not autom
 | `SFKPulseConsoleMode` | `SwapFoundationKit` | `SwapFoundationKitPulse` |
 | `ToastManager` | `SwapFoundationKit` | `SwapFoundationKitToast` |
 | `SFKToastKind` | `SwapFoundationKit` | `SwapFoundationKitToast` |
+| `SFKToastStyle` | `SwapFoundationKit` | `SwapFoundationKitToast` |
 | `SFKToastConfiguration` | `SwapFoundationKit` | `SwapFoundationKitToast` |
 
 None of these symbols changed shape. `SFKPulseService.configure(_:)`, the console view's
@@ -55,6 +62,14 @@ product can still instrument them without the default target depending on Pulse:
 it and calling `configure(_:)` restores the exact previous behavior: `HTTPClient` requests are
 captured by Pulse per `SFKPulseNetworkCaptureMode`, and `Logger` messages are forwarded into
 Pulse's `LoggerStore`.
+
+Configure Pulse before constructing any `HTTPClient` instances or touching
+`SwapFoundationKit.shared`, so the registered performer is used by clients created by the host.
+If a host supplies another `SFKURLSessionPerforming` implementation while using origin-scoped
+backend headers, it must implement `data(for:delegate:)` and forward or enforce the delegate.
+The default protocol implementation fails closed with `URLError(.unsupportedURL)` for a
+non-`nil` delegate (possibly wrapped as `NetworkError` by `HTTPClient`); ordinary `data(for:)`
+requests remain source-compatible.
 
 ## Before / after `Package.swift`
 
@@ -90,7 +105,7 @@ default product simply stops linking those vendors.
 | If your code has... | Change it to... |
 |---|---|
 | `import SwapFoundationKit` and uses `SFKPulseService`, `SFKPulseConfiguration`, `SFKPulseConsoleView`, `SFKPulseConsoleMode`, `SFKPulseNetworkCaptureMode`, or `SFKPulseStoreLocation` | Add `import SwapFoundationKitPulse` alongside your existing `import SwapFoundationKit` |
-| `import SwapFoundationKit` and uses `ToastManager`, `SFKToastKind`, or `SFKToastConfiguration` | Add `import SwapFoundationKitToast` alongside your existing `import SwapFoundationKit` |
+| `import SwapFoundationKit` and uses `ToastManager`, `SFKToastKind`, `SFKToastStyle`, or `SFKToastConfiguration` | Add `import SwapFoundationKitToast` alongside your existing `import SwapFoundationKit` |
 | `import SwapFoundationKit` and uses neither | No change |
 
 ## Verifying the extraction
@@ -101,3 +116,7 @@ default product simply stops linking those vendors.
 - `Tests/SwapFoundationKitTests` no longer depends on the `Pulse` product; it instead tests the
   two seams (`SFKNetworkInstrumentation`, `SFKLogSinkRegistry`) directly, asserting both the
   no-registration default path and that a registered fake is invoked.
+
+Remaining work belongs to later phases: Swift 6 `Sendable` and shared-client construction,
+the future `SwapFoundationKitFirebase` opt-in product, and the planned token/UI redesign.
+`NetworkService.downloadFile` intentionally remains a vendor/header bypass path.

@@ -23,6 +23,12 @@ Image manipulation, caching, and compression utilities.
 | `.shared.configure(shouldCacheToSharedStorage:appGroupIdentifier:)` | Enable widget/extension caching |
 | `.shared.saveImage(_:filename:quality:)` / `.shared.loadImage(filename:)` | File I/O |
 
+Remote image fetches use the package `HTTPClient` transport, preserve the
+caller-supplied URL through `NetworkRequest.explicitURL`, disable the client's
+JSON default headers, and retain the original 60-second timeout. This keeps
+presigned URLs and image responses intact while allowing opt-in instrumentation
+products to observe the request.
+
 ### SFKImageCompressor
 | Property/Method | Description |
 |-----------------|-------------|

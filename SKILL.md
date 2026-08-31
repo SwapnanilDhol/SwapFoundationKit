@@ -80,7 +80,7 @@ Read files in this order:
 | Module | README | Key Types |
 |--------|--------|-----------|
 | Core | [Core/README.md](Sources/SwapFoundationKit/Core/README.md) | HTTPClient, SecurityService, AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient, BackupService, ConfigurationService |
-| Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager, UserDefault, DeeplinkHandler, ToastManager, SFKProGate, SFKNotificationService |
+| Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager, UserDefault, DeeplinkHandler, SFKProGate, SFKNotificationService (Pulse/Toast are opt-in products) |
 | UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKButton, SFKTextField, SFKSettingsScreen, SFKSegmentedProgress, SFKItemPickerView, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
 | Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | PersistentTTLStore, Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
@@ -91,3 +91,5 @@ Read files in this order:
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | Compatibility | [Compatibility/README.md](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | Ads | [Ads/README.md](Sources/SwapFoundationKit/Ads/README.md) | AdsConfiguration, AdUnitConfiguration |
+| Pulse (opt-in) | [Pulse/README.md](Sources/SwapFoundationKitPulse/README.md) | SFKPulseService, SFKPulseConfiguration, SFKPulseConsoleView |
+| Toast (opt-in) | [Toast/README.md](Sources/SwapFoundationKitToast/README.md) | ToastManager, SFKToastKind, SFKToastStyle, SFKToastConfiguration |

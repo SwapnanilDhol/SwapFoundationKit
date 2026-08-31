@@ -38,7 +38,7 @@ below.
 | `ActivityItemDetailSource` | class | `UIActivityItemSource` bridge — use `makeActivityItem()` |
 | `SFKProGate` | enum | Closure-based IAP feature gating with automatic upsell |
 | `SFKNotificationService` | class | Generic `UNUserNotificationCenter` wrapper |
-| `SFKFirebaseLogger` | class | Pre-built `AnalyticsLogger` for Firebase |
+| `SFKFirebaseLogger` | class | Temporary guarded `AnalyticsLogger` adapter for Firebase; planned move to opt-in `SwapFoundationKitFirebase` |
 
 ## Quick Examples
 
@@ -103,7 +103,7 @@ await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 
 `SFKPulseService`, `SFKPulseConfiguration`, `SFKPulseConsoleView`, and their supporting enums now
 ship in the opt-in `SwapFoundationKitPulse` product. `ToastManager`, `SFKToastKind`, and
-`SFKToastConfiguration` now ship in the opt-in `SwapFoundationKitToast` product. Add the product
+`SFKToastStyle`/`SFKToastConfiguration` now ship in the opt-in `SwapFoundationKitToast` product. Add the product
 you need and change `import SwapFoundationKit` to `import SwapFoundationKitPulse` /
 `import SwapFoundationKitToast` at call sites — the APIs themselves are unchanged. See
 [Docs/migration/v4-phase-1-product-extraction.md](../../../Docs/migration/v4-phase-1-product-extraction.md).
@@ -112,6 +112,11 @@ This target still owns the seams those products plug into: `SFKLogSink`/`SFKLogS
 here, and `SFKURLSessionPerforming`/`SFKNetworkInstrumentation` in `Core/`.
 
 Host-app Pulse integration guidance lives in [Docs/guides/pulse-integration.md](../../../Docs/guides/pulse-integration.md).
+
+`SFKFirebaseLogger` remains source-compatible in the default target only as a
+temporary `#if canImport(FirebaseAnalytics)` adapter. It is not a permanent
+default-target vendor integration: move Firebase usage to the planned explicit
+`SwapFoundationKitFirebase` product when that product is introduced.
 
 ## Source Files
 
