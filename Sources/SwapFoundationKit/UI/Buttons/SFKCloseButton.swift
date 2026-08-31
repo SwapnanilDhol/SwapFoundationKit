@@ -103,17 +103,14 @@ public struct SFKCloseButton: View {
                     .font(iconFont)
                     .foregroundStyle(resolvedForeground)
             case .glass:
-                if #available(iOS 26, *) {
-                    Image(systemName: systemImage)
-                        .font(iconFont)
-                        .foregroundStyle(resolvedForeground)
-                } else {
-                    Image(systemName: systemImage)
-                        .font(iconFont)
-                        .foregroundStyle(resolvedForeground)
-                        .frame(width: hitSize, height: hitSize)
-                        .contentShape(Circle())
-                }
+                Image(systemName: systemImage)
+                    .font(iconFont)
+                    .foregroundStyle(resolvedForeground)
+                    // Keep the glyph visually balanced inside the glass
+                    // capsule and make the complete circle the hit target.
+                    .padding(10)
+                    .frame(width: hitSize, height: hitSize)
+                    .contentShape(Circle())
             }
         }
     }
