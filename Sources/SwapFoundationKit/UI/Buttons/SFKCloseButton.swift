@@ -108,7 +108,7 @@ public struct SFKCloseButton: View {
                     .foregroundStyle(resolvedForeground)
                     // Keep the glyph visually balanced inside the glass
                     // capsule and make the complete circle the hit target.
-                    .padding(10)
+                    .padding(8)
                     .frame(width: hitSize, height: hitSize)
                     .contentShape(Circle())
             }
@@ -129,7 +129,7 @@ public struct SFKCloseButton: View {
     private var hitSize: CGFloat {
         switch chrome {
         case .toolbar: return 30
-        case .glass: return 40
+        case .glass: return 35
         }
     }
 
