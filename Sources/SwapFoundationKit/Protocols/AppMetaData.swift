@@ -10,15 +10,43 @@
  *****************************************************************************/
 
 import Foundation
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 /// App metadata containing information about the application
 /// Provides sensible defaults from Bundle.main for common properties
 public struct AppMetaData {
+
+    /// Optional links and contact details associated with an app.
+    /// Keeping these values together leaves the primary metadata initializer small.
+    public struct Links: Sendable {
+        public let instagramURL: URL?
+        public let twitterURL: URL?
+        public let websiteURL: URL?
+        public let privacyPolicyURL: URL?
+        public let eulaURL: URL?
+        public let supportEmail: String?
+        public let developerWebsiteURL: URL?
+        public let developerTwitterURL: URL?
+
+        public init(
+            instagramURL: URL? = nil,
+            twitterURL: URL? = nil,
+            websiteURL: URL? = nil,
+            privacyPolicyURL: URL? = nil,
+            eulaURL: URL? = nil,
+            supportEmail: String? = nil,
+            developerWebsiteURL: URL? = nil,
+            developerTwitterURL: URL? = nil
+        ) {
+            self.instagramURL = instagramURL
+            self.twitterURL = twitterURL
+            self.websiteURL = websiteURL
+            self.privacyPolicyURL = privacyPolicyURL
+            self.eulaURL = eulaURL
+            self.supportEmail = supportEmail
+            self.developerWebsiteURL = developerWebsiteURL
+            self.developerTwitterURL = developerTwitterURL
+        }
+    }
     
     // MARK: - Required Properties
     
@@ -33,6 +61,9 @@ public struct AppMetaData {
     
     /// App share description
     public let appShareDescription: String
+
+    /// Optional links and contact details supplied at initialization.
+    public let links: Links
     
     // MARK: - Optional Properties
     
@@ -81,107 +112,37 @@ public struct AppMetaData {
     
     /// Creates a new AppMetaData instance
     /// - Parameters:
-    ///   - appGroupIdentifier: App group identifier (required)
+    ///   - appGroupIdentifier: App group identifier (empty when unused)
     ///   - appID: App identifier (defaults to bundle identifier)
     ///   - appName: App name (defaults to bundle display name)
     ///   - appShareDescription: App share description (defaults to app name)
-    ///   - appInstagramUrl: Instagram URL (optional)
-    ///   - appTwitterUrl: Twitter URL (optional)
-    ///   - appWebsiteUrl: Website URL (optional)
-    ///   - appPrivacyPolicyUrl: Privacy policy URL (optional)
-    ///   - appEULAUrl: EULA URL (optional)
-    ///   - appSupportEmail: Support email (optional)
-    ///   - developerWebsite: Developer website URL (optional)
-    ///   - developerTwitterUrl: Developer Twitter URL (optional)
+    ///   - links: Optional URLs and contact information grouped in `Links`.
     public init(
-        appGroupIdentifier: String,
+        appGroupIdentifier: String = "",
         appID: String? = nil,
         appName: String? = nil,
         appShareDescription: String? = nil,
-        appInstagramUrl: URL? = nil,
-        appTwitterUrl: URL? = nil,
-        appWebsiteUrl: URL? = nil,
-        appPrivacyPolicyUrl: URL? = nil,
-        appEULAUrl: URL? = nil,
-        appSupportEmail: String? = nil,
-        developerWebsite: URL? = nil,
-        developerTwitterUrl: URL? = nil
+        links: Links = Links()
     ) {
         self.appGroupIdentifier = appGroupIdentifier
         self.appID = appID ?? Bundle.main.bundleIdentifier
         self.appName = appName ?? Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "My App"
         self.appShareDescription = appShareDescription ?? self.appName
-        self.appInstagramUrl = appInstagramUrl
-        self.appTwitterUrl = appTwitterUrl
-        self.appWebsiteUrl = appWebsiteUrl
-        self.appPrivacyPolicyUrl = appPrivacyPolicyUrl
-        self.appEULAUrl = appEULAUrl
-        self.appSupportEmail = appSupportEmail
-        self.developerWebsite = developerWebsite
-        self.developerTwitterUrl = developerTwitterUrl
+        self.links = links
+        self.appInstagramUrl = links.instagramURL
+        self.appTwitterUrl = links.twitterURL
+        self.appWebsiteUrl = links.websiteURL
+        self.appPrivacyPolicyUrl = links.privacyPolicyURL
+        self.appEULAUrl = links.eulaURL
+        self.appSupportEmail = links.supportEmail
+        self.developerWebsite = links.developerWebsiteURL
+        self.developerTwitterUrl = links.developerTwitterURL
     }
 }
 
-// MARK: - App Store Utilities
+// MARK: - Bundle data
 
 extension AppMetaData {
-
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-
-    /// Opens the app's review page in the App Store
-    public static func openAppReviewPage() {
-        let reviewURL = "itms-apps:itunes.apple.com/us/app/apple-store/1480273650?mt=8&action=write-review"
-        openLink(for: reviewURL)
-    }
-
-    /// Opens the app's product page in the App Store
-    /// Uses the appID from the current app's metadata
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openAppProductPage() {
-        let productURL = "itms-apps:itunes.apple.com/us/app/apple-store/\(Bundle.main.bundleIdentifier)?mt=8"
-        openLink(for: productURL)
-    }
-
-    /// Opens the developer's App Store page
-    /// - Parameter developerID: The developer's Apple ID
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openDeveloperPage(developerID: String) {
-        let developerURL = "itms-apps:itunes.apple.com/developer/id\(developerID)?mt=8"
-        openLink(for: developerURL)
-    }
-
-    /// Opens the app's privacy policy URL if available
-    /// - Parameter fallbackURL: Optional fallback URL if no privacy policy URL is set
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openPrivacyPolicy(fallbackURL: URL? = nil) {
-        if let privacyURL = Bundle.main.infoDictionary?["NSPrivacyPolicyURL"] as? String,
-           let url = URL(string: privacyURL) {
-            openLink(for: url)
-        } else if let fallback = fallbackURL {
-            openLink(for: fallback)
-        }
-    }
-
-    /// Opens the app's terms of service URL if available
-    /// - Parameter fallbackURL: Optional fallback URL if no terms URL is set
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openTermsOfService(fallbackURL: URL? = nil) {
-        if let termsURL = Bundle.main.infoDictionary?["NSAppleTermsOfServiceURL"] as? String,
-           let url = URL(string: termsURL) {
-            openLink(for: url)
-        } else if let fallback = fallbackURL {
-            openLink(for: fallback)
-        }
-    }
-
-    /// Creates a share activity for the app
-    /// - Returns: Share text and URL for the app
-    public static func createShareContent() -> (text: String, url: URL) {
-        let appName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "My App"
-        let shareText = "Check out \(appName)! Download it from the App Store."
-        let appStoreURL = URL(string: "itms-apps:itunes.apple.com/us/app/apple-store/\(Bundle.main.bundleIdentifier)?mt=8")!
-        return (shareText, appStoreURL)
-    }
 
     /// Gets the app's current version string
     public static var currentVersion: String {
@@ -208,97 +169,16 @@ extension AppMetaData {
         return Bundle.main.bundleIdentifier
     }
 
-    /// Helper method to open URLs
-    /// - Parameter url: URL string or URL object to open
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openLink(for url: String) {
-        if let url = URL(string: url) {
-            openLink(for: url)
-        }
+    /// Creates share text and the app's App Store URL without opening anything.
+    public static func createShareContent() -> (text: String, url: URL) {
+        let appName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String
+            ?? Bundle.main.infoDictionary?["CFBundleName"] as? String
+            ?? "My App"
+        let shareText = "Check out \(appName)! Download it from the App Store."
+        let appStoreURL = URL(string: "itms-apps:itunes.apple.com/us/app/apple-store/\(bundleID)?mt=8")!
+        return (shareText, appStoreURL)
     }
 
-    /// Helper method to open URLs
-    /// - Parameter url: URL object to open
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openLink(for url: URL) {
-        #if os(iOS)
-        // Keep this compatibility API synchronous while honoring AppLinkOpener's main-actor
-        // boundary. UIApplication opening itself is asynchronous, so scheduling the handoff
-        // preserves the legacy fire-and-forget behavior.
-        Task { @MainActor in
-            AppLinkOpener.open(url: url)
-        }
-        #elseif os(macOS)
-        NSWorkspace.shared.open(url)
-        #endif
-    }
-
-    /// Opens the app's settings page
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openAppSettings() {
-        #if os(iOS)
-        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-            openLink(for: settingsURL)
-        }
-        #endif
-    }
-
-    /// Opens the device's system settings
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openSystemSettings() {
-        #if os(iOS)
-        if let settingsURL = URL(string: "App-Prefs:") {
-            openLink(for: settingsURL)
-        }
-        #endif
-    }
-
-    /// Calls a phone number
-    /// - Parameter phoneNumber: Phone number to call (without spaces or special characters)
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func callPhoneNumber(_ phoneNumber: String) {
-        let cleanNumber = phoneNumber.replacingOccurrences(of: "[^0-9+]", with: "", options: .regularExpression)
-        let telURL = "tel://\(cleanNumber)"
-        openLink(for: telURL)
-    }
-
-    /// Sends an email
-    /// - Parameter email: Email address to send to
-    /// - Parameter subject: Optional email subject
-    /// - Parameter body: Optional email body
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func sendEmail(to email: String, subject: String? = nil, body: String? = nil) {
-        var mailURL = "mailto:\(email)"
-        var queryItems: [String] = []
-
-        if let subject = subject?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-            queryItems.append("subject=\(subject)")
-        }
-
-        if let body = body?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-            queryItems.append("body=\(body)")
-        }
-
-        if !queryItems.isEmpty {
-            mailURL += "?" + queryItems.joined(separator: "&")
-        }
-
-        openLink(for: mailURL)
-    }
-
-    /// Opens a website URL
-    /// - Parameter url: Website URL to open
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openWebsite(_ url: URL) {
-        openLink(for: url)
-    }
-
-    /// Opens a website URL string
-    /// - Parameter urlString: Website URL string to open
-    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
-    public static func openWebsite(_ urlString: String) {
-        openLink(for: urlString)
-    }
 }
 
 // MARK: - Convenience Initializers
@@ -327,9 +207,11 @@ extension AppMetaData {
     ) -> AppMetaData {
         return AppMetaData(
             appGroupIdentifier: appGroupIdentifier,
-            appInstagramUrl: instagramUrl,
-            appTwitterUrl: twitterUrl,
-            appWebsiteUrl: websiteUrl
+            links: Links(
+                instagramURL: instagramUrl,
+                twitterURL: twitterUrl,
+                websiteURL: websiteUrl
+            )
         )
     }
     
@@ -350,10 +232,12 @@ extension AppMetaData {
     ) -> AppMetaData {
         return AppMetaData(
             appGroupIdentifier: appGroupIdentifier,
-            appWebsiteUrl: websiteUrl,
-            appPrivacyPolicyUrl: privacyPolicyUrl,
-            appEULAUrl: eulaUrl,
-            appSupportEmail: supportEmail
+            links: Links(
+                websiteURL: websiteUrl,
+                privacyPolicyURL: privacyPolicyUrl,
+                eulaURL: eulaUrl,
+                supportEmail: supportEmail
+            )
         )
     }
 }

@@ -15,38 +15,8 @@ import SwiftUI
 import UIKit
 #endif
 
-/// A protocol that defines the data requirements for a selectable chip.
-///
-/// Conform your model types to this protocol to use them directly with
-/// `SFKSelectableChip`.
-///
-/// ## Usage
-/// ```swift
-/// enum Goal: String, CaseIterable, SFKChipItem {
-///     case trackSpending = "Track Spending"
-///     case saveMoney = "Save Money"
-///
-///     var chipLabel: String { rawValue }
-///     var chipIcon: String? { nil }
-/// }
-///
-/// SFKSelectableChip(item: goal, isSelected: true) { }
-/// ```
-public protocol SFKChipItem {
-    /// The text displayed on the chip.
-    var chipLabel: String { get }
-
-    /// An optional SF Symbol name displayed before the label.
-    var chipIcon: String? { get }
-}
-
-/// Default implementation providing `nil` for the icon.
-public extension SFKChipItem {
-    var chipIcon: String? { nil }
-}
-
 /// A selectable chip/capsule button that toggles between selected and unselected states
-/// with distinct visual styling and optional haptic feedback.
+/// with distinct visual styling and the shared theme feedback policy.
 ///
 /// ## Usage
 /// ```swift
@@ -68,6 +38,7 @@ public extension SFKChipItem {
 public struct SFKSelectableChip: View {
     @Environment(\.sfkTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let hapticsHelper = HapticsHelper()
 
     public enum VisualStyle: Sendable {
         case standard
@@ -83,39 +54,6 @@ public struct SFKSelectableChip: View {
     private let visualStyle: VisualStyle
     private let controlSize: ControlSize
     private let action: () -> Void
-
-    /// Creates a chip from a conforming `SFKChipItem`.
-    /// - Parameters:
-    ///   - item: The chip item providing label and optional icon.
-    ///   - isSelected: Whether the chip is currently selected.
-    ///   - tintColor: The accent color for the selected state. Defaults to `.primary`.
-    ///   - iconTint: Optional icon override. When `nil`, the chip uses its built-in tint logic.
-    ///   - visualStyle: Visual emphasis variant. Defaults to `.standard`.
-    ///   - controlSize: Platform-relative sizing. Use `.small` for dense chip groups.
-    ///   - trailingAccessoryIcon: Optional SF Symbol or text accessory displayed after the label.
-    ///   - action: Closure executed when the chip is tapped.
-    public init<Item: SFKChipItem>(
-        item: Item,
-        isSelected: Bool,
-        tintColor: Color? = nil,
-        iconTint: Color? = nil,
-        visualStyle: VisualStyle = .standard,
-        controlSize: ControlSize = .regular,
-        trailingAccessoryIcon: String? = nil,
-        action: @escaping () -> Void
-    ) {
-        self.init(
-            text: item.chipLabel,
-            icon: item.chipIcon,
-            isSelected: isSelected,
-            tintColor: tintColor,
-            iconTint: iconTint,
-            visualStyle: visualStyle,
-            controlSize: controlSize,
-            trailingAccessoryIcon: trailingAccessoryIcon,
-            action: action
-        )
-    }
 
     /// Creates a chip with text and an optional icon.
     /// - Parameters:
@@ -376,8 +314,12 @@ public struct SFKSelectableChip: View {
     private func triggerHaptic() {
         guard theme.feedback.enabled else { return }
         #if canImport(UIKit) && os(iOS)
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
+        switch theme.feedback.style {
+        case .none: break
+        case .light: hapticsHelper.lightImpact()
+        case .medium: hapticsHelper.mediumImpact()
+        case .heavy: hapticsHelper.heavyImpact()
+        }
         #endif
     }
 

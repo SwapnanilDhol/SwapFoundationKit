@@ -24,8 +24,7 @@ import Combine
 ///
 /// // Create with Watch connectivity (iOS only)
 /// #if os(iOS)
-/// let watchConnectivity = WatchConnectivityServiceImpl()
-/// let watchSync = WatchSyncServiceImpl(connectivityService: watchConnectivity)
+/// let watchSync = WatchSyncServiceImpl()
 /// let syncService = DataSyncServiceImpl(
 ///     storage: AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget"),
 ///     watchSyncService: watchSync
@@ -56,20 +55,6 @@ public final class DataSyncServiceImpl: DataSyncService {
         setupWatchSync()
     }
 
-    /// Backward-compatible initializer for callers still passing WatchConnectivityService directly.
-    public convenience init(
-        storage: FileStorageService,
-        watchConnectivity: WatchConnectivityService?
-    ) {
-        if let watchConnectivity {
-            let watchSyncService = WatchSyncServiceImpl(connectivityService: watchConnectivity)
-            self.init(storage: storage, watchSyncService: watchSyncService)
-            watchSyncService.activate()
-        } else {
-            self.init(storage: storage, watchSyncService: nil)
-        }
-    }
-    
     // MARK: - DataSyncService Implementation
     
     public func save<T: SyncableData>(_ data: T) async throws {

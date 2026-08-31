@@ -11,17 +11,17 @@
 
 import SwiftUI
 
-public enum SFKItemPickerItemActionPresentation: Equatable, Sendable {
-    case contextMenu
-    case swipe
-}
-
 public struct SFKItemPickerItemAction: Identifiable {
+    public enum Presentation: Equatable, Sendable {
+        case contextMenu
+        case swipe
+    }
+
     public let id: String
     public let title: String
     public let systemImage: String
     public let role: ButtonRole?
-    public let presentation: SFKItemPickerItemActionPresentation
+    public let presentation: Presentation
     public let action: () -> Void
 
     public init(
@@ -29,7 +29,7 @@ public struct SFKItemPickerItemAction: Identifiable {
         title: String,
         systemImage: String,
         role: ButtonRole? = nil,
-        presentation: SFKItemPickerItemActionPresentation,
+        presentation: Presentation,
         action: @escaping () -> Void
     ) {
         self.id = id ?? "\(title)-\(systemImage)-\(presentation)"

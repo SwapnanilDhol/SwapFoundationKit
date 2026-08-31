@@ -16,17 +16,14 @@ import SwapFoundationKitSync
 | `WatchSyncOptions` | struct | Preferred transport, fallback order, max payload bytes |
 | `WatchSyncEvent` | enum | `.activated`, `.sent`, `.received`, `.error` |
 | `WatchSyncError` | enum | `.identifierMismatch`, `.payloadEncodingFailed`, etc. |
-| `WatchSyncServiceImpl` | class | Canonical service implementation over the compatibility transport |
+| `WatchSyncServiceImpl` | class | Canonical service implementation over the private WatchConnectivity adapter |
 
 ```swift
 let options = WatchSyncOptions(
     preferredTransport: .applicationContext,
     fallbackOrder: [.userInfo, .messageData]
 )
-let watchSync = WatchSyncServiceImpl(
-    connectivityService: WatchConnectivityServiceImpl(session: .default),
-    options: options
-)
+let watchSync: any WatchSyncService = WatchSyncServiceImpl(options: options)
 watchSync.activate()
 try await watchSync.send(mySyncableData)
 ```

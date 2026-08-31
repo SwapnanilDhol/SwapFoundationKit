@@ -1,7 +1,8 @@
 # Core and optional infrastructure
 
 The default product retains security and backup utilities. Networking,
-Authentication, and legacy configuration now have explicit product boundaries.
+and Authentication have explicit product boundaries. Environment/configuration
+policy belongs to the host; there is no SFK bootstrap or configuration service.
 The combined reference below identifies APIs across those products; it does not
 mean they are all available from `import SwapFoundationKit`.
 
@@ -10,7 +11,6 @@ mean they are all available from `import SwapFoundationKit`.
 | `SecurityService`, `BackupService` | `SwapFoundationKit` |
 | `HTTPClient`, `NetworkRequest`, `NetworkService`, instrumentation | `SwapFoundationKitNetworking` |
 | `AppAttestService`, `AuthenticatedSessionService`, `AuthenticatedHTTPClient` | `SwapFoundationKitAuthentication` |
-| `ConfigurationService`, old bootstrap facade | `SwapFoundationKitLegacy` (transitional) |
 
 ## Public API
 
@@ -29,8 +29,7 @@ mean they are all available from `import SwapFoundationKit`.
 | `NetworkError` | enum | Structured errors: invalidURL, httpError, timeout, noInternet, etc. |
 | `HTTPMethod` | enum | GET, POST, PUT, DELETE, PATCH, HEAD |
 | `NetworkLogLevel` | enum | Request/response logging verbosity (none through debug) |
-| `NetworkService` | class | Legacy reachability-aware network service with origin-scoped backend headers |
-| `SFKBackendOriginRegistry` | enum | Explicit exact-origin registry controlling where `NetworkService.backendDefaultHeaders` may be sent |
+| `NetworkService` | class | Convenience facade over HTTPClient and NetworkMonitor with instance-scoped backend headers/origins |
 | `SecurityService` | class | AES encryption with persistent Keychain key, keychain CRUD, SHA256 hashing |
 | `AppAttestService` | actor | App Attest key, attestation, and assertion client; preserves typed unsupported, transient, and key-invalid failures |
 | `AppAttestKeyStore` | protocol | Injectable persistence boundary for the App Attest key identifier |
@@ -41,18 +40,16 @@ mean they are all available from `import SwapFoundationKit`.
 | `SessionBindingProof` | struct | In-memory encoded proof, identity and stable binding fingerprint supplied by the host |
 | `AuthenticatedHTTPClient` | class | Origin-restricted authenticated requests with strict defaults and bounded pre-execution retry |
 | `BackupService` | class | JSON backup/restore with timestamped files and automatic retention |
-| `ConfigurationService` | class | Environment-aware key-value config from Info.plist |
 
 ## Quick Examples
 
 ```swift
 import SwapFoundationKit
 import SwapFoundationKitNetworking
-import SwapFoundationKitLegacy // Only for the legacy configuration examples below.
+import SwapFoundationKitAuthentication
 
 // Networking
 let client = HTTPClient()
-NetworkService.registerBackendOrigin(host: "api.example.com")
 let response = try await client.get(baseURL: "api.example.com", path: "/users")
 let users: [User] = try await client.executeAndDecode(request)
 let download = try await client.download(
@@ -86,18 +83,20 @@ do {
 try await BackupService().performBackup(myData, fileType: .data)
 let restored: MyType = try BackupService().restoreBackup(MyType.self, fileType: .data)
 
-// Configuration
-let apiURL = try ConfigurationService.shared.getAPIBaseURL()
-let isDebug = ConfigurationService.shared.isDebugMode()
+// Host-owned backend policy, scoped to this service instance.
+let backend = NetworkService(
+    client: client,
+    backendHeadersProvider: { ["X-App-User-ID": currentUserID] },
+    backendOrigins: [URL(string: "https://api.example.com")!]
+)
 ```
 
 `NetworkRequest.explicitURL` preserves the caller's URL at the URL construction
 boundary, which matters for signed URLs and XML resources. Set
 `usesClientDefaultHeaders` to `false` for requests that must not advertise the
-client's JSON defaults. Backend defaults are only merged for an exact registered
-scheme/host/port origin; a `nil` registered port resolves to HTTPS 443 or HTTP
-80 and never means “any port.” `NetworkService.downloadFile` remains an explicit
-legacy bypass and does not apply backend defaults.
+client's JSON defaults. Backend defaults are only merged for an exact configured
+scheme/host/port origin; an omitted port resolves to HTTPS 443 or HTTP 80 and never
+means “any port.” `NetworkService.downloadFile` does not apply backend defaults.
 
 For a conformer that already owns a complete URL, keep the protocol witness
 optional so ordinary decomposed requests retain their defaults:
@@ -107,7 +106,7 @@ let explicitURL: URL? = signedURL
 ```
 
 When backend defaults are attached, request redirects are rejected if they would
-leave the registered origin. This keeps identity/entitlement headers from being
+leave the configured origin. This keeps identity/entitlement headers from being
 forwarded cross-origin while preserving ordinary requests' existing behavior.
 
 Custom `SFKURLSessionPerforming` implementations used with origin-scoped backend
@@ -119,14 +118,10 @@ delegate path.
 
 ## Source Files
 
-- `Networking.swift` — HTTPClient, NetworkRequest, NetworkResponse, NetworkDownloadResponse, NetworkDownloadProgress, NetworkError
-- `SFKNetworkInstrumentation.swift` — SFKURLSessionPerforming, SFKInstrumentedSession, SFKNetworkInstrumentation (opt-in instrumentation seam for `HTTPClient`)
-- `NetworkService.swift` — Legacy network service, backend-origin registration, and header policy
 - `SecurityService.swift` — Encryption, keychain, hashing
-- `AppAttestService.swift` — App Attest key persistence, attestation, and assertions
-- `Authentication/` — Shared authenticated-session engine, backend adapter, secure persistence and HTTP client
 - `BackupService.swift` — Data backup and restore
-- `ConfigurationService.swift` — App configuration from Info.plist
+- [Networking](../../SwapFoundationKitNetworking/README.md) — HTTP execution, reachability, instrumentation, and origin policy
+- [Authentication](../../SwapFoundationKitAuthentication/README.md) — App Attest, authenticated sessions, secure persistence and HTTP client
 
 ## Authenticated sessions: shared engine, thin host policy
 

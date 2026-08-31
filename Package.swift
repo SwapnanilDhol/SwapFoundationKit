@@ -57,10 +57,6 @@ let package = Package(
             name: "SwapFoundationKitFirebase",
             targets: ["SwapFoundationKitFirebase"]
         ),
-        .library(
-            name: "SwapFoundationKitLegacy",
-            targets: ["SwapFoundationKitLegacy"]
-        ),
     ],
     dependencies: [
         .package(
@@ -154,12 +150,6 @@ let package = Package(
             path: "Sources/SwapFoundationKitFirebase",
             exclude: ["README.md"]
         ),
-        .target(
-            name: "SwapFoundationKitLegacy",
-            dependencies: ["SwapFoundationKit", "SwapFoundationKitNetworking", "SwapFoundationKitSync"],
-            path: "Sources/SwapFoundationKitLegacy",
-            exclude: ["README.md"]
-        ),
         .testTarget(
             name: "SwapFoundationKitTests",
             dependencies: [
@@ -171,7 +161,6 @@ let package = Package(
                 "SwapFoundationKitCurrency",
                 "SwapFoundationKitRemoteAI",
                 "SwapFoundationKitFirebase",
-                "SwapFoundationKitLegacy",
                 "SwapFoundationKitGoogleMobileAds",
             ]
         ),
@@ -180,7 +169,6 @@ let package = Package(
             dependencies: [
                 "SwapFoundationKit",
                 "SwapFoundationKitGoogleMobileAds",
-                "SwapFoundationKitLegacy",
             ]
         ),
         .testTarget(

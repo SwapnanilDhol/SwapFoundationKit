@@ -1,165 +1,140 @@
 # Settings Patterns
 
-Practical patterns and architectural learnings for building settings screens with `SFKSettingsScreen`. These are app-agnostic — apply them regardless of what your app does.
+Practical patterns for composing settings pages with the v4 typed builder and
+binding APIs.
 
 ## Section architecture
 
-### Prefer `SFKSettingsSectionConfiguration` over custom sections
-
-Any tappable row that fits the icon-title-subtitle-chevron shape should be a `SettingsItem` value placed in `sections:`, not hand-rolled in `customSections:`. This gives you consistent row rendering, theme-aware typography, and automatic chevron handling — for free.
+Use one `SFKSettingsSection` for each logical group. Put rows and controls
+directly in its result builder; there is no array of heterogeneous rows to
+maintain and no type-casting tap router.
 
 ```swift
-// Good: SettingsItem in a section config
-SFKSettingsSectionConfiguration(title: "Information", items: allItems)
+SFKSettingsSection("Privacy") {
+    SFKSettingsToggle("Analytics", isOn: $analyticsEnabled)
+    SFKSettingsRow("Privacy Policy", systemImage: "hand.raised") {
+        openPrivacyPolicy()
+    }
+    Toggle("Personalized recommendations", isOn: $personalizationEnabled)
+}
+```
 
-// Avoid: ForEach + SFKSettingsRow in a custom section (unless forced)
-SFKSettingsCustomSection(title: "Information") {
-    ForEach(allItems, id: \.id) { item in
-        SFKSettingsRow(item: item) { handleTap(item) }
+If a section has a native control and a custom row, keep them together. A
+section footer is a good place for concise explanatory text.
+
+## Values and chevrons
+
+Use focused row modifiers for informational values and non-navigable rows:
+
+```swift
+SFKSettingsRow("Last sync", systemImage: "arrow.triangle.2.circlepath") {
+    refresh()
+}
+.settingsRowValue(lastSync.formatted())
+
+SFKSettingsRow("Version", systemImage: "info.circle", tint: .secondary) { }
+    .settingsRowChevron(false)
+    .settingsRowValue(version)
+```
+
+Avoid type-erased views, existential row arrays, or closures that dispatch on a
+hidden item type. If the trailing value has specialized layout, compose a native
+`LabeledContent`, `Toggle`, or custom view directly in the section.
+
+## Host-owned navigation and actions
+
+Rows describe an action; the host owns what that action means. This keeps URLs,
+analytics, feature flags, and navigation policy out of the package:
+
+```swift
+SFKSettingsRow("Export data", systemImage: "square.and.arrow.up") {
+    coordinator.presentExportSheet()
+}
+
+SFKSettingsRow("Delete account", systemImage: "trash", tint: .red) {
+    showDeleteConfirmation = true
+}
+.confirmationDialog(
+    "Delete account?",
+    isPresented: $showDeleteConfirmation,
+    titleVisibility: .visible
+) {
+    Button("Delete", role: .destructive) { deleteAccount() }
+    Button("Cancel", role: .cancel) { }
+}
+```
+
+For UIKit-owned flows, expose a typed coordinator method and present the host
+view controller from there. `Coordinator.presentItemPicker` accepts concrete
+items plus `Binding<Item?>`, `Binding<Item>`, or `Binding<Set<Item>>`.
+
+## Debug and dangerous operations
+
+Gate debug-only sections at compile time or with the host's explicit feature
+policy. Keep destructive operations together and label them clearly:
+
+```swift
+#if DEBUG
+SFKSettingsSection("Developer") {
+    SFKSettingsRow("Seed sample data", systemImage: "wand.and.stars") {
+        seedSampleData()
+    }
+    SFKSettingsRow("Reset local data", systemImage: "trash", tint: .red) {
+        showResetConfirmation = true
     }
 }
+#endif
 ```
 
-**When a custom section is appropriate:**
-- Toggles, sliders, pickers, date pickers, or other interactive controls
-- A section that mixes a toggle with tappable rows (e.g. a debug section with a "Force Pro" switch followed by debug action rows)
-- Content that doesn't fit the `SettingsItem` shape at all
+Use `AlertPresenter` when an app needs a UIKit alert or text input shared by
+multiple presentation paths. SwiftUI `.alert` and `.confirmationDialog` are
+appropriate for view-local state, as in the confirmation example above.
 
-### One section header per logical group
+## Binding and business logic
 
-Never create two sections with the same title. If two pieces of content belong to the same logical group, put them in the same section. When one half is a custom section (e.g. a toggle) and the other is `SettingsItem` rows, consolidate them into a single `SFKSettingsCustomSection` that renders both:
-
-```swift
-SFKSettingsCustomSection(title: "Debug") {
-    SFKSettingsToggle(...)
-    ForEach(SettingsItems.debug, id: \.id) { item in
-        SFKSettingsRow(item: item) { handleDebugTap(item) }
-    }
-}
-```
-
-## Trailing values
-
-### Use `SFKSettingsTrailing` enum
-
-Never return `AnyView(Text(...).font(...).foregroundStyle(...))` from `rowTrailingBuilder`. The `SFKSettingsTrailing` enum provides type-safe trailing content that automatically uses the theme's `valueFont` and `valueColor`:
+Bindings should point at the source of truth. Keep persistence, networking,
+entitlement checks, and side effects in the host model or view model, then pass
+small bindings and closures into the settings view:
 
 ```swift
-rowTrailingBuilder: { item in
-    switch item {
-    case let infoItem as AppInfoItem where infoItem == .version:
-        return .value("2.0.0 (42)")
-    case let appItem as AppSettingsItem where appItem == .userName:
-        return .value(userDisplayName)
-    default:
-        return nil
-    }
-}
-```
-
-Use `.custom(AnyView(...))` only when you genuinely need layout or styling that `.value` can't express.
-
-## Item tap routing
-
-### Use `switch` with type-casting, never if-let chains
-
-When routing taps from `onItemTap` on `SFKSettingsScreen`, use a single `switch` with type-casting `case` patterns:
-
-```swift
-onItemTap: { item in
-    switch item {
-    case let appItem as AppSettingsItem: handleAppSettings(appItem)
-    case let infoItem as InfoItem: handleInfo(infoItem)
-    case let devItem as DevItem: handleDev(devItem)
-    default: break
-    }
-}
-```
-
-Never chain `if let x = item as? A { ... } else if let x = item as? B { ... }`.
-
-The same rule applies to `rowTrailingBuilder`, `rowChevronBuilder`, and any closure that dispatches on the concrete type of an existential `SettingsItem`.
-
-## Debug menus
-
-### Gate debug items behind a build configuration flag
-
-Debug items (force flags, data seeding, notification testing, dangerous operations) must never appear in production builds. Use a compile-time flag:
-
-```swift
-if Configuration.showDebugUtilities {
-    // Append debug section to customSections
-}
-```
-
-### Consolidate dangerous operations into the debug section
-
-Operations like "delete all data", "reset all preferences", or "load stress test data" should live inside the debug section — never in a production-visible section with an innocent-sounding name. A separate "Danger Zone" section implies these are normal user-facing features, which they are not.
-
-### Put all debug items in one section
-
-A single section titled "Debug" (or similar) at the bottom of the screen is the standard pattern. Don't scatter debug items across multiple sections, and don't leave debug toggle rows orphaned in untitled sections.
-
-## Presentation ownership
-
-### Sheets, modals, and alerts belong to the coordinator
-
-Do not drive presentations from `@State` in the view. The view should call a coordinator method:
-
-```swift
-// In the view: trigger via ViewModel
-viewModel.coordinator.presentDebugNotifications(viewModel: viewModel)
-
-// In the coordinator: owns the presentation
-func presentDebugNotifications(viewModel: SettingsViewModel) {
-    let view = DebugNotificationsSheetView(viewModel: viewModel)
-    let controller = AppHostingController(rootView: view)
-    controller.modalPresentationStyle = .pageSheet
-    presentOnTop(controller)
-}
-```
-
-### Use `AlertPresenter`, not SwiftUI `.alert`
-
-Replace SwiftUI `.alert` / `.confirmationDialog` modifiers with `AlertPresenter` called from the coordinator (or ViewModel for notification-style alerts). The `AlertPresenter` API provides `showAlert`, `showConfirmation`, and `showTextInput`:
-
-```swift
-// In the coordinator
-AlertPresenter.showTextInput(
-    title: "Override ID",
-    message: "Enter a debug ID.",
-    placeholder: "App User ID",
-    submitTitle: "Save",
-    cancelTitle: "Cancel",
-    onSubmit: { [weak viewModel] text in ... }
+SFKSettingsToggle(
+    "Cloud sync",
+    subtitle: syncModel.statusDescription,
+    systemImage: "arrow.triangle.2.circlepath",
+    isOn: $syncModel.isEnabled,
+    action: { syncModel.toggleSync() }
 )
 ```
 
-## ViewModel as the single source of business logic
-
-The view should never:
-- Access `UIPasteboard`, `UserDefaults`, `Purchases`, or `NotificationCenter` directly
-- Mutate `isProEnabled` or any app-level state
-- Call `haptics.successNotification()` directly
-
-Push all of that into ViewModel methods. The view's tap handlers should be one-liners:
+The typed picker closure receives the concrete value, so no cast or dispatch
+table is needed:
 
 ```swift
-// Good
-case .version: viewModel.copyVersionInfo()
-
-// Bad
-case .version:
-    let v = "\(Bundle.main.releaseVersionNumber) (\(Bundle.main.buildVersionNumber))"
-    UIPasteboard.general.string = v
-    haptics.successNotification()
+SFKSettingsPicker(
+    "Sort order",
+    selection: $sortOrder,
+    options: SortOrder.allCases,
+    label: { $0.title },
+    onChange: { sortOrder in preferences.update(sortOrder) }
+)
 ```
+
+## Accessibility and motion
+
+- Prefer native controls for native semantics and keyboard/switch access.
+- Use `.accessibilityLabel` and `.accessibilityValue` when a formatted value
+  is not self-evident.
+- Check large Dynamic Type sizes for truncation and row hit targets.
+- Validate light/dark and increased-contrast schemes.
+- Avoid adding animation to a settings value unless it communicates a state
+  change; honor Reduce Motion for any host-owned animation.
 
 ## File organization
 
-A clean settings module typically contains:
-- `Model/SFK*Item.swift` — one file per `SettingsItem` enum (icon, title, subtitle, tint, allCases)
-- `Model/SettingsItems.swift` — a namespace enum collecting all item arrays
-- `View/SettingsView.swift` — the view shell using `SFKSettingsScreen`
-- `ViewModel/SettingsViewModel.swift` — all business logic and coordinator delegation
-- `*Coordinator.swift` — all navigation, sheets, alerts, and presentation logic
+A host app can keep its settings feature small:
+
+- `SettingsView.swift` — `SFKSettingsScreen` and section composition.
+- `SettingsViewModel.swift` — persistence and business logic.
+- `SettingsCoordinator.swift` — sheets, UIKit navigation, and external links.
+- `SettingsTests.swift` — binding writes, action routing, and accessibility
+  assertions.

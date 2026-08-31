@@ -15,8 +15,8 @@ import Network
 @testable import SwapFoundationKitNetworking
 
 /// Covers `NetworkService.performRequest`'s origin-scoped merge of `backendDefaultHeaders`
-/// (see `SFKBackendOriginRegistry`): headers must only reach requests whose origin was explicitly
-/// registered, and per-request headers must keep winning over backend defaults.
+/// (see `NetworkService`'s instance-scoped origin policy): headers must only reach requests whose
+/// origin was explicitly supplied, and per-request headers must keep winning over backend defaults.
 @MainActor
 final class NetworkServiceBackendHeadersTests: XCTestCase {
     var client: HTTPClient!
@@ -32,8 +32,6 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
         client = nil
         MockURLProtocol.mockResponse = nil
         MockURLProtocol.lastRequest = nil
-        NetworkService.backendHeadersProvider = nil
-        SFKBackendOriginRegistry.resetForTesting()
         try await super.tearDown()
     }
 
@@ -46,65 +44,50 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
     }
 
     func testBackendHeadersAppliedForRegisteredOrigin() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
         let url = URL(string: "https://api.example.com/ping")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [url])
         _ = try await service.get(from: url)
 
         XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"), "user-123")
     }
 
     func testBackendHeadersNotAppliedForUnregisteredThirdPartyOrigin() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
         let url = URL(string: "https://third-party-analytics.example.com/track")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [URL(string: "https://api.example.com")!])
         _ = try await service.get(from: url)
 
         XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"))
     }
 
     func testBackendHeadersNotAppliedWhenNoOriginIsRegisteredAtAll() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        // No call to registerBackendOrigin at all — must not silently apply headers everywhere.
-
         let url = URL(string: "https://api.example.com/ping")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "user-123"] })
         _ = try await service.get(from: url)
 
         XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"))
     }
 
     func testCallerSuppliedHeaderWinsOverBackendDefault() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "from-provider"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
         let url = URL(string: "https://api.example.com/ping")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "from-provider"] }, backendOrigins: [url])
         _ = try await service.get(from: url, headers: ["X-App-User-ID": "caller-override"])
 
         XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"), "caller-override")
     }
 
     func testCallerSuppliedHeaderWinsRegardlessOfCase() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "from-provider"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
         let url = URL(string: "https://api.example.com/ping")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "from-provider"] }, backendOrigins: [url])
         _ = try await service.get(from: url, headers: ["x-app-user-id": "caller-override"])
 
         let fields = MockURLProtocol.lastRequest?.allHTTPHeaderFields ?? [:]
@@ -114,55 +97,110 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
     }
 
     func testBackendHeadersRespectRegisteredPort() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com", scheme: "https", port: 8443)
-
         // Same host/scheme, but no port match.
         let url = URL(string: "https://api.example.com/ping")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [URL(string: "https://api.example.com:8443")!])
         _ = try await service.get(from: url)
 
         XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"))
     }
 
-    func testDefaultHTTPSPortMatchesExplicitHTTPS443InBothDirections() {
-        SFKBackendOriginRegistry.register(host: "API.EXAMPLE.COM", scheme: "HTTPS")
-        XCTAssertTrue(SFKBackendOriginRegistry.matches(URL(string: "https://api.example.com:443/ping")!))
+    func testBackendProviderAndOriginsAreIsolatedPerServiceInstance() async throws {
+        let backend = URL(string: "https://api.example.com")!
+        let thirdParty = URL(string: "https://third-party.example.com")!
+        let first = NetworkService(
+            client: client,
+            backendHeadersProvider: { ["X-App-User-ID": "first"] },
+            backendOrigins: [backend]
+        )
+        let second = NetworkService(
+            client: client,
+            backendHeadersProvider: { ["X-App-User-ID": "second"] },
+            backendOrigins: [thirdParty]
+        )
 
-        SFKBackendOriginRegistry.resetForTesting()
-        SFKBackendOriginRegistry.register(host: "api.example.com", scheme: "https", port: 443)
-        XCTAssertTrue(SFKBackendOriginRegistry.matches(URL(string: "https://api.example.com/ping")!))
+        stubOK(for: backend)
+        _ = try await first.get(from: backend)
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"), "first")
+
+        MockURLProtocol.lastRequest = nil
+        stubOK(for: thirdParty)
+        _ = try await second.get(from: thirdParty)
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"), "second")
+
+        MockURLProtocol.lastRequest = nil
+        stubOK(for: thirdParty)
+        _ = try await first.get(from: thirdParty)
+        XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"))
     }
 
-    func testDefaultHTTPPortMatchesExplicitHTTP80InBothDirections() {
-        SFKBackendOriginRegistry.register(host: "api.example.com", scheme: "http")
-        XCTAssertTrue(SFKBackendOriginRegistry.matches(URL(string: "http://api.example.com:80/ping")!))
+    func testInstanceOriginsNormalizeDefaultPortsInBothDirections() async throws {
+        let omitted = URL(string: "https://api.example.com/ping")!
+        let explicit = URL(string: "https://api.example.com:443/ping")!
+        stubOK(for: explicit)
+        let first = NetworkService(client: client, backendHeadersProvider: { ["X-Scoped": "one"] }, backendOrigins: [omitted])
+        _ = try await first.get(from: explicit)
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Scoped"), "one")
 
-        SFKBackendOriginRegistry.resetForTesting()
-        SFKBackendOriginRegistry.register(host: "api.example.com", scheme: "http", port: 80)
-        XCTAssertTrue(SFKBackendOriginRegistry.matches(URL(string: "http://api.example.com/ping")!))
+        MockURLProtocol.lastRequest = nil
+        stubOK(for: omitted)
+        let second = NetworkService(client: client, backendHeadersProvider: { ["X-Scoped": "two"] }, backendOrigins: [explicit])
+        _ = try await second.get(from: omitted)
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Scoped"), "two")
     }
 
-    func testNonDefaultPortIsNeverTreatedAsEquivalentToOmittedPort() {
-        SFKBackendOriginRegistry.register(host: "api.example.com", scheme: "https")
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "https://api.example.com:8443/ping")!))
+    func testInstanceOriginsNormalizeHTTPDefaultPortInBothDirections() async throws {
+        let omitted = URL(string: "http://api.example.com/ping")!
+        let explicit = URL(string: "http://api.example.com:80/ping")!
+        stubOK(for: explicit)
+        let first = NetworkService(client: client, backendHeadersProvider: { ["X-Scoped": "one"] }, backendOrigins: [omitted])
+        _ = try await first.get(from: explicit)
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Scoped"), "one")
 
-        SFKBackendOriginRegistry.resetForTesting()
-        SFKBackendOriginRegistry.register(host: "api.example.com", scheme: "https", port: 8443)
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "https://api.example.com/ping")!))
+        MockURLProtocol.lastRequest = nil
+        stubOK(for: omitted)
+        let second = NetworkService(client: client, backendHeadersProvider: { ["X-Scoped": "two"] }, backendOrigins: [explicit])
+        _ = try await second.get(from: omitted)
+        XCTAssertEqual(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Scoped"), "two")
     }
 
-    func testOriginMatchingFailsClosedForSchemeSubdomainLookalikeAndUserInfo() {
-        SFKBackendOriginRegistry.register(host: "api.example.com", scheme: "https")
+    func testInstanceOriginsRejectNonDefaultPorts() async throws {
+        let omitted = URL(string: "https://api.example.com/ping")!
+        let explicit = URL(string: "https://api.example.com:8443/ping")!
+        stubOK(for: explicit)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-Scoped": "secret"] }, backendOrigins: [omitted])
+        _ = try await service.get(from: explicit)
+        XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Scoped"))
+    }
 
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "http://api.example.com/ping")!))
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "https://sub.api.example.com/ping")!))
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "https://api.example.com.evil.test/ping")!))
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "https://api.example.com@evil.test/ping")!))
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "https://attacker@api.example.com/ping")!))
-        XCTAssertFalse(SFKBackendOriginRegistry.matches(URL(string: "ftp://api.example.com/ping")!))
+    func testInstanceOriginsFailClosedForLookalikeOrigins() async throws {
+        let allowed = URL(string: "https://api.example.com/ping")!
+        let rejected = [
+            URL(string: "http://api.example.com/ping")!,
+            URL(string: "https://sub.api.example.com/ping")!,
+            URL(string: "https://api.example.com.evil.test/ping")!,
+            URL(string: "https://api.example.com@evil.test/ping")!,
+            URL(string: "https://attacker@api.example.com/ping")!,
+            URL(string: "ftp://api.example.com/ping")!
+        ]
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-Scoped": "secret"] }, backendOrigins: [allowed])
+        for url in rejected {
+            MockURLProtocol.lastRequest = nil
+            do {
+                // FTP is rejected before URLSession dispatch, so it has no
+                // response to stub.  The HTTP lookalikes still exercise the
+                // actual request path and must remain fail-closed.
+                if URLComponents(url: url, resolvingAgainstBaseURL: false)?.scheme != "ftp" {
+                    stubOK(for: url)
+                }
+                _ = try await service.get(from: url)
+            } catch NetworkError.invalidURL {
+                // Invalid schemes are rejected before dispatch.
+            }
+            XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Scoped"), url.absoluteString)
+        }
     }
 
     func testGetWithoutBackendOverridePreservesSignedURL() async throws {
@@ -176,13 +214,10 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
     }
 
     func testPostWithBackendOverridePreservesSignedURL() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
         let url = URL(string: "https://api.example.com/assets/%2Fencoded/?first=1&dup=a&dup=b&raw&last=#fragment")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [url])
         _ = try await service.post(to: url, body: Data("{}".utf8))
 
         XCTAssertEqual(MockURLProtocol.lastRequest?.url?.absoluteString, url.absoluteString)
@@ -190,13 +225,10 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
     }
 
     func testGetWithBackendOverridePreservesSignedURL() async throws {
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
         let url = URL(string: "https://api.example.com/assets/%2Fencoded/?first=1&dup=a&dup=b&raw&last=#fragment")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [url])
         _ = try await service.get(from: url, headers: ["X-Request-ID": "request-1"])
 
         XCTAssertEqual(MockURLProtocol.lastRequest?.url?.absoluteString, url.absoluteString)
@@ -219,10 +251,7 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
         defer { server.stop() }
 
         let source = URL(string: "http://127.0.0.1:\(port)/start")!
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "127.0.0.1", scheme: "http", port: Int(port))
-
-        let service = NetworkService(client: HTTPClient(configuration: .ephemeral))
+        let service = NetworkService(client: HTTPClient(configuration: .ephemeral), backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [source])
         let data = try await service.get(from: source, timeout: 3)
 
         XCTAssertEqual(data, Data("ok".utf8))
@@ -235,10 +264,7 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
         defer { server.stop() }
 
         let source = URL(string: "http://127.0.0.1:\(port)/start")!
-        NetworkService.backendHeadersProvider = { ["X-App-User-ID": "user-123"] }
-        NetworkService.registerBackendOrigin(host: "127.0.0.1", scheme: "http", port: Int(port))
-
-        let service = NetworkService(client: HTTPClient(configuration: .ephemeral))
+        let service = NetworkService(client: HTTPClient(configuration: .ephemeral), backendHeadersProvider: { ["X-App-User-ID": "user-123"] }, backendOrigins: [source])
 
         do {
             _ = try await service.get(from: source, timeout: 3)
@@ -252,14 +278,11 @@ final class NetworkServiceBackendHeadersTests: XCTestCase {
         XCTAssertTrue(server.recordedEndRequestHeaders.isEmpty)
     }
 
-    func testNoBackendHeadersWhenProviderIsNilEvenWithRegisteredOrigin() async throws {
-        // Provider not set at all.
-        NetworkService.registerBackendOrigin(host: "api.example.com")
-
+    func testNoBackendHeadersWhenProviderIsNilEvenWithAllowedOrigin() async throws {
         let url = URL(string: "https://api.example.com/ping")!
         stubOK(for: url)
 
-        let service = NetworkService(client: client)
+        let service = NetworkService(client: client, backendOrigins: [url])
         _ = try await service.get(from: url)
 
         XCTAssertNil(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-App-User-ID"))

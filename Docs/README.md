@@ -6,7 +6,7 @@ Quick links to all documentation.
 
 | Guide | Description |
 |-------|-------------|
-| [Quick Start](../README.md#quick-start) | Framework initialization and basic usage |
+| [Quick Start](../README.md#quick-start) | Theme injection and zero-bootstrap usage |
 | [Migration Guide](migration/migration-guide.md) | Step-by-step guide for migrating an iOS app to SFK |
 
 ## Module Reference
@@ -22,7 +22,6 @@ Each module has its own README with full API reference and code examples:
 | [Media](../Sources/SwapFoundationKitMedia/README.md) | Image processing and remote loading |
 | [Remote AI](../Sources/SwapFoundationKitRemoteAI/README.md) | Host-configured AI requests |
 | [Firebase](../Sources/SwapFoundationKitFirebase/README.md) | Explicit host analytics forwarding |
-| [Legacy](../Sources/SwapFoundationKitLegacy/README.md) | Transitional bootstrap compatibility |
 | [Services](../Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, toasts, pro gating, notifications |
 | [UI](../Sources/SwapFoundationKit/UI/README.md) | Buttons, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](../Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSON, async |
@@ -50,8 +49,8 @@ Each module has its own README with full API reference and code examples:
 |----------|-------------|
 | [v4 Simplification Refactoring Plan](development/v4-simplification-refactoring-plan.md) | Maintainer-facing architecture, API, sequencing, acceptance criteria, and rollback plan |
 | [v4 Simplification Migration Guide](migration/v4-simplification-migration-guide.md) | Staged v3-to-v4 procedure for package maintainers and host applications |
-| [v4 API Ledger](development/v4-api-ledger.md) | Authoritative Phase 0 public-API inventory, symbol-by-symbol disposition, and CI surface/dependency gates |
-| [v4 Implementation Checkpoint](development/v4-implementation-status.md) | Committed baseline, active workstreams, and outstanding release gates |
+| [v4 API Ledger](development/v4-api-ledger.md) | Final measured API reduction, reviewed retention/budgets, and historical baseline |
+| [v4 Implementation Status](development/v4-implementation-status.md) | Completed cleanup, exact verification evidence, and release limitations |
 
 ## Agent Files
 

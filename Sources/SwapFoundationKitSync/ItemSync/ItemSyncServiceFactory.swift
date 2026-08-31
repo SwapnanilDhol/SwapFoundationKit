@@ -23,19 +23,21 @@ import Foundation
 ///     appGroupIdentifier: "group.com.yourapp.widget"
 /// )
 ///
-/// // Recommended for the host app: same, plus Watch connectivity (iOS only)
+/// // Add WatchSync explicitly when needed (iOS only).
 /// #if os(iOS)
-/// let syncService = ItemSyncServiceFactory.createWithWatch(
-///     appGroupIdentifier: "group.com.yourapp.widget"
+/// let watchSync = WatchSyncServiceImpl()
+/// let syncService = ItemSyncServiceFactory.create(
+///     storage: AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget"),
+///     watchSyncService: watchSync
 /// )
 /// #endif
 ///
 /// // Custom configuration
 /// let storage = AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget")
-/// let watchService = WatchConnectivityServiceImpl()
+/// let watchSync = WatchSyncServiceImpl()
 /// let syncService = ItemSyncServiceFactory.create(
 ///     storage: storage,
-///     watchConnectivity: watchService
+///     watchSyncService: watchSync
 /// )
 /// ```
 public final class ItemSyncServiceFactory {
@@ -62,20 +64,6 @@ public final class ItemSyncServiceFactory {
         return DataSyncServiceImpl(storage: storage)
     }
     
-    /// Creates a sync service with custom storage and Watch connectivity
-    /// - Parameters:
-    ///   - storage: Custom file storage service
-    ///   - watchConnectivity: Watch connectivity service
-    /// - Returns: Configured DataSyncService instance
-    public static func create(
-        storage: FileStorageService,
-        watchConnectivity: WatchConnectivityService
-    ) -> DataSyncService {
-        let watchSyncService = WatchSyncServiceImpl(connectivityService: watchConnectivity)
-        watchSyncService.activate()
-        return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
-    }
-
     /// Creates a sync service with custom storage and WatchSync abstraction.
     /// - Parameters:
     ///   - storage: Custom file storage service
@@ -89,29 +77,4 @@ public final class ItemSyncServiceFactory {
         return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
     }
     
-    #if os(iOS)
-    /// Creates a sync service with App Group storage and Watch connectivity
-    /// - Parameter appGroupIdentifier: Your app group identifier
-    /// - Returns: Configured DataSyncService instance with Watch support
-    public static func createWithWatch(appGroupIdentifier: String) -> DataSyncService {
-        createWithWatch(appGroupIdentifier: appGroupIdentifier, options: .default)
-    }
-
-    /// Creates a sync service with App Group storage and Watch connectivity options.
-    /// - Parameters:
-    ///   - appGroupIdentifier: Your app group identifier
-    ///   - options: Watch sync options controlling transport/fallback behavior
-    /// - Returns: Configured DataSyncService instance with Watch support
-    public static func createWithWatch(
-        appGroupIdentifier: String,
-        options: WatchSyncOptions
-    ) -> DataSyncService {
-        let storage = AppGroupFileStorageService(appGroupIdentifier: appGroupIdentifier)
-        let watchService = WatchConnectivityServiceImpl()
-        let watchSyncService = WatchSyncServiceImpl(connectivityService: watchService, options: options)
-        watchSyncService.activate()
-
-        return DataSyncServiceImpl(storage: storage, watchSyncService: watchSyncService)
-    }
-    #endif
 }

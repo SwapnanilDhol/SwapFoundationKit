@@ -12,9 +12,10 @@
 import Foundation
 import Combine
 
-/// Default WatchSync implementation built on top of WatchConnectivityService.
+/// Default WatchSync implementation built on the Sync product's private
+/// WatchConnectivity adapter.
 public final class WatchSyncServiceImpl: WatchSyncService {
-    private let connectivityService: WatchConnectivityService
+    private let connectivityService: WatchConnectivityAdapter
     private let options: WatchSyncOptions
     private let envelopeSubject = PassthroughSubject<WatchSyncEnvelope, Never>()
     private let eventSubject = PassthroughSubject<WatchSyncEvent, Never>()
@@ -22,8 +23,16 @@ public final class WatchSyncServiceImpl: WatchSyncService {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
 
-    public init(
-        connectivityService: WatchConnectivityService,
+    /// Creates a live Watch sync service. WatchConnectivity is kept private to
+    /// the Sync product; callers depend on the `WatchSyncService` protocol.
+    public init(options: WatchSyncOptions = .default) {
+        self.connectivityService = WatchConnectivityAdapterImpl()
+        self.options = options
+        observeInboundPayloads()
+    }
+
+    internal init(
+        connectivityService: WatchConnectivityAdapter,
         options: WatchSyncOptions = .default
     ) {
         self.connectivityService = connectivityService

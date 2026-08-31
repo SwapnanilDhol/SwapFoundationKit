@@ -2,7 +2,7 @@
 
 Composable SwiftUI components, semantic design tokens, and opt-in services for iOS development.
 
-The v4 refactor is in progress on this branch. See the [implementation checkpoint](Docs/development/v4-implementation-status.md) for implementation and verification status; these changes are not a released v4 tag.
+This checkout contains the breaking v4 API cleanup. See the [implementation status](Docs/development/v4-implementation-status.md) and [migration guide](Docs/migration/v4-simplification-migration-guide.md) before upgrading; these changes are not a released v4 tag.
 
 ## Requirements
 
@@ -11,8 +11,8 @@ The v4 refactor is in progress on this branch. See the [implementation checkpoin
 - **Dependencies (default product)**: none
 - **Optional products**: `SwapFoundationKitPulse` + [Pulse](https://github.com/kean/Pulse) 5.2.3, `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
 
-Networking, Authentication, Sync, Media, Currency, RemoteAI, Firebase, and legacy
-bootstrap now have explicit opt-in products on this development branch. The Firebase
+Networking, Authentication, Sync, Media, Currency, RemoteAI, and Firebase
+have explicit opt-in products. The Firebase
 adapter requires host-owned forwarding handlers; the Firebase SDK is not a dependency
 of the default product.
 
@@ -91,14 +91,13 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 
 | Module | Description |
 |--------|-------------|
-| [Core and infrastructure](Sources/SwapFoundationKit/Core/README.md) | Security/backup in the default product; Networking, Authentication and Legacy APIs require their own imports |
+| [Core and infrastructure](Sources/SwapFoundationKit/Core/README.md) | Security/backup in the default product; Networking and Authentication require their own imports |
 | [Networking](Sources/SwapFoundationKitNetworking/README.md) | HTTP client, reachability, request contracts, instrumentation |
 | [Authentication](Sources/SwapFoundationKitAuthentication/README.md) | App Attest, authenticated sessions, secure transport |
 | [Sync](Sources/SwapFoundationKitSync/README.md) | Explicit App Group storage and watch synchronization |
 | [Media](Sources/SwapFoundationKitMedia/README.md) | Image processing and remote image transport |
 | [Remote AI](Sources/SwapFoundationKitRemoteAI/README.md) | Host-configured AI requests over Networking |
 | [Firebase](Sources/SwapFoundationKitFirebase/README.md) | Host-handler-injected analytics adapter |
-| [Legacy](Sources/SwapFoundationKitLegacy/README.md) | Transitional global bootstrap and configuration |
 | [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, files, location, pro gating, notifications (Pulse and Toast are opt-in products) |
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, text fields, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |

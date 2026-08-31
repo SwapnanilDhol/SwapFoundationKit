@@ -1,5 +1,5 @@
 /*****************************************************************************
- * WatchConnectivityServiceImpl.swift
+ * WatchConnectivityAdapterImpl.swift
  * SwapFoundationKit
  *****************************************************************************
  * Copyright (c) 2025 Swapnanil Dhol. All rights reserved.
@@ -16,22 +16,21 @@ import SwapFoundationKit
 import WatchConnectivity
 #endif
 
-/// iOS-specific implementation of WatchConnectivityService using WCSession
+/// Internal iOS adapter around WCSession for the canonical WatchSync service.
 /// This service handles communication between your iOS app and Watch app
 ///
 /// ## Usage Example
 /// ```swift
 /// #if os(iOS)
-/// let watchService = WatchConnectivityServiceImpl()
-/// watchService.activate()
+/// let watchSync = WatchSyncServiceImpl()
+/// watchSync.activate()
 ///
 /// // The service will automatically handle sending/receiving data
 /// // when used with DataSyncServiceImpl
 /// #endif
 /// ```
 #if os(iOS)
-@available(*, deprecated, message: "Use WatchSyncServiceImpl for the canonical watch-sync boundary.")
-public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityService {
+internal final class WatchConnectivityAdapterImpl: NSObject, WatchConnectivityAdapter {
     
     // MARK: - Properties
     
@@ -46,25 +45,25 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
     
     /// Creates a new Watch connectivity service
     /// - Parameter session: WCSession instance (defaults to .default)
-    public init(session: WCSession = .default) {
+    init(session: WCSession = .default) {
         self.session = session
         super.init()
     }
     
-    // MARK: - WatchConnectivityService Implementation
+    // MARK: - WatchConnectivityAdapter Implementation
     
-    public func activate() {
+    func activate() {
         guard WCSession.isSupported() else { return }
         
         session.delegate = self
         session.activate()
     }
     
-    public var isReachable: Bool {
+    var isReachable: Bool {
         return session.isReachable
     }
     
-    public func sendData(
+    func sendData(
         _ data: Data,
         preferredTransport: WatchSyncTransport = .applicationContext,
         fallbackTransports: [WatchSyncTransport] = [.userInfo, .messageData, .file],
@@ -94,7 +93,7 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
         }
 
         throw WatchConnectivityError.sendFailed(NSError(
-            domain: "SwapFoundationKit.WatchConnectivityService",
+            domain: "SwapFoundationKit.WatchConnectivityAdapter",
             code: -1,
             userInfo: [NSLocalizedDescriptionKey: "No transport available for watch payload delivery."]
         ))
@@ -115,7 +114,7 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
                 throw WatchConnectivityError.watchNotReachable
             }
             session.sendMessageData(data, replyHandler: nil) { error in
-                Logger.error("WatchConnectivityService sendMessageData failed: \(error.localizedDescription)")
+                Logger.error("WatchConnectivityAdapter sendMessageData failed: \(error.localizedDescription)")
             }
         case .file:
             let fileManager = FileManager.default
@@ -132,11 +131,11 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
         }
     }
 
-    public var payloadReceivedPublisher: AnyPublisher<WatchConnectivityPayload, Never> {
+    var payloadReceivedPublisher: AnyPublisher<WatchConnectivityPayload, Never> {
         payloadSubject.eraseToAnyPublisher()
     }
 
-    public var dataReceivedPublisher: AnyPublisher<Data, Never> {
+    var dataReceivedPublisher: AnyPublisher<Data, Never> {
         payloadReceivedPublisher
             .map(\.data)
             .eraseToAnyPublisher()
@@ -145,35 +144,35 @@ public final class WatchConnectivityServiceImpl: NSObject, WatchConnectivityServ
 
 // MARK: - WCSessionDelegate
 
-extension WatchConnectivityServiceImpl: WCSessionDelegate {
+extension WatchConnectivityAdapterImpl: WCSessionDelegate {
     
-    public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // Activation completed
     }
     
-    public func sessionDidBecomeInactive(_ session: WCSession) {
+    func sessionDidBecomeInactive(_ session: WCSession) {
         // Session became inactive
     }
     
-    public func sessionDidDeactivate(_ session: WCSession) {
+    func sessionDidDeactivate(_ session: WCSession) {
         // Session deactivated
     }
     
-    public func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
         guard let data = applicationContext[PayloadKey.data] as? Data else { return }
         payloadSubject.send(.init(data: data, transport: .applicationContext))
     }
 
-    public func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
         guard let data = userInfo[PayloadKey.data] as? Data else { return }
         payloadSubject.send(.init(data: data, transport: .userInfo))
     }
 
-    public func session(_ session: WCSession, didReceiveMessageData messageData: Data) {
+    func session(_ session: WCSession, didReceiveMessageData messageData: Data) {
         payloadSubject.send(.init(data: messageData, transport: .messageData))
     }
 
-    public func session(_ session: WCSession, didReceive file: WCSessionFile) {
+    func session(_ session: WCSession, didReceive file: WCSessionFile) {
         guard let data = try? Data(contentsOf: file.fileURL) else { return }
         payloadSubject.send(.init(data: data, transport: .file))
     }

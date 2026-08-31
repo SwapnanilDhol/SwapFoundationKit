@@ -187,34 +187,23 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .buttons: [
             "SFKButton",
             "SFKButtonStyle",
-            "SFKButtonHapticStyle",
             "SFKCloseButton",
             "SFKCloseButtonChrome"
         ]
         case .textFields: ["SFKTextField", "SFKTextFieldStatus", "SFKTextFieldAppearance"]
         case .settings: [
             "SFKSettingsScreen",
+            "SFKSettingsSection",
             "SFKSettingsRow",
-            "SFKSettingsLabel",
             "SFKSettingsToggle",
-            "SFKSettingsToggleRow",
-            "SFKSettingsDatePickerRow",
-            "SFKSettingsTimePickerRow",
-            "SFKSettingsInlineDatePicker",
-            "SFKSettingsPickerRow",
-            "SFKSettingsStepperRow",
-            "SFKSettingsSliderRow",
-            "SFKSettingsColorPickerRow",
-            "SFKSettingsInlineColorPicker",
-            "SFKSettingsLinkRow",
-            "SFKSettingsDestructiveRow",
-            "SFKSettingsConfirmationRow"
+            "SFKSettingsPicker",
+            "SFKSettingsBindingRow"
         ]
         case .colorPicker: ["SFKColorPickerSheet"]
-        case .chips: ["SFKChip", "SFKChipStyle", "SFKSelectableChip", "SFKChipFlowLayout", "SFKChipItem"]
+        case .chips: ["SFKChip", "SFKChipStyle", "SFKSelectableChip", "SFKChipFlowLayout"]
         case .progress: ["SFKSegmentedProgress"]
         case .cardsAndTypography: ["SFKCard", "SFKTypography"]
-        case .itemPicker: ["SFKItemPickerView", "SFKItemPickerRow", "SFKItemPickerSection"]
+        case .itemPicker: ["SFKItemPickerView", "SFKPickableItem", "SFKItemPickerConfiguration"]
         case .glass: ["sfkGlass", "SFKGlassMaterial", "SFKGlassShape", "GlassEffectContainer"]
         case .effects: ["TopAuraBackground", "SFKAuraLayer", "SFKAuraGlowBackground"]
         case .proBanner: ["SFKProBannerView"]

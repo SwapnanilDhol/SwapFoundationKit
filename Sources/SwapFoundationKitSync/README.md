@@ -7,6 +7,4 @@ Add the `SwapFoundationKitSync` product and `import SwapFoundationKitSync` only 
 
 Pass App Group identifiers explicitly. Ordinary `UserDefault` preferences remain in the default product; `SharedUserDefaults` belongs here. Preserve the exact suite name and key names used by the host and its extensions. Never fall back to `.standard` when a shared suite is misconfigured.
 
-The deprecated no-identifier defaults overload exists only for legacy bootstrap compatibility. New UI and storage code must not depend on SFK startup.
-
 See the [migration guide](../../Docs/migration/v4-simplification-migration-guide.md#56-shared-storage-sync-and-watch-connectivity). App Group and watch device validation remain release gates.

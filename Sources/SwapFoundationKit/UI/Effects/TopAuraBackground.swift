@@ -12,6 +12,57 @@
 import SwiftUI
 
 public struct TopAuraBackground: View {
+    public struct Glow {
+        public let glowColor: Color
+        public let secondaryGlowColor: Color
+        public let primaryOpacity: Double
+        public let secondaryOpacity: Double
+        public let startRadius: CGFloat
+        public let endRadius: CGFloat
+        public let primaryBlurRadius: CGFloat
+        public let secondaryBlurRadius: CGFloat
+
+        public init(
+            glowColor: Color = Color(red: 0.24, green: 0.56, blue: 1.0),
+            secondaryGlowColor: Color = Color.cyan.opacity(0.7),
+            primaryOpacity: Double = 0.34,
+            secondaryOpacity: Double = 0.18,
+            startRadius: CGFloat = 24,
+            endRadius: CGFloat = 360,
+            primaryBlurRadius: CGFloat = 18,
+            secondaryBlurRadius: CGFloat = 12
+        ) {
+            self.glowColor = glowColor
+            self.secondaryGlowColor = secondaryGlowColor
+            self.primaryOpacity = primaryOpacity
+            self.secondaryOpacity = secondaryOpacity
+            self.startRadius = startRadius
+            self.endRadius = endRadius
+            self.primaryBlurRadius = primaryBlurRadius
+            self.secondaryBlurRadius = secondaryBlurRadius
+        }
+
+        public static let system = Glow()
+    }
+
+    public struct Layout {
+        public let primaryHeight: CGFloat
+        public let secondaryHeight: CGFloat
+        public let verticalOffset: CGFloat
+
+        public init(
+            primaryHeight: CGFloat = 380,
+            secondaryHeight: CGFloat = 220,
+            verticalOffset: CGFloat = -92
+        ) {
+            self.primaryHeight = primaryHeight
+            self.secondaryHeight = secondaryHeight
+            self.verticalOffset = verticalOffset
+        }
+
+        public static let system = Layout()
+    }
+
     public let baseColor: Color
     public let glowColor: Color
     public let secondaryGlowColor: Color
@@ -27,35 +78,26 @@ public struct TopAuraBackground: View {
 
     public init(
         baseColor: Color = Color(.systemGroupedBackground),
-        glowColor: Color = Color(red: 0.24, green: 0.56, blue: 1.0),
-        secondaryGlowColor: Color = Color.cyan.opacity(0.7),
-        primaryOpacity: Double = 0.34,
-        secondaryOpacity: Double = 0.18,
-        primaryHeight: CGFloat = 380,
-        secondaryHeight: CGFloat = 220,
-        startRadius: CGFloat = 24,
-        endRadius: CGFloat = 360,
-        primaryBlurRadius: CGFloat = 18,
-        secondaryBlurRadius: CGFloat = 12,
-        verticalOffset: CGFloat = -92
+        glow: Glow = .system,
+        layout: Layout = .system
     ) {
         self.baseColor = baseColor
-        self.glowColor = glowColor
-        self.secondaryGlowColor = secondaryGlowColor
-        self.primaryOpacity = primaryOpacity
-        self.secondaryOpacity = secondaryOpacity
-        self.primaryHeight = primaryHeight
-        self.secondaryHeight = secondaryHeight
-        self.startRadius = startRadius
-        self.endRadius = endRadius
-        self.primaryBlurRadius = primaryBlurRadius
-        self.secondaryBlurRadius = secondaryBlurRadius
-        self.verticalOffset = verticalOffset
+        self.glowColor = glow.glowColor
+        self.secondaryGlowColor = glow.secondaryGlowColor
+        self.primaryOpacity = glow.primaryOpacity
+        self.secondaryOpacity = glow.secondaryOpacity
+        self.primaryHeight = layout.primaryHeight
+        self.secondaryHeight = layout.secondaryHeight
+        self.startRadius = glow.startRadius
+        self.endRadius = glow.endRadius
+        self.primaryBlurRadius = glow.primaryBlurRadius
+        self.secondaryBlurRadius = glow.secondaryBlurRadius
+        self.verticalOffset = layout.verticalOffset
     }
 
     /// Convenience initializer with a simplified 4-parameter API.
     public init(
-        glowColor: Color = Color(red: 0.24, green: 0.56, blue: 1.0),
+        glowColor: Color,
         opacity: Double = 0.25,
         blurRadius: CGFloat = 40,
         bandHeight: CGFloat = 200

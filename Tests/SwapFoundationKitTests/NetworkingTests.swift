@@ -12,7 +12,6 @@
 import XCTest
 @testable import SwapFoundationKit
 @testable import SwapFoundationKitNetworking
-@testable import SwapFoundationKitLegacy
 @testable import SwapFoundationKitSync
 
 final class NetworkingTests: XCTestCase {
@@ -21,8 +20,6 @@ final class NetworkingTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        SwapFoundationKit.shared.resetForTesting()
-
         // Create mock session configuration
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
@@ -36,7 +33,6 @@ final class NetworkingTests: XCTestCase {
         mockSession = nil
         MockURLProtocol.mockResponse = nil
         MockURLProtocol.lastRequest = nil
-        SwapFoundationKit.shared.resetForTesting()
         try await super.tearDown()
     }
 
@@ -946,45 +942,18 @@ final class NetworkingTests: XCTestCase {
         XCTAssertEqual(model, decodedModel)
     }
 
-    // MARK: - Integration Tests
+    // MARK: - Shared storage integration
 
-    func testConfigureMakesSharedDefaultsWrapperAvailableBeforeServiceStart() throws {
+    func testSharedDefaultsUsesExplicitSuiteWithoutBootstrap() throws {
         let suiteName = "group.test.defaults.\(UUID().uuidString)"
-        let config = SwapFoundationKitConfiguration.basic(
-            appMetadata: AppMetaData(appGroupIdentifier: suiteName)
-        )
-
-        try SwapFoundationKit.shared.configure(with: config)
-        let preferences = SharedDefaultsTestPreferences()
+        let preferences = SharedDefaultsTestPreferences(appGroupIdentifier: suiteName)
         preferences.configured = true
 
-        XCTAssertEqual(
-            SwapFoundationKit.shared.getConfiguration()?.appMetadata.appGroupIdentifier,
-            suiteName
-        )
         XCTAssertTrue(UserDefaults(suiteName: suiteName)?.bool(forKey: "configured") == true)
 
         UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
     }
 
-    func testFrameworkIntegration() async throws {
-        // Given
-        let config = SwapFoundationKitConfiguration(
-            appMetadata: AppMetaData(appGroupIdentifier: "group.test.networking"),
-            enableNetworking: true,
-            networkLogLevel: .debug
-        )
-
-        // When
-        try await SwapFoundationKit.shared.start(with: config)
-
-        // Then
-        XCTAssertNotNil(SwapFoundationKit.shared.networkClient)
-        XCTAssertEqual(SwapFoundationKit.shared.networkClient?.networkLogLevel, .debug)
-
-        // Cleanup
-        // Note: In a real scenario, you might want to reset the framework state
-    }
 }
 
 private enum SharedDefaultsTestKey: String, UserDefaultKeyProtocol {
@@ -994,8 +963,16 @@ private enum SharedDefaultsTestKey: String, UserDefaultKeyProtocol {
 }
 
 private struct SharedDefaultsTestPreferences {
-    @SharedUserDefaults(SharedDefaultsTestKey.configured, default: false)
+    @SharedUserDefaults(SharedDefaultsTestKey.configured, default: false, appGroupIdentifier: "")
     var configured: Bool
+
+    init(appGroupIdentifier: String) {
+        _configured = SharedUserDefaults(
+            SharedDefaultsTestKey.configured,
+            default: false,
+            appGroupIdentifier: appGroupIdentifier
+        )
+    }
 }
 
 // MARK: - Mock URL Protocol

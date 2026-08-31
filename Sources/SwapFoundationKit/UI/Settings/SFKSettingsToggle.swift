@@ -28,7 +28,7 @@ import SwiftUI
 /// }
 /// ```
 public struct SFKSettingsToggle: View {
-    @Environment(\.sfkSettingsTheme) private var theme
+    @Environment(\.sfkTheme) private var theme
 
     private let title: String
     private let subtitle: String
@@ -78,7 +78,7 @@ public struct SFKSettingsToggle: View {
     private let action: (() -> Void)?
 
     public var body: some View {
-        let resolvedTint = theme.resolvedTint(tint)
+        let resolvedTint = tint ?? theme.colors.accent
         _SFKSettingsRowContent(
             title: title,
             subtitle: subtitle,
@@ -88,83 +88,14 @@ public struct SFKSettingsToggle: View {
             Toggle(title, isOn: $isOn)
                 .labelsHidden()
                 .toggleStyle(.switch)
-                .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
+                .tint(tint ?? theme.colors.accent)
                 .onChange(of: isOn) { _, _ in action?() }
         }
-        .padding(.vertical, theme.metrics.rowVerticalPadding)
-    }
-}
-
-/// A settings toggle row using a SettingsItem-style configuration.
-///
-/// ## Usage
-/// ```swift
-/// struct MyToggleItem: SettingsItem {
-///     case notifications
-///
-///     var id: String { "notifications" }
-///     var icon: String { "bell.circle.fill" }
-///     var title: String { "Notifications" }
-///     var subtitle: String { "Receive push notifications" }
-///     var tint: Color { .blue }
-/// }
-///
-/// SFKSettingsToggleRow(item: MyToggleItem(), isOn: $isEnabled)
-/// ```
-public struct SFKSettingsToggleRow<Item: SettingsItem>: View {
-    @Environment(\.sfkSettingsTheme) private var theme
-
-    private let item: Item
-    @Binding private var isOn: Bool
-
-    /// Creates a settings toggle row from a SettingsItem.
-    /// - Parameters:
-    ///   - item: The settings item defining icon, title, subtitle, and tint.
-    ///   - isOn: Binding to the toggle state.
-    public init(
-        item: Item,
-        isOn: Binding<Bool>
-    ) {
-        self.item = item
-        self._isOn = isOn
-    }
-
-    public var body: some View {
-        let resolvedTint = theme.resolvedItemTint(item.tint)
-        _SFKSettingsRowContent(
-            title: item.title,
-            subtitle: item.subtitle,
-            icon: item.icon,
-            tint: resolvedTint
-        ) {
-            Toggle(item.title, isOn: $isOn)
-                .labelsHidden()
-                .toggleStyle(.switch)
-                .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
-        }
-        .padding(.vertical, theme.metrics.rowVerticalPadding)
+        .padding(.vertical, theme.spacing.control / 4)
     }
 }
 
 // MARK: - Previews
-
-private enum PreviewToggleItem: String, SettingsItem {
-    case enabled
-    case disabled
-
-    var id: String { rawValue }
-
-    var icon: String {
-        switch self {
-        case .enabled: return "power.circle.fill"
-        case .disabled: return "power.circle"
-        }
-    }
-
-    var title: String { rawValue.capitalized }
-    var subtitle: String { "Sample toggle item" }
-    var tint: Color { .green }
-}
 
 #Preview("SFKSettingsToggle") {
     @Previewable @State var value = true
@@ -185,14 +116,5 @@ private enum PreviewToggleItem: String, SettingsItem {
             tint: .purple,
             isOn: .constant(false)
         )
-    }
-}
-
-#Preview("SFKSettingsToggleRow") {
-    @Previewable @State var value = true
-
-    List {
-        SFKSettingsToggleRow(item: PreviewToggleItem.enabled, isOn: $value)
-        SFKSettingsToggleRow(item: PreviewToggleItem.disabled, isOn: .constant(false))
     }
 }

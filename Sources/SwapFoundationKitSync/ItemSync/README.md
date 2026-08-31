@@ -13,10 +13,8 @@ import SwapFoundationKitSync
 | `SyncableData` | protocol | Codable data with sync identifier and file extension |
 | `DataSyncService` | protocol | Save, read, delete, publisher for sync operations |
 | `FileStorageService` | protocol | Low-level file read/write in App Group |
-| `WatchConnectivityService` | protocol | Deprecated lower-level WCSession transport |
 | `DataSyncServiceImpl` | class | Orchestrator: file storage + optional watch sync |
 | `AppGroupFileStorageService` | class | App Group file storage implementation |
-| `WatchConnectivityServiceImpl` | class | iOS-only WCSession delegate implementation |
 | `ItemSyncServiceFactory` | class | Factory requiring explicit App Group or injected storage |
 | `SyncEvent` | enum | `.dataSaved`, `.dataDeleted`, `.watchDataSent`, etc. |
 
@@ -47,8 +45,6 @@ sync.syncPublisher.sink { event in
 - `Core/SyncableData.swift` — Data protocol
 - `Core/DataSyncService.swift` — Service protocol
 - `Core/FileStorageService.swift` — Storage protocol
-- `Core/WatchConnectivityService.swift` — Watch protocol
 - `Implementations/DataSyncServiceImpl.swift` — Concrete orchestrator
 - `Implementations/AppGroupFileStorageService.swift` — App Group storage
-- `Implementations/WatchConnectivityServiceImpl.swift` — WCSession wrapper
 - `ItemSyncServiceFactory.swift` — Factory

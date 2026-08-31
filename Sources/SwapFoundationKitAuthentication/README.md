@@ -6,6 +6,8 @@ This product owns `AppAttestService`, `AppAttestProviding`, authenticated instal
 
 Construct `AuthenticatedSessionService` with the existing host configuration and adapters. The host still owns identity, purchase-proof sources, binding requirements, authorization policy, and UI. `.strict` does not imply purchase binding; preserve explicit `requireBinding` choices.
 
+The configuration's common initializer is `AuthenticatedSessionConfiguration(baseURL:appIdentifier:environment:options:)`. Its nested `Options` groups storage keys, App Attest enablement, timeouts, freshness, header names, auth version, and legacy migration. Move existing tuning arguments into this value without changing them; defaults and derived storage keys are unchanged.
+
 Do not reset keys, change storage namespaces, alter server enforcement, or replace pending-enrollment artifacts simply because the module import changes. No Worker deployment or RevenueCat configuration is part of this move.
 
 See the [authentication migration recipe](../../Docs/migration/v4-simplification-migration-guide.md#55-app-attestation-and-authenticated-sessions). The post-extraction contract suite passes as part of the [consolidated package tests](../../Docs/development/v4-implementation-status.md); real-device App Attest validation remains a release gate.

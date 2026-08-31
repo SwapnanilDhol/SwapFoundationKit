@@ -70,13 +70,6 @@ private enum CatalogPickableItem: String, CaseIterable, Identifiable, SFKPickabl
     case uiKit = "UIKit"
     case combine = "Combine"
 
-    static var sections: [SFKItemPickerSection] {
-        [
-            SFKItemPickerSection(title: "Modern", items: [Self.swift, Self.swiftUI]),
-            SFKItemPickerSection(title: "Foundation", items: [Self.uiKit, Self.combine])
-        ]
-    }
-
     var id: Self { self }
     var pickableItemId: String { rawValue }
     var pickableItemTitle: String { rawValue }

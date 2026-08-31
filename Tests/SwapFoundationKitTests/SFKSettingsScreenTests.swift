@@ -4,22 +4,12 @@ import Testing
 
 struct SFKSettingsScreenTests {
     @Test
-    func customSection_preservesCallerProvidedIdentity() {
-        let section = SFKSettingsCustomSection(id: "preferences") {
-            EmptyView()
-        }
-
-        #expect(section.id == "preferences")
-    }
-
-    @Test
-    func standardSection_preservesCallerProvidedIdentity() {
-        let section = SFKSettingsSectionConfiguration(
-            id: "information",
-            title: "Information",
-            items: []
-        )
-
-        #expect(section.id == "information")
+    @MainActor
+    func typedToggleBindingWritesCurrentValue() {
+        var value = false
+        let binding = Binding(get: { value }, set: { value = $0 })
+        _ = SFKSettingsToggle("Notifications", isOn: binding)
+        binding.wrappedValue = true
+        #expect(value)
     }
 }

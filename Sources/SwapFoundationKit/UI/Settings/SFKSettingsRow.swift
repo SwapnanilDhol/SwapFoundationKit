@@ -7,97 +7,70 @@
 
 import SwiftUI
 
-/// Trailing content for a settings row — either a themed value string or a fully custom view.
-public enum SFKSettingsTrailing {
-    /// A string rendered with the theme's `valueFont` and `valueColor`.
-    case value(String)
-    /// A fully custom trailing view. Theme styling is applied automatically (font + color).
-    case custom(AnyView)
-}
-
 /// A simple text view styled by the settings theme for use as trailing row content.
-public struct SFKSettingsValueText: View {
-    @Environment(\.sfkSettingsTheme) private var theme
+struct SFKSettingsValueText: View {
+    @Environment(\.sfkTheme) private var theme
 
     let text: String
 
-    public init(_ text: String) { self.text = text }
+    init(_ text: String) { self.text = text }
 
-    public var body: some View {
+    var body: some View {
         Text(text)
-            .font(theme.typography.valueFont)
-            .foregroundStyle(theme.colors.valueColor)
+            .font(theme.typography.body)
+            .foregroundStyle(theme.colors.secondaryText)
             .multilineTextAlignment(.trailing)
     }
 }
 
-/// A reusable SwiftUI row component for displaying a settings item.
+/// A reusable SwiftUI row component for displaying an action or navigation item.
 ///
 /// Renders an icon in a colored rounded rectangle, followed by title and subtitle,
-/// and optionally a trailing view (chevron, text, or custom content).
+/// and optionally a themed trailing value and chevron.
 ///
 /// ## Usage
 /// ```swift
-/// // Basic usage with SettingsItem
-/// ForEach(AppInfoSectionItem.allCases, id: \.id) { item in
-///     SFKSettingsRow(item: item) {
-///         // Handle tap
-///     }
-/// }
-///
-/// // With themed trailing value
-/// SFKSettingsRow(item: versionItem, trailingView: .value("1.0.0 (100)")) {}
+/// SFKSettingsRow("About", subtitle: "Learn more", systemImage: "info.circle") { ... }
 /// ```
 public struct SFKSettingsRow: View {
-    @Environment(\.sfkSettingsTheme) private var theme
+    @Environment(\.sfkTheme) private var theme
 
     private let icon: String
     private let title: String
     private let subtitle: String
     private let tint: Color?
-    private let showChevron: Bool
+    private var showChevron = true
     private let action: () -> Void
-    private let trailingView: SFKSettingsTrailing?
+    private var trailingText: String?
 
-    /// Creates a settings row.
-    /// - Parameters:
-    ///   - item: The settings item to display.
-    ///   - action: The action to perform when the row is tapped.
-    ///   - showChevron: Whether to show chevron. Default is `true`.
-    ///   - trailingView: Optional themed or custom trailing content.
-    public init<Item: SettingsItem>(
-        item: Item,
-        action: @escaping () -> Void,
-        showChevron: Bool = true,
-        trailingView: SFKSettingsTrailing? = nil
-    ) {
-        self.icon = item.icon
-        self.title = item.title
-        self.subtitle = item.subtitle
-        self.tint = item.tint
-        self.showChevron = showChevron
-        self.action = action
-        self.trailingView = trailingView
-    }
-
-    /// Creates an action or navigation row without defining a ``SettingsItem``.
+    /// Creates an action or navigation row.
     /// This is the concise v4 builder-path initializer.
     public init(
         _ title: String,
         subtitle: String = "",
         systemImage: String = "arrow.forward",
         tint: Color? = nil,
-        showChevron: Bool = true,
-        trailingView: SFKSettingsTrailing? = nil,
         action: @escaping () -> Void
     ) {
         self.icon = systemImage
         self.title = title
         self.subtitle = subtitle
-        self.tint = tint ?? .accentColor
-        self.showChevron = showChevron
+        self.tint = tint
         self.action = action
-        self.trailingView = trailingView
+    }
+
+    /// Overrides whether the row shows its disclosure chevron.
+    public func settingsRowChevron(_ isVisible: Bool) -> Self {
+        var copy = self
+        copy.showChevron = isVisible
+        return copy
+    }
+
+    /// Adds a themed trailing value while retaining the row's native rendering.
+    public func settingsRowValue(_ value: String?) -> Self {
+        var copy = self
+        copy.trailingText = value
+        return copy
     }
 
     public var body: some View {
@@ -106,11 +79,11 @@ public struct SFKSettingsRow: View {
                 title: title,
                 subtitle: subtitle,
                 icon: icon,
-                tint: tint.map { theme.resolvedItemTint($0) } ?? theme.colors.accent
+                tint: tint ?? theme.colors.accent
             ) {
                 trailingContent
             }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
+            .padding(.vertical, theme.spacing.control / 4)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -118,63 +91,21 @@ public struct SFKSettingsRow: View {
 
     @ViewBuilder
     private var trailingContent: some View {
-        HStack(alignment: .center, spacing: theme.metrics.trailingSpacing) {
-            switch trailingView {
-            case .value(let text):
-                SFKSettingsValueText(text)
-            case .custom(let view):
-                view
-                    .font(theme.typography.valueFont)
-                    .foregroundStyle(theme.colors.valueColor)
-                    .multilineTextAlignment(.trailing)
-            case nil:
-                EmptyView()
+        HStack(alignment: .center, spacing: theme.spacing.inline) {
+            if let trailingText {
+                SFKSettingsValueText(trailingText)
             }
             if showChevron {
                 Image(systemName: "chevron.right")
-                    .font(theme.typography.accessoryFont)
-                    .foregroundStyle(theme.colors.accessoryColor)
+                    .font(theme.typography.caption)
+                    .foregroundStyle(theme.colors.secondaryText)
             }
         }
     }
 }
 
-/// A display-only settings label row (no tap action).
-public struct SFKSettingsLabel: View {
-    @Environment(\.sfkSettingsTheme) private var theme
-
-    private let title: String
-    private let subtitle: String
-    private let icon: String
-    private let tint: Color
-
-    /// Creates a settings label row.
-    public init(
-        title: String,
-        subtitle: String,
-        icon: String,
-        tint: Color
-    ) {
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = icon
-        self.tint = tint
-    }
-
-    public var body: some View {
-        let resolvedTint = theme.resolvedTint(tint)
-        return _SFKSettingsRowContent(
-            title: title,
-            subtitle: subtitle,
-            icon: icon,
-            tint: resolvedTint
-        )
-        .padding(.vertical, theme.metrics.rowVerticalPadding)
-    }
-}
-
 struct _SFKSettingsRowContent<Trailing: View>: View {
-    @Environment(\.sfkSettingsTheme) private var theme
+    @Environment(\.sfkTheme) private var theme
 
     let title: String
     let subtitle: String
@@ -206,26 +137,26 @@ struct _SFKSettingsRowContent<Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(spacing: theme.metrics.rowSpacing) {
+        HStack(spacing: theme.spacing.inline) {
             ZStack {
-                RoundedRectangle(cornerRadius: theme.metrics.iconCornerRadius)
-                    .fill(iconBackgroundColor ?? tint.opacity(theme.colors.iconBackgroundOpacity))
+                RoundedRectangle(cornerRadius: theme.radii.control)
+                    .fill(iconBackgroundColor ?? tint.opacity(0.14))
 
                 Image(systemName: icon)
-                    .font(theme.typography.iconFont)
+                    .font(theme.typography.caption.weight(.semibold))
                     .foregroundStyle(tint)
             }
-            .frame(width: theme.metrics.iconTileSize, height: theme.metrics.iconTileSize)
+            .frame(width: 28, height: 28)
 
-            VStack(alignment: .leading, spacing: theme.metrics.labelSpacing) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(theme.typography.titleFont)
-                    .foregroundStyle(titleColor ?? theme.colors.titleColor)
+                    .font(theme.typography.body.weight(.semibold))
+                    .foregroundStyle(titleColor ?? theme.colors.text)
 
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(theme.typography.subtitleFont)
-                        .foregroundStyle(subtitleColor ?? theme.colors.subtitleColor)
+                        .font(theme.typography.caption)
+                        .foregroundStyle(subtitleColor ?? theme.colors.secondaryText)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -261,78 +192,17 @@ extension _SFKSettingsRowContent where Trailing == EmptyView {
     }
 }
 
-// MARK: - Previews
-
-private enum PreviewSettingsItem: String, SettingsItem {
-    case notifications
-    case privacy
-    case version
-
-    var id: String { rawValue }
-
-    var icon: String {
-        switch self {
-        case .notifications: return "bell.circle.fill"
-        case .privacy: return "lock.circle.fill"
-        case .version: return "info.circle.fill"
-        }
-    }
-
-    var title: String {
-        switch self {
-        case .notifications: return "Notifications"
-        case .privacy: return "Privacy"
-        case .version: return "Version"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .notifications: return "Manage notification preferences"
-        case .privacy: return "Privacy settings and data"
-        case .version: return "Current app version"
-        }
-    }
-
-    var tint: Color {
-        switch self {
-        case .notifications: return .blue
-        case .privacy: return .green
-        case .version: return .secondary
-        }
-    }
-}
-
 #Preview("SFKSettingsRow") {
     List {
-        ForEach([PreviewSettingsItem.notifications, .privacy, .version], id: \.id) { item in
-            SFKSettingsRow(item: item) {
-                print("Tapped: \(item.title)")
-            }
-        }
-
         SFKSettingsRow(
-            item: PreviewSettingsItem.version,
-            action: {},
-            showChevron: false,
-            trailingView: .value("1.0.0 (100)")
-        )
-    }
-}
-
-#Preview("SFKSettingsLabel") {
-    List {
-        SFKSettingsLabel(
-            title: "App Version",
+            "Version",
             subtitle: "Current installed version",
-            icon: "info.circle.fill",
-            tint: .secondary
+            systemImage: "info.circle.fill",
+            tint: .secondary,
+            action: {}
         )
-        SFKSettingsLabel(
-            title: "Build",
-            subtitle: "Debug build",
-            icon: "hammer.fill",
-            tint: .orange
-        )
+        .settingsRowChevron(false)
+        .settingsRowValue("1.0.0 (100)")
+        SFKSettingsRow("Privacy", subtitle: "Privacy settings and data", systemImage: "lock.circle.fill", tint: .green) {}
     }
 }

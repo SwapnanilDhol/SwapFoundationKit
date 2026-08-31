@@ -59,7 +59,7 @@ private struct MockProfile: SyncableData, Equatable {
     static let syncIdentifier = "mock_profile"
 }
 
-private final class MockWatchConnectivityService: WatchConnectivityService {
+private final class MockWatchConnectivityService: WatchConnectivityAdapter {
     let payloadSubject = PassthroughSubject<WatchConnectivityPayload, Never>()
     var activated = false
     var lastSentData: Data?

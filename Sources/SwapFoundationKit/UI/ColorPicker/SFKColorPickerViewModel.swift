@@ -15,8 +15,6 @@ import SwiftUI
 final class SFKColorPickerViewModel: ObservableObject {
     @Published var selectedColor: Color
 
-    weak var delegate: SFKColorPickerDelegate?
-
     let promptTitle: String?
     let promptMessage: String?
     let presetColors: [Color]
@@ -27,14 +25,12 @@ final class SFKColorPickerViewModel: ObservableObject {
         selectedColor: Color,
         promptTitle: String?,
         promptMessage: String?,
-        presetColors: [Color],
-        delegate: SFKColorPickerDelegate?
+        presetColors: [Color]
     ) {
         self.selectedColor = selectedColor
         self.promptTitle = promptTitle
         self.promptMessage = promptMessage
         self.presetColors = presetColors
-        self.delegate = delegate
     }
 
     func selectPresetColor(_ color: Color) {
@@ -48,7 +44,6 @@ final class SFKColorPickerViewModel: ObservableObject {
     }
 
     func applySelection() {
-        delegate?.colorPickerDidSelectColor(selectedColor)
         haptics.mediumImpact()
     }
 

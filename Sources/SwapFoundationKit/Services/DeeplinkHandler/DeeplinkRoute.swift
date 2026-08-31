@@ -14,7 +14,7 @@ import Foundation
 /// Protocol for defining deeplink routes in the host application.
 ///
 /// Host apps define their routes as enums conforming to this protocol,
-/// then register them with `SwapFoundationKitConfiguration.supportedRoutes`.
+/// then register them with `DefaultDeeplinkHandler.shared.configure(with:)`.
 ///
 /// ## Example
 /// ```swift

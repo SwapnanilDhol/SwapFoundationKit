@@ -41,7 +41,7 @@ struct ColorExamplesView: View {
         .sheet(isPresented: $isShowingColorPicker) {
             SFKColorPickerSheet(
                 selection: $selectedColor,
-                configuration: SFKColorPickerConfiguration(
+                configuration: SFKColorPickerSheet.Configuration(
                     promptTitle: "Choose an example color",
                     promptMessage: "Pick a preset or open the color wheel."
                 )

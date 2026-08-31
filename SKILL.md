@@ -27,7 +27,7 @@ Read files in this order:
 1. `Docs/capabilities.yaml` — Agent-first discovery catalog
 2. `README.md` — Parent index with links to the owning product READMEs
 3. Module READMEs under `Sources/` — Per-product API references
-4. `Docs/migration/catalog.yaml` — Curated audit catalog (60+ capabilities with tiers)
+4. `Docs/migration/catalog.yaml` — Curated audit catalog with tiers
 5. `AGENTS.md` — LLM workflow document
 6. `Docs/migration/migration-guide.md` — Full migration guide
 
@@ -84,7 +84,6 @@ Read files in this order:
 | Networking | [Networking/README.md](Sources/SwapFoundationKitNetworking/README.md) | HTTPClient, NetworkRequest, NetworkService, NetworkMonitor |
 | Authentication | [Authentication/README.md](Sources/SwapFoundationKitAuthentication/README.md) | AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient |
 | Firebase | [Firebase/README.md](Sources/SwapFoundationKitFirebase/README.md) | SFKFirebaseLogger with required host handlers |
-| Legacy | [Legacy/README.md](Sources/SwapFoundationKitLegacy/README.md) | Deprecated bootstrap and ConfigurationService |
 | Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager (instance-based), UserDefault, DeeplinkHandler, SFKAccessGate, SFKNotificationService (Pulse/Toast are opt-in products) |
 | UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKTheme, SFKButton, SFKTextField, typed SFKSettingsScreen/SFKSettingsSection, SFKSegmentedProgress, typed SFKItemPickerView, SFKColorPickerSheet, SFKPhotoPicker, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
@@ -95,6 +94,6 @@ Read files in this order:
 | WatchSync | [WatchSync/README.md](Sources/SwapFoundationKitSync/WatchSync/README.md) | WatchSyncService, WatchSyncEnvelope, WatchSyncTransport |
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | Compatibility | [Compatibility/README.md](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
-| Ads | [Ads/README.md](Sources/SwapFoundationKit/Ads/README.md) | AdsConfiguration, AdUnitConfiguration |
+| Ads | [Ads/README.md](Sources/SwapFoundationKitGoogleMobileAds/README.md) | AdsConfiguration, AdUnitConfiguration |
 | Pulse (opt-in) | [Pulse/README.md](Sources/SwapFoundationKitPulse/README.md) | SFKPulseService, SFKPulseConfiguration, SFKPulseConsoleView |
 | Toast (opt-in) | [Toast/README.md](Sources/SwapFoundationKitToast/README.md) | ToastManager, SFKToastKind, SFKToastStyle, SFKToastConfiguration |

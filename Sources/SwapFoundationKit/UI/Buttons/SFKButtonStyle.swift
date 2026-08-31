@@ -19,7 +19,7 @@ import SwiftUI
 /// - ``secondary``: A supporting or alternative action.
 /// - ``toolbar``: A compact control placed in a system toolbar.
 /// - ``destructive``: An action that removes or irreversibly changes data.
-public enum SFKButtonStyle: Sendable {
+public enum SFKButtonStyle: Sendable, Equatable {
     case primary
     case secondary
     case toolbar

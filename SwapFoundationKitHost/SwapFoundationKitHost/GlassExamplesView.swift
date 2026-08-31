@@ -82,22 +82,22 @@ struct GlassExamplesView: View {
     private var buttonStyles: some View {
         CatalogExampleGroup(
             title: "Button Emphasis",
-            apiNames: ["SFKButton(style: .secondary)", "SFKButton(style: .primary)"]
+            apiNames: ["SFKButton(_:role: .secondary)", "SFKButton(_:role: .primary)"]
         ) {
             GlassDemoStage {
                 HStack(spacing: 12) {
                     SFKButton(
                         "Secondary",
-                        fullWidth: false,
-                        color: .white.opacity(0.14),
-                        style: .secondary
+                        role: .secondary
                     ) {}
+                    .sfkFullWidth(false)
+                    .sfkTint(.white.opacity(0.14))
 
                     SFKButton(
                         "Primary",
-                        fullWidth: false,
-                        style: .primary
+                        role: .primary
                     ) {}
+                    .sfkFullWidth(false)
                 }
                 .padding(22)
             }

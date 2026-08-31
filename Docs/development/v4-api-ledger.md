@@ -1,53 +1,83 @@
 # SwapFoundationKit v4 API Ledger
 
-Status: integrated product extraction and canonical API implementation; breaking-release reduction gates remain open (see [implementation checkpoint](v4-implementation-status.md)).
+Status: breaking package cleanup implemented. See [verification status](v4-implementation-status.md).
 
-## Current measured implementation — 2026-08-31
+## Final measured surface — 2026-08-31
 
-`api-baseline.txt` has been regenerated from all **13** first-party products with
-Xcode 26.6, arm64 iOS Simulator. The extraction script's `TARGETS` array is the
-authoritative product list. Its measurement methodology is unchanged from `98ce079`.
+The unchanged symbol-graph extractor built all **12** first-party products using
+Xcode 26.6, arm64 iOS Simulator. The Legacy product is removed. This is a real
+compiler inventory, not a source grep or a count that hides retained APIs.
 
 | Product | Located public declarations | Top-level public types |
 |---|---:|---:|
-| SwapFoundationKit | 1,777 | 152 |
-| Networking | 139 | 17 |
-| Authentication | 191 | 34 |
-| Sync | 150 | 23 |
+| SwapFoundationKit | 1,296 | 100 |
+| Networking | 135 | 16 |
+| Authentication | 201 | 34 |
+| Sync | 110 | 18 |
 | Media | 86 | 13 |
 | Currency | 84 | 3 |
 | RemoteAI | 18 | 3 |
 | Firebase | 7 | 1 |
-| Legacy | 87 | 5 |
 | Feedback | 82 | 15 |
 | GoogleMobileAds | 48 | 10 |
 | Pulse | 27 | 6 |
 | Toast | 18 | 4 |
+| **Total** | **2,112** | **223** |
 
-| Acceptance measure | `98ce079` | Current | Release target |
-|---|---:|---:|---|
-| Default public types | 235 | 152 | roughly 60–75 |
-| UI public types | 92 | 102 | below 40 |
-| All first-party public types | 262 | 286 | at least 40% reduction |
-| Default third-party dependency edges | 0 | 0 | 0 |
+| Measure | Pre-extraction `98ce079` | Compatibility checkpoint `0c741e7` | Final | Original design target |
+|---|---:|---:|---:|---:|
+| Default public types | 235 | 152 | 100 | 60–75 |
+| UI public types | 92 | 102 | 50 | <40 |
+| All-product public types | 262 | 286 | 223 | ≤157 |
+| Default third-party dependency edges | 0 | 0 | 0 | 0 |
 
-The default surface is smaller by 83 types (35.3%), primarily through relocation.
-The overall and UI surfaces have **grown** because the new canonical APIs coexist
-with deprecated compatibility APIs. This is not completion of the simplification
-plan's reduction criterion. Consumer migration, compatibility internalization/removal,
-and a fresh inventory after that removal are still required. Do not report relocation
-or deprecation as a reduction in all-product type count.
+Compared with `98ce079`, the default has **57.4% fewer** types, UI has **45.7%
+fewer**, and the complete package has **14.9% fewer**. Compared with the coexistence
+checkpoint, cleanup removes 63 top-level types across products. Default-product
+reduction includes relocation; it must not be presented as all-package deletion.
 
-Canonical ownership is now implemented for the extracted products, including
-Authentication, Firebase, Currency, RemoteAI, and Legacy. The current symbol/product
-map is in the [migration guide](../migration/v4-simplification-migration-guide.md).
-Existing watch transports and several UI adapters are only deprecated, not collapsed
-or removed. The compatibility/static-closure exceptions are enumerated in the
-[implementation checkpoint](v4-implementation-status.md).
+## Reviewed retention and budget decision
 
-The consolidated package suite passes 303 tests (0 failures, 0 skipped), and the
-catalog app builds. These tests are not a substitute for visual/accessibility checks
-or the two real-app migration gate.
+The original 75/39/157 ceilings were run against the final graph and failed with
+100/50/223. **Those design targets are not achieved.** The no-growth regression
+budgets now enforce the measured 100/50/223, with the original targets retained
+separately in `v4-api-budgets.json`. This is an explicit scope revision, not a
+claim that the original acceptance numbers passed.
+
+- The default retains reusable services/utilities, typed settings/pickers,
+  barcode/photo presentation, UIKit interoperability, and forward-compatible
+  platform wrappers. They are distinct capabilities, not obsolete bootstrap or
+  erased settings adapters.
+- Authentication retains its 34 top-level contracts and secure lifecycle
+  primitives. Simplifying construction is not justification to delete security
+  states, storage, proof, backend, or transport contracts.
+- Media retains separate transform/cache/storage/loading contracts; Sync retains
+  typed envelopes/options/events/errors and item storage. Their lower-level
+  WatchConnectivity adapter is internal, not a competing public entry point.
+- Optional Feedback, Ads, Pulse, Toast, Currency, Firebase, and RemoteAI APIs remain
+  opt-in. Removing whole features solely for a numerical target would contradict
+  the plan's capability-preservation requirement.
+- Nested component configuration names improve discoverability but are still
+  public declarations. Nesting is not claimed as deletion of functionality.
+
+Removed API mappings are in the [control](v4-control-removals.md),
+[settings/picker](v4-settings-removals.md), and [service](v4-service-removals.md)
+ledgers and the [migration guide](../migration/v4-simplification-migration-guide.md).
+
+## Enforced constraints
+
+- Every located public initializer has at most ten arguments.
+- Named common constructors, including controls/settings/pickers and services,
+  have at most six.
+- Removed compatibility roots and mutable public static closure configuration
+  cannot be reintroduced without failing the static gate.
+- Catalog IDs, source/example/doc paths, 23 domain / 38 capability counts, owning
+  products, and migration metadata are checked.
+- `api-surface.yml` independently regenerates and compares the compiler inventory;
+  `v4-acceptance.yml` checks reviewed budgets/catalogs and runs package tests;
+  `ci.yml` builds the catalog with the same Xcode 26.6 pin.
+- The baseline is not a complete ABI/source-compatibility checker. It records
+  names, kinds, and locations, not every default argument or semantic behavior.
 
 ## Historical checkpoint ledger — `98ce079`
 

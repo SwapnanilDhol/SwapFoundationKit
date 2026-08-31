@@ -58,11 +58,7 @@ public struct SFKTextFieldAppearance {
         labelColor: Color = .primary,
         supportingTextColor: Color = .secondary,
         errorColor: Color = .red,
-        successColor: Color = .green,
-        cornerRadius: CGFloat = 12,
-        minimumHeight: CGFloat = 50,
-        horizontalPadding: CGFloat = 14,
-        contentSpacing: CGFloat = 10
+        successColor: Color = .green
     ) {
         self.backgroundColor = backgroundColor
         self.focusedBackgroundColor = focusedBackgroundColor
@@ -73,18 +69,33 @@ public struct SFKTextFieldAppearance {
         self.supportingTextColor = supportingTextColor
         self.errorColor = errorColor
         self.successColor = successColor
-        self.cornerRadius = cornerRadius
-        self.minimumHeight = minimumHeight
-        self.horizontalPadding = horizontalPadding
-        self.contentSpacing = contentSpacing
+        self.cornerRadius = 12
+        self.minimumHeight = 50
+        self.horizontalPadding = 14
+        self.contentSpacing = 10
     }
 
     public static let standard = SFKTextFieldAppearance()
 
-    /// Creates the compatibility appearance projection for an ``SFKTheme``.
+    /// Returns a copy with focused layout metrics customized for a host screen.
+    public func metrics(
+        cornerRadius: CGFloat? = nil,
+        minimumHeight: CGFloat? = nil,
+        horizontalPadding: CGFloat? = nil,
+        contentSpacing: CGFloat? = nil
+    ) -> Self {
+        var copy = self
+        if let cornerRadius { copy.cornerRadius = cornerRadius }
+        if let minimumHeight { copy.minimumHeight = minimumHeight }
+        if let horizontalPadding { copy.horizontalPadding = horizontalPadding }
+        if let contentSpacing { copy.contentSpacing = contentSpacing }
+        return copy
+    }
+
+    /// Creates appearance tokens projected from an ``SFKTheme``.
     ///
-    /// Prefer injecting ``SFKTheme`` directly; this initializer is for hosts
-    /// that still need to pass an appearance to an older field configuration.
+    /// Prefer injecting ``SFKTheme`` directly; use this projection when a field
+    /// needs an explicit local appearance override.
     public init(theme: SFKTheme) {
         self.init(
             backgroundColor: theme.colors.surface,
@@ -95,11 +106,11 @@ public struct SFKTextFieldAppearance {
             labelColor: theme.colors.text,
             supportingTextColor: theme.colors.secondaryText,
             errorColor: theme.colors.destructive,
-            successColor: .green,
-            cornerRadius: theme.radii.control,
-            horizontalPadding: theme.spacing.control,
-            contentSpacing: theme.spacing.inline
+            successColor: .green
         )
+        self.cornerRadius = theme.radii.control
+        self.horizontalPadding = theme.spacing.control
+        self.contentSpacing = theme.spacing.inline
     }
 }
 
@@ -218,7 +229,7 @@ public struct SFKTextField: View {
         isSecure: Bool = false
     ) {
         self.init(
-            title,
+            title: title,
             text: text,
             placeholder: prompt ?? title ?? "",
             leadingSystemImage: leadingSystemImage,
@@ -226,60 +237,38 @@ public struct SFKTextField: View {
         )
     }
 
-    @_disfavoredOverload
-    @available(*, deprecated, message: "Use the focused prompt: initializer or SFKTextField modifiers.")
-    public init(
-        _ title: String? = nil,
+    private init(
+        title: String?,
         text: Binding<String>,
         placeholder: String,
         leadingSystemImage: String? = nil,
-        trailingSystemImage: String? = nil,
-        trailingAccessibilityLabel: String? = nil,
-        supportingText: String? = nil,
-        status: SFKTextFieldStatus = .normal,
-        tint: Color? = nil,
-        isSecure: Bool = false,
-        allowsSecureTextReveal: Bool = true,
-        keyboardType: UIKeyboardType = .default,
-        contentType: UITextContentType? = nil,
-        textInputAutocapitalization: TextInputAutocapitalization = .sentences,
-        autocorrectionDisabled: Bool = false,
-        submitLabel: SubmitLabel = .done,
-        axis: Axis = .horizontal,
-        lineLimit: ClosedRange<Int>? = nil,
-        textAlignment: TextAlignment = .leading,
-        font: Font? = nil,
-        isFocused: Binding<Bool>? = nil,
-        accessibilityIdentifier: String? = nil,
-        appearance: SFKTextFieldAppearance? = nil,
-        onSubmit: @escaping () -> Void = {},
-        onTrailingAction: (() -> Void)? = nil
+        isSecure: Bool
     ) {
         self.title = title
         _text = text
         self.placeholder = placeholder
         self.leadingSystemImage = leadingSystemImage
-        self.trailingSystemImage = trailingSystemImage
-        self.trailingAccessibilityLabel = trailingAccessibilityLabel
-        self.supportingText = supportingText
-        self.status = status
-        self.tint = tint
+        self.trailingSystemImage = nil
+        self.trailingAccessibilityLabel = nil
+        self.supportingText = nil
+        self.status = .normal
+        self.tint = nil
         self.isSecure = isSecure
-        self.allowsSecureTextReveal = allowsSecureTextReveal
-        self.keyboardType = keyboardType
-        self.contentType = contentType
-        self.textInputAutocapitalization = textInputAutocapitalization
-        self.autocorrectionDisabled = autocorrectionDisabled
-        self.submitLabel = submitLabel
-        self.axis = axis
-        self.lineLimit = lineLimit
-        self.textAlignment = textAlignment
-        self.font = font
-        externalFocus = isFocused
-        self.accessibilityIdentifier = accessibilityIdentifier
-        self.appearance = appearance
-        self.onSubmit = onSubmit
-        self.onTrailingAction = onTrailingAction
+        self.allowsSecureTextReveal = true
+        self.keyboardType = .default
+        self.contentType = nil
+        self.textInputAutocapitalization = .sentences
+        self.autocorrectionDisabled = false
+        self.submitLabel = .done
+        self.axis = .horizontal
+        self.lineLimit = nil
+        self.textAlignment = .leading
+        self.font = nil
+        self.externalFocus = nil
+        self.accessibilityIdentifier = nil
+        self.appearance = nil
+        self.onSubmit = {}
+        self.onTrailingAction = nil
     }
 
     public var body: some View {
@@ -585,31 +574,28 @@ public struct SFKTextField: View {
             SFKTextField(
                 "Name",
                 text: $name,
-                placeholder: "Optional",
+                prompt: "Optional",
                 leadingSystemImage: "person"
             )
 
             SFKTextField(
                 "Email",
                 text: $email,
-                placeholder: "you@example.com",
-                leadingSystemImage: "envelope",
-                status: .error("Enter a valid email address."),
-                keyboardType: .emailAddress,
-                contentType: .emailAddress,
-                textInputAutocapitalization: .never,
-                autocorrectionDisabled: true
+                prompt: "you@example.com",
+                leadingSystemImage: "envelope"
             )
+            .sfkInput(.email)
+            .sfkStatus(.error("Enter a valid email address."))
 
             SFKTextField(
                 "Password",
                 text: $password,
-                placeholder: "Required",
+                prompt: "Required",
                 leadingSystemImage: "lock",
-                supportingText: "Use at least eight characters.",
-                isSecure: true,
-                contentType: .password
+                isSecure: true
             )
+            .sfkInput(.password)
+            .sfkSupportingText("Use at least eight characters.")
         }
         .padding(20)
     }

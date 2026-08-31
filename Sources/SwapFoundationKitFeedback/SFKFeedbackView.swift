@@ -53,7 +53,8 @@ struct SFKFeedbackView: View {
             SFKChipFlowLayout(spacing: 8) {
                 ForEach(SFKFeedbackCategory.allCases) { category in
                     SFKSelectableChip(
-                        item: CategoryChip(category: category),
+                        category.label,
+                        icon: category.icon,
                         isSelected: viewModel.category == category,
                         tintColor: category.tintColor
                     ) { viewModel.category = category }
@@ -114,10 +115,13 @@ struct SFKFeedbackView: View {
                             Text("Image attached").font(.subheadline.weight(.semibold))
                             Text(ByteCountFormatter.string(fromByteCount: Int64(attachment.data.count), countStyle: .file))
                                 .font(.caption).foregroundStyle(.secondary)
-                            SFKButton("Remove", leadingIconName: "trash", fullWidth: false, color: .red, controlSize: .small, style: .secondary) {
-                                selectedPhoto = nil
-                                viewModel.removeAttachment()
-                            }
+                                SFKButton("Remove", role: .destructive) {
+                                    selectedPhoto = nil
+                                    viewModel.removeAttachment()
+                                }
+                                .sfkIcon("trash")
+                                .sfkFullWidth(false)
+                                .sfkControlSize(.small)
                         }
                         Spacer(minLength: 0)
                     }
@@ -165,25 +169,24 @@ struct SFKFeedbackView: View {
     private var contactSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             sectionTitle("About you")
+            SFKTextField("Name", text: $viewModel.name, prompt: "Optional", leadingSystemImage: "person")
+                .sfkStatus(nameFieldStatus)
+                .sfkTint(configuration.accentColor)
+                .sfkInput(.init(contentType: .name, textInputAutocapitalization: .words,
+                                autocorrectionDisabled: true, submitLabel: .next))
+                .sfkFocused(focusBinding(for: .name))
+                .sfkOnSubmit { focusedField = .email }
+                .accessibilityIdentifier("feedbackNameField")
             SFKTextField(
-                "Name", text: $viewModel.name, placeholder: "Optional",
-                leadingSystemImage: "person", status: nameFieldStatus,
-                tint: configuration.accentColor, contentType: .name,
-                textInputAutocapitalization: .words, autocorrectionDisabled: true,
-                submitLabel: .next, isFocused: focusBinding(for: .name),
-                accessibilityIdentifier: "feedbackNameField",
-                onSubmit: { focusedField = .email }
+                "Email", text: $viewModel.replyEmail, prompt: "Optional",
+                leadingSystemImage: "envelope"
             )
-            SFKTextField(
-                "Email", text: $viewModel.replyEmail, placeholder: "Optional",
-                leadingSystemImage: "envelope", status: emailFieldStatus,
-                tint: configuration.accentColor, keyboardType: .emailAddress,
-                contentType: .emailAddress, textInputAutocapitalization: .never,
-                autocorrectionDisabled: true, submitLabel: .done,
-                isFocused: focusBinding(for: .email),
-                accessibilityIdentifier: "feedbackEmailField",
-                onSubmit: { focusedField = nil }
-            )
+            .sfkStatus(emailFieldStatus)
+            .sfkTint(configuration.accentColor)
+            .sfkInput(.email)
+            .sfkFocused(focusBinding(for: .email))
+            .sfkOnSubmit { focusedField = nil }
+            .accessibilityIdentifier("feedbackEmailField")
             Text("Optional. Add these only if you’d like me to reply.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
@@ -207,18 +210,13 @@ struct SFKFeedbackView: View {
     }
 
     private var submitAction: some View {
-        SFKButton(
-            "Send", leadingIconName: "paperplane.fill",
-            isLoading: viewModel.isSubmitting, fullWidth: false,
-            titleColor: configuration.accentColor, spacing: 6,
-            horizontalPadding: 0, verticalPadding: 0,
-            titleFont: .subheadline.weight(.semibold),
-            iconFont: .subheadline.weight(.semibold),
-            style: .toolbar, hapticStyle: .light
-        ) {
+        SFKButton("Send", role: .toolbar) {
             focusedField = nil
             viewModel.submit()
         }
+        .sfkIcon("paperplane.fill")
+        .sfkLoading(viewModel.isSubmitting)
+        .sfkTint(configuration.accentColor)
         .disabled(!viewModel.canSubmit)
         .tint(configuration.accentColor)
         .accessibilityLabel("Send Feedback")
@@ -281,12 +279,6 @@ struct SFKFeedbackView: View {
     }
 
     private enum Field: Hashable { case message, name, email }
-}
-
-private struct CategoryChip: SFKChipItem {
-    let category: SFKFeedbackCategory
-    var chipLabel: String { category.label }
-    var chipIcon: String? { category.icon }
 }
 
 private extension SFKFeedbackCategory {

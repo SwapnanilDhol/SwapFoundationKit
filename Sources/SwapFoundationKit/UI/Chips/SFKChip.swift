@@ -19,13 +19,6 @@ public enum SFKChipStyle: Sendable {
     case secondary
 }
 
-/// The haptic feedback emitted when an ``SFKChip`` is tapped.
-public enum SFKChipHapticStyle: Sendable {
-    case light
-    case medium
-    case heavy
-}
-
 /// A compact capsule-shaped action control.
 ///
 /// Use ``SFKChip`` when tapping the chip performs an action. Use
@@ -55,7 +48,6 @@ public struct SFKChip: View {
     private let tintColor: Color?
     private let controlSize: ControlSize
     private let style: SFKChipStyle
-    private let hapticStyle: SFKChipHapticStyle?
     private let action: () -> Void
 
     public init(
@@ -64,7 +56,6 @@ public struct SFKChip: View {
         tintColor: Color? = nil,
         controlSize: ControlSize = .regular,
         style: SFKChipStyle = .secondary,
-        hapticStyle: SFKChipHapticStyle? = .light,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -72,7 +63,6 @@ public struct SFKChip: View {
         self.tintColor = tintColor
         self.controlSize = controlSize
         self.style = style
-        self.hapticStyle = hapticStyle
         self.action = action
     }
 
@@ -147,14 +137,14 @@ public struct SFKChip: View {
 
         guard theme.feedback.enabled else { return }
 
-        switch hapticStyle {
+        switch theme.feedback.style {
         case .light:
             hapticsHelper.lightImpact()
         case .medium:
             hapticsHelper.mediumImpact()
         case .heavy:
             hapticsHelper.heavyImpact()
-        case nil:
+        case .none:
             break
         }
     }

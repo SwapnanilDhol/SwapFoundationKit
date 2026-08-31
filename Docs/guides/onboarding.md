@@ -12,7 +12,6 @@ Generic, reusable SwiftUI components extracted from multi-step onboarding flows.
 | `SFKChipFlowLayout` | `SFKChipFlowLayout.swift` | Flex-wrap `Layout` for chips/tags |
 | `SFKSegmentedProgress` | `SFKSegmentedProgress.swift` | Story-style segmented progress bar |
 | `SFKSelectableChip` | `SFKSelectableChip.swift` | Selectable capsule button with icon support |
-| `SFKChipItem` | `SFKSelectableChip.swift` | Protocol for model types used with chips |
 | `SFKButton` | `Buttons/SFKButton.swift` | Semantic primary, secondary, and toolbar actions |
 | `SFKTypography` | `SFKTypography.swift` | Six View-extension typography modifiers |
 | `SFKCard` | `SFKCard.swift` | Rounded-rectangle card container with optional icon |
@@ -87,7 +86,7 @@ Transitions use a critically damped spring and fall back to a short ease-out ani
 
 ## SFKSelectableChip
 
-A selectable chip/capsule button that toggles between selected and unselected states with distinct visual styling and built-in haptic feedback.
+A selectable chip/capsule button that toggles between selected and unselected states with distinct visual styling and the shared theme feedback policy.
 
 ### Usage
 
@@ -104,8 +103,12 @@ SFKSelectableChip("Swift", icon: "swift", isSelected: false) {
     selectLanguage()
 }
 
-// From a conforming model type
-SFKSelectableChip(item: goal, isSelected: state.goals.contains(goal)) {
+// From app model data
+SFKSelectableChip(
+    goal.title,
+    icon: goal.icon,
+    isSelected: state.goals.contains(goal)
+) {
     state.toggleGoal(goal)
 }
 ```
@@ -128,36 +131,15 @@ SFKSelectableChip(item: goal, isSelected: state.goals.contains(goal)) {
 | Unselected | `secondarySystemBackground` | `gray.opacity(0.45)` | `.primary` |
 | Selected | `tintColor` | `tintColor` | `systemBackground` (white/black) |
 
-### Haptics
+### Feedback policy
 
-Tapping triggers a `UIImpactFeedbackGenerator(style: .light)` impact.
-
----
-
-## SFKChipItem Protocol
-
-A lightweight protocol that lets your model types plug directly into `SFKSelectableChip`.
-
-### Conformance
+Buttons and chips read one policy from the nearest theme. Hosts can disable
+feedback or choose an impact style once at the app boundary:
 
 ```swift
-import SwapFoundationKit
-
-enum Goal: String, CaseIterable, SFKChipItem {
-    case trackSpending = "Track my spending"
-    case saveMoney = "Save money"
-
-    var chipLabel: String { rawValue }
-    var chipIcon: String? { nil } // optional emoji or SF Symbol
-}
+ContentView()
+    .sfkTheme(SFKTheme(feedback: .init(enabled: true, style: .light)))
 ```
-
-### Required Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `chipLabel` | `String` | Text displayed on the chip |
-| `chipIcon` | `String?` | Optional icon (SF Symbol name or emoji). Default: `nil` |
 
 ---
 
@@ -170,20 +152,22 @@ Use the shared semantic button instead of introducing a separate onboarding-only
 ```swift
 import SwapFoundationKit
 
-SFKButton("Skip for now", style: .secondary) {
+SFKButton("Skip for now", role: .secondary) {
     skipOnboarding()
 }
 
-SFKButton("Not now", color: .red, style: .secondary) {
+SFKButton("Not now", role: .destructive) {
     dismiss()
 }
 ```
 
-### Parameters
+### Configuration
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-Use `.secondary` for a supporting action with visible chrome and `.toolbar` for a compact text or icon control.
+Use `.secondary` for a supporting action with visible chrome and `.toolbar` for
+a compact text or icon control. Add `.sfkIcon`, `.sfkSubtitle`, `.sfkLoading`,
+`.sfkFullWidth`, `.sfkTint`, or `.sfkControlSize` only when the screen needs
+that focused variation. Button feedback comes from the nearest
+`SFKTheme.Feedback` policy.
 
 ---
 
@@ -420,8 +404,7 @@ struct MyOnboardingView: View {
         VStack(spacing: 12) {
             SFKButton(
                 currentStep == totalSteps - 1 ? "Get Started" : "Continue",
-                color: .blue,
-                style: .primary
+                role: .primary
             ) {
                 withAnimation {
                     currentStep = min(currentStep + 1, totalSteps - 1)
@@ -429,9 +412,10 @@ struct MyOnboardingView: View {
             }
 
             if currentStep > 0 {
-                SFKButton("Skip", fullWidth: false, style: .toolbar) {
+                SFKButton("Skip", role: .toolbar) {
                     currentStep = totalSteps - 1
                 }
+                .sfkFullWidth(false)
             }
         }
         .padding(.horizontal, 24)
@@ -452,7 +436,7 @@ If your app already has local onboarding components, replace them with the SFK e
 | `OnboardingChipFlowLayout` | `SFKChipFlowLayout` |
 | `OnboardingProgressBar` | `SFKSegmentedProgress` |
 | `GoalSelectionCard` / `SelectableChip` | `SFKSelectableChip` |
-| `OnboardingSecondaryButton` | `SFKButton(style: .secondary)` |
+| `OnboardingSecondaryButton` | `SFKButton(_:role: .secondary)` |
 | `onboardingTitleStyle()` | `sfkFlowTitleStyle()` |
 | `onboardingSubtitleStyle()` | `sfkFlowSubtitleStyle()` |
 | `onboardingQuestionTitleStyle()` | `sfkFlowQuestionStyle()` |
@@ -468,8 +452,8 @@ If your app already has local onboarding components, replace them with the SFK e
 3. Replace `OnboardingProgressBar` with `SFKSegmentedProgress`.
 4. Replace `OnboardingChipFlowLayout` with `SFKChipFlowLayout`.
 5. Replace chip/selection cards with `SFKSelectableChip`.
-6. Make your model types conform to `SFKChipItem` instead of using app-specific chip protocols.
-7. Replace secondary buttons with `SFKButton(style: .secondary)`.
+6. Pass model labels/icons directly to `SFKSelectableChip(_:icon:isSelected:...)`.
+7. Replace secondary buttons with `SFKButton(_:role: .secondary)`.
 8. Delete the old local component files.
 9. Build and verify all screens render correctly.
 
@@ -480,6 +464,6 @@ If your app already has local onboarding components, replace them with the SFK e
 1. **App-agnostic** — No references to specific app names, colors, or domain logic.
 2. **Configurable by default** — Every component exposes sensible defaults with override points.
 3. **System-color aware** — Uses `secondarySystemBackground`, `systemBackground`, `.primary`, `.secondary` so components adapt to light/dark mode automatically.
-4. **Haptic feedback** — Interactive components include subtle haptics out of the box.
+4. **Haptic feedback** — Interactive components follow one configurable `SFKTheme.Feedback` policy.
 5. **Accessibility** — Typography modifiers include `.minimumScaleFactor` where appropriate; all components use standard SwiftUI button semantics.
 6. **Preview-rich** — Every component includes `#Preview` blocks with multiple variants for rapid iteration in the SwapFoundationKitHost app.

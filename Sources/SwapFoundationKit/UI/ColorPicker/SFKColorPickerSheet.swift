@@ -11,42 +11,38 @@
 
 import SwiftUI
 
-/// Focused presentation options for ``SFKColorPickerSheet``.
-///
-/// Keep color selection separate from copy and presentation policy so the
-/// common binding path stays small while advanced hosts can still customize
-/// the sheet in one value.
-public struct SFKColorPickerConfiguration {
-    public var pageTitle: String
-    public var promptTitle: String?
-    public var promptMessage: String?
-    public var applyButtonTitle: String
-    public var presetColors: [Color]
-    public var supportsOpacity: Bool
-
-    public init(
-        pageTitle: String = "Choose Color",
-        promptTitle: String? = nil,
-        promptMessage: String? = nil,
-        applyButtonTitle: String = "Apply Color",
-        presetColors: [Color] = SFKColorPickerSheet.defaultPresetColors,
-        supportsOpacity: Bool = false
-    ) {
-        self.pageTitle = pageTitle
-        self.promptTitle = promptTitle
-        self.promptMessage = promptMessage
-        self.applyButtonTitle = applyButtonTitle
-        self.presetColors = presetColors
-        self.supportsOpacity = supportsOpacity
-    }
-}
-
 /// A reusable hosted color picker sheet with preset swatches, custom color support,
 /// local draft state, and an explicit apply action.
 ///
 /// `SFKColorPickerSheet` is designed for coordinator-owned presentations where the caller
 /// wants a complete selection surface rather than a raw `Binding<Color>` control.
 public struct SFKColorPickerSheet: View {
+    /// Focused presentation options for the color picker.
+    public struct Configuration {
+        public var pageTitle: String
+        public var promptTitle: String?
+        public var promptMessage: String?
+        public var applyButtonTitle: String
+        public var presetColors: [Color]
+        public var supportsOpacity: Bool
+
+        public init(
+            pageTitle: String = "Choose Color",
+            promptTitle: String? = nil,
+            promptMessage: String? = nil,
+            applyButtonTitle: String = "Apply Color",
+            presetColors: [Color] = SFKColorPickerSheet.defaultPresetColors,
+            supportsOpacity: Bool = false
+        ) {
+            self.pageTitle = pageTitle
+            self.promptTitle = promptTitle
+            self.promptMessage = promptMessage
+            self.applyButtonTitle = applyButtonTitle
+            self.presetColors = presetColors
+            self.supportsOpacity = supportsOpacity
+        }
+    }
+
     public static let defaultPresetColors: [Color] = [
         .red, .orange, .yellow, .green, .mint, .teal, .cyan,
         .blue, .indigo, .purple, .pink, .brown, .gray
@@ -56,7 +52,6 @@ public struct SFKColorPickerSheet: View {
     @Environment(\.sfkTheme) private var theme
     @StateObject private var viewModel: SFKColorPickerViewModel
     @Binding private var selection: Color
-    private let writesToBinding: Bool
     private let onApply: ((Color) -> Void)?
 
     private let pageTitle: String
@@ -66,11 +61,10 @@ public struct SFKColorPickerSheet: View {
     /// Creates a picker backed by a caller-owned color binding.
     public init(
         selection: Binding<Color>,
-        configuration: SFKColorPickerConfiguration = .init(),
+        configuration: Configuration = .init(),
         onApply: ((Color) -> Void)? = nil
     ) {
         self._selection = selection
-        self.writesToBinding = true
         self.onApply = onApply
         self.pageTitle = configuration.pageTitle
         self.applyButtonTitle = configuration.applyButtonTitle
@@ -79,38 +73,8 @@ public struct SFKColorPickerSheet: View {
             selectedColor: selection.wrappedValue,
             promptTitle: configuration.promptTitle,
             promptMessage: configuration.promptMessage,
-            presetColors: configuration.presetColors,
-            delegate: nil
+            presetColors: configuration.presetColors
         ))
-    }
-
-    /// Creates a picker with a local draft color.
-    ///
-    /// - Note: Prefer ``init(selection:configuration:onApply:)``.
-    @available(*, deprecated, message: "Use the binding initializer and onApply closure instead of SFKColorPickerDelegate.")
-    public init(
-        selectedColor: Color,
-        pageTitle: String = "Choose Color",
-        promptTitle: String? = nil,
-        promptMessage: String? = nil,
-        applyButtonTitle: String = "Apply Color",
-        presetColors: [Color] = SFKColorPickerSheet.defaultPresetColors,
-        supportsOpacity: Bool = false,
-        delegate: SFKColorPickerDelegate? = nil
-    ) {
-        self._selection = .constant(selectedColor)
-        self.writesToBinding = false
-        self.onApply = nil
-        _viewModel = StateObject(wrappedValue: SFKColorPickerViewModel(
-            selectedColor: selectedColor,
-            promptTitle: promptTitle,
-            promptMessage: promptMessage,
-            presetColors: presetColors,
-            delegate: delegate
-        ))
-        self.pageTitle = pageTitle
-        self.applyButtonTitle = applyButtonTitle
-        self.supportsOpacity = supportsOpacity
     }
 
     public var body: some View {
@@ -176,15 +140,13 @@ public struct SFKColorPickerSheet: View {
                     
                     Spacer()
                     
-                    SFKButton(
-                        applyButtonTitle,
-                        titleColor: viewModel.selectedColor.contrastingColor,
-                        color: viewModel.selectedColor,
-                        verticalPadding: 8
-                    ) {
+                    SFKButton(applyButtonTitle, role: .primary) {
                         applySelection()
                         dismiss()
                     }
+                    .sfkTint(viewModel.selectedColor)
+                    .sfkControlSize(.small)
+                    .environment(\.sfkTheme, applyButtonTheme)
                     .padding(.horizontal)
                 }
                 .background(theme.colors.background)
@@ -243,9 +205,16 @@ public struct SFKColorPickerSheet: View {
         !viewModel.presetColors.contains(viewModel.selectedColor)
     }
 
+    private var applyButtonTheme: SFKTheme {
+        var themed = theme
+        themed.colors.accent = viewModel.selectedColor
+        themed.colors.onAccent = viewModel.selectedColor.contrastingColor
+        return themed
+    }
+
     private func applySelection() {
         viewModel.applySelection()
-        if writesToBinding { selection = viewModel.selectedColor }
+        selection = viewModel.selectedColor
         onApply?(viewModel.selectedColor)
     }
 
@@ -277,12 +246,15 @@ public struct SFKColorPickerSheet: View {
 }
 
 #Preview {
+    @Previewable @State var color = Color.blue
     VStack { }
     .sheet(isPresented: .constant(true)) {
         SFKColorPickerSheet(
-            selectedColor: .blue,
-            promptTitle: "Choose an account color",
-            promptMessage: "Pick a color that makes this account easy to spot."
+            selection: $color,
+            configuration: .init(
+                promptTitle: "Choose an account color",
+                promptMessage: "Pick a color that makes this account easy to spot."
+            )
         )
         .presentationDetents([.fraction(0.7)])
     }

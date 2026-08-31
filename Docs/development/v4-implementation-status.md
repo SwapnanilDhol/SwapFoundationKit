@@ -1,54 +1,80 @@
-# v4 implementation checkpoint
+# v4 implementation and verification status
 
-This is the implementation handoff for the [refactoring plan](v4-simplification-refactoring-plan.md), not a declaration that v4 is ready to release.
+The breaking package cleanup is implemented. This is repository integration, not
+a published v4 release or approval to change backend enforcement.
 
-## Committed baseline
+## Completed
 
-`98ce079` commits the reviewed transport hardening, five-product API inventory, dependency gates, regression tests, and documentation on top of the Pulse/Toast extraction. That checkpoint passed 289 tests, package and catalog builds, the API baseline check, and dependency checks.
+- Twelve explicit products; default UI/utility product has no third-party
+  dependency edges. Networking, Authentication, Sync, Media, Currency, RemoteAI,
+  Firebase, Feedback, Ads, Pulse, and Toast are opt-in.
+- Shared semantic `SFKTheme`; compact controls and focused customization modifiers.
+- Typed settings composition and selection bindings; native SwiftUI controls
+  replace redundant specialized settings wrappers.
+- Legacy bootstrap/configuration product, erased settings adapters, picker
+  delegates/view models, oversized control constructors, and duplicate public
+  watch adapter removed. Git history retains the removed implementations.
+- Instance-scoped backend headers/origins; isolated analytics state with callbacks
+  outside locks; pure app metadata and centralized URL opening.
+- Explicit App Group suite injection, preserving existing suite/key behavior.
+- Authentication remains in scope: isolated product plus smaller configuration
+  constructor, with existing lifecycle, wire formats, key derivation, storage,
+  cancellation, pending-enrollment recovery, and binding rules preserved.
+- In-repository catalog migrated; primary plan, detailed migration guide, module
+  references, 23-domain catalog, and 38-capability audit catalog synchronized.
+- CI covers compiler API inventory, measured budgets, constructor bounds, obsolete
+  APIs, static configuration closures, catalog metadata/paths/counts, dependencies,
+  package tests, and catalog build. Xcode is consistently pinned to 26.6.
 
-Those results apply to that checkpoint only. They do not validate subsequent product moves or UI changes.
+## Measured result
 
-## Integrated implementation
+| Public top-level types | Before extraction (`98ce079`) | Final |
+|---|---:|---:|
+| Default product | 235 | 100 |
+| UI | 92 | 50 |
+| All products | 262 | 223 |
 
-Three Luna implementation workstreams have been integrated:
+The original 75/39/157 numerical design targets were **not achieved**. Distinct
+specialized and security contracts are retained; the reviewed no-growth limits
+are 100/50/223. See the [API ledger](v4-api-ledger.md) for the explicit scope
+revision and retained-capability rationale. Moves and nesting are not claimed as
+equivalent to deleting functionality.
 
-| Workstream | Scope |
-|---|---|
-| Product boundaries and services | Thirteen products; Networking, Authentication, Sync, Media, Currency, RemoteAI, Firebase, and Legacy extracted; injectable analytics/access policy/media roles; standalone reachability |
-| Theme and controls | `SFKTheme` environment tokens; concise button and text-field APIs; themed chips, cards, typography, empty states, progress and secondary presentation |
-| Typed settings and pickers | Generic settings sections/rows; typed single/multiple selection; binding-driven color picker; closure/SwiftUI photo-picker integration |
+## Verification — 2026-08-31
 
-The in-repository host catalog, module references, capability/audit catalogs, and migration guide have been updated to the new product ownership and canonical APIs. Compilation and behavioral fixtures were added without running repeated test suites during implementation, at the maintainer's request.
+Xcode 26.6; iOS 26.5; iPhone 17 Pro simulator:
 
-## Verification of the integrated implementation
+- All package library/test targets compile.
+- The consolidated run executed **299 tests: 298 passed, one failed, none skipped**
+  (303 executions including parameterized cases). The sole failure was a new
+  immutable-appearance test asserting against the original rather than the
+  customized copy.
+- That assertion was corrected. A focused follow-up covering controls,
+  NetworkService origin isolation/normalization, and five new authentication
+  configuration tests passed **28/28**, zero failures/skips. It also compiled all
+  test targets after the additions. Across both runs, all **304 distinct final
+  test cases** have passing evidence; this is not a claim of a second complete
+  304-test suite run.
+- The in-repository catalog app builds for the generic iOS Simulator destination.
+- A fresh compiler symbol-graph inventory was generated from all 12 products.
+  Every public initializer is at most ten arguments; the named common paths are
+  at most six.
+- Static acceptance and dependency gates pass, including 7 acceptance fixtures,
+  API-parser fixtures, dependency fixtures, and `git diff --check`.
 
-Verified on 2026-08-31 with Xcode 26.6 and the iOS 26.5 simulator SDK:
+Artifacts from this checkout are under `/tmp/sfk-v4-final.4qRSSM`:
+`final-tests.xcresult`, `verified-followup.xcresult`, `host.log`,
+`api-write.log`, and associated logs. These temporary local paths are evidence,
+not portable release artifacts. CI's independent inventory regeneration has not
+been run remotely as part of this local merge.
 
-- All package libraries and test targets compile.
-- The consolidated five-target suite passes: **303 tests, 0 failures, 0 skipped** (307 executions including parameterized cases), on iPhone 17 Pro.
-- The in-repository catalog app builds for a generic iOS Simulator destination.
-- The 13-product API inventory is regenerated, and an independent `api-baseline.sh --check` passes. Default public types: 235 → 152; UI: 92 → 102; all products: 262 → 286. The reduction targets remain unmet because canonical and compatibility APIs coexist.
-- Dependency-boundary checks, guarded-import fixtures, API-parser fixtures, YAML/source-path/documentation-link checks, and `git diff --check` pass.
-- Authentication source comparison against `98ce079` contains only file moves and imports; its existing contract tests run in the consolidated suite.
+## Release/adoption limitations
 
-Local verification artifacts are under `/tmp/sfk-v4-integration.6vRteQ`: `final-tests.xcresult`, `final-tests.log`, `host-build-final.log`, `api-baseline-write.log`, and `api-baseline-check.log`. Temporary paths are evidence from this checkout, not portable release artifacts. UI compile fixtures do not prove visual or accessibility behavior; those require the separate checks below.
+No external app was migrated, no release tag was created, and no backend was
+deployed. Two external apps are **not** a compatibility-removal or merge gate.
+Real-device App Attest, Watch/App Group integration, full visual snapshots,
+contrast, and Reduce Motion validation remain release/adoption work. Rendered
+Dynamic Type checks provide bounded coverage, not a complete accessibility audit.
+Existing Swift 6 migration warnings remain; the package uses Swift 5 language mode.
 
-## Deliberately retained compatibility
-
-- The opt-in Legacy product retains deprecated bootstrap/configuration and `SFKProGate`.
-- Existing large UI initializers, erased settings adapters, picker view models/delegates, and the older watch transport remain deprecated rather than deleted.
-- `NetworkService.backendHeadersProvider` remains a deprecated global closure; instance injection is the canonical replacement.
-- Explicit product imports are required for moved symbols. Legacy is not an automatic re-export shim for the old default import.
-
-Consequently, product extraction and new APIs are implemented, but the plan's public-type reduction, maximum legacy-initializer size, and zero-static-configuration-closure acceptance criteria are not yet satisfied. Relocation and deprecation must not be counted as deletion.
-
-## Release gates still required
-
-- Expanded accessibility, contrast, Dynamic Type, Reduce Motion, and visual/snapshot verification; catalog examples are not a substitute for automated coverage.
-- Repeat the API inventory after compatibility removal and enforce the agreed surface budgets.
-- Real-device Authentication and App Group/Watch Connectivity checks where applicable.
-- Two named representative host applications migrated and verified. The package plan does not name those repositories; do not infer authorization to alter arbitrary neighboring projects.
-- Compatibility-removal approval after consumer migration. Deprecation or relocation is not evidence that a symbol has been safely removed.
-- The full acceptance matrix in the primary plan, including public-surface reductions and documentation-count/compatibility-annotation CI gates. The API inventory gate alone does not enforce those budgets.
-
-Preserve authentication wire formats, binding policy, keychain namespaces, pending-enrollment recovery, retries, and cancellation throughout extraction. Do not change backend deployment or enforcement as part of this package refactor.
+The requested handoff is a non-destructive merge into local `main`, without pushing.

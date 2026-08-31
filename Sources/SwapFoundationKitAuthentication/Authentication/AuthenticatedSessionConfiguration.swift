@@ -10,6 +10,39 @@ import CryptoKit
 import Foundation
 
 public struct AuthenticatedSessionConfiguration: Sendable {
+    /// Tunable storage, App Attest, timeout, and header behavior for a session.
+    /// The defaults preserve the original authenticated-session contract.
+    public struct Options: Sendable {
+        public let storageKeys: AuthenticatedSessionStorageKeys?
+        public let appAttestEnabled: Bool
+        public let operationTimeout: TimeInterval
+        public let sessionFreshness: TimeInterval
+        public let identityHeaderName: String
+        public let authVersionHeaderName: String
+        public let authVersion: String
+        public let legacyMigration: AuthenticatedSessionLegacyMigration?
+
+        public init(
+            storageKeys: AuthenticatedSessionStorageKeys? = nil,
+            appAttestEnabled: Bool = true,
+            operationTimeout: TimeInterval = 15,
+            sessionFreshness: TimeInterval = 30,
+            identityHeaderName: String = "X-App-User-ID",
+            authVersionHeaderName: String = "X-App-Auth-Version",
+            authVersion: String = "1",
+            legacyMigration: AuthenticatedSessionLegacyMigration? = nil
+        ) {
+            self.storageKeys = storageKeys
+            self.appAttestEnabled = appAttestEnabled
+            self.operationTimeout = operationTimeout
+            self.sessionFreshness = sessionFreshness
+            self.identityHeaderName = identityHeaderName
+            self.authVersionHeaderName = authVersionHeaderName
+            self.authVersion = authVersion
+            self.legacyMigration = legacyMigration
+        }
+    }
+
     public let baseURL: URL
     public let appIdentifier: String
     public let environment: String
@@ -26,30 +59,23 @@ public struct AuthenticatedSessionConfiguration: Sendable {
         baseURL: URL,
         appIdentifier: String,
         environment: String,
-        storageKeys: AuthenticatedSessionStorageKeys? = nil,
-        appAttestEnabled: Bool = true,
-        operationTimeout: TimeInterval = 15,
-        sessionFreshness: TimeInterval = 30,
-        identityHeaderName: String = "X-App-User-ID",
-        authVersionHeaderName: String = "X-App-Auth-Version",
-        authVersion: String = "1",
-        legacyMigration: AuthenticatedSessionLegacyMigration? = nil
+        options: Options = Options()
     ) {
         self.baseURL = baseURL
         self.appIdentifier = appIdentifier
         self.environment = environment
-        self.storageKeys = storageKeys ?? Self.derivedKeys(
+        self.storageKeys = options.storageKeys ?? Self.derivedKeys(
             baseURL: baseURL,
             appIdentifier: appIdentifier,
             environment: environment
         )
-        self.appAttestEnabled = appAttestEnabled
-        self.operationTimeout = max(0.1, operationTimeout)
-        self.sessionFreshness = max(0, sessionFreshness)
-        self.identityHeaderName = identityHeaderName
-        self.authVersionHeaderName = authVersionHeaderName
-        self.authVersion = authVersion
-        self.legacyMigration = legacyMigration
+        self.appAttestEnabled = options.appAttestEnabled
+        self.operationTimeout = max(0.1, options.operationTimeout)
+        self.sessionFreshness = max(0, options.sessionFreshness)
+        self.identityHeaderName = options.identityHeaderName
+        self.authVersionHeaderName = options.authVersionHeaderName
+        self.authVersion = options.authVersion
+        self.legacyMigration = options.legacyMigration
     }
 
     /// Derives Keychain identifiers that keep apps, attestation environments and

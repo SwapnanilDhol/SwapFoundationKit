@@ -367,7 +367,12 @@ struct AuthenticatedSessionExtractionTests {
 
     @Test func compatibilityIsExplicitAndRetainsProtocolHeadersWithoutBearer() async throws {
         let context = TestContext(); let transport = RecordingHTTPTransport(responses: [AuthenticatedSessionHTTPResponse(data: Data("ok".utf8), statusCode: 200)])
-        let disabled = AuthenticatedSessionConfiguration(baseURL: context.config.baseURL, appIdentifier: "com.example.app", environment: "production", appAttestEnabled: false)
+        let disabled = AuthenticatedSessionConfiguration(
+            baseURL: context.config.baseURL,
+            appIdentifier: "com.example.app",
+            environment: "production",
+            options: .init(appAttestEnabled: false)
+        )
         let client = AuthenticatedHTTPClient(sessionService: AuthenticatedSessionService(configuration: disabled, appAttest: context.attest, backend: context.backend, identityProvider: context.identity, storage: context.storage, clock: context.clock), identityProvider: context.identity, configuration: disabled, transport: transport)
         _ = try await client.data(for: URL(string: "https://staging.example.test/v1/data")!, policy: .compatibility())
         let request = try #require(await transport.requests.first); #expect(request.value(forHTTPHeaderField: "X-App-Auth-Version") == "1"); #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
@@ -398,8 +403,7 @@ private final class TestContext: @unchecked Sendable {
             baseURL: baseURL,
             appIdentifier: "com.example.app",
             environment: "production",
-            operationTimeout: 15,
-            legacyMigration: legacyMigration
+            options: .init(operationTimeout: 15, legacyMigration: legacyMigration)
         )
         self.identity = MutableIdentity(identity)
     }

@@ -21,7 +21,7 @@ below.
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
 | `DefaultAnalyticsEvent` | struct | Concrete event for ad-hoc tracking |
 | `UserDefault` | property wrapper | Type-safe, observable UserDefaults with SwiftUI binding support |
-| `SharedUserDefaults` | property wrapper | Type-safe app-group defaults resolved from configured app metadata |
+| `SharedUserDefaults` | property wrapper | Type-safe app-group defaults with an explicit suite identifier |
 | `UserDefaultKeyProtocol` | protocol | Enum-based key definition for UserDefaults |
 | `DeeplinkHandler` | protocol | URL and user activity handling with Combine publisher |
 | `DeeplinkRoute` | protocol | Parsable route types for deeplink routing |
@@ -59,8 +59,9 @@ struct MySink: SFKLogSink {
 SFKLogSinkRegistry.register(MySink())
 
 // Analytics — inject host-owned providers (Firebase is an opt-in product)
-AnalyticsManager.shared.addLogger(MyAnalyticsLogger())
-AnalyticsManager.shared.logEvent(event: myEvent)
+let analytics = AnalyticsManager()
+analytics.addLogger(MyAnalyticsLogger())
+analytics.logEvent(event: myEvent)
 
 // UserDefaults
 enum AppKeys: String, UserDefaultKeyProtocol {
@@ -69,15 +70,8 @@ enum AppKeys: String, UserDefaultKeyProtocol {
 }
 @UserDefault(AppKeys.hasOnboarded, default: false) var hasOnboarded
 
-@SharedUserDefaults(AppKeys.hasOnboarded, default: false)
+@SharedUserDefaults(AppKeys.hasOnboarded, default: false, appGroupIdentifier: "group.com.example.app")
 var sharedHasOnboarded
-
-// App bootstrap: make metadata-backed stores available synchronously.
-let config = SwapFoundationKitConfiguration.basic(
-    appMetadata: AppMetaData(appGroupIdentifier: "group.com.example.app")
-)
-try SwapFoundationKit.shared.configure(with: config)
-Task { try await SwapFoundationKit.shared.start() }
 sharedHasOnboarded = true
 
 // Deeplink
@@ -85,7 +79,7 @@ enum AppRoute: DeeplinkRoute {
     case home, settings
     static func parse(from url: URL) -> Self? { ... }
 }
-// Configure in SwapFoundationKitConfiguration.supportedRoutes
+DefaultDeeplinkHandler.shared.configure(with: [AppRoute.self])
 
 // Pro gating — inject the host's entitlement policy
 let accessGate = SFKAccessGate(policy: MyAccessPolicy())
@@ -122,12 +116,11 @@ let firebaseLogger = SFKFirebaseLogger(
     userPropertyHandler: { hostFirebaseSetProperty($0, $1) },
     screenHandler: { hostFirebaseTrackScreen($0, $1) }
 )
-AnalyticsManager.shared.addLogger(firebaseLogger)
+analytics.addLogger(firebaseLogger)
 ```
 
-`SFKProGate` is retained only in the `SwapFoundationKitLegacy` product for
-source-compatible migration. New code should inject `SFKAccessPolicy` into an
-`SFKAccessGate` instance instead of using global mutable closures.
+Inject `SFKAccessPolicy` into an `SFKAccessGate` instance so entitlement decisions remain
+host-owned and instance-scoped.
 
 App Store lookup moved to the opt-in `SwapFoundationKitNetworking` product;
 see [its module reference](../../SwapFoundationKitNetworking/README.md).

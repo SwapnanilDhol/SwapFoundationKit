@@ -41,6 +41,7 @@ public extension AnalyticsEvent {
 /// Analytics manager for handling tracking across different services
 public final class AnalyticsManager: @unchecked Sendable {
     public static let shared = AnalyticsManager()
+    private let lock = NSLock()
     private var loggers: [any AnalyticsLogger] = []
     private var globalParameters: [String: String] = [:]
 
@@ -49,36 +50,56 @@ public final class AnalyticsManager: @unchecked Sendable {
     public init() {}
 
     public func addLogger(_ logger: any AnalyticsLogger) {
+        lock.lock()
+        defer { lock.unlock() }
         loggers.append(logger)
     }
 
     public func start() {
-        loggers.forEach { $0.setup() }
+        let currentLoggers = snapshotLoggers()
+        currentLoggers.forEach { $0.setup() }
     }
 
     public func setGlobalParameters(_ parameters: [String: String]) {
+        lock.lock()
+        defer { lock.unlock() }
         globalParameters = parameters
     }
 
     public func clearGlobalParameters() {
+        lock.lock()
+        defer { lock.unlock() }
         globalParameters = [:]
     }
 
     public func logEvent(event: AnalyticsEvent, parameters: [String: String]? = nil) {
+        let (currentLoggers, currentGlobalParameters) = snapshot()
         // Merge precedence: event defaults < global parameters < call-site
         let eventParameters = event.parameters ?? [:]
         let callSiteParameters = parameters ?? [:]
         let merged = eventParameters
-            .merging(globalParameters) { _, new in new }
+            .merging(currentGlobalParameters) { _, new in new }
             .merging(callSiteParameters) { _, new in new }
 
-        for logger in loggers {
+        for logger in currentLoggers {
             logger.logEvent(event: event, additionalParameters: merged.isEmpty ? nil : merged)
         }
     }
 
     public func setupAnalytics() {
         // Override in app to configure providers
+    }
+
+    private func snapshotLoggers() -> [any AnalyticsLogger] {
+        lock.lock()
+        defer { lock.unlock() }
+        return loggers
+    }
+
+    private func snapshot() -> ([any AnalyticsLogger], [String: String]) {
+        lock.lock()
+        defer { lock.unlock() }
+        return (loggers, globalParameters)
     }
 }
 

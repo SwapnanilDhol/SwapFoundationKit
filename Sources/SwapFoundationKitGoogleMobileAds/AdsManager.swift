@@ -34,7 +34,7 @@ public final class AdsManager {
         AdsManager(providerFactory: providerFactory)
     }
 
-    /// Same behavior as legacy `SwapFoundationKit` automatic ads startup: skips simulator, skips SwiftUI previews.
+    /// Starts the shared ads manager when automatic startup is supported; skips simulator and SwiftUI previews.
     public static func startIfNeeded(configuration: AdsConfiguration) async {
 #if !targetEnvironment(simulator)
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return }

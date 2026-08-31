@@ -11,23 +11,23 @@
 
 import Foundation
 
-public enum SFKItemPickerToolbarActionPlacement: Equatable, Sendable {
-    case topBarLeading
-    case topBarTrailing
-}
-
 public struct SFKItemPickerToolbarAction: Identifiable {
+    public enum Placement: Equatable, Sendable {
+        case topBarLeading
+        case topBarTrailing
+    }
+
     public let id: String
     public let title: String?
     public let systemImage: String
-    public let placement: SFKItemPickerToolbarActionPlacement
+    public let placement: Placement
     public let action: () -> Void
 
     public init(
         id: String? = nil,
         title: String? = nil,
         systemImage: String,
-        placement: SFKItemPickerToolbarActionPlacement = .topBarTrailing,
+        placement: Placement = .topBarTrailing,
         action: @escaping () -> Void
     ) {
         self.id = id ?? "\(title ?? "")-\(systemImage)-\(placement)"

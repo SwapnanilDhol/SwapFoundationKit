@@ -15,45 +15,13 @@ import XCTest
 @testable import SwapFoundationKit
 
 final class UIComponentContractTests: XCTestCase {
-    private enum Priority: Hashable {
-        case low
-        case high
-    }
-
-    private enum FirstSettingsItem: String, SettingsItem {
-        case account
-
-        var id: String { rawValue }
-        var icon: String { "person.crop.circle" }
-        var title: String { "Account" }
-        var subtitle: String { "Manage account" }
-        var tint: Color { .blue }
-    }
-
-    private enum SecondSettingsItem: String, SettingsItem {
-        case privacy
-
-        var id: String { rawValue }
-        var icon: String { "hand.raised" }
-        var title: String { "Privacy" }
-        var subtitle: String { "Manage privacy" }
-        var tint: Color { .green }
-    }
-
-    func testSettingsPickerOptionPreservesNonStringValue() {
-        let option = SFKSettingsPickerOption(value: Priority.high, label: "High")
-
-        XCTAssertEqual(option.value, .high)
-        XCTAssertEqual(option.id, .high)
-    }
-
-    func testSettingsSectionUsesItemIdentityInsteadOfArrayPosition() {
-        let section = SFKSettingsSectionConfiguration(
-            title: "General",
-            items: [FirstSettingsItem.account, SecondSettingsItem.privacy]
-        )
-
-        XCTAssertEqual(section.rows.map(\.id), ["account", "privacy"])
+    @MainActor
+    func typedSettingsPickerWritesSelection() {
+        var priority = 1
+        let binding = Binding(get: { priority }, set: { priority = $0 })
+        _ = SFKSettingsPicker("Priority", selection: binding, options: [1, 2, 3])
+        binding.wrappedValue = 2
+        XCTAssertEqual(priority, 2)
     }
 
     func testAlertActionStylesMapToUIKitRoles() {

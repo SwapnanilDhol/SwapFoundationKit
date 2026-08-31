@@ -12,14 +12,8 @@
 import SwiftUI
 import PhotosUI
 
-@available(*, deprecated, message: "Use PhotoPicker(onPick:) or SFKPhotoPicker(selection:onPick:) instead.")
-public protocol PhotoPickerDelegate: AnyObject {
-    func didPickImage(_ image: UIImage)
-}
-
 final public class PhotoPicker: NSObject, ObservableObject, PHPickerViewControllerDelegate {
     let configuration: PHPickerConfiguration?
-    weak var delegate: PhotoPickerDelegate?
     private let onPick: ((UIImage) -> Void)?
 
     /// Creates a picker that reports the selected image through a closure.
@@ -28,18 +22,7 @@ final public class PhotoPicker: NSObject, ObservableObject, PHPickerViewControll
         onPick: ((UIImage) -> Void)?
     ) {
         self.configuration = configuration
-        self.delegate = nil
         self.onPick = onPick
-    }
-    
-    @available(*, deprecated, message: "Use the closure initializer or SFKPhotoPicker(selection:onPick:) instead.")
-    public init(
-        configuration: PHPickerConfiguration? = nil,
-        delegate: PhotoPickerDelegate? = nil
-    ) {
-        self.configuration = configuration
-        self.delegate = delegate
-        self.onPick = nil
     }
 
     /// Presents the system photo picker from a UIKit view controller.
@@ -72,12 +55,10 @@ final public class PhotoPicker: NSObject, ObservableObject, PHPickerViewControll
         // delegate is weak and the presenting controller may tear down the
         // picker owner before PhotosUI finishes loading the object.
         let onPick = self.onPick
-        let delegate = self.delegate
         provider.loadObject(ofClass: UIImage.self) { image, error in
             if let image = image as? UIImage {
                 Task { @MainActor in
                     onPick?(image)
-                    delegate?.didPickImage(image)
                 }
             } else {
                 print("Error loading image: \(error?.localizedDescription ?? "Unknown error")")

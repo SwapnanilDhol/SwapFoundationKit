@@ -53,12 +53,9 @@ public protocol DeeplinkHandler: AnyObject {
 /// - Handoff activities
 ///
 /// ## Setup
-/// Configure routes in `SwapFoundationKitConfiguration.supportedRoutes`:
+/// Configure routes directly on the shared handler:
 /// ```swift
-/// let config = SwapFoundationKitConfiguration(
-///     appMetadata: myAppMeta,
-///     supportedRoutes: [AppRoute.self]
-/// )
+/// DefaultDeeplinkHandler.shared.configure(with: [AppRoute.self])
 /// ```
 ///
 /// ## Scene Delegate Integration
@@ -66,21 +63,21 @@ public protocol DeeplinkHandler: AnyObject {
 /// ```swift
 /// func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 ///     if let url = connectionOptions.urlContexts.first?.url {
-///         SwapFoundationKit.shared.deeplinkHandler?.handle(url: url, source: .coldLaunch)
+///         DefaultDeeplinkHandler.shared.handle(url: url, source: .coldLaunch)
 ///     }
 ///     if let userActivity = connectionOptions.userActivities.first {
-///         SwapFoundationKit.shared.deeplinkHandler?.handle(userActivity: userActivity)
+///         DefaultDeeplinkHandler.shared.handle(userActivity: userActivity)
 ///     }
 /// }
 ///
 /// func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
 ///     if let url = URLContexts.first?.url {
-///         SwapFoundationKit.shared.deeplinkHandler?.handle(url: url, source: .resume)
+///         DefaultDeeplinkHandler.shared.handle(url: url, source: .resume)
 ///     }
 /// }
 ///
 /// func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-///     SwapFoundationKit.shared.deeplinkHandler?.handle(userActivity: userActivity)
+///     DefaultDeeplinkHandler.shared.handle(userActivity: userActivity)
 /// }
 /// ```
 @MainActor

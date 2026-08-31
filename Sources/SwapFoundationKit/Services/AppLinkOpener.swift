@@ -67,6 +67,56 @@ public enum AppLinkOpener {
         let url = appReviewURL(for: appID)
         open(url: url)
     }
+
+    /// Opens an App Store developer page.
+    @MainActor
+    public static func openDeveloperPage(developerID: String) {
+        open(url: developerURL(for: developerID))
+    }
+
+    /// Opens this app's settings page.
+    @MainActor
+    public static func openAppSettings() {
+        open(url: URL(string: UIApplication.openSettingsURLString))
+    }
+
+    /// Opens the device's system settings.
+    @MainActor
+    public static func openSystemSettings() {
+        open(url: URL(string: "App-Prefs:"))
+    }
+
+    /// Opens a phone number using the system phone app.
+    @MainActor
+    public static func callPhoneNumber(_ phoneNumber: String) {
+        let cleanNumber = phoneNumber.replacingOccurrences(of: "[^0-9+]", with: "", options: .regularExpression)
+        open(string: "tel://\(cleanNumber)")
+    }
+
+    /// Opens a pre-populated email composer.
+    @MainActor
+    public static func sendEmail(to email: String, subject: String? = nil, body: String? = nil) {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = email
+        components.queryItems = [
+            subject.map { URLQueryItem(name: "subject", value: $0) },
+            body.map { URLQueryItem(name: "body", value: $0) }
+        ].compactMap { $0 }
+        open(url: components.url)
+    }
+
+    /// Opens a website URL.
+    @MainActor
+    public static func openWebsite(_ url: URL) {
+        open(url: url)
+    }
+
+    /// Opens a website URL string.
+    @MainActor
+    public static func openWebsite(_ urlString: String) {
+        open(string: urlString)
+    }
     #endif
 
     // MARK: - URL Constructors
@@ -123,6 +173,15 @@ public enum AppLinkOpener {
         urlComponents.scheme = "itms-apps"
         urlComponents.host = "itunes.apple.com"
         urlComponents.path = "/us/app/id\(appID)"
+        return urlComponents.url
+    }
+
+    private static func developerURL(for developerID: String) -> URL? {
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "itms-apps"
+        urlComponents.host = "itunes.apple.com"
+        urlComponents.path = "/developer/id\(developerID)"
+        urlComponents.queryItems = [URLQueryItem(name: "mt", value: "8")]
         return urlComponents.url
     }
 }

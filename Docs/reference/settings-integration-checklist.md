@@ -1,56 +1,60 @@
 # Settings Integration Checklist
 
-Use this checklist to audit whether a host app has integrated `SFKSettings` clearly and consistently.
+Use this checklist when reviewing a host app's v4 settings screen.
 
 ## Screen shell
 
-- `SFKSettingsScreen` is used when the page is primarily a settings form
-- `sections` are used for tappable `SettingsItem` rows
-- `customSections` are only used where interactive controls or custom layouts are actually needed
-- The settings preview in Xcode matches the real host-app structure rather than a custom mock layout
+- `SFKSettingsScreen` is used for a primarily form-based page.
+- Every logical group is an `SFKSettingsSection` with one header.
+- Rows and controls are composed directly in the result builder.
+- No heterogeneous row array, type-erased view, or existential dispatch table is
+  used in the common path.
+- The preview mirrors the host screen's real state and navigation.
 
-## Theme
+## Theme and semantics
 
-- A single `SFKSettingsTheme` is defined at the screen or app layer
-- The host app passes `theme:` into `SFKSettingsScreen` or applies `.sfkSettingsTheme(...)`
-- The app has intentionally chosen `itemTintBehavior`
-- The app has explicitly set `toggleOnTint` and `sliderTint` if the default accent should not be reused
-- Title, subtitle, and value typography are configured if the app requires custom sizing or weight
-- Row spacing and vertical padding are configured if the host app has a denser or more relaxed visual system
-
-## Colors
-
-- There is a clear decision between uniform theme accent and per-row item tinting
-- Destructive actions use `destructiveTint` consistently
-- Accessory icons and trailing values are legible against the host app's background
-- Toggle-on colors match the intended brand color
-- Slider and picker accents match the intended brand color
+- A shared `SFKTheme` is supplied at the app or feature boundary.
+- The screen's native controls inherit `theme.colors.accent`.
+- Explicit `.tint(...)` overrides are limited to intentional exceptions.
+- Typography uses semantic Dynamic Type styles.
+- Row values and accessory labels have sufficient contrast in light/dark modes.
+- Reduced-motion behavior is respected for host-owned animations.
 
 ## Composition
 
-- Static informational rows are represented as `SettingsItem` values where possible
-- Dynamic trailing values use `SFKSettingsTrailing` (`.value` for themed text, `.custom` for bespoke content) returned from `rowTrailingBuilder`
-- Non-navigable rows hide the chevron using `rowChevronBuilder`
-- Row tap routing is centralized instead of scattered across multiple nested views
+- Tappable content uses `SFKSettingsRow` with a concrete closure.
+- Informational values use `.settingsRowValue(...)`.
+- Non-navigable rows use `.settingsRowChevron(false)`.
+- Custom editors use `SFKSettingsBindingRow` or a native control in the section.
+- Host navigation, URLs, analytics, and policy remain host-owned.
+- Destructive actions have an explicit confirmation step and destructive role.
 
 ## Controls
 
-- Toggles use `SFKSettingsToggle` or `SFKSettingsToggleRow`
-- Date and time settings use `SFKSettingsDatePickerRow`, `SFKSettingsTimePickerRow`, or `SFKSettingsInlineDatePicker`
-- Choice-based settings use `SFKSettingsPickerRow` with `.sheet` or `.actionSheet` presentation
-- Numeric settings use `SFKSettingsStepperRow` or `SFKSettingsSliderRow`
-- Color settings use `SFKSettingsColorPickerRow` or `SFKSettingsInlineColorPicker`
-- Color picker rows do not introduce an unnecessary intermediate sheet
+- Toggles use `SFKSettingsToggle` or native `Toggle` with a binding.
+- Dates/times use native `DatePicker` controls unless a host-specific editor is
+  required.
+- Choices use `SFKSettingsPicker<Value>` or `SFKItemPickerView<Item>` with a
+  concrete binding and label closure.
+- Numeric values use native `Stepper` or `Slider` controls.
+- Colors use native `ColorPicker` or the binding-backed
+  `SFKColorPickerSheet`.
+- Item-picker context/swipe actions use typed `SFKItemPickerConfiguration<Item>`
+  closures; IDs are stable across reloads.
 
-## Shared sections
+## Behavior and accessibility
 
-- `SFKInformationSectionItem` is used for app-info rows where appropriate
-- `SFKDeveloperSectionItem` is used for developer/about rows where appropriate
-- `SFKInformationSectionHandler` and `SFKDeveloperSectionHandler` are used if the app wants the built-in behaviors
+- Binding writes are covered by tests, including optional, non-optional, and
+  multi-selection item-picker paths.
+- Row action closures are covered by tests.
+- Empty and search-result states are reviewed for item pickers.
+- Large Dynamic Type and accessibility sizes are checked for truncation.
+- Disabled/loading states remain visible and semantically disabled.
+- Increased contrast and VoiceOver labels/values are reviewed on device or
+  simulator.
 
 ## Verification
 
-- Xcode previews for the settings rows are reviewed
-- The host app settings screen is reviewed in the simulator/device
-- The host app compiles after integrating the settings screen
-- The team has documented any intentional deviations from the shared settings theme
+- The host app compiles after the settings screen is integrated.
+- The settings screen is reviewed in light/dark and large-text configurations.
+- Intentional deviations from shared theme tokens are documented.

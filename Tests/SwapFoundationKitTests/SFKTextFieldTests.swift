@@ -41,18 +41,16 @@ final class SFKTextFieldTests: XCTestCase {
     @MainActor
     func testChromelessAppearanceCanBeHosted() {
         let field = SFKTextField(
-            text: .constant(""),
-            placeholder: "Name",
-            leadingSystemImage: "figure.walk",
-            appearance: SFKTextFieldAppearance(
+            "Name", text: .constant(""), prompt: "Name",
+            leadingSystemImage: "figure.walk"
+        )
+        .sfkAppearance(SFKTextFieldAppearance(
                 backgroundColor: .clear,
                 focusedBackgroundColor: .clear,
                 disabledBackgroundColor: .clear,
                 borderColor: .clear,
-                focusedBorderColor: .clear,
-                horizontalPadding: 0
-            )
-        )
+                focusedBorderColor: .clear
+            ).metrics(horizontalPadding: 0))
         let host = UIHostingController(rootView: field)
 
         host.loadViewIfNeeded()
@@ -65,14 +63,10 @@ final class SFKTextFieldTests: XCTestCase {
         let field = SFKTextField(
             "Email",
             text: .constant("person@example.com"),
-            placeholder: "you@example.com",
-            leadingSystemImage: "envelope",
-            status: .normal,
-            keyboardType: .emailAddress,
-            contentType: .emailAddress,
-            textInputAutocapitalization: .never,
-            autocorrectionDisabled: true
+            prompt: "you@example.com",
+            leadingSystemImage: "envelope"
         )
+        .sfkInput(.email)
         let host = UIHostingController(rootView: field)
 
         host.loadViewIfNeeded()

@@ -12,31 +12,31 @@
 import SwiftUI
 import UIKit
 
-public struct SFKItemPickerRow: View {
+struct SFKItemPickerRow<Item: SFKPickableItem>: View {
 
     @Environment(\.sfkTheme) private var theme
     private let hapticsHelper = HapticsHelper()
-    let item: any SFKPickableItem
-    let selectionType: SFKItemPickerSelectionMode
+    let item: Item
+    let isMultiple: Bool
     let isSelected: Bool
-    let didSelect: (any SFKPickableItem) -> Void
+    let didSelect: (Item) -> Void
     private let titleOverride: String?
 
-    public init(
-        item: any SFKPickableItem,
-        selectionType: SFKItemPickerSelectionMode,
+    init(
+        item: Item,
+        isMultiple: Bool,
         isSelected: Bool,
         title: String? = nil,
-        didSelect: @escaping (any SFKPickableItem) -> Void
+        didSelect: @escaping (Item) -> Void
     ) {
         self.item = item
-        self.selectionType = selectionType
+        self.isMultiple = isMultiple
         self.isSelected = isSelected
         self.titleOverride = title
         self.didSelect = didSelect
     }
 
-    public var body: some View {
+    var body: some View {
         Button {
             hapticsHelper.mediumImpact()
             didSelect(item)
@@ -75,7 +75,7 @@ public struct SFKItemPickerRow: View {
                         .font(theme.typography.caption.weight(.semibold))
                         .foregroundStyle(theme.colors.secondaryText)
                 } else if isSelected {
-                    Image(systemName: selectionType == .multi ? "checkmark.square.fill" : "inset.filled.circle")
+                    Image(systemName: isMultiple ? "checkmark.square.fill" : "inset.filled.circle")
                         .foregroundStyle(theme.colors.accent)
                         .fontWeight(.bold)
                 }

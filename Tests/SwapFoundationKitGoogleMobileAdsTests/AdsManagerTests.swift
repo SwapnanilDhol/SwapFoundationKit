@@ -13,7 +13,6 @@
 import UIKit
 import XCTest
 @testable import SwapFoundationKit
-@testable import SwapFoundationKitLegacy
 @testable import SwapFoundationKitGoogleMobileAds
 
 @MainActor
@@ -25,14 +24,12 @@ final class AdsManagerTests: XCTestCase {
         super.setUp()
         provider = FakeAdsProvider()
         manager = AdsManager.makeForTesting(providerFactory: FakeAdsProviderFactory(provider: provider))
-        SwapFoundationKit.shared.resetForTesting()
         AdsManager.shared.resetForTesting()
     }
 
     override func tearDown() {
         provider = nil
         manager = nil
-        SwapFoundationKit.shared.resetForTesting()
         AdsManager.shared.resetForTesting()
         super.tearDown()
     }
@@ -117,39 +114,6 @@ final class AdsManagerTests: XCTestCase {
             recorder.events,
             [.impression(.rewarded), .dismissed(.rewarded)]
         )
-    }
-
-#if !targetEnvironment(simulator)
-    func testStartIfNeeded_PreloadsAfterSwapFoundationKitStart() async throws {
-        let sharedProvider = FakeAdsProvider()
-        AdsManager.shared.setProviderFactoryForTesting(FakeAdsProviderFactory(provider: sharedProvider))
-
-        let kitConfiguration = SwapFoundationKitConfiguration(
-            appMetadata: AppMetaData(appGroupIdentifier: "tests.swapfoundationkit"),
-            enableItemSync: false,
-            enableNetworking: false
-        )
-
-        try await SwapFoundationKit.shared.start(with: kitConfiguration)
-
-        let adsConfiguration = makeConfiguration(preloadOnStart: [.interstitial])
-        await AdsManager.startIfNeeded(configuration: adsConfiguration)
-
-        XCTAssertTrue(AdsManager.shared.isConfigured)
-        XCTAssertEqual(sharedProvider.preloadedPlacements, [.interstitial])
-    }
-#endif
-
-    func testAdsManager_StaysUnconfiguredWhenStartIfNeededNeverCalled() async throws {
-        let configuration = SwapFoundationKitConfiguration(
-            appMetadata: AppMetaData(appGroupIdentifier: "tests.swapfoundationkit"),
-            enableItemSync: false,
-            enableNetworking: false
-        )
-
-        try await SwapFoundationKit.shared.start(with: configuration)
-
-        XCTAssertFalse(AdsManager.shared.isConfigured)
     }
 
 #if targetEnvironment(simulator)

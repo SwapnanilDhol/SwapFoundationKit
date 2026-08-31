@@ -29,8 +29,6 @@ domains:
       - SFKTheme.accent(_:)
       - View.sfkTheme(_:)
       - EnvironmentValues.sfkTheme
-      - SFKSettingsTheme (legacy projection)
-      - View.sfkSettingsTheme(_:) (legacy override)
     docs:
       - Sources/SwapFoundationKit/UI/README.md
     examples:
@@ -43,7 +41,7 @@ domains:
 
   - id: settings
     priority: 1
-    summary: Typed settings result-builder, binding/action rows, theme projection, and deprecated array-driven compatibility adapters.
+    summary: Typed settings result-builder with binding/action rows backed by the shared SFKTheme.
     when_to_check:
       - Building a settings page
       - Refactoring app preferences or about screens
@@ -58,35 +56,15 @@ domains:
     public_api:
       - SFKSettingsScreen
       - SFKSettingsSection
-      - SFKSettingsPicker
-      - SFKSettingsPickerPresentation
+      - SFKSettingsPicker<Value>
+      - SFKSettingsPicker<Value>.Presentation
       - SFKSettingsBindingRow
-      - SFKSettingsTheme
-      - SFKSettingsSectionConfiguration
-      - SFKSettingsCustomSection
-      - SettingsItem
       - SFKSettingsRow
-      - SFKSettingsLabel
       - SFKSettingsToggle
-      - SFKSettingsToggleRow
-      - SFKSettingsDatePickerRow
-      - SFKSettingsTimePickerRow
-      - SFKSettingsInlineDatePicker
-      - SFKSettingsPickerRow
-      - SFKSettingsStepperRow
-      - SFKSettingsSliderRow
-      - SFKSettingsColorPickerRow
-      - SFKSettingsInlineColorPicker
-      - SFKSettingsLinkRow
-      - SFKSettingsDestructiveRow
-      - SFKSettingsConfirmationRow
-      - SFKInformationSectionItem
-      - SFKDeveloperSectionItem
-      - SFKSettingsActionHandler
     migration_notes:
       - "Preferred screen path: SFKSettingsScreen(navigationTitle:content:) with SFKSettingsSection and concrete rows; it does not erase row content."
       - "SFKSettingsPicker uses a Binding<Value>, options, and a Value-to-String label; use SFKSettingsPickerPresentation for subtitle, icon, and tint overrides."
-      - "SFKSettingsBindingRow keeps a Binding<Value> and action(Value) concrete; SFKSettingsSectionConfiguration and SFKSettingsCustomSection remain deprecated compatibility adapters."
+      - "SFKSettingsBindingRow keeps a Binding<Value> and action(Value) concrete; hosts own product-specific navigation and row actions."
     docs:
       - Docs/guides/settings.md
       - Docs/reference/settings-integration-checklist.md
@@ -214,10 +192,9 @@ domains:
     public_api:
       - SFKChip
       - SFKChipStyle
-      - SFKChipHapticStyle
       - SFKChipFlowLayout
       - SFKSelectableChip
-      - SFKChipItem
+      - SFKTheme.Feedback.Style (shared haptic policy)
     docs:
       - Docs/guides/chips.md
     examples:
@@ -282,7 +259,7 @@ domains:
 
   - id: pickers
     priority: 4
-    summary: Generic item picker/list screen and settings pickers for single-select, multi-select, sectioned, searchable browsing, and row-action flows.
+    summary: Generic item picker/list screen and settings pickers for single-select, multi-select, searchable browsing, and row-action flows.
     when_to_check:
       - Building a searchable chooser or modal picker
       - Replacing custom list-based selection sheets
@@ -294,7 +271,7 @@ domains:
       - The picker has feature-specific domain actions or complex filtering logic that must remain app-owned
     public_api:
       - SFKColorPickerSheet
-      - SFKColorPickerConfiguration
+      - SFKColorPickerSheet.Configuration
       - SFKColorPickerSheet.init(selection:configuration:onApply:)
       - SFKItemPickerView
       - SFKItemPickerConfiguration
@@ -304,25 +281,22 @@ domains:
       - SFKPhotoPicker
       - SFKPhotoPicker.init(selection:configuration:onPick:)
       - SFKPickableItem
-      - SFKItemPickerSection
       - SFKPickableItemIconKind
-      - SFKItemPickerSelectionMode
       - SFKItemPickerToolbarAction
-      - SFKItemPickerToolbarActionPlacement
+      - SFKItemPickerToolbarAction.Placement
       - SFKItemPickerItemAction
-      - SFKItemPickerItemActionPresentation
-      - SFKSettingsPickerRow
+      - SFKItemPickerItemAction.Presentation
     docs:
       - Docs/migration/migration-guide.md
       - Docs/guides/settings.md
     examples:
       - Sources/SwapFoundationKit/UI/ItemPicker/SFKItemPickerView.swift
       - Sources/SwapFoundationKit/UI/PhotoPicker.swift
-      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsPickerRow.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsTypedRows.swift
     migration_notes:
       - "Typed item picker bindings preserve concrete Item values and compare selection by SFKPickableItem.pickableItemId; optional single selection can be cleared by tapping the selected item."
-      - "SFKItemPickerViewModel, SFKItemPickerDelegate, and SFKColorPickerDelegate are deprecated compatibility surfaces; use bindings and closures on the typed APIs."
-      - "PhotoPicker's closure initializer and SFKPhotoPicker update selection on the main actor; the delegate initializer remains deprecated."
+      - "Use concrete bindings and closures on the typed item and color picker APIs; picker delegates and view models are internal implementation details."
+      - "PhotoPicker's closure initializer and SFKPhotoPicker update selection on the main actor."
     host_app_triggers:
       - picker
       - color picker sheet
@@ -332,7 +306,7 @@ domains:
 
   - id: alerts
     priority: 5
-    summary: Reusable alert and confirmation presentation helpers plus confirmation-style settings rows.
+    summary: Reusable alert and confirmation presentation helpers.
     when_to_check:
       - Building a generic confirmation dialog
       - Replacing repeated UIKit/SwiftUI alert helpers
@@ -344,14 +318,11 @@ domains:
       - The app has a custom design-system alert implementation or domain-specific orchestration
     public_api:
       - AlertPresenter
-      - SFKSettingsConfirmationRow
-      - SFKSettingsDestructiveRow
     docs:
       - Docs/migration/migration-guide.md
       - Docs/guides/settings.md
     examples:
       - Sources/SwapFoundationKit/UI/AlertPresenter.swift
-      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsLinkRow.swift
     host_app_triggers:
       - alert
       - confirmation
@@ -361,14 +332,14 @@ domains:
   - id: networking
     priority: 6
     module: SwapFoundationKitNetworking
-    summary: Async HTTP requests, typed request/response contracts, downloads, and origin-scoped backend headers.
+    summary: Async HTTP requests, typed request/response contracts, downloads, and instance-scoped backend headers.
     when_to_check:
       - Adding an API client or download flow
       - Replacing direct URLSession request code
       - Supplying identity or entitlement headers to a known backend
     prefer_when:
       - The host needs generic HTTP execution and typed request construction
-      - Backend-only headers must be restricted to explicitly registered origins
+      - Backend-only headers must be restricted to origins configured on the NetworkService instance
     keep_in_host_app_when:
       - The host owns domain routing, authorization policy, or a deliberately different transport
     public_api:
@@ -380,10 +351,9 @@ domains:
       - NetworkError
       - NetworkService
       - NetworkMonitor
-      - SFKBackendOriginRegistry
       - NetworkRequest.explicitURL
       - NetworkRequest.usesClientDefaultHeaders
-      - NetworkService.registerBackendOrigin(host:scheme:port:)
+      - NetworkService.init(client:monitor:backendHeadersProvider:backendOrigins:)
     docs:
       - Sources/SwapFoundationKitNetworking/README.md
       - Docs/guides/networking-rfc.md
@@ -395,7 +365,7 @@ domains:
       - API client
       - URLSession
       - backend headers
-      - origin registration
+      - backend origin policy
 
   - id: sync_shared_storage
     module: SwapFoundationKitSync
@@ -461,7 +431,7 @@ domains:
       - Throttler
       - PersistentTTLStore
     migration_notes:
-      - "AnalyticsManager.init() creates an isolated instance; AnalyticsManager.shared remains transitional compatibility state and should not be used by feature code."
+      - "AnalyticsManager.init() creates an isolated instance. AnalyticsManager.shared remains available only as a legacy convenience; new feature code should inject an instance."
     docs:
       - Sources/SwapFoundationKit/Services/README.md
       - Docs/migration/migration-guide.md
@@ -606,7 +576,7 @@ domains:
   - id: pro_gating
     priority: 10
     module: SwapFoundationKit
-    summary: Instance-based access gating through an injected SFKAccessPolicy, with SFKProGate retained only in SwapFoundationKitLegacy.
+    summary: Instance-based access gating through an injected SFKAccessPolicy.
     when_to_check:
       - Gating premium features behind in-app purchase
       - Checking Pro status before allowing an action
@@ -621,15 +591,12 @@ domains:
       - SFKAccessGate
       - SFKAccessGate.check(_:)
       - SFKAccessGate.require(_:action:)
-      - SFKProGate (deprecated; SwapFoundationKitLegacy)
     docs:
       - Sources/SwapFoundationKit/Services/README.md
-      - Sources/SwapFoundationKitLegacy/README.md
     examples:
       - Sources/SwapFoundationKit/Services/SFKAccessPolicy.swift
-      - Sources/SwapFoundationKitLegacy/SFKProGate.swift
     migration_notes:
-      - "The default product owns SFKAccessPolicy/SFKAccessGate; add SwapFoundationKitLegacy only while migrating SFKProGate call sites."
+      - "Inject the host's SFKAccessPolicy and upgrade presentation into SFKAccessGate; there is no bootstrap or legacy gate product."
       - "Do not infer entitlement state in SFK; inject the host's policy and upgrade presentation."
     host_app_triggers:
       - pro gate

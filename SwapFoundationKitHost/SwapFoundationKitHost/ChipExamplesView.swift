@@ -22,7 +22,6 @@ struct ChipExamplesView: View {
     @State private var controlSize = ChipControlSize.small
 
     @State private var actionStyle = ActionChipStyle.secondary
-    @State private var hapticStyle = ActionChipHaptic.light
     @State private var actionTapCount = 0
 
     @State private var isSelected = true
@@ -84,8 +83,7 @@ struct ChipExamplesView: View {
                 leadingIconName: resolvedLeadingIcon,
                 tintColor: tintColor,
                 controlSize: controlSize.value,
-                style: actionStyle.value,
-                hapticStyle: hapticStyle.value
+                style: actionStyle.value
             ) {
                 actionTapCount += 1
             }
@@ -173,11 +171,9 @@ struct ChipExamplesView: View {
         switch chipKind {
         case .action:
             Section("Interaction") {
-                Picker("Haptic", selection: $hapticStyle) {
-                    ForEach(ActionChipHaptic.allCases) { haptic in
-                        Text(haptic.title).tag(haptic)
-                    }
-                }
+                Text("Feedback follows the nearest SFKTheme.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
         case .selectable:
@@ -257,25 +253,6 @@ private enum ActionChipStyle: String, CaseIterable, Identifiable {
         switch self {
         case .primary: .primary
         case .secondary: .secondary
-        }
-    }
-}
-
-private enum ActionChipHaptic: String, CaseIterable, Identifiable {
-    case none
-    case light
-    case medium
-    case heavy
-
-    var id: Self { self }
-    var title: String { rawValue.capitalized }
-
-    var value: SFKChipHapticStyle? {
-        switch self {
-        case .none: nil
-        case .light: .light
-        case .medium: .medium
-        case .heavy: .heavy
         }
     }
 }

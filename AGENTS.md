@@ -12,8 +12,8 @@ This repository ships an LLM-friendly workflow for:
 
 Read files in this order:
 
-1. `Docs/capabilities.yaml` — Agent-first capability catalog (14 domains)
-2. `Docs/migration/catalog.yaml` — Curated audit catalog (60+ capabilities with tiers)
+1. `Docs/capabilities.yaml` — Agent-first capability catalog
+2. `Docs/migration/catalog.yaml` — Curated audit catalog with tiers
 3. Module READMEs under `Sources/SwapFoundationKit/` — Per-module API references
 4. `README.md` — Quick reference with module index
 5. `SKILL.md` — Trigger keywords and quick capability lookup
@@ -44,7 +44,7 @@ Check whether the request falls into a documented reusable domain:
 | currency, exchange rates | `Sources/SwapFoundationKitCurrency/Currency/README.md` |
 | image processing | `Sources/SwapFoundationKitMedia/ImageProcessor/README.md` |
 | notifications | `Sources/SwapFoundationKit/Services/README.md` — SFKNotificationService |
-| pro gating | `Sources/SwapFoundationKit/Services/README.md` — SFKProGate |
+| pro gating | `Sources/SwapFoundationKit/Services/README.md` — SFKAccessGate |
 | environment / launch args | `Sources/SwapFoundationKit/Utilities/README.md` |
 | appearance / typography | `Sources/SwapFoundationKit/UI/README.md` — Appearance section |
 | debounce / throttle | `Sources/SwapFoundationKit/Utilities/README.md` |
@@ -131,9 +131,9 @@ SwapFoundationKit/
 ├── Package.swift
 ├── Docs/
 │   ├── README.md                         ← Documentation index
-│   ├── capabilities.yaml                ← Feature discovery catalog (14 domains)
+│   ├── capabilities.yaml                ← Feature discovery catalog
 │   ├── migration/
-│   │   ├── catalog.yaml                 ← Audit catalog (60+ capabilities)
+│   │   ├── catalog.yaml                 ← Audit catalog
 │   │   └── migration-guide.md
 │   ├── guides/                           ← In-depth guides
 │   ├── reference/                        ← Audit checklists

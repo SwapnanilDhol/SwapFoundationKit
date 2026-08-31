@@ -97,10 +97,20 @@ public struct SFKTheme {
     }
 
     public struct Feedback {
-        public var enabled: Bool
+        /// The shared impact style used by buttons and chips.
+        public enum Style: Sendable {
+            case none
+            case light
+            case medium
+            case heavy
+        }
 
-        public init(enabled: Bool = true) {
+        public var enabled: Bool
+        public var style: Style
+
+        public init(enabled: Bool = true, style: Style = .medium) {
             self.enabled = enabled
+            self.style = style
         }
 
         public static let system = Feedback()

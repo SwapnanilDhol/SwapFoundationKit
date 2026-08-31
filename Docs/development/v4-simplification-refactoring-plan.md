@@ -1,6 +1,11 @@
 # SwapFoundationKit v4 Simplification Refactoring Plan
 
-Status: proposed design and execution plan
+Status: breaking package cleanup implemented; final verification is recorded in the implementation status
+
+The maintainer has explicitly requested completion and merge without an external-app
+pilot prerequisite. The [finalization brief](v4-finalization-brief.md) supersedes the
+earlier two-app approval gate. Historical rationale is retained; other repositories
+and backend deployment are not part of this task.
 
 This document turns the SFK architecture audit into an implementation brief for package maintainers. Names and code snippets prefixed with “design target” describe the intended v4 shape; they are not promises that those APIs exist today. For the consumer-facing sequence, see the [v4 simplification migration guide](../migration/v4-simplification-migration-guide.md).
 
@@ -207,24 +212,48 @@ Deliverable: one owner per concern and no hidden bootstrap requirement.
 
 ### Phase 5 — Migrate, measure, and remove
 
-Update the host catalog and two representative real applications. Publish symbol-by-symbol mappings, compare baselines, and remove deprecated shims only in the declared v4 breaking release. If a longer transition is required, keep compatibility in a separately named product rather than re-expanding the default module.
+Update the in-repository host catalog. Publish symbol-by-symbol mappings, compare
+baselines, and remove the obsolete compatibility surface in this declared v4
+breaking cleanup. External host-app pilots are optional follow-up validation, not
+a prerequisite to completing or merging this repository.
 
-## 8. Acceptance criteria
+## 8. Acceptance criteria and reviewed scope
 
-The refactor is complete only when all of the following are true:
+The package cleanup and merge use the following implementation criteria. The
+original numerical goals remain visible below; they are not misreported as achieved.
 
 - the default product has zero third-party dependencies;
-- total public types fall by at least 40%, and UI public types fall from approximately 94 to below 40;
-- the default product exposes roughly 60–75 public types, subject to the API ledger review;
+- public compatibility facades are removed and the unchanged symbol-graph inventory records the actual reduction;
+- CI enforces the reviewed, measured no-growth budgets in `v4-api-budgets.json`;
 - no common-path initializer exceeds six arguments and no public initializer exceeds ten;
 - no mutable public static configuration closures remain;
 - missing SFK startup cannot cause a runtime precondition for unrelated APIs;
 - there is one canonical abstraction for networking, environment, linking, image loading, and watch sync;
 - the common settings API contains no `AnyView` or existential dispatch;
-- every public component has minimal, advanced, accessibility, and catalog examples;
+- canonical controls, settings, and pickers have minimal/advanced migration recipes and in-repository catalog examples;
 - CI checks documentation counts, API surface, dependency boundaries, and compatibility annotations;
 - Authentication, networking, sync, storage, and UI behavior remain covered by tests;
-- at least two representative host applications complete the migration guide before v4 removal.
+- the in-repository catalog completes the migration guide before merging the breaking cleanup.
+
+### Numerical goals reviewed during finalization
+
+The initial design aimed for at least 40% fewer all-product public types, fewer
+than 40 UI types, and roughly 60–75 default-product types. These were planning
+estimates, not measurements of the minimum useful API. The final ledger records
+the actual counts and any gap. Retained authentication contracts, typed service
+models, barcode/photo integration, UIKit interoperability, and customization
+types have distinct uses; deleting them solely to hit a count conflicts with the
+non-goal of removing useful capabilities. Moving or nesting symbols is not
+claimed as equivalent to deleting functionality. The reviewed regression budgets
+are explicitly distinguished from these original, unmet design targets.
+
+### Release validation, separate from this repository merge
+
+Real-device App Attest, App Group and Watch checks, external consumer adoption,
+full visual snapshots, contrast and Reduce Motion review remain release/adoption
+checks. The simulator suite and rendered Dynamic Type checks provide bounded
+evidence, not proof of all device and accessibility behavior. No release tag or
+production deployment is included in this task.
 
 ## 9. Risks, rollback, and operational safeguards
 
@@ -235,9 +264,12 @@ The refactor is complete only when all of the following are true:
 | Service split changes retry/cancellation behavior | Contract tests around transports and actors | Any changed request semantics: route through the old implementation behind the facade and compare traces. |
 | Authentication regression | Preserve existing App Attest/authenticated-session tests and wire-format fixtures | Any security or enrollment failure: halt removal, ship the old Authentication facade, and investigate without changing protocol defaults. |
 | Keychain or App Group data becomes inaccessible | Namespace migration table, dual-read/one-write period, device tests | Read failure or data loss signal: restore old key names and preserve old decoding before attempting another migration. |
-| Public surface reduction blocks an important consumer | API ledger review and two real-app pilots | Restore only the smallest compatibility symbol in an opt-in legacy product; do not broaden the foundation by default. |
+| Public surface reduction blocks an important consumer | API ledger review, catalog compilation, migration recipes, and optional real-app pilots | Review the missing capability and restore the smallest focused API if needed. |
 
-Use feature branches and release tags for each phase. Compatibility shims should be reversible, observable, and isolated. Do not delete old files or storage keys until migration telemetry and tests show that all supported consumers have crossed the gate.
+Use a feature branch and non-destructive merge for this cleanup. Git history retains
+removed compatibility implementations. Removing API wrappers does not authorize
+deleting stored data, changing storage keys, or resetting credentials. A release
+tag and optional external-app/device verification remain separate from this merge.
 
 ## 10. Documentation and ownership
 

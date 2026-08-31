@@ -24,56 +24,27 @@ public final class NetworkService: ObservableObject {
     @Published public private(set) var isConnected = false
     @Published public private(set) var connectionType: ConnectionType = .unknown
 
-    /// Raw headers returned by `backendHeadersProvider`.
-    ///
-    /// `get(from:)` and `post(to:)` scope these headers to an exact origin registered via
-    /// `registerBackendOrigin(host:scheme:port:)` immediately before sending. This property is
-    /// only the provider output; reading it does not perform origin filtering. `downloadFile`
-    /// currently bypasses this backend-header merge entirely.
+    /// Headers returned by this instance's backend provider.
     public var backendDefaultHeaders: [String: String] {
-        activeBackendHeadersProvider?() ?? [:]
-    }
-
-    /// Closure that returns backend headers. Set by the host app at launch.
-    /// Example: { ["X-App-User-ID": AppUserID.headerValue] }
-    ///
-    /// Setting this alone is not enough for headers to reach the wire: `get(from:)`/`post(to:)`
-    /// accept arbitrary URLs, so the provider's output is only merged into requests whose origin
-    /// was registered via `registerBackendOrigin(host:scheme:port:)`. Without a registered origin,
-    /// headers are computed but never applied — call `registerBackendOrigin` alongside this at app
-    /// launch. `downloadFile` does not currently apply these headers.
-    @available(*, deprecated, message: "Inject backendHeadersProvider into NetworkService.init instead.")
-    public static var backendHeadersProvider: (() -> [String: String])?
-
-    /// Registers a backend origin that should receive `backendDefaultHeaders` (e.g. `X-App-User-ID`).
-    ///
-    /// Call this once at app launch (alongside setting `backendHeadersProvider`) for each origin
-    /// that is actually your backend. Without a registered origin, `backendDefaultHeaders` are
-    /// never merged into outgoing requests — this prevents them from leaking to arbitrary/
-    /// third-party hosts that `get(from:)`/`post(to:)` might be pointed at.
-    ///
-    /// - Parameters:
-    ///   - host: The backend host, e.g. `"api.example.com"`.
-    ///   - scheme: The scheme to match. Defaults to `"https"`.
-    ///   - port: Optional port to match. When `nil`, the scheme's default port is matched
-    ///     (`443` for HTTPS and `80` for HTTP).
-    public static func registerBackendOrigin(host: String, scheme: String = "https", port: Int? = nil) {
-        SFKBackendOriginRegistry.register(host: host, scheme: scheme, port: port)
+        backendHeadersProvider?() ?? [:]
     }
 
     private let monitor: NetworkMonitor
     private var monitorCancellables = Set<AnyCancellable>()
     private let client: HTTPClient
-    private let instanceBackendHeadersProvider: (() -> [String: String])?
+    private let backendHeadersProvider: (() -> [String: String])?
+    private let backendOrigins: Set<HTTPOrigin>
     
     public init(
         client: HTTPClient = .shared,
         monitor: NetworkMonitor? = nil,
-        backendHeadersProvider: (() -> [String: String])? = nil
+        backendHeadersProvider: (() -> [String: String])? = nil,
+        backendOrigins: [URL] = []
     ) {
         self.client = client
         self.monitor = monitor ?? NetworkMonitor()
-        self.instanceBackendHeadersProvider = backendHeadersProvider
+        self.backendHeadersProvider = backendHeadersProvider
+        self.backendOrigins = Set(backendOrigins.compactMap(HTTPOrigin.init(url:)))
         self.isConnected = self.monitor.isConnected
         self.connectionType = self.monitor.connectionType
         setupNetworkMonitoring()
@@ -90,10 +61,6 @@ public final class NetworkService: ObservableObject {
             .store(in: &monitorCancellables)
     }
 
-    private var activeBackendHeadersProvider: (() -> [String: String])? {
-        instanceBackendHeadersProvider ?? Self.backendHeadersProvider
-    }
-    
     // MARK: - Basic HTTP Operations
     
     /// Performs a GET request
@@ -298,17 +265,12 @@ public final class NetworkService: ObservableObject {
     }
 
     /// Returns `backendDefaultHeaders` only when a provider is set and the request's URL matches
-    /// a registered backend origin; otherwise returns an empty dictionary and, when a provider is
-    /// set but no origin matched, emits a one-time warning so the omission doesn't look like a
-    /// silent no-op forever.
+    /// one of this instance's allowed backend origins.
     private func backendHeaders(for request: NetworkRequest) -> [String: String] {
-        guard activeBackendHeadersProvider != nil else { return [:] }
+        guard backendHeadersProvider != nil else { return [:] }
         guard let url = request.url else { return [:] }
 
-        guard SFKBackendOriginRegistry.matches(url) else {
-            SFKBackendOriginRegistry.warnAboutUnmatchedOriginIfNeeded(for: url)
-            return [:]
-        }
+        guard let origin = HTTPOrigin(url: url), backendOrigins.contains(origin) else { return [:] }
 
         return backendDefaultHeaders
     }
@@ -390,84 +352,6 @@ private final class SameOriginRedirectDelegate: NSObject, URLSessionTaskDelegate
             return
         }
         completionHandler(request)
-    }
-}
-
-/// Registry that lets a host app declare which origins should receive
-/// `NetworkService.backendDefaultHeaders`.
-///
-/// `NetworkService.get(from:)`/`post(to:)` accept arbitrary caller-supplied URLs, so unconditionally
-/// merging backend headers (such as `X-App-User-ID`) into every outgoing request would leak them to
-/// third-party hosts. Instead, a host app registers the origin(s) that are actually its backend via
-/// `NetworkService.registerBackendOrigin(host:scheme:port:)`, and only requests whose origin matches
-/// receive `backendDefaultHeaders`. This mirrors the App Attest "origin restriction" invariant:
-/// backend-only headers stay scoped to the backend's own origin.
-///
-/// This is intentionally a function-based registration rather than a public mutable static
-/// property/closure, matching `SFKNetworkInstrumentation`'s registration boundary: it keeps the
-/// registration boundary explicit and prevents arbitrary call sites from silently mutating shared
-/// state.
-public enum SFKBackendOriginRegistry {
-    private static let lock = NSLock()
-    private static var origins: Set<HTTPOrigin> = []
-    private static var didWarnAboutUnmatchedOrigin = false
-
-    /// Registers a backend origin that should receive `NetworkService.backendDefaultHeaders`.
-    ///
-    /// - Parameters:
-    ///   - host: The backend host, e.g. `"api.example.com"`.
-    ///   - scheme: The scheme to match. Defaults to `"https"`.
-    ///   - port: Optional port to match. When `nil`, the scheme's default port is matched
-    ///     (`443` for HTTPS and `80` for HTTP).
-    public static func register(host: String, scheme: String = "https", port: Int? = nil) {
-        guard let origin = HTTPOrigin(host: host, scheme: scheme, port: port) else { return }
-        lock.lock()
-        origins.insert(origin)
-        lock.unlock()
-    }
-
-    static func matches(_ url: URL) -> Bool {
-        guard let origin = HTTPOrigin(url: url) else { return false }
-
-        lock.lock()
-        let registered = origins
-        lock.unlock()
-
-        return registered.contains(origin)
-    }
-
-    /// Emits a one-time (per process) warning explaining that backend headers were skipped for
-    /// the URL origin because no registered origin matched it. Rate-limited so a host that forgot to
-    /// register an origin doesn't get spammed with a warning per request.
-    static func warnAboutUnmatchedOriginIfNeeded(for url: URL) {
-        lock.lock()
-        let alreadyWarned = didWarnAboutUnmatchedOrigin
-        didWarnAboutUnmatchedOrigin = true
-        lock.unlock()
-
-        guard !alreadyWarned else { return }
-
-        Logger.warning(
-            "backendHeadersProvider is set, but origin \(originDescription(for: url)) did not match a registered backend origin, so backend default headers (e.g. X-App-User-ID) were skipped for this request. Call NetworkService.registerBackendOrigin(host:scheme:port:) with your backend's origin to fix this. (Logged once per process.)",
-            context: "NetworkService"
-        )
-    }
-
-    private static func originDescription(for url: URL) -> String {
-        if let origin = HTTPOrigin(url: url) {
-            return "\(origin.scheme)://\(origin.host):\(origin.port)"
-        }
-        let scheme = url.scheme?.lowercased() ?? "unknown"
-        let host = url.host?.lowercased() ?? "unknown"
-        return "\(scheme)://\(host)"
-    }
-
-    /// Test-only support to restore default behavior between test cases. Not part of the public API.
-    static func resetForTesting() {
-        lock.lock()
-        origins = []
-        didWarnAboutUnmatchedOrigin = false
-        lock.unlock()
     }
 }
 

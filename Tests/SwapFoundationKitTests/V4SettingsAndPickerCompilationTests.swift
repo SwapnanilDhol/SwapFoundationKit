@@ -42,6 +42,12 @@ struct V4SettingsAndPickerCompilationTests {
                              label: { $0.title }, onSelect: { _ in })
         _ = SFKItemPickerView("Multiple", items: FixtureItem.allCases, selections: multiple,
                              label: { $0.title }, onSelect: { _ in })
+
+        var selected: Set<FixtureItem> = [.first]
+        SFKItemPickerView<FixtureItem>.toggleSelection(.second, in: &selected)
+        #expect(selected == [.first, .second])
+        SFKItemPickerView<FixtureItem>.toggleSelection(.first, in: &selected)
+        #expect(selected == [.second])
     }
 
     @Test

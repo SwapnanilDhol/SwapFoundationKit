@@ -41,7 +41,6 @@ struct ButtonExamplesView: View {
     @State private var titleLineLimit = 1
     @State private var subtitleLineLimit = 1
     @State private var controlSize = ButtonControlSize.regular
-    @State private var hapticStyle = ButtonHaptic.medium
 
     @State private var closeShowsTitle = false
     @State private var closeTitle = "Close"
@@ -86,7 +85,8 @@ struct ButtonExamplesView: View {
                     .sfkIcon("trash")
 
                 HStack(spacing: 20) {
-                    SFKButton(leadingIconName: "ellipsis", fullWidth: false, style: .toolbar) {}
+                    SFKButton("", role: .toolbar) {}
+                        .sfkIcon("ellipsis")
                         .accessibilityLabel("Toolbar button")
                     SFKCloseButton {}
                     SFKCloseButton(chrome: .glass) {}
@@ -135,30 +135,15 @@ struct ButtonExamplesView: View {
     }
 
     private var standardButton: some View {
-        SFKButton(
-            resolvedTitle,
-            leadingIconName: resolvedLeadingIcon,
-            subtitle: resolvedSubtitle,
-            isLoading: isLoading,
-            fullWidth: fullWidth,
-            titleColor: usesCustomTitleColor ? titleColor : nil,
-            subtitleColor: usesCustomSubtitleColor ? subtitleColor : nil,
-            color: tint,
-            spacing: spacing,
-            horizontalPadding: horizontalPadding,
-            verticalPadding: verticalPadding,
-            titleFont: titleFont.value,
-            subtitleFont: subtitleFont.value,
-            iconFont: iconFont.value,
-            textAlignment: textAlignment.value,
-            titleLineLimit: titleLineLimit,
-            subtitleLineLimit: subtitleLineLimit,
-            controlSize: controlSize.value,
-            style: style.value,
-            hapticStyle: hapticStyle.value
-        ) {
+        SFKButton(resolvedTitle ?? "", role: style.value) {
             tapCount += 1
         }
+        .sfkIcon(resolvedLeadingIcon)
+        .sfkSubtitle(resolvedSubtitle)
+        .sfkLoading(isLoading)
+        .sfkFullWidth(fullWidth)
+        .sfkTint(tint)
+        .sfkControlSize(controlSize.value)
         .disabled(!isEnabled)
     }
 
@@ -255,12 +240,6 @@ struct ButtonExamplesView: View {
         Section("Interaction") {
             Toggle("Enabled", isOn: $isEnabled)
             Toggle("Loading", isOn: $isLoading)
-
-            Picker("Haptic", selection: $hapticStyle) {
-                ForEach(ButtonHaptic.allCases) { haptic in
-                    Text(haptic.title).tag(haptic)
-                }
-            }
         }
     }
 
@@ -379,25 +358,6 @@ private enum ButtonControlSize: String, CaseIterable, Identifiable {
         case .regular: .regular
         case .large: .large
         case .extraLarge: .extraLarge
-        }
-    }
-}
-
-private enum ButtonHaptic: String, CaseIterable, Identifiable {
-    case none
-    case light
-    case medium
-    case heavy
-
-    var id: Self { self }
-    var title: String { rawValue.capitalized }
-
-    var value: SFKButtonHapticStyle? {
-        switch self {
-        case .none: nil
-        case .light: .light
-        case .medium: .medium
-        case .heavy: .heavy
         }
     }
 }

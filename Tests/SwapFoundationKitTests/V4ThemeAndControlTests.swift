@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import XCTest
 @testable import SwapFoundationKit
 
@@ -57,7 +58,7 @@ final class V4ThemeAndControlTests: XCTestCase {
         _ = destructiveButton
     }
 
-    func testCompactTextFieldAndCompatibilityAppearanceCompile() {
+    func testCompactTextFieldAndFocusedAppearanceCompile() {
         var value = ""
         var focused = false
         let binding = Binding<String>(
@@ -79,23 +80,24 @@ final class V4ThemeAndControlTests: XCTestCase {
             .sfkTrailingAction(systemImage: "xmark.circle.fill", accessibilityLabel: "Clear") {
                 value = ""
             }
-            .sfkAppearance(.init(cornerRadius: 10))
+            .sfkAppearance(.standard.metrics(cornerRadius: 10))
             .sfkSecure(false)
         _ = compactField
 
         let appearance = SFKTextFieldAppearance(
             backgroundColor: .clear,
-            focusedBorderColor: .indigo,
-            cornerRadius: 8
+            focusedBorderColor: .indigo
         )
-        let legacyField = SFKTextField(
-            "Legacy",
+        let customizedAppearance = appearance.metrics(cornerRadius: 8)
+        let configuredField = SFKTextField(
+            "Configured",
             text: binding,
-            placeholder: "Legacy placeholder",
-            appearance: appearance
+            prompt: "Configured placeholder"
         )
-        _ = legacyField
-        XCTAssertEqual(appearance.cornerRadius, 8)
+        .sfkAppearance(customizedAppearance)
+        _ = configuredField
+        XCTAssertEqual(customizedAppearance.cornerRadius, 8)
+        XCTAssertEqual(appearance.cornerRadius, 12)
     }
 
     /// `accessibilityReduceMotion` is a read-only system environment value in the
@@ -113,5 +115,34 @@ final class V4ThemeAndControlTests: XCTestCase {
         ))
 
         _ = themedControls
+    }
+
+    @MainActor
+    func testRenderedControlsRespectDynamicTypeAndThemeTokens() {
+        let theme = SFKTheme(
+            colors: .init(accent: .indigo, onAccent: .yellow),
+            feedback: .init(enabled: false, style: .none)
+        )
+        let button = SFKButton(
+            "A deliberately long action title that must remain readable",
+            role: .primary
+        ) { }
+        .sfkTheme(theme)
+        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+
+        let buttonHost = UIHostingController(rootView: button)
+        buttonHost.loadViewIfNeeded()
+        let buttonSize = buttonHost.sizeThatFits(in: CGSize(width: 180, height: 400))
+        XCTAssertGreaterThan(buttonSize.height, 44)
+        XCTAssertGreaterThan(buttonSize.width, 0)
+
+        let field = SFKTextField("Email", text: .constant(""), prompt: "you@example.com")
+            .sfkInput(.email)
+            .sfkTheme(theme)
+            .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+        let fieldHost = UIHostingController(rootView: field)
+        fieldHost.loadViewIfNeeded()
+        let fieldSize = fieldHost.sizeThatFits(in: CGSize(width: 320, height: 200))
+        XCTAssertGreaterThanOrEqual(fieldSize.height, SFKTextFieldAppearance.standard.minimumHeight)
     }
 }

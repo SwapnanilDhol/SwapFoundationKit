@@ -12,25 +12,11 @@
 import Foundation
 import Combine
 
-/// Protocol for Watch connectivity operations
-/// This allows for optional Watch data synchronization
+/// Internal transport seam used by the canonical `WatchSyncService` implementation.
 ///
-/// ## Usage Example
-/// ```swift
-/// #if os(iOS)
-/// // Create Watch connectivity service
-/// let watchService = WatchConnectivityServiceImpl()
-/// watchService.activate()
-///
-/// // Use with sync service
-/// let syncService = DataSyncServiceImpl(
-///     storage: AppGroupFileStorageService(appGroupIdentifier: "group.com.yourapp.widget"),
-///     watchConnectivity: watchService
-/// )
-/// #endif
-/// ```
-@available(*, deprecated, message: "Use WatchSyncService for the canonical watch-sync boundary.")
-public protocol WatchConnectivityService {
+/// Watch transport details are deliberately kept inside the Sync product. Consumers
+/// depend on `WatchSyncService`, rather than on a second connectivity abstraction.
+internal protocol WatchConnectivityAdapter {
     /// Activates the Watch connectivity session
     func activate()
     
@@ -58,11 +44,11 @@ public protocol WatchConnectivityService {
     var dataReceivedPublisher: AnyPublisher<Data, Never> { get }
 }
 
-public struct WatchConnectivityPayload: Sendable {
-    public let data: Data
-    public let transport: WatchSyncTransport
+internal struct WatchConnectivityPayload: Sendable {
+    let data: Data
+    let transport: WatchSyncTransport
 
-    public init(data: Data, transport: WatchSyncTransport) {
+    init(data: Data, transport: WatchSyncTransport) {
         self.data = data
         self.transport = transport
     }
@@ -70,14 +56,14 @@ public struct WatchConnectivityPayload: Sendable {
 
 // MARK: - Errors
 
-/// Errors that can occur during Watch connectivity operations
-public enum WatchConnectivityError: LocalizedError {
+/// Errors that can occur during Watch connectivity operations.
+internal enum WatchConnectivityError: LocalizedError {
     case sessionNotActivated
     case watchNotReachable
     case sendFailed(Error)
     case receiveFailed(Error)
     
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .sessionNotActivated:
             return "Watch connectivity session is not activated"

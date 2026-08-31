@@ -1,29 +1,28 @@
 import SwiftUI
 
-/// Focused presentation overrides for ``SFKSettingsPicker``.
-public struct SFKSettingsPickerPresentation {
-    public var subtitle: String
-    public var systemImage: String
-    public var tint: Color?
-
-    public init(
-        subtitle: String = "",
-        systemImage: String = "list.bullet",
-        tint: Color? = nil
-    ) {
-        self.subtitle = subtitle
-        self.systemImage = systemImage
-        self.tint = tint
-    }
-}
-
 /// A typed picker row for the settings result-builder API.
 ///
-/// Unlike the legacy picker row, this control keeps the selected value and
-/// option labels generic. It uses a native menu, so it works in a `Form` and
-/// does not need an intermediate erased picker model.
+/// This control keeps the selected value and option labels generic. It uses a
+/// native menu, so it works in a `Form` without an intermediate picker model.
 public struct SFKSettingsPicker<Value: Hashable>: View {
-    @Environment(\.sfkSettingsTheme) private var theme
+    /// Focused presentation overrides for a settings picker.
+    public struct Presentation {
+        public var subtitle: String
+        public var systemImage: String
+        public var tint: Color?
+
+        public init(
+            subtitle: String = "",
+            systemImage: String = "list.bullet",
+            tint: Color? = nil
+        ) {
+            self.subtitle = subtitle
+            self.systemImage = systemImage
+            self.tint = tint
+        }
+    }
+
+    @Environment(\.sfkTheme) private var theme
 
     private let title: String
     private let subtitle: String
@@ -40,7 +39,7 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
         options: [Value],
         label: @escaping (Value) -> String = { String(describing: $0) },
         onChange: ((Value) -> Void)? = nil,
-        presentation: SFKSettingsPickerPresentation = .init()
+        presentation: Presentation = .init()
     ) {
         self.title = title
         self.subtitle = presentation.subtitle
@@ -59,7 +58,7 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
         options: Values,
         label: @escaping (Value) -> String = { String(describing: $0) },
         onChange: ((Value) -> Void)? = nil,
-        presentation: SFKSettingsPickerPresentation = .init()
+        presentation: Presentation = .init()
     ) where Values.Element == Value {
         self.init(
             title,
@@ -89,19 +88,19 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
                 title: title,
                 subtitle: subtitle,
                 icon: systemImage,
-                tint: theme.resolvedTint(tint)
+                tint: tint ?? theme.colors.accent
             ) {
-                HStack(spacing: theme.metrics.trailingSpacing) {
+                HStack(spacing: theme.spacing.inline) {
                     Text(label(selection))
-                        .font(theme.typography.valueFont)
-                        .foregroundStyle(theme.colors.valueColor)
+                        .font(theme.typography.body)
+                        .foregroundStyle(theme.colors.secondaryText)
                         .multilineTextAlignment(.trailing)
                     Image(systemName: "chevron.right")
-                        .font(theme.typography.accessoryFont)
-                        .foregroundStyle(theme.colors.accessoryColor)
+                        .font(theme.typography.caption)
+                        .foregroundStyle(theme.colors.secondaryText)
                 }
             }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
+            .padding(.vertical, theme.spacing.control / 4)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
@@ -114,7 +113,7 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
 /// Use this when a setting owns a custom editor or navigation destination. The
 /// action receives the current value and can present that editor in the host.
 public struct SFKSettingsBindingRow<Value>: View {
-    @Environment(\.sfkSettingsTheme) private var theme
+    @Environment(\.sfkTheme) private var theme
 
     private let title: String
     private let subtitle: String
@@ -128,13 +127,12 @@ public struct SFKSettingsBindingRow<Value>: View {
         _ title: String,
         value: Binding<Value>,
         valueLabel: @escaping (Value) -> String,
-        action: @escaping (Value) -> Void,
-        presentation: SFKSettingsPickerPresentation = .init(systemImage: "slider.horizontal.3")
+        action: @escaping (Value) -> Void
     ) {
         self.title = title
-        self.subtitle = presentation.subtitle
-        self.systemImage = presentation.systemImage
-        self.tint = presentation.tint
+        self.subtitle = ""
+        self.systemImage = "slider.horizontal.3"
+        self.tint = nil
         self._value = value
         self.valueLabel = valueLabel
         self.action = action
@@ -146,19 +144,19 @@ public struct SFKSettingsBindingRow<Value>: View {
                 title: title,
                 subtitle: subtitle,
                 icon: systemImage,
-                tint: theme.resolvedTint(tint)
+                tint: tint ?? theme.colors.accent
             ) {
-                HStack(spacing: theme.metrics.trailingSpacing) {
+                HStack(spacing: theme.spacing.inline) {
                     Text(valueLabel(value))
-                        .font(theme.typography.valueFont)
-                        .foregroundStyle(theme.colors.valueColor)
+                        .font(theme.typography.body)
+                        .foregroundStyle(theme.colors.secondaryText)
                         .multilineTextAlignment(.trailing)
                     Image(systemName: "chevron.right")
-                        .font(theme.typography.accessoryFont)
-                        .foregroundStyle(theme.colors.accessoryColor)
+                        .font(theme.typography.caption)
+                        .foregroundStyle(theme.colors.secondaryText)
                 }
             }
-            .padding(.vertical, theme.metrics.rowVerticalPadding)
+            .padding(.vertical, theme.spacing.control / 4)
             .contentShape(Rectangle())
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())

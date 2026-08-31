@@ -1,248 +1,188 @@
 # Settings UI
 
-Guide for building host-app settings screens with SwapFoundationKit's settings components and the new theme system.
+Build settings pages from a typed SwiftUI result builder. The common path keeps
+state and actions concrete, while native controls remain easy to compose in a
+section.
 
 ## What SFK provides
 
-The settings module is split into:
+- `SFKSettingsScreen` — a themed `Form` shell with a navigation title.
+- `SFKSettingsSection` — a typed section with an optional header and footer.
+- `SFKSettingsRow` — an action/navigation row with title, subtitle, SF Symbol,
+  and optional tint.
+- `SFKSettingsToggle` — a binding-backed switch row.
+- `SFKSettingsPicker` — a binding-backed native menu picker with generic values.
+- `SFKSettingsBindingRow` — a value row that delegates editing to a host action.
+- `SFKTheme` — shared colors, typography, spacing, radii, motion, and feedback.
 
-- `SFKSettingsScreen` for a shared `Form`-based shell with sections, headers, and footers
-- `SFKSettingsTheme` for injected colors, typography, and sizing
-- `SFKSettingsRow` and `SFKSettingsLabel` for static/tappable rows
-- `SFKSettingsTrailing` enum (`.value` / `.custom`) and `SFKSettingsValueText` for typed trailing content
-- `SFKSettingsToggle`, `SFKSettingsToggleRow`, `SFKSettingsDatePickerRow`, `SFKSettingsTimePickerRow`, `SFKSettingsInlineDatePicker`, `SFKSettingsPickerRow`, `SFKSettingsStepperRow`, `SFKSettingsSliderRow`, `SFKSettingsColorPickerRow`, and `SFKSettingsInlineColorPicker` for interactive controls
-- `SFKInformationSectionItem` and `SFKDeveloperSectionItem` for common reusable items
-- `SFKSettingsActionHandler`, `SFKInformationSectionHandler`, and `SFKDeveloperSectionHandler` for standard URL/share/review actions
+Color and item pickers are separate views. Use `SFKColorPickerSheet` with a
+binding, and `SFKItemPickerView<Item>` with a concrete item type and typed
+selection binding.
 
-## Recommended host-app structure
-
-Use `SFKSettingsScreen` when your screen is mostly made of tappable `SettingsItem` rows and a few custom control sections.
+## Minimal screen
 
 ```swift
 import SwiftUI
 import SwapFoundationKit
 
-private enum AppSettingsItem: String, CaseIterable, SettingsItem {
-    case notifications
-    case changelog
-
-    var id: String { rawValue }
-    var icon: String {
-        switch self {
-        case .notifications: return "bell.badge.fill"
-        case .changelog: return "sparkles"
-        }
-    }
-    var title: String {
-        switch self {
-        case .notifications: return "Notifications"
-        case .changelog: return "Release Notes"
-        }
-    }
-    var subtitle: String {
-        switch self {
-        case .notifications: return "Manage notification preferences."
-        case .changelog: return "See what changed in the latest update."
-        }
-    }
-    var tint: Color {
-        switch self {
-        case .notifications: return .blue
-        case .changelog: return .orange
-        }
-    }
-}
-
 struct SettingsView: View {
     @State private var notificationsEnabled = true
-
-    private let theme = SFKSettingsTheme(
-        colors: .init(
-            accent: .mint,
-            itemTintBehavior: .useAccent,
-            toggleOnTint: .mint,
-            sliderTint: .mint
-        )
-    )
+    @State private var unit = "metric"
+    @State private var showAbout = false
 
     var body: some View {
-        SFKSettingsScreen(
-            customSections: [
-                SFKSettingsCustomSection(title: "Quick Controls") {
-                    SFKSettingsToggle(
-                        title: "Push Notifications",
-                        subtitle: "Enable app alerts.",
-                        icon: "bell.badge.fill",
-                        isOn: $notificationsEnabled
-                    )
-                }
-            ],
-            sections: [
-                SFKSettingsSectionConfiguration(
-                    title: "App Information",
-                    items: AppSettingsItem.allCases + SFKInformationSectionItem.allCases
+        SFKSettingsScreen(navigationTitle: "Settings") {
+            SFKSettingsSection("Preferences", footer: "Changes apply immediately.") {
+                SFKSettingsToggle(
+                    "Notifications",
+                    subtitle: "Receive product and release alerts.",
+                    systemImage: "bell.badge.fill",
+                    isOn: $notificationsEnabled
                 )
-            ],
-            theme: theme,
-            onItemTap: handleTap(_:)
-        )
-    }
-
-    private func handleTap(_ item: any SettingsItem) {
-        // Route app-specific and SFK-provided items here.
+                SFKSettingsPicker(
+                    "Units",
+                    selection: $unit,
+                    options: ["metric", "imperial"],
+                    label: { $0.capitalized }
+                )
+                SFKSettingsRow("About", systemImage: "info.circle") {
+                    showAbout = true
+                }
+            }
+        }
     }
 }
 ```
 
-## How section composition works
-
-`SFKSettingsScreen` supports two kinds of sections:
-
-- `sections`: arrays of `SettingsItem` values rendered as `SFKSettingsRow`
-- `customSections`: arbitrary SwiftUI content for controls like toggles, sliders, color pickers, or mixed layouts
-
-This is the current public composition model. If your screen mixes static rows and interactive controls, it is normal to use both.
-
-## Theme injection
-
-`SFKSettingsTheme` is the screen-level configuration point for settings UI.
-
-It contains:
-
-- `colors`
-- `typography`
-- `metrics`
-
-You can inject it in two ways:
-
-1. Pass it to `SFKSettingsScreen(theme: ...)`
-2. Apply `.sfkSettingsTheme(theme)` to any custom settings container if you are composing rows manually
+For a row without a disclosure indicator, use the focused modifier. A dynamic
+value is also a modifier, so the common row initializer stays small:
 
 ```swift
-let theme = SFKSettingsTheme(
-    colors: .init(
-        accent: .teal,
-        itemTintBehavior: .useAccent,
-        toggleOnTint: .teal,
-        sliderTint: .teal
-    ),
-    typography: .init(
-        titleFont: .body.weight(.bold),
-        subtitleFont: .callout
-    ),
-    metrics: .init(
-        iconTileSize: 36,
-        rowVerticalPadding: 8
+SFKSettingsRow(
+    "Version",
+    subtitle: "Current installed build",
+    systemImage: "info.circle.fill",
+    tint: .secondary
+) { }
+.settingsRowChevron(false)
+.settingsRowValue("2.2.0 (1)")
+```
+
+## Native controls and custom editors
+
+Use standard SwiftUI controls directly when a setting does not need a custom
+row presentation. They inherit the screen's accent tint and preserve Dynamic
+Type, disabled state, and accessibility semantics.
+
+```swift
+SFKSettingsSection("Schedule") {
+    DatePicker("Reminder date", selection: $reminderDate, displayedComponents: .date)
+    Stepper("Attempts: \(attempts)", value: $attempts, in: 1...5)
+    Slider(value: $volume, in: 0...1) { Text("Volume") }
+    ColorPicker("Accent color", selection: $accentColor, supportsOpacity: true)
+}
+```
+
+Use `SFKSettingsBindingRow` when the host owns a custom editor or navigation
+destination:
+
+```swift
+SFKSettingsBindingRow(
+    "Account",
+    value: $accountName,
+    valueLabel: { $0 },
+    action: { name in coordinator.presentAccountEditor(currentName: name) }
+)
+```
+
+## Theme customization
+
+Configure the shared theme once at the application boundary. Settings rows
+resolve their colors and typography from this environment; explicit row tints
+remain focused overrides.
+
+```swift
+SettingsView()
+    .sfkTheme(
+        SFKTheme(
+            colors: .init(accent: .mint),
+            spacing: .init(control: 12, section: 24, inline: 8),
+            radii: .init(control: 12, card: 20)
+        )
+    )
+```
+
+The screen applies `theme.colors.accent` to native controls. Use a control's
+own `.tint(...)` modifier only when that one control intentionally differs.
+Prefer semantic text styles (`.body`, `.subheadline`, `.footnote`, and
+`.caption`) over fixed font sizes.
+
+## Advanced typed picker
+
+`SFKSettingsPicker<Value>` keeps the selection and callback generic. A focused
+presentation value can change the icon, subtitle, or tint without introducing
+an erased row model:
+
+```swift
+SFKSettingsPicker(
+    "Priority",
+    selection: $priority,
+    options: Priority.allCases,
+    label: { $0.title },
+    onChange: { priority in analytics.trackPriority(priority) },
+    presentation: .init(
+        subtitle: "Used for sorting reminders.",
+        systemImage: "flag.fill",
+        tint: .orange
     )
 )
 ```
 
-## How color precedence works
-
-Colors are resolved in this order:
-
-1. Explicit row tint when a row initializer receives `tint:`
-2. Theme role color such as `toggleOnTint` or `sliderTint`
-3. Theme `accent`
-
-For `SettingsItem`-driven rows, `SFKSettingsTheme.Colors.ItemTintBehavior` controls whether the screen preserves each item's own `tint` or replaces them with the shared theme accent.
+For a full searchable picker, keep the item type concrete and choose one of
+the three binding shapes:
 
 ```swift
-colors: .init(
-    accent: .mint,
-    itemTintBehavior: .useAccent
+SFKItemPickerView(
+    "Categories",
+    items: Category.allCases,
+    selections: $selectedCategories,
+    label: { $0.title },
+    onSelect: { category in analytics.trackCategory(category) }
 )
 ```
 
-Use `.useAccent` when you want a uniform settings screen.
+`SFKItemPickerConfiguration<Item>` retains typed labels, context/swipe actions,
+toolbar actions, empty state, search, and presentation flags. Items are rendered
+with their `pickableItemId`, so selection remains stable when labels or ordering
+change.
 
-Use `.preserveItemTint` when you want rows like privacy, developer, or destructive actions to keep distinct colors.
-
-## What the theme can customize
-
-### Colors
-
-- `accent`
-- `itemTintBehavior`
-- `toggleOnTint`
-- `sliderTint`
-- `titleColor`
-- `subtitleColor`
-- `valueColor`
-- `accessoryColor`
-- `destructiveTint`
-- `iconBackgroundOpacity`
-- `swatchBorderColor`
-
-### Typography
-
-- `iconFont`
-- `titleFont`
-- `subtitleFont`
-- `valueFont`
-- `accessoryFont`
-
-### Metrics
-
-- `iconTileSize`
-- `iconCornerRadius`
-- `rowSpacing`
-- `labelSpacing`
-- `trailingSpacing`
-- `rowVerticalPadding`
-- `colorSwatchSize`
-
-## Common patterns
-
-### Add trailing values
-
-Use `rowTrailingBuilder` when you want `SFKSettingsScreen` rows to show dynamic values such as version, last sync, or selected units. Return `.value("...")` for theme-styled text, or `.custom(AnyView(...))` for fully custom trailing content.
+## Color picker sheet
 
 ```swift
-rowTrailingBuilder: { item in
-    switch item {
-    case let infoItem as SFKInformationSectionItem where infoItem == .version:
-        return .value("2.2.0 (1)")
-    case let appItem as AppSettingsItem where appItem == .userName:
-        return .value(userName)
-    default:
-        return nil
-    }
-}
+SFKColorPickerSheet(
+    selection: $accentColor,
+    configuration: .init(
+        promptTitle: "Choose an account color",
+        promptMessage: "Pick a preset or open the color wheel.",
+        supportsOpacity: true
+    ),
+    onApply: { color in analytics.trackColorChange(color) }
+)
 ```
 
-`SFKSettingsValueText` (used by `.value`) reads `valueFont` and `valueColor` from the theme, so trailing text stays visually consistent without manual styling.
+The binding is updated only when the user taps Apply. Hosts that need a live
+preview can use `ColorPicker` directly inside an `SFKSettingsSection`.
 
-### Hide chevrons selectively
+## Accessibility and behavior review
 
-Use `rowChevronBuilder` when some rows are informational and should not look navigable.
+- Verify the screen at large and accessibility Dynamic Type sizes.
+- Keep labels meaningful; use `.accessibilityValue` for formatted values.
+- Ensure disabled settings are visibly and semantically disabled.
+- Test light/dark schemes and increased contrast.
+- Respect Reduce Motion for host-owned transitions and animated editors.
+- Verify every binding writes the expected model value and every row action is
+  reachable from the row's full content shape.
 
-```swift
-rowChevronBuilder: { item in
-    if let item = item as? SFKInformationSectionItem, item == .version {
-        return false
-    }
-    return true
-}
-```
-
-### Use the built-in information/developer items
-
-Use `SFKInformationSectionItem.allCases` and `SFKDeveloperSectionItem.allCases` when you want shared app-info and developer sections without redefining those rows in every host app.
-
-## Integration audit
-
-Use the checklist in [Settings Integration Checklist](../reference/settings-integration-checklist.md) after wiring a host app.
-
-## Patterns and best practices
-
-For architectural patterns (section composition, trailing values, debug menus, presentation ownership, item routing), see [Settings Patterns](settings-patterns.md).
-
-## Preview entry points
-
-The fastest files to inspect in Xcode previews are:
-
-- `Sources/SwapFoundationKit/UI/Settings/SFKSettingsScreen.swift`
-- `Sources/SwapFoundationKit/UI/Settings/SFKSettingsPickerRow.swift`
-- `Sources/SwapFoundationKit/UI/Settings/SFKSettingsDatePickerRow.swift`
-- `Sources/SwapFoundationKit/UI/Settings/SFKSettingsColorPickerRow.swift`
+See [Settings Patterns](settings-patterns.md) and the
+[Settings Integration Checklist](../reference/settings-integration-checklist.md)
+for composition and review recipes.

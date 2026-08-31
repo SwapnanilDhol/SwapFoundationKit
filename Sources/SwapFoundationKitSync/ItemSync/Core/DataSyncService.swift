@@ -81,13 +81,6 @@ public enum DataSyncError: LocalizedError {
     case dataEncodingFailed(Error)
     case dataDecodingFailed(Error)
     case syncOperationFailed(String)
-    /// `ItemSyncServiceFactory.create()` was called before
-    /// `SwapFoundationKit.shared.start(with:)`. App extensions cannot run the
-    /// host app's bootstrap — prefer `create(appGroupIdentifier:)` there.
-    case frameworkNotInitialized
-    /// The active configuration was created with `enableItemSync: false`.
-    case itemSyncDisabled
-
     public var errorDescription: String? {
         switch self {
         case .fileStorageFailed(let error):
@@ -100,10 +93,6 @@ public enum DataSyncError: LocalizedError {
             return "Data decoding failed: \(error.localizedDescription)"
         case .syncOperationFailed(let message):
             return "Sync operation failed: \(message)"
-        case .frameworkNotInitialized:
-            return "SwapFoundationKit is not initialized. Call SwapFoundationKit.shared.start(with:) first, or use ItemSyncServiceFactory.create(appGroupIdentifier:)."
-        case .itemSyncDisabled:
-            return "ItemSync is disabled in the current configuration."
         }
     }
 }
