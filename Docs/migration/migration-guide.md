@@ -34,7 +34,10 @@ keys, sync behavior, and backend contracts unchanged.
 - `SFKButton("Continue", role: .primary) { ... }` supports focused modifiers
   such as `.sfkIcon(...)`, `.sfkLoading(...)`, `.sfkFullWidth(...)`, and
   `.sfkTint(...)`.
-- `SFKCloseButton` provides standardized toolbar or glass dismiss controls.
+- `SFKCompactButton` provides lightweight icon-only, text-only, or icon/text
+  controls. Standalone glass controls have a 35-point minimum surface and
+  grow as labels require; use `.toolbar` when the system toolbar owns chrome.
+- `SFKCloseButton` remains a close-specific wrapper with X and Close defaults.
 - `SFKSettingsScreen { SFKSettingsSection { ... } }` is the typed settings
   composition path. Use `SFKSettingsRow`, `SFKSettingsToggle`,
   `SFKSettingsPicker`, and `SFKSettingsBindingRow`; compose native
@@ -114,6 +117,18 @@ reloads.
 SFKButton("Save", role: .primary) { save() }
     .sfkLoading(isSaving)
     .sfkIcon("checkmark")
+
+SFKCompactButton(
+    systemImage: "chevron.left",
+    accessibilityLabel: "Back",
+    chrome: .toolbar
+) {
+    navigateBack()
+}
+
+SFKCompactButton("Edit", systemImage: "pencil") {
+    editItem()
+}
 ```
 
 The shared `SFKTheme.Feedback` policy controls SFK button/chip feedback. Respect

@@ -81,7 +81,7 @@ domains:
 
   - id: buttons
     priority: 2
-    summary: Reusable SFK button components, including standardized close, back, and dismiss patterns.
+    summary: Reusable SFK button components for semantic CTAs plus compact toolbar, overlay, close, back, and dismiss patterns.
     when_to_check:
       - Building primary/secondary actions
       - Adding close buttons to sheets or onboarding
@@ -97,6 +97,8 @@ domains:
       - SFKButton
       - SFKButtonStyle
       - SFKButtonAlignment
+      - SFKCompactButton
+      - SFKCompactButtonChrome
       - SFKCloseButton
       - SFKCloseButtonChrome
       - SFKGlassMaterial
@@ -106,6 +108,7 @@ domains:
       - Docs/migration/migration-guide.md
     examples:
       - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
+      - Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift
       - Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift
     host_app_triggers:
       - primary button
@@ -116,6 +119,8 @@ domains:
       - chevron.left
       - glass close button
       - toolbar close button
+      - compact button
+      - compact glass button
 
   - id: text_inputs
     priority: 2

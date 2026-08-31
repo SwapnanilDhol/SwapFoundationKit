@@ -32,13 +32,14 @@ a published v4 release or approval to change backend enforcement.
 
 | Public top-level types | Before extraction (`55ff7a1`) | Final |
 |---|---:|---:|
-| Default product | 235 | 100 |
-| UI | 92 | 50 |
-| All products | 262 | 223 |
+| Default product | 235 | 103 |
+| UI | 92 | 53 |
+| All products | 262 | 226 |
 
 The original 75/39/157 numerical design targets were **not achieved**. Distinct
-specialized and security contracts are retained; the reviewed no-growth limits
-are 100/50/223. See the [API ledger](v4-api-ledger.md) for the explicit scope
+specialized and security contracts are retained; the reviewed regression limits
+are 103/53/226 after the compact-button addition and baseline reconciliation. See
+the [API ledger](v4-api-ledger.md) for the explicit scope
 revision and retained-capability rationale. Moves and nesting are not claimed as
 equivalent to deleting functionality.
 

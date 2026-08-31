@@ -56,6 +56,15 @@ final class V4ThemeAndControlTests: XCTestCase {
         let destructiveButton: SFKButton = SFKButton("Delete", role: .destructive) { }
             .sfkIcon("trash")
         _ = destructiveButton
+
+        let compactIcon: SFKCompactButton = SFKCompactButton(
+            systemImage: "ellipsis",
+            accessibilityLabel: "More"
+        ) { }
+        let compactText = SFKCompactButton("Edit") { }
+        let compactIconAndText = SFKCompactButton("Edit", systemImage: "pencil") { }
+        let legacyChrome: SFKCloseButtonChrome = .toolbar
+        _ = (compactIcon, compactText, compactIconAndText, legacyChrome)
     }
 
     func testCompactTextFieldAndFocusedAppearanceCompile() {
@@ -144,5 +153,53 @@ final class V4ThemeAndControlTests: XCTestCase {
         fieldHost.loadViewIfNeeded()
         let fieldSize = fieldHost.sizeThatFits(in: CGSize(width: 320, height: 200))
         XCTAssertGreaterThanOrEqual(fieldSize.height, SFKTextFieldAppearance.standard.minimumHeight)
+    }
+
+    @MainActor
+    func testCompactButtonStandaloneSizingAndDynamicTypeGrowth() {
+        let theme = SFKTheme.system.accent(.indigo)
+
+        let icon = SFKCompactButton(
+            systemImage: "ellipsis",
+            accessibilityLabel: "More",
+            chrome: .glass
+        ) { }
+        let iconSize = sizeThatFits(icon.sfkTheme(theme), in: CGSize(width: 200, height: 200))
+        XCTAssertGreaterThanOrEqual(iconSize.width, 35)
+        XCTAssertGreaterThanOrEqual(iconSize.height, 35)
+
+        let shortText = SFKCompactButton("Edit", chrome: .glass) { }
+        let longText = SFKCompactButton(
+            "A longer action title",
+            systemImage: "pencil",
+            chrome: .glass
+        ) { }
+        let shortSize = sizeThatFits(shortText.sfkTheme(theme), in: CGSize(width: 300, height: 100))
+        let longSize = sizeThatFits(longText.sfkTheme(theme), in: CGSize(width: 400, height: 100))
+        XCTAssertGreaterThanOrEqual(shortSize.width, 35)
+        XCTAssertGreaterThanOrEqual(shortSize.height, 35)
+        XCTAssertGreaterThan(longSize.width, shortSize.width)
+        XCTAssertGreaterThanOrEqual(longSize.height, 35)
+
+        let largeText = SFKCompactButton(
+            "A longer action title",
+            systemImage: "pencil",
+            chrome: .glass
+        ) { }
+        .sfkTheme(theme)
+        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+        let largeSize = sizeThatFits(largeText, in: CGSize(width: 600, height: 200))
+        XCTAssertGreaterThan(largeSize.width, shortSize.width)
+        XCTAssertGreaterThanOrEqual(largeSize.height, longSize.height)
+    }
+
+    @MainActor
+    private func sizeThatFits<Content: View>(
+        _ view: Content,
+        in proposal: CGSize
+    ) -> CGSize {
+        let host = UIHostingController(rootView: view)
+        host.loadViewIfNeeded()
+        return host.sizeThatFits(in: proposal)
     }
 }

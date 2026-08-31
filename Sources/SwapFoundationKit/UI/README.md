@@ -29,8 +29,10 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 | `SFKButton` | View | Configurable button with loading states, haptics, semantic styles, and platform control sizing |
 | `SFKButtonStyle` | enum | `primary`, `secondary`, `toolbar`, or `destructive` |
 | `SFKButtonAlignment` | enum | Semantic `leading`, `center`, or `trailing` content alignment |
-| `SFKCloseButton` | View | Standardized icon-only toolbar navigation or labeled close/dismiss button (`toolbar` or `glass` chrome) |
-| `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
+| `SFKCompactButton` | View | Lightweight icon-only, text-only, or icon/text action for toolbars and standalone overlay chrome |
+| `SFKCompactButtonChrome` | enum | `toolbar` (system toolbar owns sizing), `glass` (self-contained 35-point minimum circle or growing capsule) |
+| `SFKCloseButton` | View | Close-specific compatibility wrapper around `SFKCompactButton`, with X and Close defaults |
+| `SFKCloseButtonChrome` | typealias | Source-compatible alias for `SFKCompactButtonChrome` |
 | `SFKTheme.Feedback.Style` | enum | Shared none/light/medium/heavy feedback policy for buttons and chips |
 
 ### Text Fields
@@ -177,28 +179,49 @@ SFKChipFlowLayout(spacing: 8) {
 }
 
 // Close / dismiss
-// In a toolbar, the icon-only label stays native so iOS supplies one correctly sized control.
+// The close wrapper keeps its X and Close defaults for existing call sites.
 SFKCloseButton {
     dismiss()
 }
 
-// Back navigation with the same standardized toolbar treatment
-SFKCloseButton(systemImage: "chevron.left", accessibilityLabel: "Back") {
+// Generic icon-only controls require an explicit symbol and accessible name.
+SFKCompactButton(
+    systemImage: "chevron.left",
+    accessibilityLabel: "Back",
+    chrome: .toolbar
+) {
     navigateBack()
 }
 
-// Over full-bleed content (previews, camera chrome)
-SFKCloseButton(chrome: .glass) {
+// Standalone controls default to self-contained glass chrome.
+SFKCompactButton(systemImage: "ellipsis", accessibilityLabel: "More") {
+    showMoreActions()
+}
+
+// Over full-bleed content (previews, camera chrome), the surface is at least 35x35.
+SFKCompactButton(systemImage: "camera", accessibilityLabel: "Camera") {
     dismiss()
 }
 
-// Labeled glass capsule
+// Text-only and icon/text labels grow into capsules with Dynamic Type.
+SFKCompactButton("Edit", chrome: .glass) {
+    editItem()
+}
+SFKCompactButton("Edit", systemImage: "pencil", chrome: .glass) {
+    editItem()
+}
+
+// Labeled close convenience remains available.
 SFKCloseButton("Close", chrome: .glass) {
     dismiss()
 }
 
-// Over a colored swatch — match icon to surface contrast
-SFKCloseButton(chrome: .glass, foreground: swatch.contrastingColor) {
+// Over a colored swatch — match icon to surface contrast.
+SFKCompactButton(
+    systemImage: "xmark",
+    accessibilityLabel: "Close",
+    foreground: swatch.contrastingColor
+) {
     dismiss()
 }
 
@@ -283,7 +306,7 @@ AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 
 ## Source Files
 
-- `Buttons/` — SFKButton, SFKCloseButton, and semantic styles
+- `Buttons/` — SFKButton, SFKCompactButton, SFKCloseButton, and semantic styles
 - `TextField/` — SFKTextField, validation states, focus synchronization, and appearance tokens
 - `ColorPicker/` — SFKColorPickerSheet and its binding-backed Configuration
 - `Settings/` — typed screen/section/row/toggle/picker views

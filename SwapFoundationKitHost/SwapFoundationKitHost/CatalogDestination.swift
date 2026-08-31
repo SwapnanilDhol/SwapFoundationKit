@@ -108,7 +108,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
 
     var summary: String {
         switch self {
-        case .buttons: "Primary actions, loading states, close controls, and button chrome."
+        case .buttons: "Primary actions, compact toolbar and overlay controls, and close compatibility."
         case .textFields: "Consistent text, secure, validation, focus, and accessory states."
         case .settings: "Settings shells, rows, toggles, pickers, and theme customization."
         case .colorPicker: "Preset and custom color selection with explicit apply behavior."
@@ -187,6 +187,8 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .buttons: [
             "SFKButton",
             "SFKButtonStyle",
+            "SFKCompactButton",
+            "SFKCompactButtonChrome",
             "SFKCloseButton",
             "SFKCloseButtonChrome"
         ]

@@ -76,7 +76,12 @@ struct ButtonExamplesView: View {
     private var allVariations: some View {
         CatalogExampleGroup(
             title: "All Variations",
-            apiNames: ["SFKButton", "SFKCloseButton"]
+            apiNames: [
+                "SFKButton",
+                "SFKCompactButton",
+                "SFKCompactButtonChrome",
+                "SFKCloseButton"
+            ]
         ) {
             VStack(spacing: 12) {
                 SFKButton("Primary", role: .primary) {}
@@ -88,32 +93,51 @@ struct ButtonExamplesView: View {
 
                 HStack(spacing: 20) {
                     VStack(spacing: 6) {
-                        SFKButton("", role: .toolbar) {}
-                            .sfkIcon("ellipsis")
-                            .accessibilityLabel("Toolbar button")
+                        SFKCompactButton(
+                            systemImage: "ellipsis",
+                            accessibilityLabel: "More",
+                            chrome: .toolbar
+                        ) {}
                         Text("Toolbar")
                     }
 
                     VStack(spacing: 6) {
-                        SFKCloseButton {}
-                        Text("Toolbar X")
+                        SFKCompactButton(
+                            systemImage: "ellipsis",
+                            accessibilityLabel: "More"
+                        ) {}
+                        Text("Glass icon")
                     }
 
                     VStack(spacing: 6) {
-                        SFKCloseButton(chrome: .glass) {}
-                        Text("Glass X")
+                        SFKCompactButton("Edit") {}
+                        Text("Text only")
                     }
 
                     VStack(spacing: 6) {
-                        SFKCloseButton("Close", chrome: .glass) {}
-                        Text("Labeled glass")
+                        SFKCompactButton("Edit", systemImage: "pencil") {}
+                        Text("Icon + text")
                     }
                 }
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
 
-                Text("The icon-only X is SFKCloseButton's close action. Use toolbar chrome when it lives in a navigation bar.")
+                HStack(spacing: 20) {
+                    VStack(spacing: 6) {
+                        SFKCloseButton {}
+                        Text("Close wrapper")
+                    }
+
+                    VStack(spacing: 6) {
+                        SFKCloseButton("Close", chrome: .glass) {}
+                        Text("Close capsule")
+                    }
+                }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+                Text("Use SFKCompactButton for lightweight toolbar or overlay actions. SFKCloseButton keeps the X and Close defaults for existing call sites.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

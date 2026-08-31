@@ -12,7 +12,7 @@
 # Per-target totals (declarations = all public, located symbols;
 # types = top-level class/struct/enum/protocol/typealias only):
 #   target                             declarations    types
-#   SwapFoundationKit                          1296      100
+#   SwapFoundationKit                          1316      103
 #   SwapFoundationKitNetworking                 135       16
 #   SwapFoundationKitAuthentication             201       34
 #   SwapFoundationKitSync                       110       18
@@ -27,28 +27,29 @@
 #
 # SwapFoundationKit — per-domain breakdown (public declarations / top-level public types):
 #   domain               declarations    types
-#   UI                            692       50
+#   UI                            710       53
 #   Services                      209       33
 #   Extensions                    208        3
 #   Protocols                      58        4
-#   Compatibility                  55        2
+#   Compatibility                  57        2
 #   Core                           38        2
 #   Utilities                      36        6
 #
 # SwapFoundationKit — declarations by kind:
-#   method                  485
-#   property                403
-#   enum.case               105
-#   init                     90
-#   struct                   57
+#   method                  496
+#   property                404
+#   enum.case               108
+#   init                     92
+#   struct                   58
 #   type.method              49
+#   enum                     34
 #   type.property            34
-#   enum                     33
 #   class                    20
 #   protocol                 14
 #   func.op                   3
 #   associatedtype            2
 #   subscript                 1
+#   typealias                 1
 #
 ## SYMBOLS
 # target | kind | file:line | symbol
@@ -64,6 +65,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleN
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKChip.compatibleNavigationSubtitle(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKCloseButton.compatibleNavigationSubtitle(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKColorPickerSheet.compatibleNavigationSubtitle(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKCompactButton.compatibleNavigationSubtitle(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKEmptyStateView.compatibleNavigationSubtitle(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKItemPickerView.compatibleNavigationSubtitle(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKPhotoPicker.compatibleNavigationSubtitle(_:)
@@ -91,6 +93,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleT
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKChip.compatibleTabBarMinimizeBehavior()
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKCloseButton.compatibleTabBarMinimizeBehavior()
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKColorPickerSheet.compatibleTabBarMinimizeBehavior()
+SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKCompactButton.compatibleTabBarMinimizeBehavior()
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKEmptyStateView.compatibleTabBarMinimizeBehavior()
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKItemPickerView.compatibleTabBarMinimizeBehavior()
 SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKPhotoPicker.compatibleTabBarMinimizeBehavior()
@@ -669,44 +672,54 @@ SwapFoundationKit | class | Sources/SwapFoundationKit/UI/BarcodeScanner/BarcodeS
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/BarcodeScanner/BarcodeScannerView.swift:75 | BarcodeScannerView.Coordinator.dataScanner(_:didTapOn:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/BarcodeScanner/BarcodeScannerView.swift:79 | BarcodeScannerView.Coordinator.dataScanner(_:didAdd:allItems:)
 SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:15 | SFKButton
-SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:32 | SFKButton.init(_:role:action:)
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:48 | SFKButton.body
-SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:205 | SFKButton.sfkLoading(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:212 | SFKButton.sfkIcon(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:219 | SFKButton.sfkSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:226 | SFKButton.sfkFullWidth(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:233 | SFKButton.sfkTint(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:240 | SFKButton.sfkControlSize(_:)
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:33 | SFKButton.init(_:role:action:)
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:50 | SFKButton.body
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:221 | SFKButton.sfkLoading(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:228 | SFKButton.sfkIcon(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:235 | SFKButton.sfkSubtitle(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:242 | SFKButton.sfkFullWidth(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:249 | SFKButton.sfkTint(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:256 | SFKButton.sfkControlSize(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift:263 | SFKButton.sfkAlignment(_:)
 SwapFoundationKit | enum | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:22 | SFKButtonStyle
 SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:23 | SFKButtonStyle.primary
 SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:24 | SFKButtonStyle.secondary
 SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:25 | SFKButtonStyle.toolbar
 SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:27 | SFKButtonStyle.destructive
-SwapFoundationKit | enum | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:15 | SFKCloseButtonChrome
-SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:18 | SFKCloseButtonChrome.toolbar
-SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:22 | SFKCloseButtonChrome.glass
-SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:35 | SFKCloseButton
-SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:44 | SFKCloseButton.init(systemImage:accessibilityLabel:chrome:foreground:action:)
-SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:64 | SFKCloseButton.init(_:chrome:foreground:action:)
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:78 | SFKCloseButton.body
+SwapFoundationKit | enum | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:65 | SFKButtonAlignment
+SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:66 | SFKButtonAlignment.leading
+SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:67 | SFKButtonAlignment.center
+SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKButtonStyle.swift:68 | SFKButtonAlignment.trailing
+SwapFoundationKit | typealias | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:18 | SFKCloseButtonChrome
+SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:25 | SFKCloseButton
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:37 | SFKCloseButton.init(systemImage:accessibilityLabel:chrome:foreground:action:)
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:53 | SFKCloseButton.init(_:chrome:foreground:action:)
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift:67 | SFKCloseButton.body
+SwapFoundationKit | enum | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:15 | SFKCompactButtonChrome
+SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:19 | SFKCompactButtonChrome.toolbar
+SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:25 | SFKCompactButtonChrome.glass
+SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:34 | SFKCompactButton
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:48 | SFKCompactButton.init(systemImage:accessibilityLabel:chrome:foreground:action:)
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:64 | SFKCompactButton.init(_:systemImage:chrome:foreground:action:)
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift:79 | SFKCompactButton.body
 SwapFoundationKit | enum | Sources/SwapFoundationKit/UI/Chips/SFKChip.swift:15 | SFKChipStyle
 SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Chips/SFKChip.swift:17 | SFKChipStyle.primary
 SwapFoundationKit | enum.case | Sources/SwapFoundationKit/UI/Chips/SFKChip.swift:19 | SFKChipStyle.secondary
 SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/Chips/SFKChip.swift:39 | SFKChip
 SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Chips/SFKChip.swift:53 | SFKChip.init(_:leadingIconName:tintColor:controlSize:style:action:)
 SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Chips/SFKChip.swift:69 | SFKChip.body
-SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:19 | SFKColorPickerSheet
-SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:21 | SFKColorPickerSheet.Configuration
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:22 | SFKColorPickerSheet.Configuration.pageTitle
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:23 | SFKColorPickerSheet.Configuration.promptTitle
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:24 | SFKColorPickerSheet.Configuration.promptMessage
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:25 | SFKColorPickerSheet.Configuration.applyButtonTitle
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:26 | SFKColorPickerSheet.Configuration.presetColors
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:27 | SFKColorPickerSheet.Configuration.supportsOpacity
-SwapFoundationKit | init | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:29 | SFKColorPickerSheet.Configuration.init(pageTitle:promptTitle:promptMessage:applyButtonTitle:presetColors:supportsOpacity:)
-SwapFoundationKit | type.property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:46 | SFKColorPickerSheet.defaultPresetColors
-SwapFoundationKit | init | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:62 | SFKColorPickerSheet.init(selection:configuration:onApply:)
-SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:80 | SFKColorPickerSheet.body
+SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:21 | SFKColorPickerSheet
+SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:23 | SFKColorPickerSheet.Configuration
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:24 | SFKColorPickerSheet.Configuration.pageTitle
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:25 | SFKColorPickerSheet.Configuration.promptTitle
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:26 | SFKColorPickerSheet.Configuration.promptMessage
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:27 | SFKColorPickerSheet.Configuration.applyButtonTitle
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:28 | SFKColorPickerSheet.Configuration.presetColors
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:29 | SFKColorPickerSheet.Configuration.supportsOpacity
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:31 | SFKColorPickerSheet.Configuration.init(pageTitle:promptTitle:promptMessage:applyButtonTitle:presetColors:supportsOpacity:)
+SwapFoundationKit | type.property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:48 | SFKColorPickerSheet.defaultPresetColors
+SwapFoundationKit | init | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:64 | SFKColorPickerSheet.init(selection:configuration:onApply:)
+SwapFoundationKit | property | Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift:82 | SFKColorPickerSheet.body
 SwapFoundationKit | struct | Sources/SwapFoundationKit/UI/Effects/SFKAuraGlowBackground.swift:30 | SFKAuraGlowBackground
 SwapFoundationKit | init | Sources/SwapFoundationKit/UI/Effects/SFKAuraGlowBackground.swift:41 | SFKAuraGlowBackground.init(color:content:)
 SwapFoundationKit | property | Sources/SwapFoundationKit/UI/Effects/SFKAuraGlowBackground.swift:49 | SFKAuraGlowBackground.body
@@ -859,6 +872,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypograp
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKChip.sfkFlowTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKCloseButton.sfkFlowTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKColorPickerSheet.sfkFlowTitleStyle()
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKCompactButton.sfkFlowTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKEmptyStateView.sfkFlowTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKItemPickerView.sfkFlowTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:36 | SFKPhotoPicker.sfkFlowTitleStyle()
@@ -883,6 +897,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypograp
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKChip.sfkFlowSubtitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKCloseButton.sfkFlowSubtitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKColorPickerSheet.sfkFlowSubtitleStyle()
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKCompactButton.sfkFlowSubtitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKEmptyStateView.sfkFlowSubtitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKItemPickerView.sfkFlowSubtitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:44 | SFKPhotoPicker.sfkFlowSubtitleStyle()
@@ -907,6 +922,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypograp
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKChip.sfkFlowCardTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKCloseButton.sfkFlowCardTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKColorPickerSheet.sfkFlowCardTitleStyle()
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKCompactButton.sfkFlowCardTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKEmptyStateView.sfkFlowCardTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKItemPickerView.sfkFlowCardTitleStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:50 | SFKPhotoPicker.sfkFlowCardTitleStyle()
@@ -931,6 +947,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypograp
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKChip.sfkFlowCardBodyStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKCloseButton.sfkFlowCardBodyStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKColorPickerSheet.sfkFlowCardBodyStyle()
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKCompactButton.sfkFlowCardBodyStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKEmptyStateView.sfkFlowCardBodyStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKItemPickerView.sfkFlowCardBodyStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:56 | SFKPhotoPicker.sfkFlowCardBodyStyle()
@@ -955,6 +972,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypograp
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKChip.sfkFlowChipStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKCloseButton.sfkFlowChipStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKColorPickerSheet.sfkFlowChipStyle()
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKCompactButton.sfkFlowChipStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKEmptyStateView.sfkFlowChipStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKItemPickerView.sfkFlowChipStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:62 | SFKPhotoPicker.sfkFlowChipStyle()
@@ -979,6 +997,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypograp
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKChip.sfkFlowQuestionStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKCloseButton.sfkFlowQuestionStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKColorPickerSheet.sfkFlowQuestionStyle()
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKCompactButton.sfkFlowQuestionStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKEmptyStateView.sfkFlowQuestionStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKItemPickerView.sfkFlowQuestionStyle()
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/Onboarding/SFKTypography.swift:68 | SFKPhotoPicker.sfkFlowQuestionStyle()
@@ -1085,6 +1104,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | S
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKChip.sfkTheme(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKCloseButton.sfkTheme(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKColorPickerSheet.sfkTheme(_:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKCompactButton.sfkTheme(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKEmptyStateView.sfkTheme(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKItemPickerView.sfkTheme(_:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SFKTheme.swift:166 | SFKPhotoPicker.sfkTheme(_:)
@@ -1143,6 +1163,7 @@ SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/Glas
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKChip.sfkGlass(material:tint:isInteractive:shape:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKCloseButton.sfkGlass(material:tint:isInteractive:shape:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKColorPickerSheet.sfkGlass(material:tint:isInteractive:shape:)
+SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKCompactButton.sfkGlass(material:tint:isInteractive:shape:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKEmptyStateView.sfkGlass(material:tint:isInteractive:shape:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKItemPickerView.sfkGlass(material:tint:isInteractive:shape:)
 SwapFoundationKit | method | Sources/SwapFoundationKit/UI/SwiftUIExtensions/GlassButtonModifier.swift:78 | SFKPhotoPicker.sfkGlass(material:tint:isInteractive:shape:)

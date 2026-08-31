@@ -6,8 +6,9 @@ workflows were removed by maintainer request; the original existing
 `.github/workflows/ci.yml` remains unchanged from `origin/main` and retains its
 host-app build. The integrator owns the catalog data and reviewed final budgets.
 
-Implemented in this checkout. Final budget review measured 100 default, 50 UI,
-and 223 all-product types. Those no-growth limits are enforced; original
+Implemented in this checkout. The 2026-09-01 budget review measured 103 default,
+53 UI, and 226 all-product types after the reviewed compact-button addition and
+baseline reconciliation. Those regression limits are enforced; original
 75/39/157 design targets remain recorded as unmet in the JSON and API ledger.
 The inventory comparison and static acceptance checks are run locally/manually, not
 as GitHub Actions jobs.

@@ -2,7 +2,7 @@
 
 Status: breaking package cleanup implemented. See [verification status](v4-implementation-status.md).
 
-## Final measured surface — 2026-08-31
+## Final measured surface — 2026-09-01
 
 The unchanged symbol-graph extractor built all **12** first-party products using
 Xcode 26.6, arm64 iOS Simulator. The Legacy product is removed. This is a real
@@ -10,7 +10,7 @@ compiler inventory, not a source grep or a count that hides retained APIs.
 
 | Product | Located public declarations | Top-level public types |
 |---|---:|---:|
-| SwapFoundationKit | 1,296 | 100 |
+| SwapFoundationKit | 1,316 | 103 |
 | Networking | 135 | 16 |
 | Authentication | 201 | 34 |
 | Sync | 110 | 18 |
@@ -22,27 +22,30 @@ compiler inventory, not a source grep or a count that hides retained APIs.
 | GoogleMobileAds | 48 | 10 |
 | Pulse | 27 | 6 |
 | Toast | 18 | 4 |
-| **Total** | **2,112** | **223** |
+| **Total** | **2,132** | **226** |
 
 | Measure | Pre-extraction `55ff7a1` | Compatibility checkpoint `148deb6` | Final | Original design target |
 |---|---:|---:|---:|---:|
-| Default public types | 235 | 152 | 100 | 60–75 |
-| UI public types | 92 | 102 | 50 | <40 |
-| All-product public types | 262 | 286 | 223 | ≤157 |
+| Default public types | 235 | 152 | 103 | 60–75 |
+| UI public types | 92 | 102 | 53 | <40 |
+| All-product public types | 262 | 286 | 226 | ≤157 |
 | Default third-party dependency edges | 0 | 0 | 0 | 0 |
 
-Compared with `55ff7a1`, the default has **57.4% fewer** types, UI has **45.7%
-fewer**, and the complete package has **14.9% fewer**. Compared with the coexistence
-checkpoint, cleanup removes 63 top-level types across products. Default-product
+Compared with `55ff7a1`, the default has **56.2% fewer** types, UI has **42.4%
+fewer**, and the complete package has **13.7% fewer**. Compared with the coexistence
+checkpoint, cleanup removes 60 top-level types across products. Default-product
 reduction includes relocation; it must not be presented as all-package deletion.
 
 ## Reviewed retention and budget decision
 
-The original 75/39/157 ceilings were run against the final graph and failed with
-100/50/223. **Those design targets are not achieved.** The no-growth regression
-budgets now enforce the measured 100/50/223, with the original targets retained
-separately in `v4-api-budgets.json`. This is an explicit scope revision, not a
-claim that the original acceptance numbers passed.
+The original 75/39/157 ceilings were run against the graph and failed. **Those
+design targets are not achieved.** The regression budgets now enforce the measured
+103/53/226, with the original targets retained separately in
+`v4-api-budgets.json`. The increase from the prior 100/50/223 checkpoint is
+reviewed: `SFKCompactButton` and `SFKCompactButtonChrome` add the general compact
+control requested by the maintainer, while the regenerated baseline also captures
+the already-public `SFKButtonAlignment` that the prior artifact omitted. This is
+an explicit scope revision, not a claim that the original acceptance numbers passed.
 
 - The default retains reusable services/utilities, typed settings/pickers,
   barcode/photo presentation, UIKit interoperability, and forward-compatible

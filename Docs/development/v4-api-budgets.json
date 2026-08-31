@@ -1,8 +1,8 @@
 {
   "limits": {
-    "default_top_level_types": 100,
-    "ui_top_level_types": 50,
-    "all_product_top_level_types": 223,
+    "default_top_level_types": 103,
+    "ui_top_level_types": 53,
+    "all_product_top_level_types": 226,
     "all_initializer_max_labels": 10
   },
   "original_design_targets_not_achieved": {
@@ -10,7 +10,7 @@
     "ui_top_level_types": 39,
     "all_product_top_level_types": 157
   },
-  "review_note": "No-growth limits reflect the fresh 12-product symbol graph on 2026-08-31. Original numerical design targets were not achieved. Distinct security, service, specialized UI, and customization APIs are retained; see v4-api-ledger.md for the reviewed scope and actual reductions.",
+  "review_note": "Limits reflect the fresh 12-product symbol graph on 2026-09-01. The reviewed increase from 100/50/223 to 103/53/226 includes two new compact-button types plus SFKButtonAlignment, which was already public but absent from the stale prior baseline. Original numerical design targets were not achieved; see v4-api-ledger.md for scope and actual reductions.",
   "common_constructor_prefixes": {
     "SFKButton": 6,
     "SFKTextField": 6,
