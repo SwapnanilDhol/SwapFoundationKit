@@ -48,3 +48,38 @@ public enum SFKButtonStyle: Sendable, Equatable {
         }
     }
 }
+
+/// Semantic content alignment for an `SFKButton`.
+///
+/// Alignment affects the content of full-width buttons. For `trailing`, an
+/// optional icon moves after the title and subtitle to keep it on the trailing
+/// edge; `leading` and `center` retain the conventional leading icon order.
+///
+/// ## Usage
+///
+/// ```swift
+/// SFKButton("Continue", role: .primary) { submit() }
+///     .sfkIcon("arrow.right")
+///     .sfkAlignment(.trailing)
+/// ```
+public enum SFKButtonAlignment: Sendable, Equatable {
+    case leading
+    case center
+    case trailing
+
+    var horizontalAlignment: HorizontalAlignment {
+        switch self {
+        case .leading: .leading
+        case .center: .center
+        case .trailing: .trailing
+        }
+    }
+
+    var frameAlignment: Alignment {
+        switch self {
+        case .leading: .leading
+        case .center: .center
+        case .trailing: .trailing
+        }
+    }
+}

@@ -886,6 +886,7 @@ capabilities:
       replacement:
         - SFKButton
         - SFKButtonStyle
+        - SFKButtonAlignment
         - SFKCloseButton
         - SFKTextField
         - SFKTextFieldStatus
@@ -902,6 +903,7 @@ capabilities:
     replace_with:
       - SFKButton
       - SFKButtonStyle
+      - SFKButtonAlignment
       - SFKCloseButton
       - SFKTextField
       - SFKTextFieldStatus
@@ -916,6 +918,7 @@ capabilities:
     public_symbols:
       - SFKButton
       - SFKButtonStyle
+      - SFKButtonAlignment
       - SFKCloseButton
       - SFKTextField
       - SFKTextFieldStatus

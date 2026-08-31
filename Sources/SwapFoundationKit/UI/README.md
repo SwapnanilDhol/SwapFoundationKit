@@ -28,6 +28,7 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 |------|------|-------------|
 | `SFKButton` | View | Configurable button with loading states, haptics, semantic styles, and platform control sizing |
 | `SFKButtonStyle` | enum | `primary`, `secondary`, `toolbar`, or `destructive` |
+| `SFKButtonAlignment` | enum | Semantic `leading`, `center`, or `trailing` content alignment |
 | `SFKCloseButton` | View | Standardized icon-only toolbar navigation or labeled close/dismiss button (`toolbar` or `glass` chrome) |
 | `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKTheme.Feedback.Style` | enum | Shared none/light/medium/heavy feedback policy for buttons and chips |
@@ -119,6 +120,7 @@ SFKButton("Continue", role: .primary) {
 }
 .sfkIcon("arrow.right")
 .sfkLoading(isSaving)
+.sfkAlignment(.leading)
 
 // Secondary action
 SFKButton("Filters", role: .secondary) {
@@ -137,6 +139,13 @@ SFKButton("Edit", role: .secondary) {
     editItem()
 }
 .sfkFullWidth(false)
+
+// Trailing content — an optional icon moves after the text
+SFKButton("Continue", role: .primary) {
+    nextStep()
+}
+.sfkIcon("arrow.right")
+.sfkAlignment(.trailing)
 
 // Semantic text input with inline validation
 SFKTextField(
@@ -256,6 +265,10 @@ Text("Hello")
 // Alerts
 AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 ```
+
+> Presentation guidance: present `SFKColorPickerSheet` with a medium detent by
+> default (`.presentationDetents([.medium])`). Choose a larger or full-height
+> detent only when the content or accessibility requirements genuinely need it.
 
 ### UIKit Extensions
 | File | Description |

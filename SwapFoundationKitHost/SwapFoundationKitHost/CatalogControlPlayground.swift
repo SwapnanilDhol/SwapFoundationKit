@@ -14,17 +14,20 @@ import SwiftUI
 struct CatalogControlPlayground<Preview: View, Configuration: View>: View {
     let title: String
     @Binding var isInspectorPresented: Bool
+    let inspectorToolbarPlacement: ToolbarItemPlacement
     private let preview: () -> Preview
     private let configuration: () -> Configuration
 
     init(
         title: String,
         isInspectorPresented: Binding<Bool>,
+        inspectorToolbarPlacement: ToolbarItemPlacement = .topBarTrailing,
         @ViewBuilder preview: @escaping () -> Preview,
         @ViewBuilder configuration: @escaping () -> Configuration
     ) {
         self.title = title
         _isInspectorPresented = isInspectorPresented
+        self.inspectorToolbarPlacement = inspectorToolbarPlacement
         self.preview = preview
         self.configuration = configuration
     }
@@ -37,7 +40,7 @@ struct CatalogControlPlayground<Preview: View, Configuration: View>: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(title)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: inspectorToolbarPlacement) {
                 Button {
                     isInspectorPresented.toggle()
                 } label: {

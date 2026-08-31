@@ -96,6 +96,7 @@ domains:
     public_api:
       - SFKButton
       - SFKButtonStyle
+      - SFKButtonAlignment
       - SFKCloseButton
       - SFKCloseButtonChrome
       - SFKGlassMaterial

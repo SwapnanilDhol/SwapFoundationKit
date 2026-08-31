@@ -25,6 +25,7 @@ public struct SFKButton: View {
     private var fullWidth: Bool
     private var tintOverride: Color?
     private var controlSize: ControlSize
+    private var alignment: SFKButtonAlignment
     private let role: SFKButtonStyle
     private let action: () -> Void
 
@@ -42,6 +43,7 @@ public struct SFKButton: View {
         self.fullWidth = true
         self.tintOverride = nil
         self.controlSize = .regular
+        self.alignment = .center
         self.action = action
     }
 
@@ -56,7 +58,7 @@ public struct SFKButton: View {
                 .padding(.vertical, isToolbarButton ? 0 : resolvedVerticalPadding)
                 .frame(
                     maxWidth: shouldUseFullWidth ? .infinity : nil,
-                    alignment: .center
+                    alignment: alignment.frameAlignment
                 )
                 .foregroundStyle(resolvedTitleColor)
                 .contentShape(Rectangle())
@@ -77,24 +79,38 @@ public struct SFKButton: View {
                 .tint(resolvedTitleColor)
         } else {
             HStack(spacing: resolvedSpacing) {
-                if let leadingIconName, !leadingIconName.isEmpty {
-                    Image(systemName: leadingIconName)
-                        .font(resolvedIconFont)
+                if alignment == .trailing {
+                    textContent
+                    iconContent
+                } else {
+                    iconContent
+                    textContent
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var iconContent: some View {
+        if let leadingIconName, !leadingIconName.isEmpty {
+            Image(systemName: leadingIconName)
+                .font(resolvedIconFont)
+        }
+    }
+
+    @ViewBuilder
+    private var textContent: some View {
+        if hasTextContent {
+            VStack(alignment: alignment.horizontalAlignment, spacing: 2) {
+                if !title.isEmpty {
+                    Text(title)
+                        .font(resolvedTitleFont)
                 }
 
-                if hasTextContent {
-                    VStack(alignment: .center, spacing: 2) {
-                        if !title.isEmpty {
-                            Text(title)
-                                .font(resolvedTitleFont)
-                        }
-
-                        if let subtitle, !subtitle.isEmpty {
-                            Text(subtitle)
-                                .font(resolvedSubtitleFont)
-                                .foregroundStyle(resolvedSubtitleColor)
-                        }
-                    }
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(resolvedSubtitleFont)
+                        .foregroundStyle(resolvedSubtitleColor)
                 }
             }
         }
@@ -242,6 +258,13 @@ public extension SFKButton {
         copy.controlSize = controlSize
         return copy
     }
+
+    /// Returns a copy with semantic content alignment.
+    func sfkAlignment(_ alignment: SFKButtonAlignment) -> Self {
+        var copy = self
+        copy.alignment = alignment
+        return copy
+    }
 }
 
 @available(iOS 16, *)
@@ -254,9 +277,13 @@ private extension SFKButton {
                 content
                     .buttonStyle(.glassProminent)
                     .tint(resolvedColor)
-            case .secondary, .destructive:
+            case .secondary:
                 content
                     .buttonStyle(.glass)
+                    .tint(resolvedColor)
+            case .destructive:
+                content
+                    .buttonStyle(.glassProminent)
                     .tint(resolvedColor)
             case .toolbar:
                 content
@@ -267,9 +294,13 @@ private extension SFKButton {
                 content
                     .buttonStyle(.borderedProminent)
                     .tint(resolvedColor)
-            case .secondary, .destructive:
+            case .secondary:
                 content
                     .buttonStyle(.bordered)
+                    .tint(resolvedColor)
+            case .destructive:
+                content
+                    .buttonStyle(.borderedProminent)
                     .tint(resolvedColor)
             case .toolbar:
                 content

@@ -29,7 +29,9 @@ struct ContentView: View {
                     if !destinations.isEmpty {
                         Section(section.rawValue) {
                             ForEach(destinations) { destination in
-                                NavigationLink(value: destination) {
+                                NavigationLink {
+                                    CatalogDestinationView(destination: destination)
+                                } label: {
                                     CatalogRow(destination: destination)
                                 }
                             }
@@ -40,9 +42,6 @@ struct ContentView: View {
             .listStyle(.insetGrouped)
             .navigationTitle("SFK Catalog")
             .searchable(text: $searchText, prompt: "Search components and APIs")
-            .navigationDestination(for: CatalogDestination.self) { destination in
-                CatalogDestinationView(destination: destination)
-            }
             .overlay {
                 if filteredDestinations.isEmpty {
                     ContentUnavailableView.search(text: searchText)

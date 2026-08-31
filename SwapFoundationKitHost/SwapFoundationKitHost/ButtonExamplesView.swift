@@ -51,11 +51,13 @@ struct ButtonExamplesView: View {
     var body: some View {
         CatalogControlPlayground(
             title: "Buttons",
-            isInspectorPresented: $isInspectorPresented
+            isInspectorPresented: $isInspectorPresented,
+            inspectorToolbarPlacement: .topBarLeading
         ) {
             VStack(spacing: 28) {
                 livePreview
                 allVariations
+                closeButtonNavigationBar
             }
         } configuration: {
             Form {
@@ -85,17 +87,49 @@ struct ButtonExamplesView: View {
                     .sfkIcon("trash")
 
                 HStack(spacing: 20) {
-                    SFKButton("", role: .toolbar) {}
-                        .sfkIcon("ellipsis")
-                        .accessibilityLabel("Toolbar button")
-                    SFKCloseButton {}
-                    SFKCloseButton(chrome: .glass) {}
-                    SFKCloseButton("Close", chrome: .glass) {}
+                    VStack(spacing: 6) {
+                        SFKButton("", role: .toolbar) {}
+                            .sfkIcon("ellipsis")
+                            .accessibilityLabel("Toolbar button")
+                        Text("Toolbar")
+                    }
+
+                    VStack(spacing: 6) {
+                        SFKCloseButton {}
+                        Text("Toolbar X")
+                    }
+
+                    VStack(spacing: 6) {
+                        SFKCloseButton(chrome: .glass) {}
+                        Text("Glass X")
+                    }
+
+                    VStack(spacing: 6) {
+                        SFKCloseButton("Close", chrome: .glass) {}
+                        Text("Labeled glass")
+                    }
                 }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
+
+                Text("The icon-only X is SFKCloseButton's close action. Use toolbar chrome when it lives in a navigation bar.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
             .padding(16)
             .background(.background, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+    }
+
+    private var closeButtonNavigationBar: some View {
+        CatalogExampleGroup(
+            title: "Close Button in a Navigation Bar",
+            apiNames: ["SFKCloseButton", "ToolbarItem"]
+        ) {
+            CloseButtonNavigationBarExample()
+                .frame(height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
     }
 
@@ -144,6 +178,7 @@ struct ButtonExamplesView: View {
         .sfkFullWidth(fullWidth)
         .sfkTint(tint)
         .sfkControlSize(controlSize.value)
+        .sfkAlignment(textAlignment.value)
         .disabled(!isEnabled)
     }
 
@@ -310,7 +345,7 @@ private enum ButtonComponent: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .standard: "SFKButton"
-        case .close: "Close"
+        case .close: "SFKCloseButton"
         }
     }
 }
@@ -370,7 +405,7 @@ private enum ButtonTextAlignment: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String { rawValue.capitalized }
 
-    var value: HorizontalAlignment {
+    var value: SFKButtonAlignment {
         switch self {
         case .leading: .leading
         case .center: .center
@@ -427,6 +462,44 @@ private enum CloseChrome: String, CaseIterable, Identifiable {
         case .toolbar: .toolbar
         case .glass: .glass
         }
+    }
+}
+
+private struct CloseButtonNavigationBarExample: View {
+    @State private var closeTapCount = 0
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 12) {
+                Image(systemName: "doc.text")
+                    .font(.title)
+                    .foregroundStyle(.tint)
+
+                Text("Details screen")
+                    .font(.headline)
+
+                Text(
+                    closeTapCount == 0
+                        ? "Tap the X in the navigation bar to close."
+                        : "Close action fired \(closeTapCount)x."
+                )
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding()
+            .navigationTitle("Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    SFKCloseButton(accessibilityLabel: "Close details") {
+                        closeTapCount += 1
+                    }
+                }
+            }
+        }
+        .background(Color(.systemBackground))
     }
 }
 

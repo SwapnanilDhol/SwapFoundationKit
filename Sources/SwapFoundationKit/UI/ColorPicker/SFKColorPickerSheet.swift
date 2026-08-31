@@ -16,6 +16,8 @@ import SwiftUI
 ///
 /// `SFKColorPickerSheet` is designed for coordinator-owned presentations where the caller
 /// wants a complete selection surface rather than a raw `Binding<Color>` control.
+/// Host sheets should prefer `.presentationDetents([.medium])`; use a larger or
+/// full-height detent only when the content or accessibility requirements genuinely need it.
 public struct SFKColorPickerSheet: View {
     /// Focused presentation options for the color picker.
     public struct Configuration {
@@ -256,6 +258,6 @@ public struct SFKColorPickerSheet: View {
                 promptMessage: "Pick a color that makes this account easy to spot."
             )
         )
-        .presentationDetents([.fraction(0.7)])
+        .presentationDetents([.medium])
     }
 }
