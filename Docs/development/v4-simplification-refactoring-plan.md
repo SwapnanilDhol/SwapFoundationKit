@@ -2,6 +2,11 @@
 
 Status: breaking package cleanup implemented; final verification is recorded in the implementation status
 
+Maintainer amendment: the newly added API/dependency/acceptance GitHub workflows
+have been removed, and the existing CI workflow is unchanged. The checks remain
+local/manual scripts; references below to adding automated CI gates describe the
+original plan, not the current automation configuration.
+
 The maintainer has explicitly requested completion and merge without an external-app
 pilot prerequisite. The [finalization brief](v4-finalization-brief.md) supersedes the
 earlier two-app approval gate. Historical rationale is retained; other repositories

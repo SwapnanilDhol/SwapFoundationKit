@@ -22,13 +22,15 @@ a published v4 release or approval to change backend enforcement.
   cancellation, pending-enrollment recovery, and binding rules preserved.
 - In-repository catalog migrated; primary plan, detailed migration guide, module
   references, 23-domain catalog, and 38-capability audit catalog synchronized.
-- CI covers compiler API inventory, measured budgets, constructor bounds, obsolete
-  APIs, static configuration closures, catalog metadata/paths/counts, dependencies,
-  package tests, and catalog build. Xcode is consistently pinned to 26.6.
+- The compiler API inventory, measured budgets, constructor bounds, obsolete APIs,
+  static configuration-closure, catalog, dependency, package-test, and catalog-build
+  checks/scripts remain available for local/manual verification. The newly added
+  GitHub workflows were removed by maintainer request. The original existing
+  `.github/workflows/ci.yml` host-app build remains unchanged from `origin/main`.
 
 ## Measured result
 
-| Public top-level types | Before extraction (`98ce079`) | Final |
+| Public top-level types | Before extraction (`55ff7a1`) | Final |
 |---|---:|---:|
 | Default product | 235 | 100 |
 | UI | 92 | 50 |
@@ -65,8 +67,8 @@ Xcode 26.6; iOS 26.5; iPhone 17 Pro simulator:
 Artifacts from this checkout are under `/tmp/sfk-v4-final.4qRSSM`:
 `final-tests.xcresult`, `verified-followup.xcresult`, `host.log`,
 `api-write.log`, and associated logs. These temporary local paths are evidence,
-not portable release artifacts. CI's independent inventory regeneration has not
-been run remotely as part of this local merge.
+not portable release artifacts. An independent remote inventory regeneration has not
+been run as part of this local merge; these checks remain local/manual.
 
 ## Release/adoption limitations
 

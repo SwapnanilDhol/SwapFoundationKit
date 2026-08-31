@@ -24,14 +24,14 @@ compiler inventory, not a source grep or a count that hides retained APIs.
 | Toast | 18 | 4 |
 | **Total** | **2,112** | **223** |
 
-| Measure | Pre-extraction `98ce079` | Compatibility checkpoint `0c741e7` | Final | Original design target |
+| Measure | Pre-extraction `55ff7a1` | Compatibility checkpoint `148deb6` | Final | Original design target |
 |---|---:|---:|---:|---:|
 | Default public types | 235 | 152 | 100 | 60–75 |
 | UI public types | 92 | 102 | 50 | <40 |
 | All-product public types | 262 | 286 | 223 | ≤157 |
 | Default third-party dependency edges | 0 | 0 | 0 | 0 |
 
-Compared with `98ce079`, the default has **57.4% fewer** types, UI has **45.7%
+Compared with `55ff7a1`, the default has **57.4% fewer** types, UI has **45.7%
 fewer**, and the complete package has **14.9% fewer**. Compared with the coexistence
 checkpoint, cleanup removes 63 top-level types across products. Default-product
 reduction includes relocation; it must not be presented as all-package deletion.
@@ -73,16 +73,17 @@ ledgers and the [migration guide](../migration/v4-simplification-migration-guide
   cannot be reintroduced without failing the static gate.
 - Catalog IDs, source/example/doc paths, 23 domain / 38 capability counts, owning
   products, and migration metadata are checked.
-- `api-surface.yml` independently regenerates and compares the compiler inventory;
-  `v4-acceptance.yml` checks reviewed budgets/catalogs and runs package tests;
-  `ci.yml` builds the catalog with the same Xcode 26.6 pin.
+- The API inventory, dependency, and acceptance checks/scripts remain local/manual;
+  the newly added GitHub workflows were removed by maintainer request.
+- The original existing `.github/workflows/ci.yml` remains unchanged from
+  `origin/main` and retains its host-app build.
 - The baseline is not a complete ABI/source-compatibility checker. It records
   names, kinds, and locations, not every default argument or semantic behavior.
 
-## Historical checkpoint ledger — `98ce079`
+## Historical checkpoint ledger — `55ff7a1` (including superseded CI proposal)
 
 > The sections below preserve the original five-product inventory, proposed
-> dispositions, and validation at `98ce079` for comparison. Their "current", "today",
+> dispositions, and validation at `55ff7a1` for comparison. Their "current", "today",
 > future-product, and source-path wording is historical, not the current branch API.
 > Use the measured implementation above and the current migration guide for adoption.
 
@@ -315,9 +316,11 @@ table and section 3 ownership rules do not name a disposition for these areas:
   signatures, defaults, availability, or ABI. `--check` therefore detects inventory
   drift, not every source/API compatibility change.
 
-## 7. CI gates
+## 7. Historical CI gates proposal (superseded; checks remain local/manual)
 
-Two new CI checks accompany this ledger (`.github/workflows/`):
+The following two new CI checks were proposed at this historical checkpoint. They
+were removed by maintainer request; the scripts remain available for local/manual
+verification. The original existing `ci.yml` host-app build remains unchanged.
 
 - **`api-surface.yml`** — runs `bash Scripts/api-baseline.sh --check`. Fails, printing
   the diff, if `Docs/development/api-baseline.txt` does not match a fresh symbol-graph
