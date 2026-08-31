@@ -66,6 +66,9 @@ public extension SFKChipItem {
 /// }
 /// ```
 public struct SFKSelectableChip: View {
+    @Environment(\.sfkTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     public enum VisualStyle: Sendable {
         case standard
         case subtle
@@ -75,7 +78,7 @@ public struct SFKSelectableChip: View {
     private let trailingAccessoryIcon: String?
     private let text: String
     private let isSelected: Bool
-    private let tintColor: Color
+    private let tintColor: Color?
     private let iconTint: Color?
     private let visualStyle: VisualStyle
     private let controlSize: ControlSize
@@ -94,7 +97,7 @@ public struct SFKSelectableChip: View {
     public init<Item: SFKChipItem>(
         item: Item,
         isSelected: Bool,
-        tintColor: Color = .primary,
+        tintColor: Color? = nil,
         iconTint: Color? = nil,
         visualStyle: VisualStyle = .standard,
         controlSize: ControlSize = .regular,
@@ -129,7 +132,7 @@ public struct SFKSelectableChip: View {
         _ text: String,
         icon: String? = nil,
         isSelected: Bool,
-        tintColor: Color = .primary,
+        tintColor: Color? = nil,
         iconTint: Color? = nil,
         visualStyle: VisualStyle = .standard,
         controlSize: ControlSize = .regular,
@@ -167,7 +170,7 @@ public struct SFKSelectableChip: View {
         trailingAccessoryIcon: String? = nil,
         text: String,
         isSelected: Bool,
-        tintColor: Color = .primary,
+        tintColor: Color? = nil,
         iconTint: Color? = nil,
         action: @escaping () -> Void
     ) {
@@ -188,7 +191,7 @@ public struct SFKSelectableChip: View {
         text: String,
         icon: String?,
         isSelected: Bool,
-        tintColor: Color,
+        tintColor: Color?,
         iconTint: Color?,
         visualStyle: VisualStyle,
         controlSize: ControlSize,
@@ -249,7 +252,7 @@ public struct SFKSelectableChip: View {
             isInteractive: true,
             shape: .capsule
         )
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
+        .animation(reduceMotion ? nil : theme.motion.standard, value: isSelected)
     }
 
     /// Tint applied to the glass effect. Unselected chips carry only a faint
@@ -259,18 +262,18 @@ public struct SFKSelectableChip: View {
     private var glassTintColor: Color {
         switch visualStyle {
         case .standard:
-            return isSelected ? tintColor.opacity(0.34) : tintColor.opacity(0.10)
+            return isSelected ? resolvedTintColor.opacity(0.34) : resolvedTintColor.opacity(0.10)
         case .subtle:
-            return isSelected ? tintColor.opacity(0.18) : tintColor.opacity(0.06)
+            return isSelected ? resolvedTintColor.opacity(0.18) : resolvedTintColor.opacity(0.06)
         }
     }
 
     private var strokeColor: Color {
         switch visualStyle {
         case .standard:
-            return isSelected ? tintColor : .clear
+            return isSelected ? resolvedTintColor : .clear
         case .subtle:
-            return isSelected ? tintColor.opacity(0.35) : Color.primary.opacity(0.06)
+            return isSelected ? resolvedTintColor.opacity(0.35) : theme.colors.border
         }
     }
 
@@ -280,16 +283,16 @@ public struct SFKSelectableChip: View {
 
     private var horizontalPadding: CGFloat {
         guard !isCompact else { return sizeMetrics.horizontalPadding }
-        return visualStyle == .standard ? 14 : 12
+        return visualStyle == .standard ? theme.spacing.control + 2 : theme.spacing.control
     }
 
     private var verticalPadding: CGFloat {
         guard !isCompact else { return sizeMetrics.verticalPadding }
-        return visualStyle == .standard ? 10 : 8
+        return visualStyle == .standard ? theme.spacing.inline + 2 : theme.spacing.inline
     }
 
     private var contentSpacing: CGFloat {
-        isCompact ? sizeMetrics.contentSpacing : 8
+        isCompact ? sizeMetrics.contentSpacing : theme.spacing.inline
     }
 
     private var isCompact: Bool {
@@ -303,9 +306,9 @@ public struct SFKSelectableChip: View {
 
         switch visualStyle {
         case .standard:
-            return .subheadline.weight(isSelected ? .semibold : .regular)
+            return theme.typography.body.weight(isSelected ? .semibold : .regular)
         case .subtle:
-            return .footnote.weight(.semibold)
+            return theme.typography.caption.weight(.semibold)
         }
     }
 
@@ -314,9 +317,9 @@ public struct SFKSelectableChip: View {
 
         switch visualStyle {
         case .standard:
-            return .subheadline.weight(isSelected ? .semibold : .regular)
+            return theme.typography.body.weight(isSelected ? .semibold : .regular)
         case .subtle:
-            return .footnote.weight(.semibold)
+            return theme.typography.caption.weight(.semibold)
         }
     }
 
@@ -330,15 +333,15 @@ public struct SFKSelectableChip: View {
     }
 
     private var sizeMetrics: SFKChipSizeMetrics {
-        SFKChipSizeMetrics(controlSize: controlSize)
+        SFKChipSizeMetrics(controlSize: controlSize, theme: theme)
     }
 
     private var labelColor: Color {
         switch visualStyle {
         case .standard:
-            return .primary
+            return theme.colors.text
         case .subtle:
-            return .primary.opacity(0.82)
+            return theme.colors.text.opacity(0.82)
         }
     }
 
@@ -349,9 +352,9 @@ public struct SFKSelectableChip: View {
 
         switch visualStyle {
         case .standard:
-            return tintColor
+            return resolvedTintColor
         case .subtle:
-            return tintColor.opacity(0.9)
+            return resolvedTintColor.opacity(0.9)
         }
     }
 
@@ -371,10 +374,15 @@ public struct SFKSelectableChip: View {
     }
 
     private func triggerHaptic() {
+        guard theme.feedback.enabled else { return }
         #if canImport(UIKit) && os(iOS)
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
         #endif
+    }
+
+    private var resolvedTintColor: Color {
+        tintColor ?? theme.colors.accent
     }
 }
 

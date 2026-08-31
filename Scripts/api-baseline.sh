@@ -90,7 +90,21 @@ BASELINE_FILE="$REPO_ROOT/Docs/development/api-baseline.txt"
 
 # First-party library schemes to inventory. Deliberately excludes the host
 # app scheme (SwapFoundationKitHost) and third-party vendor schemes.
-TARGETS=(SwapFoundationKit SwapFoundationKitFeedback SwapFoundationKitGoogleMobileAds SwapFoundationKitPulse SwapFoundationKitToast)
+TARGETS=(
+  SwapFoundationKit
+  SwapFoundationKitNetworking
+  SwapFoundationKitAuthentication
+  SwapFoundationKitSync
+  SwapFoundationKitMedia
+  SwapFoundationKitCurrency
+  SwapFoundationKitRemoteAI
+  SwapFoundationKitFirebase
+  SwapFoundationKitLegacy
+  SwapFoundationKitFeedback
+  SwapFoundationKitGoogleMobileAds
+  SwapFoundationKitPulse
+  SwapFoundationKitToast
+)
 
 MODE="write"
 SKIP_BUILD="0"

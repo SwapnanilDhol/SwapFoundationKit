@@ -31,6 +31,91 @@ public protocol Coordinator: AnyObject {
 #if canImport(UIKit) && os(iOS)
 @MainActor
 public extension Coordinator {
+    /// Presents a typed, single-select item picker.
+    ///
+    /// The binding and closure retain the concrete item type, avoiding casts at
+    /// the coordinator boundary. Prefer presenting the picker directly from a
+    /// SwiftUI view when that is practical.
+    func presentItemPicker<Item: SFKPickableItem>(
+        title: String,
+        items: [Item],
+        selection: Binding<Item?>,
+        subtitle: String = "",
+        onSelect: ((Item) -> Void)? = nil,
+        actionsProvider: ((Item) -> [SFKItemPickerItemAction])? = nil,
+        toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil
+    ) {
+        var configuration = SFKItemPickerConfiguration(
+            pageSubtitle: subtitle,
+            actionsProvider: actionsProvider
+        )
+        configuration.toolbarActions = toolbarActions
+        configuration.emptyState = emptyState
+        let view = SFKItemPickerView(
+            pageTitle: title,
+            items: items,
+            selection: selection,
+            configuration: configuration,
+            onSelect: onSelect
+        )
+        presentOnTop(UIHostingController(rootView: view))
+    }
+
+    /// Presents a typed picker for a non-optional single selection.
+    func presentItemPicker<Item: SFKPickableItem>(
+        title: String,
+        items: [Item],
+        selection: Binding<Item>,
+        subtitle: String = "",
+        onSelect: ((Item) -> Void)? = nil,
+        actionsProvider: ((Item) -> [SFKItemPickerItemAction])? = nil,
+        toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil
+    ) {
+        var configuration = SFKItemPickerConfiguration(
+            pageSubtitle: subtitle,
+            actionsProvider: actionsProvider
+        )
+        configuration.toolbarActions = toolbarActions
+        configuration.emptyState = emptyState
+        let view = SFKItemPickerView(
+            pageTitle: title,
+            items: items,
+            selection: selection,
+            configuration: configuration,
+            onSelect: onSelect
+        )
+        presentOnTop(UIHostingController(rootView: view))
+    }
+
+    /// Presents a typed, multi-select item picker.
+    func presentItemPicker<Item: SFKPickableItem>(
+        title: String,
+        items: [Item],
+        selections: Binding<Set<Item>>,
+        subtitle: String = "",
+        onSelect: ((Item) -> Void)? = nil,
+        actionsProvider: ((Item) -> [SFKItemPickerItemAction])? = nil,
+        toolbarActions: [SFKItemPickerToolbarAction] = [],
+        emptyState: SFKItemPickerEmptyState? = nil
+    ) {
+        var configuration = SFKItemPickerConfiguration(
+            pageSubtitle: subtitle,
+            actionsProvider: actionsProvider
+        )
+        configuration.toolbarActions = toolbarActions
+        configuration.emptyState = emptyState
+        let view = SFKItemPickerView(
+            pageTitle: title,
+            items: items,
+            selections: selections,
+            configuration: configuration,
+            onSelect: onSelect
+        )
+        presentOnTop(UIHostingController(rootView: view))
+    }
+
     /// Pushes a view controller onto the navigation stack.
     /// - Parameters:
     ///   - viewController: The view controller to push.

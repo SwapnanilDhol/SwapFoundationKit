@@ -11,6 +11,8 @@
 
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitNetworking
+@testable import SwapFoundationKitCurrency
 
 /// Covers that `ExchangeRateManager` routes its ECB feed fetch through its injected
 /// `ExchangeRateTransport` (not `URLSession.shared`), and that the specific `URLError`s

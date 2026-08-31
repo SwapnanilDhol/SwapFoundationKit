@@ -54,37 +54,7 @@ VIOLATIONS=""
 
 if [ -n "$MATCHES" ]; then
     while IFS=: read -r file line source_line; do
-        module=$(/usr/bin/printf '%s\n' "$source_line" | /usr/bin/sed -E 's/.*import[[:space:]]+([A-Za-z_][A-Za-z0-9_]*).*/\1/')
-        allowed=0
-        if [ "$file" = "$REPO_ROOT/Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift" ] \
-            && [ "$module" = "FirebaseAnalytics" ]; then
-            # The only exception is the Firebase adapter, and only while its
-            # import is lexically guarded by #if canImport(FirebaseAnalytics).
-            if /usr/bin/awk -v target="$line" '
-                function has_can_import_guard(   i) {
-                    for (i = 1; i <= depth; i++)
-                        if (kind[i] == "can" && branch[i] == 1) return 1
-                    return 0
-                }
-                NR < target {
-                    if ($0 ~ /^[[:space:]]*#if[[:space:]]+canImport\(FirebaseAnalytics\)/) {
-                        depth++; kind[depth] = "can"; branch[depth] = 1
-                    } else if ($0 ~ /^[[:space:]]*#if([[:space:]]|$)/) {
-                        depth++; kind[depth] = "other"; branch[depth] = 1
-                    } else if ($0 ~ /^[[:space:]]*#(else|elseif)([[:space:]]|$)/ && depth > 0) {
-                        branch[depth] = 0
-                    } else if ($0 ~ /^[[:space:]]*#endif([[:space:]]|$)/ && depth > 0) {
-                        delete kind[depth]; delete branch[depth]; depth--
-                    }
-                }
-                END { exit(has_can_import_guard() ? 0 : 1) }
-            ' "$file"; then
-                allowed=1
-            fi
-        fi
-        if [ "$allowed" -eq 0 ]; then
-            VIOLATIONS="${VIOLATIONS}${file}:${line}:${source_line}\n"
-        fi
+        VIOLATIONS="${VIOLATIONS}${file}:${line}:${source_line}\n"
     done <<EOF
 $MATCHES
 EOF

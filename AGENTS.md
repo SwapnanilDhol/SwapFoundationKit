@@ -37,12 +37,12 @@ Check whether the request falls into a documented reusable domain:
 | onboarding | `Sources/SwapFoundationKit/UI/README.md` — Onboarding section |
 | pickers | `Sources/SwapFoundationKit/UI/README.md` — Pickers section |
 | alerts / confirmations | `Sources/SwapFoundationKit/UI/README.md` — Alerts section |
-| sync / shared storage | `Sources/SwapFoundationKit/ItemSync/README.md` |
-| watch sync | `Sources/SwapFoundationKit/WatchSync/README.md` |
+| sync / shared storage | `Sources/SwapFoundationKitSync/ItemSync/README.md` |
+| watch sync | `Sources/SwapFoundationKitSync/WatchSync/README.md` |
 | haptics, logging, analytics | `Sources/SwapFoundationKit/Services/README.md` |
 | networking, security, backup | `Sources/SwapFoundationKit/Core/README.md` |
-| currency, exchange rates | `Sources/SwapFoundationKit/Currency/README.md` |
-| image processing | `Sources/SwapFoundationKit/ImageProcessor/README.md` |
+| currency, exchange rates | `Sources/SwapFoundationKitCurrency/Currency/README.md` |
+| image processing | `Sources/SwapFoundationKitMedia/ImageProcessor/README.md` |
 | notifications | `Sources/SwapFoundationKit/Services/README.md` — SFKNotificationService |
 | pro gating | `Sources/SwapFoundationKit/Services/README.md` — SFKProGate |
 | environment / launch args | `Sources/SwapFoundationKit/Utilities/README.md` |

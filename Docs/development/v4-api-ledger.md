@@ -1,8 +1,62 @@
 # SwapFoundationKit v4 API Ledger
 
-Status: Phase 0 deliverable plus the Phase 1 product-boundary checkpoint (see [v4 simplification refactoring plan](v4-simplification-refactoring-plan.md), section 7)
+Status: integrated product extraction and canonical API implementation; breaking-release reduction gates remain open (see [implementation checkpoint](v4-implementation-status.md)).
 
-This is the authoritative inventory of SwapFoundationKit's public API surface and the
+## Current measured implementation — 2026-08-31
+
+`api-baseline.txt` has been regenerated from all **13** first-party products with
+Xcode 26.6, arm64 iOS Simulator. The extraction script's `TARGETS` array is the
+authoritative product list. Its measurement methodology is unchanged from `98ce079`.
+
+| Product | Located public declarations | Top-level public types |
+|---|---:|---:|
+| SwapFoundationKit | 1,777 | 152 |
+| Networking | 139 | 17 |
+| Authentication | 191 | 34 |
+| Sync | 150 | 23 |
+| Media | 86 | 13 |
+| Currency | 84 | 3 |
+| RemoteAI | 18 | 3 |
+| Firebase | 7 | 1 |
+| Legacy | 87 | 5 |
+| Feedback | 82 | 15 |
+| GoogleMobileAds | 48 | 10 |
+| Pulse | 27 | 6 |
+| Toast | 18 | 4 |
+
+| Acceptance measure | `98ce079` | Current | Release target |
+|---|---:|---:|---|
+| Default public types | 235 | 152 | roughly 60–75 |
+| UI public types | 92 | 102 | below 40 |
+| All first-party public types | 262 | 286 | at least 40% reduction |
+| Default third-party dependency edges | 0 | 0 | 0 |
+
+The default surface is smaller by 83 types (35.3%), primarily through relocation.
+The overall and UI surfaces have **grown** because the new canonical APIs coexist
+with deprecated compatibility APIs. This is not completion of the simplification
+plan's reduction criterion. Consumer migration, compatibility internalization/removal,
+and a fresh inventory after that removal are still required. Do not report relocation
+or deprecation as a reduction in all-product type count.
+
+Canonical ownership is now implemented for the extracted products, including
+Authentication, Firebase, Currency, RemoteAI, and Legacy. The current symbol/product
+map is in the [migration guide](../migration/v4-simplification-migration-guide.md).
+Existing watch transports and several UI adapters are only deprecated, not collapsed
+or removed. The compatibility/static-closure exceptions are enumerated in the
+[implementation checkpoint](v4-implementation-status.md).
+
+The consolidated package suite passes 303 tests (0 failures, 0 skipped), and the
+catalog app builds. These tests are not a substitute for visual/accessibility checks
+or the two real-app migration gate.
+
+## Historical checkpoint ledger — `98ce079`
+
+> The sections below preserve the original five-product inventory, proposed
+> dispositions, and validation at `98ce079` for comparison. Their "current", "today",
+> future-product, and source-path wording is historical, not the current branch API.
+> Use the measured implementation above and the current migration guide for adoption.
+
+This was the checkpoint inventory of SwapFoundationKit's public API surface and the
 symbol-by-symbol disposition that drives the v4 refactor. It supersedes the counts in
 the refactoring plan's section 2 baseline table and in the migration guide's section 1 —
 both were correct on the day they were audited, but the surface has grown since. Every

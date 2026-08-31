@@ -11,6 +11,7 @@
 
 import Foundation
 import SwapFoundationKit
+import SwapFoundationKitNetworking
 #if canImport(Pulse)
 import Pulse
 #endif

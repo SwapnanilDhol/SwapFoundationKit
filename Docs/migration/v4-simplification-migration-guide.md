@@ -1,8 +1,8 @@
 # SwapFoundationKit v4 Simplification Migration Guide
 
-Status: proposed migration procedure for SFK maintainers and host applications
+Status: migration procedure with implementation in progress; not a released v4 tag
 
-This guide complements the [v4 simplification refactoring plan](../development/v4-simplification-refactoring-plan.md). It describes how to move from the current v3 package shape to the v4 package architecture in controlled releases. API names and snippets labelled “design target” are proposals, not existing APIs. For current shipped capabilities, use the [migration catalog](catalog.yaml) and the [module documentation](../../Sources/SwapFoundationKit/).
+This guide complements the [v4 simplification refactoring plan](../development/v4-simplification-refactoring-plan.md). It describes how to move from the current v3 package shape to the v4 package architecture in controlled releases. API names and snippets labelled “design target” are proposals, not released APIs. The working-branch product map and implementation notes identify code now being integrated. For current capabilities, use the [migration catalog](catalog.yaml) and each owning module's documentation under `Sources/`.
 
 ## 1. Migration principles
 
@@ -36,6 +36,60 @@ The v4 release may remove deprecated aliases, the mandatory global bootstrap, da
 
 The v4 default import should provide core UI, tokens, and small utilities without third-party dependencies. Authentication, Networking, Sync, Media, Pulse, Toast, ads, Firebase, and Remote AI are opt-in according to host needs.
 
+### Working-branch product map
+
+The current implementation moves these APIs to explicit products. Add the product
+to the consuming target and import its module in each file that uses its APIs.
+These moves are source-breaking on this branch; the old default import does not
+re-export optional products. The final compile/behavior gates are still pending.
+
+| API family | Product/import |
+|---|---|
+| Theme and common UI | `SwapFoundationKit` |
+| HTTP client, request contracts, reachability, App Store lookup | `SwapFoundationKitNetworking` |
+| App Attest, authenticated sessions and transport | `SwapFoundationKitAuthentication` |
+| App Group storage and Watch Connectivity | `SwapFoundationKitSync` |
+| Image processing and compression | `SwapFoundationKitMedia` |
+| Currency metadata and exchange rates | `SwapFoundationKitCurrency` |
+| Remote AI requests | `SwapFoundationKitRemoteAI` |
+| Legacy bootstrap and Info.plist configuration | `SwapFoundationKitLegacy` |
+| Vendor adapters | `SwapFoundationKitPulse`, `SwapFoundationKitToast`, `SwapFoundationKitFirebase`, `SwapFoundationKitGoogleMobileAds` |
+| Feedback flow | `SwapFoundationKitFeedback` |
+
+The Currency and Remote AI product names resolve the previously unnamed ownership
+decisions. Currency is opt-in because its exchange-rate feature needs Networking;
+Remote AI remains host-configured and does not belong in the UI foundation.
+Legacy bootstrap is an explicit transitional dependency, never a dependency of
+the default product.
+
+### Working-branch symbol map and release gate
+
+The following map records APIs present in this implementation branch. It is a
+consumer migration reference, not a claim that a published package release or
+the v4 removal gate has completed. Deprecated symbols remain available for the
+compatibility window and must not be removed until the API ledger, host migration,
+compile, behavior, and accessibility gates are approved.
+
+| Existing v3 surface | Current branch replacement | Product / compatibility status |
+|---|---|---|
+| `SFKSettingsScreen(sections:...)` with erased sections | `SFKSettingsScreen(navigationTitle:content:)` + `SFKSettingsSection` | `SwapFoundationKit`; old initializer is deprecated compatibility API |
+| `SFKSettingsPickerRow` for option state | `SFKSettingsPicker<Value>` with `Binding<Value>` and label closure | `SwapFoundationKit`; old row remains for source compatibility |
+| `SFKItemPickerViewModel` / `SFKItemPickerDelegate` | `SFKItemPickerView<Item>` with `Binding<Item?>`, `Binding<Item>`, or `Binding<Set<Item>>` | `SwapFoundationKit`; model/delegate path is deprecated |
+| Existential item identity/equality | `SFKPickableItem.pickableItemId` | `SwapFoundationKit`; typed picker compares stable IDs |
+| `SFKColorPickerDelegate` + local selected color | `SFKColorPickerSheet(selection:configuration:onApply:)` | `SwapFoundationKit`; delegate initializer is deprecated |
+| `PhotoPickerDelegate` | `PhotoPicker(configuration:onPick:)` or `SFKPhotoPicker(selection:onPick:)` | `SwapFoundationKit`; delegate initializer is deprecated |
+| `SFKProGate` static closures | `SFKAccessGate(policy:)` + `SFKAccessPolicy` | Gate is in default product; old symbol is deprecated in `SwapFoundationKitLegacy` |
+| `AnalyticsManager.shared` | `AnalyticsManager()` instance injected at the composition root | `SwapFoundationKit`; shared singleton is transitional compatibility state |
+| Reachability embedded in feature services | `NetworkMonitor` injected beside `NetworkService` | `SwapFoundationKitNetworking`; opt-in product |
+| Default-target image transform/cache/network bundle | `SwapFoundationKitMedia` transform, cache, storage, and remote-loader roles | Opt-in product; preserve cache keys and transport behavior during migration |
+| Main-target sync/watch implementations | `SwapFoundationKitSync` ItemSync and WatchSync products | Opt-in product; preserve App Group and transfer contracts |
+
+Product moves in this table are source-breaking on the current branch because
+optional products are not re-exported by `SwapFoundationKit`. Add the named
+product and import it before migrating a call site. A host may keep the legacy
+product during the compatibility release; removal is a separate v4 decision,
+not an automatic consequence of adopting the new API.
+
 ## 3. Old-to-new conceptual mapping
 
 | v3 concept | v4 direction (design target) | Consumer action |
@@ -43,16 +97,16 @@ The v4 default import should provide core UI, tokens, and small utilities withou
 | `SwapFoundationKit.shared` | Explicit feature instances; optional composition container | Remove startup ordering from views and utilities. Construct only the features used by the app. |
 | `SwapFoundationKitConfiguration` | Feature-specific typed configuration | Split values by owner; delete unrelated flags from app startup. |
 | `ConfigurationService` | Host-owned typed environment | Pass URLs, environment, and policy to the feature that needs them. |
-| `SFKSettingsTheme` + `SFKTextFieldAppearance` | `SFKTheme` environment (design target) | Define one app theme; keep legacy projections during v3. |
+| `SFKSettingsTheme` + `SFKTextFieldAppearance` | `SFKTheme` environment (working branch) | Define one app theme; legacy settings theme projects from it unless explicitly overridden. |
 | Large button/text-field initializers | Semantic roles plus modifiers (design target) | Start with defaults, then add only focused overrides. |
-| `AnyView` settings rows | Generic settings result builder (design target) | Replace existential row arrays with typed bindings and labels. |
+| `AnyView` settings rows | Generic settings result builder (working branch) | Replace existential row arrays with typed bindings and labels; retain the deprecated adapter during v3. |
 | `HTTPClient` + HTTP methods in `NetworkService` | One injected `HTTPClient`; `NetworkMonitor` for reachability | Route feature requests through the canonical transport. |
 | Direct `URLSession.shared` in image/features | Injected transport in Media/Networking | Add a transport adapter and preserve status/retry behavior. |
 | `AppMetaData` actions + multiple openers | Pure metadata + one app-link opener | Keep route data in the host and centralize opening. |
 | `WatchConnectivityService` + `WatchSyncService` | One Sync service (design target) | Migrate message/transfer calls behind one explicit instance. |
 | `ImageProcessor` doing transform/cache/network | Media transform, cache, loader, storage | Inject only the layer required by the host. |
-| Global analytics/logging | Injectable actor/instance | Provide providers at the app boundary; no feature reaches global mutable state. |
-| Pro-gating static closures | Injected `SFKAccessPolicy` (design target) | Keep entitlement decisions in the host or adapter. |
+| Global analytics/logging | Injectable `AnalyticsManager` instance | Provide providers at the app boundary; `shared` remains transitional and event schemas stay stable. |
+| Pro-gating static closures | Injected `SFKAccessPolicy` and `SFKAccessGate` (working branch) | Keep entitlement decisions in the host or adapter; use Legacy only for old call sites. |
 | App Attest/authenticated sessions in foundation | `SwapFoundationKitAuthentication` | Preserve protocols and storage; simplify wiring only. |
 
 ## 4. Host-app sequencing
@@ -93,23 +147,23 @@ Move only the values used by each feature. UI-only screens must not require an A
 ### 5.2 Theme, buttons, chips, and text fields
 
 1. Define semantic roles for primary, secondary, destructive, toolbar, field, card, and control states.
-2. Configure `SFKTheme` at the app root (design target).
+2. Configure `SFKTheme` at the app root with `.sfkTheme(.system.accent(.indigo))` (implemented on the working branch).
 3. Replace raw font/color/padding/radius arguments with roles and focused modifiers.
 4. Verify Dynamic Type, contrast, Reduce Motion, disabled state, VoiceOver labels, and dark mode.
 5. Keep old initializers forwarding to the new renderer until all call sites migrate.
 
-Design-target example:
+Working-branch example (post-integration verification pending):
 
 ```swift
 SFKButton("Continue", role: .primary) { continueFlow() }
-    .sfkLoading(isLoading) // design target
+    .sfkLoading(isLoading)
 ```
 
-Do not copy this snippet into production until the v4 symbol exists; it documents the intended end state.
+These APIs now exist in the working tree, but the published package version must contain them before a host can adopt the snippet. Validate custom tint, loading, disabled, and accessibility behavior after the implementation batch is integrated.
 
 ### 5.3 Settings
 
-Replace existential row arrays and `AnyView` content with a typed builder (design target):
+Replace existential row arrays and `AnyView` content with the working branch's typed builder:
 
 ```swift
 SFKSettingsScreen {
@@ -131,6 +185,31 @@ SFKSettingsScreen {
 
 Migrate one section at a time. Preserve row identifiers, accessibility labels, deep links, destructive confirmation, and analytics event names. If a host generates rows remotely, retain a separate advanced data-driven adapter rather than forcing remote data through an erased common API.
 
+### Pickers, colors, and photos
+
+Use a concrete item model and a binding for picker state. `SFKPickableItem`
+provides stable `pickableItemId` identity; the typed picker keeps `Item` in its
+labels, callbacks, and selection binding. Optional single selection can be
+cleared by tapping the selected item, while non-optional and multi-selection
+bindings preserve their original semantics.
+
+```swift
+SFKItemPickerView(
+    "Accounts",
+    items: accounts,
+    selection: $selectedAccount,
+    label: { $0.name },
+    onSelect: { account in recordSelection(account) }
+)
+```
+
+For row actions, toolbar actions, empty states, or browsing presentation, build
+an `SFKItemPickerConfiguration<Account>` and pass it to the same typed
+initializer. Replace color delegates with `SFKColorPickerSheet(selection:configuration:onApply:)`
+and use `SFKPhotoPicker(selection:onPick:)` when a SwiftUI binding is desired.
+Both closure paths deliver values on the main actor. Keep the deprecated
+delegate initializers only until all host call sites have migrated.
+
 ### 5.4 Networking and retries
 
 Move request execution to the canonical injected HTTP client. Keep reachability observation in `NetworkMonitor`; it must not become a second request layer. Add request interceptors/middleware for auth headers, logging, retry, and certificate policy. Verify that merged headers are actually applied to the outgoing request.
@@ -139,14 +218,14 @@ For each endpoint, test status mapping, timeout, cancellation, retry count/backo
 
 ### 5.5 App Attestation and authenticated sessions
 
-App Attest is part of this refactor, but it is not a candidate for protocol simplification or a rewrite. Retain it as a cohesive, opt-in `SwapFoundationKitAuthentication` product (design target name) and preserve the existing `AppAttestService`, `AuthenticatedSessionService`, backend contract, and tests while simplifying construction and wiring.
+App Attest is part of this refactor, but it is not a candidate for protocol simplification or a rewrite. Retain it as the cohesive, opt-in `SwapFoundationKitAuthentication` product present on this branch, and preserve the existing `AppAttestService`, `AuthenticatedSessionService`, backend contract, and tests while simplifying construction and wiring.
 
 Required invariants:
 
 - **Origin restriction:** backend routes remain same-origin with the configured base URL; reject cross-origin challenge, enrollment, session, or binding routes.
 - **Keychain namespaces:** preserve derived namespaces that include app identifier, environment, scheme, host, and port. Use a dual-read/one-write migration only when a key name must change, and never delete the old key before successful decoding and persistence of the new record.
-- **Proof confidentiality:** persist binding metadata/fingerprint only; never store replayable proof payloads or attestation/assertion bytes as a convenience cache.
-- **Strict binding defaults:** `requireBinding` and proof binding remain explicit and strict by default for flows that need them. Do not weaken binding to make a migration compile.
+- **Proof confidentiality:** persist purchase-binding metadata/fingerprints, not replayable purchase proofs. Preserve the existing secure, expiry-bounded pending-enrollment artifact used to recover an unknown server enrollment outcome; do not turn it into a general attestation/assertion cache or log its contents.
+- **Binding policy:** preserve the existing `requireBinding: false` default and the host's explicit binding requirements. Strict compatibility policy does not implicitly require purchase binding. Do not weaken an explicitly binding-required flow or silently enable binding during a module move.
 - **Identity binding:** reject empty or changed identities and invalidate stale session/binding records as the current service does.
 - **Key-invalid handling:** preserve stage-dependent recovery. Do not blindly reset a key for every `keyInvalid`; distinguish enrollment/assertion stages and retain bounded recovery behavior.
 - **Transient failures:** retry transient Apple/backend failures only within the existing bounded policy and deadline. Do not rotate keys for transient Apple failures.
@@ -165,7 +244,7 @@ Host code may continue to own authorization policy, identity/proof sources, Reve
 
 ### 5.6 Shared storage, sync, and watch connectivity
 
-Move App Group storage and Watch Connectivity to the opt-in Sync product. Construct it only in targets that have the relevant entitlements. Preserve suite names, Codable schemas, transfer semantics, reachability handling, and background behavior. Use one public sync service in the v4 design target, with host-owned domain models and conflict policy.
+The opt-in `SwapFoundationKitSync` product is present on this branch for App Group storage and Watch Connectivity. Construct only the required service in targets with the relevant entitlements. Preserve suite names, Codable schemas, transfer semantics, reachability handling, and background behavior; consolidation behind one public sync facade remains a v4 design direction, with host-owned domain models and conflict policy.
 
 Gate the migration with widget/extension tests, watch send/receive tests, upgrade tests, and an entitlement-enabled device run. A UI-only target should not import Sync.
 
@@ -177,7 +256,7 @@ Split image work into transform, cache, loader, and storage roles. Keep compress
 
 - Keep `AppMetaData` as data and route opening through one opener. Test universal links, custom schemes, invalid URLs, and fallback behavior.
 - Convert logging/analytics to injected instances or actors. Keep event names and payload schemas stable; validate no feature creates a hidden global provider.
-- Replace mutable pro-gating closures with an injected access policy (design target), while leaving product/entitlement decisions in the host.
+- Replace mutable pro-gating closures with the working-branch injected `SFKAccessPolicy` and `SFKAccessGate`, while leaving product/entitlement decisions in the host.
 - Move Pulse, Toast, Firebase, ads, feedback, and Remote AI to explicit opt-in products. Preserve vendor initialization order and host-owned credentials. Verify that removing any integration product does not break the default target.
 
 ## 6. Test and verification gates

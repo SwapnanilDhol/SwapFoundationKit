@@ -44,7 +44,9 @@ public final class AnalyticsManager: @unchecked Sendable {
     private var loggers: [any AnalyticsLogger] = []
     private var globalParameters: [String: String] = [:]
 
-    private init() {}
+    /// Creates an isolated analytics fan-out. Prefer an instance in feature code;
+    /// `shared` remains as a transitional compatibility convenience.
+    public init() {}
 
     public func addLogger(_ logger: any AnalyticsLogger) {
         loggers.append(logger)

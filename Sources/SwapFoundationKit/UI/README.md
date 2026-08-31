@@ -2,6 +2,22 @@
 
 Reusable SwiftUI and UIKit components for buttons, settings, onboarding, pickers, glass effects, aura backgrounds, barcode scanning, pro banners, and app appearance.
 
+## Theme
+
+`SFKTheme` is the shared semantic token surface for SFK controls. The system
+theme follows platform colors, Dynamic Type, and accessibility motion settings;
+hosts can override it once at the root of a view hierarchy:
+
+```swift
+ContentView()
+    .sfkTheme(.system.accent(.indigo))
+```
+
+Its nested `colors`, `typography`, `spacing`, `radii`, `motion`, and `feedback`
+values are public for focused brand overrides. Explicit per-control arguments
+continue to take precedence over environment tokens. `colors.onAccent` and
+`colors.onDestructive` control foreground contrast for semantic filled actions.
+
 The separate `SwapFoundationKitFeedback` product provides the reusable in-app
 feedback flow while keeping RevenueCat and product analytics in host apps.
 
@@ -11,7 +27,7 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 | Type | Kind | Description |
 |------|------|-------------|
 | `SFKButton` | View | Configurable button with loading states, haptics, semantic styles, and platform control sizing |
-| `SFKButtonStyle` | enum | `primary`, `secondary`, or `toolbar` |
+| `SFKButtonStyle` | enum | `primary`, `secondary`, `toolbar`, or `destructive` |
 | `SFKCloseButton` | View | Standardized icon-only toolbar navigation or labeled close/dismiss button (`toolbar` or `glass` chrome) |
 | `SFKCloseButtonChrome` | enum | `toolbar` (system nav-bar treatment), `glass` (icon circle or labeled capsule over content) |
 | `SFKButtonHapticStyle` | enum | light, medium, heavy tap feedback |
@@ -21,7 +37,12 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 |------|------|-------------|
 | `SFKTextField` | View | Consistent single-line, multiline, or secure input with semantic keyboard configuration, focus binding, accessories, supporting copy, and validation |
 | `SFKTextFieldStatus` | enum | Normal, error, and success presentation states |
+| `SFKTextFieldInputOptions` | struct | Standard, email, or password keyboard/content-type and multiline behavior presets |
 | `SFKTextFieldAppearance` | struct | Shared colors and layout tokens for host-app theming |
+
+The compact field initializer accepts a title, binding, and optional prompt/icon;
+use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
+`.sfkTrailingAction(...)`, or `.sfkAppearance(...)` for focused variations.
 
 ### Chips
 | Type | Kind | Description |
@@ -79,9 +100,9 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 ### Effects
 | Type | Kind | Description |
 |------|------|-------------|
-| `TopAuraBackground` | View | Layered radial + linear gradient background |
+| `TopAuraBackground` | View | Layered radial + linear gradient background with explicit visual tuning |
 | `SFKAuraLayer` | View | Accessibility-gated aura glow (respects reduce motion) |
-| `SFKAuraGlowBackground` | View | Full-screen atmospheric glow wrapping content |
+| `SFKAuraGlowBackground` | View | Full-screen atmospheric glow wrapping content; omitted color follows `SFKTheme.colors.accent` |
 
 ### Glass
 | Type | Description |
@@ -106,46 +127,49 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 ## Quick Examples
 
 ```swift
-// Primary action
-SFKButton("Continue", leadingIconName: "arrow.right", style: .primary) {
+// Theme-aware semantic action
+SFKButton("Continue", role: .primary) {
     nextStep()
 }
+.sfkIcon("arrow.right")
+.sfkLoading(isSaving)
 
 // Secondary action
-SFKButton("Filters", style: .secondary) {
+SFKButton("Filters", role: .secondary) {
     showFilters()
 }
 
 // System toolbar action
-SFKButton(leadingIconName: "ellipsis", style: .toolbar) {
+SFKButton("", role: .toolbar) {
     showMoreActions()
 }
+.sfkIcon("ellipsis")
+.accessibilityLabel("More")
 
 // Compact inline action
-SFKButton("Edit", fullWidth: false, controlSize: .small, style: .secondary) {
+SFKButton("Edit", role: .secondary) {
     editItem()
 }
+.sfkFullWidth(false)
 
 // Semantic text input with inline validation
 SFKTextField(
     "Email",
     text: $email,
-    placeholder: "you@example.com",
-    leadingSystemImage: "envelope",
-    status: isEmailValid ? .normal : .error("Enter a valid email."),
-    keyboardType: .emailAddress,
-    contentType: .emailAddress,
-    textInputAutocapitalization: .never,
-    autocorrectionDisabled: true
+    prompt: "you@example.com",
+    leadingSystemImage: "envelope"
 )
+.sfkInput(.email)
+.sfkOnSubmit(submitEmail)
+.sfkStatus(isEmailValid ? .normal : .error("Enter a valid email."))
 
 // Composer-style multiline input
 SFKTextField(
+    "Message",
     text: $message,
-    placeholder: "Describe your transaction",
-    axis: .vertical,
-    lineLimit: 1...6
+    prompt: "Describe your transaction"
 )
+.sfkInput(.init(axis: .vertical, lineLimit: 1...6))
 
 // Action chips
 SFKChipFlowLayout(spacing: 8) {

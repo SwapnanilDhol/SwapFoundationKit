@@ -21,57 +21,6 @@ public protocol UserDefaultKeyProtocol {
     var keyString: String { get }
 }
 
-/// A property wrapper for values shared through the app group's UserDefaults suite.
-///
-/// The suite is resolved internally from the `AppMetaData` installed with
-/// `SwapFoundationKit.shared.configure(with:)`. Host apps declare shared
-/// preferences without constructing or exposing a `UserDefaults` store.
-///
-/// ## Usage
-/// ```swift
-/// @SharedUserDefaults(AppKeys.isProEnabled, default: false)
-/// private var isProEnabled
-/// ```
-@propertyWrapper
-public struct SharedUserDefaults<Value, Key: UserDefaultKeyProtocol> {
-    private let key: String
-    private let defaultValue: Value
-
-    public var wrappedValue: Value {
-        get {
-            sharedStore.object(forKey: key) as? Value ?? defaultValue
-        }
-        nonmutating set {
-            sharedStore.set(newValue, forKey: key)
-        }
-    }
-
-    /// Creates an app-group preference backed by configured SFK app metadata.
-    /// - Parameters:
-    ///   - key: The type-safe defaults key.
-    ///   - defaultValue: The value returned when the key has not been stored.
-    public init(_ key: Key, default defaultValue: Value) {
-        self.key = key.keyString
-        self.defaultValue = defaultValue
-    }
-
-    private var sharedStore: UserDefaults {
-        guard let appMetadata = SwapFoundationKit.shared.getConfiguration()?.appMetadata else {
-            preconditionFailure(
-                "SwapFoundationKit is not configured. Call configure(with:) before accessing @SharedUserDefaults."
-            )
-        }
-
-        guard let store = UserDefaults(suiteName: appMetadata.appGroupIdentifier) else {
-            preconditionFailure(
-                "Unable to open app-group defaults: \(appMetadata.appGroupIdentifier)"
-            )
-        }
-
-        return store
-    }
-}
-
 #if canImport(SwiftUI)
 /// An observable box for a value stored in UserDefaults, used for property wrappers and SwiftUI bindings.
 ///

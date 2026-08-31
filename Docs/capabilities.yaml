@@ -11,9 +11,39 @@ rules:
   - Use SFK directly when the capability is generic and the host app does not need intentional visual or behavioral divergence.
   - If SFK only provides a low-level primitive, keep the higher-level app facade in the host app and place SFK underneath it.
 domains:
+  - id: theme_tokens
+    priority: 1
+    module: SwapFoundationKit
+    summary: Semantic colors, typography, spacing, radii, motion, and feedback shared by SwiftUI components.
+    when_to_check:
+      - Defining an application design system
+      - Replacing repeated colors, fonts, padding, or corner radii
+      - Customizing SFK controls at the app boundary
+    prefer_when:
+      - The host wants defaults plus focused overrides instead of large visual parameter lists
+    keep_in_host_app_when:
+      - Brand asset ownership and product-specific visual policy belong to the host
+    public_api:
+      - SFKTheme
+      - SFKTheme.system
+      - SFKTheme.accent(_:)
+      - View.sfkTheme(_:)
+      - EnvironmentValues.sfkTheme
+      - SFKSettingsTheme (legacy projection)
+      - View.sfkSettingsTheme(_:) (legacy override)
+    docs:
+      - Sources/SwapFoundationKit/UI/README.md
+    examples:
+      - Sources/SwapFoundationKit/UI/SFKTheme.swift
+    host_app_triggers:
+      - design tokens
+      - theme
+      - typography
+      - reusable spacing
+
   - id: settings
     priority: 1
-    summary: Shared settings screen shell, rows, interactive controls, built-in info/developer sections, and theme injection.
+    summary: Typed settings result-builder, binding/action rows, theme projection, and deprecated array-driven compatibility adapters.
     when_to_check:
       - Building a settings page
       - Refactoring app preferences or about screens
@@ -27,6 +57,10 @@ domains:
       - The app intentionally diverges from SFK's settings presentation
     public_api:
       - SFKSettingsScreen
+      - SFKSettingsSection
+      - SFKSettingsPicker
+      - SFKSettingsPickerPresentation
+      - SFKSettingsBindingRow
       - SFKSettingsTheme
       - SFKSettingsSectionConfiguration
       - SFKSettingsCustomSection
@@ -49,6 +83,10 @@ domains:
       - SFKInformationSectionItem
       - SFKDeveloperSectionItem
       - SFKSettingsActionHandler
+    migration_notes:
+      - "Preferred screen path: SFKSettingsScreen(navigationTitle:content:) with SFKSettingsSection and concrete rows; it does not erase row content."
+      - "SFKSettingsPicker uses a Binding<Value>, options, and a Value-to-String label; use SFKSettingsPickerPresentation for subtitle, icon, and tint overrides."
+      - "SFKSettingsBindingRow keeps a Binding<Value> and action(Value) concrete; SFKSettingsSectionConfiguration and SFKSettingsCustomSection remain deprecated compatibility adapters."
     docs:
       - Docs/guides/settings.md
       - Docs/reference/settings-integration-checklist.md
@@ -255,9 +293,16 @@ domains:
     keep_in_host_app_when:
       - The picker has feature-specific domain actions or complex filtering logic that must remain app-owned
     public_api:
-      - SFKColorPickerDelegate
       - SFKColorPickerSheet
+      - SFKColorPickerConfiguration
+      - SFKColorPickerSheet.init(selection:configuration:onApply:)
       - SFKItemPickerView
+      - SFKItemPickerConfiguration
+      - SFKItemPickerView.init(_:items:selection:label:onSelect:)
+      - SFKItemPickerView.init(_:items:selections:label:onSelect:)
+      - SFKItemPickerView.init(_:items:selection:label:onSelect:) (non-optional selection)
+      - SFKPhotoPicker
+      - SFKPhotoPicker.init(selection:configuration:onPick:)
       - SFKPickableItem
       - SFKItemPickerSection
       - SFKPickableItemIconKind
@@ -272,7 +317,12 @@ domains:
       - Docs/guides/settings.md
     examples:
       - Sources/SwapFoundationKit/UI/ItemPicker/SFKItemPickerView.swift
+      - Sources/SwapFoundationKit/UI/PhotoPicker.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsPickerRow.swift
+    migration_notes:
+      - "Typed item picker bindings preserve concrete Item values and compare selection by SFKPickableItem.pickableItemId; optional single selection can be cleared by tapping the selected item."
+      - "SFKItemPickerViewModel, SFKItemPickerDelegate, and SFKColorPickerDelegate are deprecated compatibility surfaces; use bindings and closures on the typed APIs."
+      - "PhotoPicker's closure initializer and SFKPhotoPicker update selection on the main actor; the delegate initializer remains deprecated."
     host_app_triggers:
       - picker
       - color picker sheet
@@ -310,7 +360,7 @@ domains:
 
   - id: networking
     priority: 6
-    module: SwapFoundationKit (current; Networking opt-in product is a v4 design target)
+    module: SwapFoundationKitNetworking
     summary: Async HTTP requests, typed request/response contracts, downloads, and origin-scoped backend headers.
     when_to_check:
       - Adding an API client or download flow
@@ -329,16 +379,17 @@ domains:
       - NetworkDownloadProgress
       - NetworkError
       - NetworkService
+      - NetworkMonitor
       - SFKBackendOriginRegistry
       - NetworkRequest.explicitURL
       - NetworkRequest.usesClientDefaultHeaders
       - NetworkService.registerBackendOrigin(host:scheme:port:)
     docs:
-      - Sources/SwapFoundationKit/Core/README.md
+      - Sources/SwapFoundationKitNetworking/README.md
       - Docs/guides/networking-rfc.md
     examples:
-      - Sources/SwapFoundationKit/Core/Networking.swift
-      - Sources/SwapFoundationKit/Core/NetworkService.swift
+      - Sources/SwapFoundationKitNetworking/Networking.swift
+      - Sources/SwapFoundationKitNetworking/NetworkService.swift
     host_app_triggers:
       - HTTP client
       - API client
@@ -347,6 +398,7 @@ domains:
       - origin registration
 
   - id: sync_shared_storage
+    module: SwapFoundationKitSync
     priority: 6
     summary: Shared storage, widget sync, and Watch sync primitives for app data propagation.
     when_to_check:
@@ -368,8 +420,8 @@ domains:
     docs:
       - Docs/migration/migration-guide.md
     examples:
-      - Sources/SwapFoundationKit/ItemSync/ItemSyncServiceFactory.swift
-      - Sources/SwapFoundationKit/WatchSync/Core/WatchSyncOptions.swift
+      - Sources/SwapFoundationKitSync/ItemSync/ItemSyncServiceFactory.swift
+      - Sources/SwapFoundationKitSync/WatchSync/Core/WatchSyncOptions.swift
     host_app_triggers:
       - widget sync
       - app group
@@ -408,8 +460,10 @@ domains:
       - Debouncer
       - Throttler
       - PersistentTTLStore
+    migration_notes:
+      - "AnalyticsManager.init() creates an isolated instance; AnalyticsManager.shared remains transitional compatibility state and should not be used by feature code."
     docs:
-      - README.md
+      - Sources/SwapFoundationKit/Services/README.md
       - Docs/migration/migration-guide.md
       - Docs/migration/catalog.yaml
     examples:
@@ -450,7 +504,7 @@ domains:
       - UIFont.roundedSystemFont(ofSize:weight:)
       - SFKRoundedHostingController
     docs:
-      - README.md
+      - Sources/SwapFoundationKit/UI/README.md
     examples:
       - Sources/SwapFoundationKit/Utilities/SFKAppEnvironment.swift
       - Sources/SwapFoundationKit/Utilities/SFKLaunchArguments.swift
@@ -524,8 +578,8 @@ domains:
 
   - id: analytics_loggers
     priority: 9
-    module: SwapFoundationKitFirebase (planned opt-in product)
-    summary: Pre-built AnalyticsLogger implementation for Firebase, retained as a temporary guarded adapter until the opt-in product is extracted.
+    module: SwapFoundationKitFirebase
+    summary: Opt-in AnalyticsLogger adapter with required host-owned Firebase forwarding handlers.
     when_to_check:
       - Adding analytics tracking
       - Wiring up Firebase
@@ -540,10 +594,10 @@ domains:
     public_api:
       - SFKFirebaseLogger
     docs:
-      - README.md
+      - Sources/SwapFoundationKitFirebase/README.md
       - Docs/migration/v4-simplification-migration-guide.md
     examples:
-      - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
+      - Sources/SwapFoundationKitFirebase/SFKFirebaseLogger.swift
     host_app_triggers:
       - analytics logger
       - firebase
@@ -551,7 +605,8 @@ domains:
 
   - id: pro_gating
     priority: 10
-    summary: IAP feature-gating pattern with closure-based Pro status checking and automatic upsell sheet presentation.
+    module: SwapFoundationKit
+    summary: Instance-based access gating through an injected SFKAccessPolicy, with SFKProGate retained only in SwapFoundationKitLegacy.
     when_to_check:
       - Gating premium features behind in-app purchase
       - Checking Pro status before allowing an action
@@ -562,11 +617,20 @@ domains:
     keep_in_host_app_when:
       - The app's Pro gating is deeply tied to domain-specific analytics or UI
     public_api:
-      - SFKProGate
+      - SFKAccessPolicy
+      - SFKAccessGate
+      - SFKAccessGate.check(_:)
+      - SFKAccessGate.require(_:action:)
+      - SFKProGate (deprecated; SwapFoundationKitLegacy)
     docs:
-      - README.md
+      - Sources/SwapFoundationKit/Services/README.md
+      - Sources/SwapFoundationKitLegacy/README.md
     examples:
-      - Sources/SwapFoundationKit/Services/SFKProGate.swift
+      - Sources/SwapFoundationKit/Services/SFKAccessPolicy.swift
+      - Sources/SwapFoundationKitLegacy/SFKProGate.swift
+    migration_notes:
+      - "The default product owns SFKAccessPolicy/SFKAccessGate; add SwapFoundationKitLegacy only while migrating SFKProGate call sites."
+      - "Do not infer entitlement state in SFK; inject the host's policy and upgrade presentation."
     host_app_triggers:
       - pro gate
       - feature gating
@@ -575,6 +639,7 @@ domains:
       - is pro enabled
 
   - id: app_attest
+    module: SwapFoundationKitAuthentication
     priority: 10
     summary: Reusable App Attest primitives, authenticated installation sessions, and origin-restricted HTTP transport.
     when_to_check:
@@ -602,9 +667,9 @@ domains:
       - SessionBindingProof
       - AuthenticatedHTTPClient
     docs:
-      - Sources/SwapFoundationKit/Core/README.md
+      - Sources/SwapFoundationKitAuthentication/README.md
     examples:
-      - Sources/SwapFoundationKit/Core/AppAttestService.swift
+      - Sources/SwapFoundationKitAuthentication/AppAttestService.swift
     host_app_triggers:
       - App Attest
       - app attestation
@@ -631,7 +696,7 @@ domains:
       - SFKNotificationAction
       - SFKNotificationCategory
     docs:
-      - README.md
+      - Sources/SwapFoundationKit/Services/README.md
     examples:
       - Sources/SwapFoundationKit/Services/SFKNotificationService.swift
     host_app_triggers:
@@ -642,8 +707,9 @@ domains:
       - UNUserNotificationCenter
 
   - id: image_compression
+    module: SwapFoundationKitMedia
     priority: 12
-    summary: Image compression utility for resizing and JPEG compression with configurable max dimension and quality.
+    summary: Media primitives split into image transformation, cache, storage, remote loading, and JPEG compression roles.
     when_to_check:
       - Compressing images for storage or upload
       - Resizing images to a max dimension
@@ -654,12 +720,23 @@ domains:
     keep_in_host_app_when:
       - The app needs format-specific compression (PNG, HEIC)
     public_api:
+      - ImageProcessor
+      - SFKImageTransforming
+      - SFKDefaultImageTransformer
+      - SFKImageCache
+      - SFKMemoryImageCache
+      - SFKImageStorage
+      - SFKAppGroupImageStorage
+      - SFKRemoteImageLoader
       - SFKImageCompressor
       - SFKImageCompressor.compressToSize(_:maxBytes:maxDimension:quality:qualityFloor:)
+    migration_notes:
+      - "Media responsibilities are separate in SwapFoundationKitMedia; inject only the transformer, cache, storage, loader, or compressor needed by the host."
+      - "Remote loading uses an injected ImageProcessorTransport backed by the Networking product; preserve cancellation, status handling, cache keys, and storage paths during migration."
     docs:
-      - README.md
+      - Sources/SwapFoundationKitMedia/README.md
     examples:
-      - Sources/SwapFoundationKit/ImageProcessor/SFKImageCompressor.swift
+      - Sources/SwapFoundationKitMedia/ImageProcessor/SFKImageCompressor.swift
     host_app_triggers:
       - image compressor
       - compress image
@@ -680,7 +757,7 @@ domains:
       - asyncReduce(_:_:)
       - asyncMap(_:)
     docs:
-      - README.md
+      - Sources/SwapFoundationKit/Extensions/README.md
     examples:
       - Sources/SwapFoundationKit/Extensions/Collection+Async.swift
     host_app_triggers:
@@ -690,6 +767,7 @@ domains:
       - await forEach
 
   - id: remote_ai
+    module: SwapFoundationKitRemoteAI
     priority: 14
     summary: Client for a backend AI generation endpoint — identity headers, snake_case coding, HTTP status to typed error mapping, and cancellation.
     when_to_check:
@@ -707,10 +785,10 @@ domains:
       - RemoteAIConfiguration
       - RemoteAIError
     docs:
-      - README.md
+      - Sources/SwapFoundationKitRemoteAI/README.md
     examples:
-      - Sources/SwapFoundationKit/RemoteAI/RemoteAIClient.swift
-      - Sources/SwapFoundationKit/RemoteAI/RemoteAIConfiguration.swift
+      - Sources/SwapFoundationKitRemoteAI/RemoteAI/RemoteAIClient.swift
+      - Sources/SwapFoundationKitRemoteAI/RemoteAI/RemoteAIConfiguration.swift
     host_app_triggers:
       - ai briefing
       - ai generation

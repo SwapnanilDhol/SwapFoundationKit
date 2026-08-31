@@ -78,8 +78,12 @@ struct ButtonExamplesView: View {
             apiNames: ["SFKButton", "SFKCloseButton"]
         ) {
             VStack(spacing: 12) {
-                SFKButton("Primary", leadingIconName: "sparkles", style: .primary) {}
-                SFKButton("Secondary", leadingIconName: "doc.text", style: .secondary) {}
+                SFKButton("Primary", role: .primary) {}
+                    .sfkIcon("sparkles")
+                SFKButton("Secondary", role: .secondary) {}
+                    .sfkIcon("doc.text")
+                SFKButton("Delete", role: .destructive) {}
+                    .sfkIcon("trash")
 
                 HStack(spacing: 20) {
                     SFKButton(leadingIconName: "ellipsis", fullWidth: false, style: .toolbar) {}

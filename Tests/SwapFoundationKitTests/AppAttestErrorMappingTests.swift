@@ -13,6 +13,7 @@ import DeviceCheck
 import Foundation
 import Testing
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitAuthentication
 
 struct AppAttestErrorMappingTests {
     @Test(arguments: [

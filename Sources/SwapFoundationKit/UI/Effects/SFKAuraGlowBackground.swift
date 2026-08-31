@@ -29,8 +29,9 @@ import SwiftUI
 /// ```
 public struct SFKAuraGlowBackground<Content: View>: View {
 
-    private let color: Color
+    private let color: Color?
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.sfkTheme) private var theme
     @ViewBuilder private let content: () -> Content
 
     /// Creates an aura glow background with a given color.
@@ -38,7 +39,7 @@ public struct SFKAuraGlowBackground<Content: View>: View {
     ///   - color: The primary tint color for the gradient layers.
     ///   - content: The content to render on top of the glow.
     public init(
-        color: Color,
+        color: Color? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.color = color
@@ -47,7 +48,7 @@ public struct SFKAuraGlowBackground<Content: View>: View {
 
     public var body: some View {
         ZStack(alignment: .top) {
-            Color(.systemGroupedBackground)
+            theme.colors.background
 
             radialGlow
 
@@ -64,8 +65,8 @@ public struct SFKAuraGlowBackground<Content: View>: View {
 
         RadialGradient(
             colors: [
-                color.opacity(isDark ? 0.46 : 0.44),
-                color.opacity(isDark ? 0.24 : 0.24),
+                resolvedColor.opacity(isDark ? 0.46 : 0.44),
+                resolvedColor.opacity(isDark ? 0.24 : 0.24),
                 .clear
             ],
             center: .top,
@@ -83,7 +84,7 @@ public struct SFKAuraGlowBackground<Content: View>: View {
 
         LinearGradient(
             colors: [
-                color.opacity(isDark ? 0.20 : 0.16),
+                resolvedColor.opacity(isDark ? 0.20 : 0.16),
                 .clear
             ],
             startPoint: .top,
@@ -91,6 +92,10 @@ public struct SFKAuraGlowBackground<Content: View>: View {
         )
         .frame(height: 240)
         .blur(radius: 12)
+    }
+
+    private var resolvedColor: Color {
+        color ?? theme.colors.accent
     }
 }
 

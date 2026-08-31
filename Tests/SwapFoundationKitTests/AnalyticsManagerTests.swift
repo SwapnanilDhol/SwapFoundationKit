@@ -11,6 +11,7 @@
 
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitFirebase
 
 @MainActor
 final class AnalyticsManagerTests: XCTestCase {
@@ -94,6 +95,32 @@ final class AnalyticsManagerTests: XCTestCase {
         XCTAssertEqual(logger.loggedEvents.count, 2)
         XCTAssertEqual(logger.loggedEvents[0].parameters, ["screen": "home", "device": "iPhone"])
         XCTAssertEqual(logger.loggedEvents[1].parameters, ["screen": "home"])
+    }
+
+    func testFirebaseLoggerForwardsThroughRequiredHostHandlers() {
+        var loggedEvent: (String, [String: String]?)?
+        var identifiedUser: String?
+        var property: (String, String)?
+        var screen: (String, [String: String]?)?
+        let logger = SFKFirebaseLogger(
+            userIdentificationHandler: { identifiedUser = $0 },
+            eventHandler: { event, parameters in loggedEvent = (event.rawValue, parameters) },
+            userPropertyHandler: { property = ($0, $1) },
+            screenHandler: { screen = ($0, $1) }
+        )
+        let event = TestAnalyticsEvent(name: "opened", parameters: ["source": "test"])
+
+        logger.logEvent(event: event, additionalParameters: ["screen": "home"])
+        logger.identifyUser(userId: "user-1")
+        logger.setUserProperty(key: "plan", value: "pro")
+        logger.trackScreen(screenName: "Home", parameters: nil)
+
+        XCTAssertEqual(loggedEvent?.0, "opened")
+        XCTAssertEqual(loggedEvent?.1, ["screen": "home"])
+        XCTAssertEqual(identifiedUser, "user-1")
+        XCTAssertEqual(property?.0, "plan")
+        XCTAssertEqual(property?.1, "pro")
+        XCTAssertEqual(screen?.0, "Home")
     }
 
     private func addMockLogger() -> MockAnalyticsLogger {

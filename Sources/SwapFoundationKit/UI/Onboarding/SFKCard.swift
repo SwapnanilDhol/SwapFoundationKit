@@ -20,8 +20,8 @@ import SwiftUI
 ///     Text("Card content goes here")
 /// }
 ///
-/// // Card with custom tint and corner radius
-/// SFKCard(cornerRadius: 16, tint: .blue.opacity(0.1)) {
+/// // Card with custom surface and corner radius
+/// SFKCard(cornerRadius: 16, backgroundFill: .blue.opacity(0.1)) {
 ///     VStack {
 ///         Text("Custom Card")
 ///             .sfkFlowCardTitleStyle()
@@ -36,6 +36,7 @@ import SwiftUI
 /// }
 /// ```
 public struct SFKCard<Content: View>: View {
+    @Environment(\.sfkTheme) private var theme
     /// The card content.
     public let content: Content
 
@@ -57,6 +58,9 @@ public struct SFKCard<Content: View>: View {
     /// The alignment of the card content.
     public var alignment: Alignment
 
+    private let usesThemeCornerRadius: Bool
+    private let usesThemeBackground: Bool
+
     /// Creates a card with default styling.
     /// - Parameters:
     ///   - cornerRadius: The corner radius. Defaults to 12.
@@ -67,16 +71,18 @@ public struct SFKCard<Content: View>: View {
     ///   - alignment: Content alignment. Defaults to `.leading`.
     ///   - content: The card content.
     public init(
-        cornerRadius: CGFloat = 12,
-        backgroundFill: Color = Color(.secondarySystemBackground),
+        cornerRadius: CGFloat? = nil,
+        backgroundFill: Color? = nil,
         icon: String? = nil,
         iconTint: Color = .orange,
         padding: CGFloat = 16,
         alignment: Alignment = .leading,
         @ViewBuilder content: () -> Content
     ) {
-        self.cornerRadius = cornerRadius
-        self.backgroundFill = backgroundFill
+        self.cornerRadius = cornerRadius ?? 12
+        self.backgroundFill = backgroundFill ?? Color(.secondarySystemBackground)
+        self.usesThemeCornerRadius = cornerRadius == nil
+        self.usesThemeBackground = backgroundFill == nil
         self.icon = icon
         self.iconTint = iconTint
         self.padding = padding
@@ -85,14 +91,14 @@ public struct SFKCard<Content: View>: View {
     }
 
     public var body: some View {
-        VStack(alignment: alignment.horizontal, spacing: 10) {
+        VStack(alignment: alignment.horizontal, spacing: theme.spacing.inline) {
             if let icon {
-                HStack(spacing: 10) {
+                HStack(spacing: theme.spacing.inline) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: theme.radii.control, style: .continuous)
                             .fill(iconTint.opacity(0.14))
                         Image(systemName: icon)
-                            .font(.caption.bold())
+                            .font(theme.typography.caption.bold())
                             .foregroundStyle(iconTint)
                     }
                     .frame(width: 28, height: 28)
@@ -106,9 +112,21 @@ public struct SFKCard<Content: View>: View {
         .padding(padding)
         .frame(maxWidth: .infinity, alignment: alignment)
         .background(
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(backgroundFill)
+            RoundedRectangle(cornerRadius: resolvedCornerRadius, style: .continuous)
+                .fill(resolvedBackgroundFill)
+            .overlay {
+                    RoundedRectangle(cornerRadius: resolvedCornerRadius, style: .continuous)
+                        .strokeBorder(theme.colors.border, lineWidth: 1)
+                }
         )
+    }
+
+    private var resolvedCornerRadius: CGFloat {
+        usesThemeCornerRadius ? theme.radii.card : cornerRadius
+    }
+
+    private var resolvedBackgroundFill: Color {
+        usesThemeBackground ? theme.colors.surface : backgroundFill
     }
 }
 

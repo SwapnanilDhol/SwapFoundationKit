@@ -7,6 +7,7 @@ import Foundation
 import Testing
 
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitRemoteAI
 
 struct RemoteAIErrorTests {
     @Test

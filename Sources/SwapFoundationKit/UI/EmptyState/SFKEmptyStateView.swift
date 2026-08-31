@@ -17,12 +17,13 @@ import SwiftUI
 /// `actionColor` when the optional CTA should match product accent.
 @available(iOS 16, *)
 public struct SFKEmptyStateView: View {
+    @Environment(\.sfkTheme) private var theme
     private let title: LocalizedStringKey
     private let message: LocalizedStringKey
     private let systemImage: String
     private let actionTitle: String?
     private let actionSystemImage: String?
-    private let actionColor: Color
+    private let actionColor: Color?
     private let actionAccessibilityIdentifier: String?
     private let action: (() -> Void)?
 
@@ -32,7 +33,7 @@ public struct SFKEmptyStateView: View {
         systemImage: String,
         actionTitle: String? = nil,
         actionSystemImage: String? = nil,
-        actionColor: Color = .accentColor,
+        actionColor: Color? = nil,
         actionAccessibilityIdentifier: String? = nil,
         action: (() -> Void)? = nil
     ) {
@@ -47,41 +48,35 @@ public struct SFKEmptyStateView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: theme.spacing.section) {
             Image(systemName: systemImage)
                 .font(.system(size: 38, weight: .medium))
                 .symbolRenderingMode(.monochrome)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.colors.secondaryText)
                 .accessibilityHidden(true)
 
-            VStack(spacing: 7) {
+            VStack(spacing: theme.spacing.inline) {
                 Text(title)
-                    .font(.system(.title3, design: .rounded, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .font(theme.typography.title)
+                    .foregroundStyle(theme.colors.text)
 
                 Text(message)
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .font(theme.typography.body)
+                    .foregroundStyle(theme.colors.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
             }
 
             if let actionTitle, let action {
-                SFKButton(
-                    actionTitle,
-                    leadingIconName: actionSystemImage,
-                    fullWidth: false,
-                    color: actionColor,
-                    verticalPadding: 7,
-                    style: .primary,
-                    hapticStyle: .medium,
-                    action: action
-                )
+                SFKButton(actionTitle, role: .primary, action: action)
+                    .sfkIcon(actionSystemImage)
+                    .sfkFullWidth(false)
+                    .sfkTint(actionColor)
                 .accessibilityIdentifier(actionAccessibilityIdentifier ?? "emptyStateActionButton")
             }
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 28)
+        .padding(.horizontal, theme.spacing.section)
+        .padding(.vertical, theme.spacing.section + theme.spacing.inline / 2)
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .contain)
     }

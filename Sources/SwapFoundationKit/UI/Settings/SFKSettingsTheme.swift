@@ -109,15 +109,51 @@ public struct SFKSettingsTheme {
         self.typography = typography
         self.metrics = metrics
     }
+
+    /// Compatibility projection from the v4 application theme.
+    ///
+    /// Settings keeps this value type during the compatibility release so old
+    /// rows can continue to render. New screens should inject ``SFKTheme``;
+    /// `EnvironmentValues.sfkSettingsTheme` creates this projection when no
+    /// explicit legacy override was supplied.
+    public init(_ theme: SFKTheme) {
+        self.colors = Colors(
+            accent: theme.colors.accent,
+            itemTintBehavior: .preserveItemTint,
+            toggleOnTint: theme.colors.accent,
+            sliderTint: theme.colors.accent,
+            titleColor: theme.colors.text,
+            subtitleColor: theme.colors.secondaryText,
+            valueColor: theme.colors.secondaryText,
+            accessoryColor: theme.colors.secondaryText,
+            destructiveTint: theme.colors.destructive
+        )
+        self.typography = Typography(
+            iconFont: theme.typography.caption,
+            // Settings row labels are body copy with emphasis; reserve the
+            // title token for screen and section headings.
+            titleFont: theme.typography.body.weight(.semibold),
+            subtitleFont: theme.typography.caption,
+            valueFont: theme.typography.body,
+            accessoryFont: theme.typography.caption
+        )
+        self.metrics = Metrics(
+            iconCornerRadius: theme.radii.control,
+            rowSpacing: theme.spacing.inline,
+            labelSpacing: theme.spacing.inline,
+            trailingSpacing: theme.spacing.inline,
+            rowVerticalPadding: theme.spacing.control / 4
+        )
+    }
 }
 
 private struct SFKSettingsThemeKey: EnvironmentKey {
-    static let defaultValue = SFKSettingsTheme()
+    static let defaultValue: SFKSettingsTheme? = nil
 }
 
 public extension EnvironmentValues {
     var sfkSettingsTheme: SFKSettingsTheme {
-        get { self[SFKSettingsThemeKey.self] }
+        get { self[SFKSettingsThemeKey.self] ?? SFKSettingsTheme(self.sfkTheme) }
         set { self[SFKSettingsThemeKey.self] = newValue }
     }
 }

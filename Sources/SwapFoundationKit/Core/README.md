@@ -1,6 +1,16 @@
-# Core
+# Core and optional infrastructure
 
-Foundation-level services for networking, security, backup, and configuration.
+The default product retains security and backup utilities. Networking,
+Authentication, and legacy configuration now have explicit product boundaries.
+The combined reference below identifies APIs across those products; it does not
+mean they are all available from `import SwapFoundationKit`.
+
+| API | Required product/import |
+|---|---|
+| `SecurityService`, `BackupService` | `SwapFoundationKit` |
+| `HTTPClient`, `NetworkRequest`, `NetworkService`, instrumentation | `SwapFoundationKitNetworking` |
+| `AppAttestService`, `AuthenticatedSessionService`, `AuthenticatedHTTPClient` | `SwapFoundationKitAuthentication` |
+| `ConfigurationService`, old bootstrap facade | `SwapFoundationKitLegacy` (transitional) |
 
 ## Public API
 
@@ -36,6 +46,10 @@ Foundation-level services for networking, security, backup, and configuration.
 ## Quick Examples
 
 ```swift
+import SwapFoundationKit
+import SwapFoundationKitNetworking
+import SwapFoundationKitLegacy // Only for the legacy configuration examples below.
+
 // Networking
 let client = HTTPClient()
 NetworkService.registerBackendOrigin(host: "api.example.com")

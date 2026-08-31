@@ -54,7 +54,7 @@ public struct SFKSettingsRow: View {
     private let icon: String
     private let title: String
     private let subtitle: String
-    private let tint: Color
+    private let tint: Color?
     private let showChevron: Bool
     private let action: () -> Void
     private let trailingView: SFKSettingsTrailing?
@@ -80,13 +80,33 @@ public struct SFKSettingsRow: View {
         self.trailingView = trailingView
     }
 
+    /// Creates an action or navigation row without defining a ``SettingsItem``.
+    /// This is the concise v4 builder-path initializer.
+    public init(
+        _ title: String,
+        subtitle: String = "",
+        systemImage: String = "arrow.forward",
+        tint: Color? = nil,
+        showChevron: Bool = true,
+        trailingView: SFKSettingsTrailing? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.icon = systemImage
+        self.title = title
+        self.subtitle = subtitle
+        self.tint = tint ?? .accentColor
+        self.showChevron = showChevron
+        self.action = action
+        self.trailingView = trailingView
+    }
+
     public var body: some View {
         Button(action: action) {
             _SFKSettingsRowContent(
                 title: title,
                 subtitle: subtitle,
                 icon: icon,
-                tint: theme.resolvedItemTint(tint)
+                tint: tint.map { theme.resolvedItemTint($0) } ?? theme.colors.accent
             ) {
                 trailingContent
             }

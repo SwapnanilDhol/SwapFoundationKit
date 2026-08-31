@@ -12,6 +12,7 @@
 import XCTest
 import Combine
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitSync
 
 final class WatchSyncIntegrationTests: XCTestCase {
     private var cancellables = Set<AnyCancellable>()

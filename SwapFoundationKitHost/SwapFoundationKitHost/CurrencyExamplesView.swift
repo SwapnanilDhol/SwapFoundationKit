@@ -11,6 +11,7 @@
 
 import SwiftUI
 import SwapFoundationKit
+import SwapFoundationKitCurrency
 
 /// Examples for `Currency` enums and helpers.
 struct CurrencyExamplesView: View {
@@ -30,5 +31,4 @@ struct CurrencyExamplesView: View {
         .navigationTitle("Currency")
     }
 }
-
 

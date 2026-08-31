@@ -12,6 +12,7 @@
 import SwiftUI
 
 @MainActor
+@available(*, deprecated, message: "Use SFKColorPickerSheet(selection:configuration:onApply:) instead.")
 public protocol SFKColorPickerDelegate: AnyObject {
     func colorPickerDidSelectColor(_ color: Color)
 }

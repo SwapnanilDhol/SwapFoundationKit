@@ -1,6 +1,8 @@
 # SwapFoundationKit
 
-A comprehensive Swift package providing essential utilities, extensions, UI components, and services for iOS development.
+Composable SwiftUI components, semantic design tokens, and opt-in services for iOS development.
+
+The v4 refactor is in progress on this branch. See the [implementation checkpoint](Docs/development/v4-implementation-status.md) for implementation and verification status; these changes are not a released v4 tag.
 
 ## Requirements
 
@@ -9,15 +11,18 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 - **Dependencies (default product)**: none
 - **Optional products**: `SwapFoundationKitPulse` + [Pulse](https://github.com/kean/Pulse) 5.2.3, `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
 
-`SFKFirebaseLogger` is a temporary guarded compatibility adapter; Firebase will
-move to a planned explicit `SwapFoundationKitFirebase` product before v4.
+Networking, Authentication, Sync, Media, Currency, RemoteAI, Firebase, and legacy
+bootstrap now have explicit opt-in products on this development branch. The Firebase
+adapter requires host-owned forwarding handlers; the Firebase SDK is not a dependency
+of the default product.
 
 ## Installation
 
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "1.0.0")
+    // Use this local checkout while v4 is unreleased; adjust the path as needed.
+    .package(path: "../SwapFoundationKit")
 ],
 targets: [
     .target(name: "YourApp", dependencies: [
@@ -29,39 +34,35 @@ targets: [
 ## Quick Start
 
 ```swift
+import SwiftUI
 import SwapFoundationKit
 
 @main
 struct MyApp: App {
-    init() {
-        let config = SwapFoundationKitConfiguration(
-            appMetadata: AppMetaData(
-                appGroupIdentifier: "group.com.yourapp.widget",
-                appName: "MyApp"
-            )
-        )
-        try? SwapFoundationKit.shared.configure(with: config)
-        Task {
-            try? await SwapFoundationKit.shared.start()
-            await ExchangeRateManager.shared.start()
-        }
-    }
-
     var body: some Scene {
-        WindowGroup { ContentView() }
+        WindowGroup {
+            ContentView()
+                .sfkTheme(.system.accent(.indigo))
+        }
     }
 }
 ```
 
+UI needs no SFK startup, App Group, network client, or authentication configuration.
+Customize colors, semantic typography, spacing, radii, motion, and feedback through
+`SFKTheme`; individual controls can override only what they need. Construct optional
+services at your app's composition root when their feature is used.
+
 ### Optional Pulse integration
 
 Add the `SwapFoundationKitPulse` product only when the app needs Pulse. Configure it before
-constructing `HTTPClient` instances or touching `SwapFoundationKit.shared`, so those instances
+constructing `HTTPClient` instances, so those instances
 use the Pulse instrumentation seam:
 
 ```swift
 import SwapFoundationKit
 import SwapFoundationKitPulse
+import SwapFoundationKitNetworking
 
 @main
 struct MyApp: App {
@@ -70,14 +71,6 @@ struct MyApp: App {
             SFKPulseConfiguration(networkCaptureMode: .sfkHTTPClientOnly)
         )
         _ = HTTPClient()
-        try? SwapFoundationKit.shared.configure(
-            with: SwapFoundationKitConfiguration(
-                appMetadata: AppMetaData(
-                    appGroupIdentifier: "group.com.yourapp.widget",
-                    appName: "MyApp"
-                )
-            )
-        )
     }
 
     var body: some Scene {
@@ -98,15 +91,22 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 
 | Module | Description |
 |--------|-------------|
-| [Core](Sources/SwapFoundationKit/Core/README.md) | Networking, security, App Attest authenticated sessions, backup, configuration |
+| [Core and infrastructure](Sources/SwapFoundationKit/Core/README.md) | Security/backup in the default product; Networking, Authentication and Legacy APIs require their own imports |
+| [Networking](Sources/SwapFoundationKitNetworking/README.md) | HTTP client, reachability, request contracts, instrumentation |
+| [Authentication](Sources/SwapFoundationKitAuthentication/README.md) | App Attest, authenticated sessions, secure transport |
+| [Sync](Sources/SwapFoundationKitSync/README.md) | Explicit App Group storage and watch synchronization |
+| [Media](Sources/SwapFoundationKitMedia/README.md) | Image processing and remote image transport |
+| [Remote AI](Sources/SwapFoundationKitRemoteAI/README.md) | Host-configured AI requests over Networking |
+| [Firebase](Sources/SwapFoundationKitFirebase/README.md) | Host-handler-injected analytics adapter |
+| [Legacy](Sources/SwapFoundationKitLegacy/README.md) | Transitional global bootstrap and configuration |
 | [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, files, location, pro gating, notifications (Pulse and Toast are opt-in products) |
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, text fields, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |
 | [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Persistent TTL storage, debounce/throttle, environment detection, launch arguments |
-| [Currency](Sources/SwapFoundationKit/Currency/README.md) | 58 currencies with flags/symbols, formatting, sorting, exchange rates |
-| [ImageProcessor](Sources/SwapFoundationKit/ImageProcessor/README.md) | Image resize, filters, caching, JPEG compression |
-| [ItemSync](Sources/SwapFoundationKit/ItemSync/README.md) | App Group data sync for widgets and extensions |
-| [WatchSync](Sources/SwapFoundationKit/WatchSync/README.md) | Type-safe Watch Connectivity transport |
+| [Currency](Sources/SwapFoundationKitCurrency/Currency/README.md) | 58 currencies with flags/symbols, formatting, sorting, exchange rates |
+| [ImageProcessor](Sources/SwapFoundationKitMedia/ImageProcessor/README.md) | Image resize, filters, caching, JPEG compression |
+| [ItemSync](Sources/SwapFoundationKitSync/ItemSync/README.md) | App Group data sync for widgets and extensions |
+| [WatchSync](Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity transport |
 | [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | [Compatibility](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |

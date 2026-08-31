@@ -10,17 +10,23 @@
  *****************************************************************************/
 
 import SwiftUI
+import UIKit
 import SwapFoundationKit
 
 struct CaptureExamplesView: View {
     @State private var presentedCapture: PresentedCapture?
     @State private var lastPayload: String?
+    @State private var selectedPhoto: UIImage?
+    @State private var isShowingPhotoPicker = false
 
     var body: some View {
         List {
             Section {
                 Button("Open Barcode Scanner") {
                     presentedCapture = .barcodeScanner
+                }
+                Button("Open Photo Picker") {
+                    isShowingPhotoPicker = true
                 }
             } footer: {
                 Text("Live scanning requires a supported physical device. The Simulator shows SFK’s unavailable state.")
@@ -30,6 +36,16 @@ struct CaptureExamplesView: View {
                 Section("Last Scan") {
                     Text(lastPayload)
                         .textSelection(.enabled)
+                }
+            }
+
+            if let selectedPhoto {
+                Section("Selected Photo") {
+                    Image(uiImage: selectedPhoto)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 160)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
 
@@ -53,6 +69,10 @@ struct CaptureExamplesView: View {
                     }
                 )
             }
+        }
+        .sheet(isPresented: $isShowingPhotoPicker) {
+            SFKPhotoPicker(selection: $selectedPhoto)
+                .ignoresSafeArea()
         }
     }
 }

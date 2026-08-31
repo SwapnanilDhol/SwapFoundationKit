@@ -1,5 +1,6 @@
 import Foundation
 import SwapFoundationKit
+import SwapFoundationKitMedia
 import UIKit
 
 @MainActor

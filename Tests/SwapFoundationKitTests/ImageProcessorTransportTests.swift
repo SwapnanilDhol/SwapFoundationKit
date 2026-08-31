@@ -13,6 +13,8 @@
 import XCTest
 import UIKit
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitNetworking
+@testable import SwapFoundationKitMedia
 
 /// Covers that `ImageProcessor.cacheImage(from:targetSize:quality:)` routes remote fetches through
 /// its injected `ImageProcessorTransport` (not `URLSession.shared`), and the deliberate non-2xx

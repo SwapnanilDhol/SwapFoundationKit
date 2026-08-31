@@ -30,15 +30,13 @@ below.
 | `LocationSearchService` | class | MapKit location autocomplete and reverse geocoding |
 | `DeviceInfo` | enum | Device model, OS version, screen size, idiom checks |
 | `AppLinkOpener` | enum | URL opening with App Store, Maps, reviews support |
-| `AppStoreSearchService` | class | iTunes Search API with debounce and task cancellation |
 | `FileExportService` | class | Share sheet presenter for data and Encodable objects |
 | `FileImportService` | class | Document picker for importing files with delegate |
 | `ItemDetailSource` | protocol | Shareable item metadata (title/text/image/url) |
 | `DefaultItemDetailSource` | struct | Concrete implementation of `ItemDetailSource` |
 | `ActivityItemDetailSource` | class | `UIActivityItemSource` bridge — use `makeActivityItem()` |
-| `SFKProGate` | enum | Closure-based IAP feature gating with automatic upsell |
+| `SFKAccessPolicy` / `SFKAccessGate` | protocol / class | Injected entitlement policy and instance-based feature gate |
 | `SFKNotificationService` | class | Generic `UNUserNotificationCenter` wrapper |
-| `SFKFirebaseLogger` | class | Temporary guarded `AnalyticsLogger` adapter for Firebase; planned move to opt-in `SwapFoundationKitFirebase` |
 
 ## Quick Examples
 
@@ -60,8 +58,8 @@ struct MySink: SFKLogSink {
 }
 SFKLogSinkRegistry.register(MySink())
 
-// Analytics
-AnalyticsManager.shared.addLogger(SFKFirebaseLogger())
+// Analytics — inject host-owned providers (Firebase is an opt-in product)
+AnalyticsManager.shared.addLogger(MyAnalyticsLogger())
 AnalyticsManager.shared.logEvent(event: myEvent)
 
 // UserDefaults
@@ -89,10 +87,9 @@ enum AppRoute: DeeplinkRoute {
 }
 // Configure in SwapFoundationKitConfiguration.supportedRoutes
 
-// Pro Gating
-SFKProGate.isProEnabled = { ProManager.shared.isPro }
-SFKProGate.presentProSheet = { reason in ... }
-SFKProGate.require("exportCSV") { export() }
+// Pro gating — inject the host's entitlement policy
+let accessGate = SFKAccessGate(policy: MyAccessPolicy())
+accessGate.require("exportCSV") { export() }
 
 // Notifications
 await SFKNotificationService.shared.requestAuthorization()
@@ -113,16 +110,33 @@ here, and `SFKURLSessionPerforming`/`SFKNetworkInstrumentation` in `Core/`.
 
 Host-app Pulse integration guidance lives in [Docs/guides/pulse-integration.md](../../../Docs/guides/pulse-integration.md).
 
-`SFKFirebaseLogger` remains source-compatible in the default target only as a
-temporary `#if canImport(FirebaseAnalytics)` adapter. It is not a permanent
-default-target vendor integration: move Firebase usage to the planned explicit
-`SwapFoundationKitFirebase` product when that product is introduced.
+Firebase integration is intentionally opt-in. Add the `SwapFoundationKitFirebase`
+product and inject `SFKFirebaseLogger` with host-owned handlers; it has no
+no-argument constructor and does not import Firebase from the default product.
+For example, pass the host's Firebase calls explicitly:
+
+```swift
+let firebaseLogger = SFKFirebaseLogger(
+    userIdentificationHandler: { hostFirebaseSetUserID($0) },
+    eventHandler: { hostFirebaseLog($0, $1) },
+    userPropertyHandler: { hostFirebaseSetProperty($0, $1) },
+    screenHandler: { hostFirebaseTrackScreen($0, $1) }
+)
+AnalyticsManager.shared.addLogger(firebaseLogger)
+```
+
+`SFKProGate` is retained only in the `SwapFoundationKitLegacy` product for
+source-compatible migration. New code should inject `SFKAccessPolicy` into an
+`SFKAccessGate` instance instead of using global mutable closures.
+
+App Store lookup moved to the opt-in `SwapFoundationKitNetworking` product;
+see [its module reference](../../SwapFoundationKitNetworking/README.md).
 
 ## Source Files
 
 ### Analytics
 - `AnalyticsProtocol.swift` — AnalyticsManager, AnalyticsLogger, AnalyticsEvent
-- `Analytics/SFKFirebaseLogger.swift` — Firebase adapter
+- Firebase logging lives in the opt-in `SwapFoundationKitFirebase` product.
 
 ### Deeplinks
 - `DeeplinkHandler/DeeplinkHandler.swift` — DefaultDeeplinkHandler
@@ -138,8 +152,8 @@ default-target vendor integration: move Firebase usage to the planned explicit
 - `LocationSearchService.swift` — MapKit search
 - `DeviceInfo.swift` — Hardware info
 - `AppLinkOpener.swift` — URL opening
-- `AppStoreSearch/AppStoreSearchResult.swift` — iTunes search
+- App Store lookup lives in the `SwapFoundationKitNetworking` product.
 - `FileExportService.swift` + `FileImportService.swift` — File I/O
 - `ItemDetailSource.swift` + `DefaultItemDetailSource.swift` + `ActivityItemDetailSource` — Sharing (`makeActivityItem()`)
-- `SFKProGate.swift` — Feature gating
+- `SFKAccessPolicy.swift` — injected entitlement policy and gate
 - `SFKNotificationService.swift` — Local notifications

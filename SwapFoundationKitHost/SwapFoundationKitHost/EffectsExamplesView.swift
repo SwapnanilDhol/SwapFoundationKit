@@ -30,7 +30,7 @@ struct EffectsExamplesView: View {
                     apiNames: ["SFKAuraGlowBackground"]
                 ) {
                     previewCard {
-                        SFKAuraGlowBackground(color: .purple) {
+                        SFKAuraGlowBackground {
                             Text("Atmospheric surface")
                                 .font(.headline)
                                 .padding(.top, 54)

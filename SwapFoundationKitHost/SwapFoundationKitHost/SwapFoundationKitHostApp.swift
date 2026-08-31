@@ -21,6 +21,7 @@ struct SwapFoundationKitHostApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .sfkTheme(.system.accent(.indigo))
         }
     }
 }

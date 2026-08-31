@@ -47,6 +47,7 @@ private enum AppExtrasItem: String, CaseIterable, SettingsItem {
 
 struct SettingsExamplesView: View {
     @State private var notificationsEnabled = true
+    @State private var onboardingEnabled = false
     @State private var lastSyncDate = Date.now
 
     private let theme = SFKSettingsTheme(
@@ -58,92 +59,53 @@ struct SettingsExamplesView: View {
         )
     )
 
-    private let sections: [SFKSettingsSectionConfiguration] = [
-        SFKSettingsSectionConfiguration(
-            title: "App Settings",
-            items: AppSettingsItem.allCases
-        ),
-        SFKSettingsSectionConfiguration(
-            title: "App Information",
-            items: SFKInformationSectionItem.allCases + AppExtrasItem.allCases
-        ),
-        SFKSettingsSectionConfiguration(
-            title: "Developer",
-            items: SFKDeveloperSectionItem.allCases
-        )
-    ]
-
     var body: some View {
-        SFKSettingsScreen(
-            header: header,
-            customSections: [
-                SFKSettingsCustomSection(title: "Quick Controls") {
-                    SFKSettingsToggle(
-                        title: "Push Notifications",
-                        subtitle: "Enable alerts for app updates.",
-                        icon: "bell.badge.fill",
-                        isOn: $notificationsEnabled
-                    )
+        SFKSettingsScreen {
+            SFKSettingsSection("Quick Controls") {
+                SFKSettingsToggle(
+                    "Push Notifications",
+                    subtitle: "Enable alerts for app updates.",
+                    systemImage: "bell.badge.fill",
+                    isOn: $notificationsEnabled
+                )
+            }
+
+            SFKSettingsSection("App Settings") {
+                SFKSettingsRow(AppSettingsItem.lastSync.title,
+                               subtitle: AppSettingsItem.lastSync.subtitle,
+                               systemImage: AppSettingsItem.lastSync.icon,
+                               tint: AppSettingsItem.lastSync.tint,
+                               showChevron: false) {
+                    lastSyncDate = .now
                 }
-            ],
-            sections: sections,
-            theme: theme,
-            rowTrailingBuilder: trailingView(for:),
-            rowChevronBuilder: showChevron(for:),
-            onItemTap: handleTap(_:)
-        )
-    }
+                SFKSettingsToggleRow(item: AppSettingsItem.onboarding, isOn: $onboardingEnabled)
+            }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("SwapFoundationKit Pro")
-                .font(.title2.bold())
-            Text("Header content is supplied by the app, while the settings screen layout stays shared.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 8)
-    }
+            SFKSettingsSection("App Information") {
+                SFKSettingsRow(item: SFKInformationSectionItem.version,
+                               action: {},
+                               showChevron: false,
+                               trailingView: .value("2.2.0 (1)"))
+                ForEach(SFKInformationSectionItem.allCases.filter { $0 != .version }, id: \.id) { item in
+                    SFKSettingsRow(item: item) { handleInformation(item) }
+                }
+                SFKSettingsRow(item: AppExtrasItem.changelog) { }
+            }
 
-    private func trailingView(for item: any SettingsItem) -> SFKSettingsTrailing? {
-        if let item = item as? AppSettingsItem {
-            switch item {
-            case .lastSync:
-                return .value(lastSyncDate.formatted(date: .abbreviated, time: .shortened))
-            case .notifications, .onboarding:
-                return nil
+            SFKSettingsSection("Developer") {
+                ForEach(SFKDeveloperSectionItem.allCases, id: \.id) { item in
+                    SFKSettingsRow(item: item) { handleDeveloper(item) }
+                }
             }
         }
-
-        if let item = item as? SFKInformationSectionItem, item == .version {
-            return .value("2.2.0 (1)")
-        }
-
-        return nil
+        .sfkSettingsTheme(theme)
     }
 
-    private func showChevron(for item: any SettingsItem) -> Bool {
-        if let item = item as? AppSettingsItem, item == .lastSync {
-            return false
-        }
-
-        if let item = item as? SFKInformationSectionItem, item == .version {
-            return false
-        }
-
-        return true
+    private func handleInformation(_ item: SFKInformationSectionItem) {
+        if item == .referToFriends { notificationsEnabled.toggle() }
     }
 
-    private func handleTap(_ item: any SettingsItem) {
-        if let item = item as? AppSettingsItem {
-            switch item {
-            case .notifications:
-                notificationsEnabled.toggle()
-            case .lastSync:
-                lastSyncDate = .now
-            case .onboarding:
-                break
-            }
-        }
+    private func handleDeveloper(_ item: SFKDeveloperSectionItem) {
+        if item == .anotherApp { lastSyncDate = .now }
     }
 }

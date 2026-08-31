@@ -28,6 +28,7 @@ import Foundation
 ///     }
 /// }
 /// ```
+@available(*, deprecated, message: "Use the typed selection binding and onSelect closure instead.")
 public protocol SFKItemPickerDelegate: AnyObject {
     /// Called when an item is selected or toggled.
     func itemPicker(_ picker: SFKItemPickerViewModel, didSelectItem item: any SFKPickableItem)

@@ -26,6 +26,7 @@ import SwiftUI
 /// )
 /// ```
 public struct SFKProBannerView: View {
+    @Environment(\.sfkTheme) private var theme
 
     public let isProEnabled: Bool
     public let proEnabledTitle: String
@@ -35,6 +36,7 @@ public struct SFKProBannerView: View {
     public let upgradeButtonTitle: String
     public let upgradeButtonFillColor: Color
     public let onUpgradeTap: () -> Void
+    private let usesThemeUpgradeButtonColor: Bool
 
     public init(
         isProEnabled: Bool,
@@ -43,7 +45,7 @@ public struct SFKProBannerView: View {
         proDisabledTitle: String,
         proDisabledSubtitle: String,
         upgradeButtonTitle: String = "Upgrade Now".localized,
-        upgradeButtonFillColor: Color = .purple,
+        upgradeButtonFillColor: Color? = nil,
         onUpgradeTap: @escaping () -> Void
     ) {
         self.isProEnabled = isProEnabled
@@ -52,33 +54,31 @@ public struct SFKProBannerView: View {
         self.proDisabledTitle = proDisabledTitle
         self.proDisabledSubtitle = proDisabledSubtitle
         self.upgradeButtonTitle = upgradeButtonTitle
-        self.upgradeButtonFillColor = upgradeButtonFillColor
+        self.upgradeButtonFillColor = upgradeButtonFillColor ?? .purple
+        self.usesThemeUpgradeButtonColor = upgradeButtonFillColor == nil
         self.onUpgradeTap = onUpgradeTap
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: theme.spacing.inline) {
             Text(title)
-                .font(.title3)
-                .fontWeight(.heavy)
+                .font(theme.typography.title.weight(.bold))
+                .foregroundStyle(theme.colors.text)
                 .accessibilityIdentifier("proBannerTitle")
 
             Text(subtitle)
-                .font(.body)
-                .foregroundStyle(.secondary)
+                .font(theme.typography.body)
+                .foregroundStyle(theme.colors.secondaryText)
 
             if !isProEnabled {
-                SFKButton(
-                    upgradeButtonTitle,
-                    leadingIconName: "sparkles",
-                    color: upgradeButtonFillColor,
-                    action: onUpgradeTap
-                )
-                .padding(.vertical)
+                SFKButton(upgradeButtonTitle, role: .primary, action: onUpgradeTap)
+                    .sfkIcon("sparkles")
+                    .sfkTint(usesThemeUpgradeButtonColor ? nil : upgradeButtonFillColor)
+                    .padding(.vertical, theme.spacing.inline)
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.vertical, theme.spacing.inline)
         .accessibilityIdentifier("proBannerView")
     }
 

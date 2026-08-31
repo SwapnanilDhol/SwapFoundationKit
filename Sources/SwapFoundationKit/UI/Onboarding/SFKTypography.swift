@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-/// A collection of reusable typography style modifiers using the `.rounded` font design
-/// for a consistent, friendly aesthetic across flows and screens.
+/// A collection of reusable typography style modifiers backed by ``SFKTheme``
+/// semantic fonts across flows and screens.
 ///
 /// ## Usage
 /// ```swift
@@ -34,10 +34,7 @@ public extension View {
     /// A bold title style using `.title` size with rounded design.
     /// Suitable for screen headers and welcome titles.
     func sfkFlowTitleStyle() -> some View {
-        self
-            .font(.system(.title, design: .rounded).weight(.bold))
-            .foregroundStyle(.primary)
-            .minimumScaleFactor(0.8)
+        modifier(SFKFlowTypographyModifier(style: .title))
     }
 
     /// A medium-weight subtitle style using `.body` size with rounded design.
@@ -45,42 +42,78 @@ public extension View {
     /// Uses primary at reduced opacity instead of `.secondary` so body copy stays
     /// readable on light system backgrounds (≈4.5:1 on white).
     func sfkFlowSubtitleStyle() -> some View {
-        self
-            .font(.system(.body, design: .rounded).weight(.medium))
-            .foregroundStyle(Color.primary.opacity(0.68))
+        modifier(SFKFlowTypographyModifier(style: .subtitle))
     }
 
     /// A semibold card title style using `.headline` size with rounded design.
     /// Suitable for titles inside cards or sections.
     func sfkFlowCardTitleStyle() -> some View {
-        self
-            .font(.system(.headline, design: .rounded).weight(.semibold))
-            .foregroundStyle(.primary)
+        modifier(SFKFlowTypographyModifier(style: .cardTitle))
     }
 
     /// A body text style using `.subheadline` size with rounded design.
     /// Suitable for card body text and descriptions.
     func sfkFlowCardBodyStyle() -> some View {
-        self
-            .font(.system(.subheadline, design: .rounded))
-            .foregroundStyle(.secondary)
+        modifier(SFKFlowTypographyModifier(style: .cardBody))
     }
 
     /// A semibold chip label style using `.subheadline` size with rounded design.
     /// Suitable for text inside selectable chips and tags.
     func sfkFlowChipStyle() -> some View {
-        self
-            .font(.system(.subheadline, design: .rounded).weight(.semibold))
-            .foregroundStyle(.primary)
+        modifier(SFKFlowTypographyModifier(style: .chip))
     }
 
     /// A bold question style using `.title2` size with rounded design.
     /// Suitable for question prompts in multi-step flows.
     func sfkFlowQuestionStyle() -> some View {
-        self
-            .font(.system(.title2, design: .rounded).weight(.bold))
-            .foregroundStyle(.primary)
-            .minimumScaleFactor(0.8)
+        modifier(SFKFlowTypographyModifier(style: .question))
+    }
+}
+
+private struct SFKFlowTypographyModifier: ViewModifier {
+    @Environment(\.sfkTheme) private var theme
+
+    enum Style {
+        case title
+        case question
+        case subtitle
+        case cardTitle
+        case cardBody
+        case chip
+    }
+
+    let style: Style
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        switch style {
+        case .title:
+            content
+                .font(theme.typography.title.weight(.bold))
+                .foregroundStyle(theme.colors.text)
+                .minimumScaleFactor(0.8)
+        case .question:
+            content
+                .font(theme.typography.title.weight(.bold))
+                .foregroundStyle(theme.colors.text)
+                .minimumScaleFactor(0.8)
+        case .subtitle:
+            content
+                .font(theme.typography.body.weight(.medium))
+                .foregroundStyle(theme.colors.secondaryText)
+        case .cardTitle:
+            content
+                .font(theme.typography.body.weight(.semibold))
+                .foregroundStyle(theme.colors.text)
+        case .cardBody:
+            content
+                .font(theme.typography.body)
+                .foregroundStyle(theme.colors.secondaryText)
+        case .chip:
+            content
+                .font(theme.typography.caption.weight(.semibold))
+                .foregroundStyle(theme.colors.text)
+        }
     }
 }
 

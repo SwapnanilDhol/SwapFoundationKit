@@ -27,16 +27,19 @@ enum SFKButtonLegacyGlassMaterial {
 @available(iOS 16, *)
 public struct SFKButton: View {
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.sfkTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let hapticsHelper = HapticsHelper()
 
-    private let title: String?
-    private let leadingIconName: String?
-    private let subtitle: String?
-    private let isLoading: Bool
-    private let fullWidth: Bool
+    private var title: String?
+    private var leadingIconName: String?
+    private var subtitle: String?
+    private var isLoading: Bool
+    private var fullWidth: Bool
     private let titleColor: Color
     private let subtitleColor: Color
-    private let color: Color
+    private var color: Color
+    private var tintOverride: Color?
     private let spacing: CGFloat
     private let horizontalPadding: CGFloat
     private let verticalPadding: CGFloat
@@ -44,13 +47,51 @@ public struct SFKButton: View {
     private let subtitleFont: Font
     private let iconFont: Font
     private let textAlignment: HorizontalAlignment
-    private let titleLineLimit: Int
-    private let subtitleLineLimit: Int
+    private let titleLineLimit: Int?
+    private let subtitleLineLimit: Int?
     private let controlSize: ControlSize
     private let renderingStyle: SFKButtonRenderingStyle
     private let hapticStyle: SFKButtonHapticStyle?
+    private let semanticRole: SFKButtonStyle?
     private let action: () -> Void
 
+    /// Creates a semantic button whose appearance follows the nearest
+    /// ``SFKTheme``. Explicit legacy initializer arguments remain available
+    /// when a one-off appearance is required.
+    public init(
+        _ title: String,
+        role: SFKButtonStyle = .primary,
+        action: @escaping () -> Void
+    ) {
+        self.init(
+            title,
+            leadingIconName: nil,
+            subtitle: nil,
+            isLoading: false,
+            fullWidth: true,
+            titleColor: .white,
+            subtitleColor: .white.opacity(0.8),
+            color: .accentColor,
+            spacing: 8,
+            horizontalPadding: 16,
+            verticalPadding: 9,
+            titleFont: .body.weight(.semibold),
+            subtitleFont: .caption,
+            iconFont: .body.weight(.semibold),
+            textAlignment: .center,
+            titleLineLimit: nil,
+            subtitleLineLimit: nil,
+            controlSize: .regular,
+            renderingStyle: role.renderingStyle,
+            hapticStyle: .medium,
+            tintOverride: nil,
+            semanticRole: role,
+            action: action
+        )
+    }
+
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Use SFKButton(_:role:action:) for theme-aware controls.")
     public init(
         _ title: String? = nil,
         leadingIconName: String? = nil,
@@ -95,6 +136,8 @@ public struct SFKButton: View {
             controlSize: controlSize,
             renderingStyle: style.renderingStyle,
             hapticStyle: hapticStyle,
+            tintOverride: nil,
+            semanticRole: nil,
             action: action
         )
     }
@@ -115,11 +158,13 @@ public struct SFKButton: View {
         subtitleFont: Font,
         iconFont: Font,
         textAlignment: HorizontalAlignment,
-        titleLineLimit: Int,
-        subtitleLineLimit: Int,
+        titleLineLimit: Int?,
+        subtitleLineLimit: Int?,
         controlSize: ControlSize,
         renderingStyle: SFKButtonRenderingStyle,
         hapticStyle: SFKButtonHapticStyle?,
+        tintOverride: Color? = nil,
+        semanticRole: SFKButtonStyle? = nil,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -130,6 +175,7 @@ public struct SFKButton: View {
         self.titleColor = titleColor
         self.subtitleColor = subtitleColor
         self.color = color
+        self.tintOverride = tintOverride
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding
         self.verticalPadding = verticalPadding
@@ -142,6 +188,7 @@ public struct SFKButton: View {
         self.controlSize = controlSize
         self.renderingStyle = renderingStyle
         self.hapticStyle = hapticStyle
+        self.semanticRole = semanticRole
         self.action = action
     }
 
@@ -152,8 +199,8 @@ public struct SFKButton: View {
             action()
         } label: {
             buttonLabel
-                .padding(.horizontal, isToolbarButton ? 0 : horizontalPadding)
-                .padding(.vertical, isToolbarButton ? 0 : verticalPadding)
+                .padding(.horizontal, isToolbarButton ? 0 : resolvedHorizontalPadding)
+                .padding(.vertical, isToolbarButton ? 0 : resolvedVerticalPadding)
                 .frame(
                     maxWidth: shouldUseFullWidth ? .infinity : nil,
                     alignment: Alignment(horizontal: textAlignment, vertical: .center)
@@ -162,7 +209,9 @@ public struct SFKButton: View {
                 .contentShape(Rectangle())
         }
         .disabled(isLoading)
-        .animation(.spring(response: 0.28, dampingFraction: 0.82), value: isLoading)
+        .accessibilityLabel(Text(accessibilityTitle))
+        .accessibilityValue(isLoading ? Text("Loading") : Text(""))
+        .animation(reduceMotion ? nil : theme.motion.standard, value: isLoading)
 
         styledButton(button.controlSize(controlSize))
     }
@@ -174,23 +223,23 @@ public struct SFKButton: View {
                 .progressViewStyle(.circular)
                 .tint(resolvedTitleColor)
         } else {
-            HStack(spacing: spacing) {
+            HStack(spacing: resolvedSpacing) {
                 if let leadingIconName, !leadingIconName.isEmpty {
                     Image(systemName: leadingIconName)
-                        .font(iconFont)
+                        .font(resolvedIconFont)
                 }
 
                 if hasTextContent {
                     VStack(alignment: textAlignment, spacing: 2) {
                         if let title, !title.isEmpty {
                             Text(title)
-                                .font(titleFont)
+                                .font(resolvedTitleFont)
                                 .lineLimit(titleLineLimit)
                         }
 
                         if let subtitle, !subtitle.isEmpty {
                             Text(subtitle)
-                                .font(subtitleFont)
+                                .font(resolvedSubtitleFont)
                                 .foregroundStyle(resolvedSubtitleColor)
                                 .lineLimit(subtitleLineLimit)
                         }
@@ -204,6 +253,11 @@ public struct SFKButton: View {
         let hasTitle = title?.isEmpty == false
         let hasSubtitle = subtitle?.isEmpty == false
         return hasTitle || hasSubtitle
+    }
+
+    private var accessibilityTitle: String {
+        guard let title, !title.isEmpty else { return "Button" }
+        return title
     }
 
     private var shouldUseFullWidth: Bool {
@@ -220,7 +274,7 @@ public struct SFKButton: View {
     }
 
     private func triggerHapticIfNeeded() {
-        guard isEnabled, !isLoading else { return }
+        guard isEnabled, !isLoading, theme.feedback.enabled else { return }
 
         switch hapticStyle {
         case .light:
@@ -235,15 +289,58 @@ public struct SFKButton: View {
     }
 
     private var resolvedTitleColor: Color {
-        isEnabled && !isLoading ? titleColor : Self.disabledTitleColor
+        guard isEnabled && !isLoading else { return Self.disabledTitleColor }
+        guard let semanticRole else { return titleColor }
+        switch semanticRole {
+        case .primary: return theme.colors.onAccent
+        case .destructive: return theme.colors.onDestructive
+        case .secondary, .toolbar: return theme.colors.text
+        }
     }
 
     private var resolvedSubtitleColor: Color {
-        isEnabled && !isLoading ? subtitleColor : Self.disabledSubtitleColor
+        guard isEnabled && !isLoading else { return Self.disabledSubtitleColor }
+        guard let semanticRole else { return subtitleColor }
+        switch semanticRole {
+        case .primary: return theme.colors.onAccent.opacity(0.8)
+        case .destructive: return theme.colors.onDestructive.opacity(0.8)
+        case .secondary, .toolbar: return theme.colors.secondaryText
+        }
     }
 
     private var resolvedColor: Color {
-        isEnabled && !isLoading ? color : Self.disabledColor
+        guard isEnabled && !isLoading else { return Self.disabledColor }
+        guard let semanticRole else { return color }
+        if let tintOverride { return tintOverride }
+        switch semanticRole {
+        case .primary: return theme.colors.accent
+        case .destructive: return theme.colors.destructive
+        case .secondary, .toolbar: return theme.colors.surface
+        }
+    }
+
+    private var resolvedSpacing: CGFloat {
+        semanticRole == nil ? spacing : theme.spacing.inline
+    }
+
+    private var resolvedHorizontalPadding: CGFloat {
+        semanticRole == nil ? horizontalPadding : theme.spacing.control
+    }
+
+    private var resolvedVerticalPadding: CGFloat {
+        semanticRole == nil ? verticalPadding : theme.spacing.inline
+    }
+
+    private var resolvedTitleFont: Font {
+        semanticRole == nil ? titleFont : theme.typography.body.weight(.semibold)
+    }
+
+    private var resolvedSubtitleFont: Font {
+        semanticRole == nil ? subtitleFont : theme.typography.caption
+    }
+
+    private var resolvedIconFont: Font {
+        semanticRole == nil ? iconFont : theme.typography.body.weight(.semibold)
     }
 
     private static var disabledColor: Color {
@@ -256,6 +353,44 @@ public struct SFKButton: View {
 
     private static var disabledSubtitleColor: Color {
         .secondary.opacity(0.8)
+    }
+}
+
+public extension SFKButton {
+    /// Returns a copy with its loading state changed.
+    func sfkLoading(_ loading: Bool) -> Self {
+        var copy = self
+        copy.isLoading = loading
+        return copy
+    }
+
+    /// Returns a copy with an optional leading SF Symbol.
+    func sfkIcon(_ systemName: String?) -> Self {
+        var copy = self
+        copy.leadingIconName = systemName
+        return copy
+    }
+
+    /// Returns a copy with supporting text.
+    func sfkSubtitle(_ subtitle: String?) -> Self {
+        var copy = self
+        copy.subtitle = subtitle
+        return copy
+    }
+
+    /// Returns a copy with a full-width or intrinsic-width layout.
+    func sfkFullWidth(_ fullWidth: Bool) -> Self {
+        var copy = self
+        copy.fullWidth = fullWidth
+        return copy
+    }
+
+    /// Returns a copy with an explicit tint, preserving the semantic role.
+    func sfkTint(_ color: Color?) -> Self {
+        var copy = self
+        copy.color = color ?? copy.color
+        copy.tintOverride = color
+        return copy
     }
 }
 
@@ -338,6 +473,7 @@ private extension SFKButtonStyle {
     var renderingStyle: SFKButtonRenderingStyle {
         switch self {
         case .primary: .primary
+        case .destructive: .primary
         case .secondary: .secondary
         case .toolbar: .toolbar
         }

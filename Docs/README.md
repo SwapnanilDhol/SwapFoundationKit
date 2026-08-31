@@ -15,15 +15,22 @@ Each module has its own README with full API reference and code examples:
 
 | Module | Description |
 |--------|-------------|
-| [Core](../Sources/SwapFoundationKit/Core/README.md) | Networking, security, backup, configuration |
+| [Core](../Sources/SwapFoundationKit/Core/README.md) | Security/backup and cross-product infrastructure reference |
+| [Networking](../Sources/SwapFoundationKitNetworking/README.md) | HTTP client, reachability, contracts, instrumentation |
+| [Authentication](../Sources/SwapFoundationKitAuthentication/README.md) | App Attest and authenticated installation sessions |
+| [Sync](../Sources/SwapFoundationKitSync/README.md) | App Group storage and Watch Connectivity |
+| [Media](../Sources/SwapFoundationKitMedia/README.md) | Image processing and remote loading |
+| [Remote AI](../Sources/SwapFoundationKitRemoteAI/README.md) | Host-configured AI requests |
+| [Firebase](../Sources/SwapFoundationKitFirebase/README.md) | Explicit host analytics forwarding |
+| [Legacy](../Sources/SwapFoundationKitLegacy/README.md) | Transitional bootstrap compatibility |
 | [Services](../Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, toasts, pro gating, notifications |
 | [UI](../Sources/SwapFoundationKit/UI/README.md) | Buttons, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](../Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSON, async |
 | [Utilities](../Sources/SwapFoundationKit/Utilities/README.md) | Debouncer, Throttler, environment, launch arguments |
-| [Currency](../Sources/SwapFoundationKit/Currency/README.md) | 58 currencies, exchange rate management |
-| [ImageProcessor](../Sources/SwapFoundationKit/ImageProcessor/README.md) | Image manipulation, caching, compression |
-| [ItemSync](../Sources/SwapFoundationKit/ItemSync/README.md) | App Group sync for widgets and extensions |
-| [WatchSync](../Sources/SwapFoundationKit/WatchSync/README.md) | Type-safe Watch Connectivity |
+| [Currency](../Sources/SwapFoundationKitCurrency/Currency/README.md) | 58 currencies, exchange rate management |
+| [ImageProcessor](../Sources/SwapFoundationKitMedia/ImageProcessor/README.md) | Image manipulation, caching, compression |
+| [ItemSync](../Sources/SwapFoundationKitSync/ItemSync/README.md) | App Group sync for widgets and extensions |
+| [WatchSync](../Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity |
 | [Protocols](../Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | [Compatibility](../Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | [Ads](../Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration |
@@ -32,8 +39,8 @@ Each module has its own README with full API reference and code examples:
 
 | Resource | Description |
 |----------|-------------|
-| [Audit Catalog](migration/catalog.yaml) | 60+ capabilities with tier classifications for auditing host apps |
-| [Capabilities Catalog](capabilities.yaml) | Agent-first index (14 domains) for checking SFK before building host-app features |
+| [Audit Catalog](migration/catalog.yaml) | Capabilities with tier classifications for auditing host apps |
+| [Capabilities Catalog](capabilities.yaml) | Agent-first index for checking SFK before building host-app features |
 | [Agent Workflow](development/agents.md) | LLM agent workflow for auditing and migration |
 | [Feature Discovery Workflow](development/feature-discovery.md) | How agents should check SFK first during host-app development |
 
@@ -44,6 +51,7 @@ Each module has its own README with full API reference and code examples:
 | [v4 Simplification Refactoring Plan](development/v4-simplification-refactoring-plan.md) | Maintainer-facing architecture, API, sequencing, acceptance criteria, and rollback plan |
 | [v4 Simplification Migration Guide](migration/v4-simplification-migration-guide.md) | Staged v3-to-v4 procedure for package maintainers and host applications |
 | [v4 API Ledger](development/v4-api-ledger.md) | Authoritative Phase 0 public-API inventory, symbol-by-symbol disposition, and CI surface/dependency gates |
+| [v4 Implementation Checkpoint](development/v4-implementation-status.md) | Committed baseline, active workstreams, and outstanding release gates |
 
 ## Agent Files
 

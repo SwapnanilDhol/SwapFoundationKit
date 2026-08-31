@@ -91,7 +91,7 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
         }
         .buttonStyle(SFKSettingsFormRowButtonStyle())
         .modifier(
-            SFKSettingsPickerPresentation(
+            _SFKSettingsPickerPresentationModifier(
                 isPresented: $isPresented,
                 pickerStyle: pickerStyle,
                 title: title,
@@ -111,7 +111,7 @@ public struct SFKSettingsPickerRow<Selection: Hashable>: View {
 @available(*, deprecated, renamed: "SFKSettingsPickerRow")
 public typealias SFKSettingsPickerSheetRow<Selection: Hashable> = SFKSettingsPickerRow<Selection>
 
-private struct SFKSettingsPickerPresentation<Selection: Hashable>: ViewModifier {
+private struct _SFKSettingsPickerPresentationModifier<Selection: Hashable>: ViewModifier {
     @Binding var isPresented: Bool
     let pickerStyle: SFKPickerStyle
     let title: String

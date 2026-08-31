@@ -1,10 +1,11 @@
 /*****************************************************************************
  * AdsConfigurationTests.swift
- * SwapFoundationKitTests — core-only (no GoogleMobileAds product)
+ * SwapFoundationKitTests — Google Mobile Ads configuration contract
  *****************************************************************************/
 
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitGoogleMobileAds
 
 final class AdsConfigurationTests: XCTestCase {
     func testAdUnitConfiguration_ResolvesPlacementIDs() {

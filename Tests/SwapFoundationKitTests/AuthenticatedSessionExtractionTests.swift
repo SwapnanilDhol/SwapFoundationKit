@@ -12,6 +12,7 @@
 import Foundation
 import Testing
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitAuthentication
 
 @Suite(.serialized, .timeLimit(.minutes(1)))
 struct AuthenticatedSessionExtractionTests {

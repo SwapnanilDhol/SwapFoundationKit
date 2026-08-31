@@ -13,11 +13,7 @@ import SwiftUI
 import SwapFoundationKit
 
 struct ItemPickerExamplesView: View {
-    @StateObject private var pickerViewModel = SFKItemPickerViewModel(
-        sections: CatalogPickableItem.sections,
-        selectionType: .multi,
-        initialSelection: [CatalogPickableItem.swift]
-    )
+    @State private var selectedItems: Set<CatalogPickableItem> = [.swift]
     @State private var presentedPicker: PresentedPicker?
 
     var body: some View {
@@ -27,15 +23,15 @@ struct ItemPickerExamplesView: View {
                     presentedPicker = .multiSelect
                 }
             } footer: {
-                Text("The live picker supports search, sections, badges, and multi-selection.")
+                    Text("The typed picker supports search, badges, and multi-selection without a public view model.")
             }
 
             Section("Selected") {
-                if pickerViewModel.selectedItems.isEmpty {
+                if selectedItems.isEmpty {
                     Text("Nothing selected")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(pickerViewModel.selectedItems, id: \.pickableItemId) { item in
+                    ForEach(selectedItems.sorted { $0.rawValue < $1.rawValue }) { item in
                         Label(item.pickableItemTitle, systemImage: "checkmark.circle.fill")
                     }
                 }
@@ -51,11 +47,10 @@ struct ItemPickerExamplesView: View {
         .navigationTitle("Item Picker")
         .sheet(item: $presentedPicker) { _ in
             SFKItemPickerView(
-                pageTitle: "Frameworks",
-                pageSubtitle: "Select examples",
-                viewModel: pickerViewModel,
-                autoDismissOnSingleSelection: false,
-                onDismiss: { presentedPicker = nil }
+                "Frameworks",
+                items: CatalogPickableItem.allCases,
+                selections: $selectedItems,
+                onSelect: { _ in }
             )
         }
     }

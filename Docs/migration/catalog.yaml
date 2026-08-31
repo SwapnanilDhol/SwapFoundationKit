@@ -11,6 +11,35 @@ rules:
   - Prefer false negatives over noisy false positives.
   - Do not flag domain-specific wrappers when SFK only covers the low-level primitive.
 capabilities:
+  - id: semantic_theme
+    audit_tier: exact
+    confidence: high
+    module: SwapFoundationKit
+    notes:
+      - SFKTheme is the working-branch shared environment contract. Legacy settings rows read an SFKSettingsTheme projection from it unless a host supplies an explicit sfkSettingsTheme override.
+    replace_with:
+      - SFKTheme
+      - View.sfkTheme(_:)
+    public_symbols:
+      - SFKTheme.system
+      - SFKTheme.accent(_:)
+      - EnvironmentValues.sfkTheme
+      - View.sfkTheme(_:)
+      - SFKSettingsTheme (legacy projection)
+      - View.sfkSettingsTheme(_:) (legacy override)
+    host_search_terms:
+      - SFKSettingsTheme
+      - SFKTextFieldAppearance
+      - SFKTheme
+    suspicious_file_patterns:
+      - "*Theme*"
+      - "*DesignTokens*"
+    keep_custom_when:
+      - Host-specific brand assets and semantic roles are not represented by SFK tokens.
+    source_files:
+      - Sources/SwapFoundationKit/UI/SFKTheme.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsTheme.swift
+
   - id: haptics
     audit_tier: exact
     confidence: high
@@ -102,13 +131,16 @@ capabilities:
   - id: analytics
     audit_tier: exact
     confidence: high
+    notes:
+      - Prefer an injected AnalyticsManager instance. `AnalyticsManager.shared` is transitional compatibility state and should not be introduced in new feature code; event names and payloads remain host-owned contracts.
     replace_with:
       - AnalyticsManager
       - AnalyticsEvent
       - AnalyticsLogger
       - DefaultAnalyticsEvent
     public_symbols:
-      - AnalyticsManager.shared
+      - AnalyticsManager.init()
+      - AnalyticsManager.shared (deprecated transitional singleton)
       - AnalyticsManager.addLogger(_:)
       - AnalyticsManager.setGlobalParameters(_:)
       - AnalyticsManager.logEvent(event:parameters:)
@@ -161,6 +193,7 @@ capabilities:
       - Sources/SwapFoundationKit/Services/UserDefaults+.swift
 
   - id: networking
+    module: SwapFoundationKitNetworking
     audit_tier: exact
     confidence: high
     replace_with:
@@ -172,6 +205,7 @@ capabilities:
       - NetworkDownloadResponse
       - NetworkDownloadProgress
       - NetworkError
+      - NetworkMonitor
       - SFKBackendOriginRegistry
     public_symbols:
       - HTTPClient.execute(_:)
@@ -205,9 +239,9 @@ capabilities:
     keep_custom_when:
       - The host has app-specific routing or entitlement policy requiring a thin facade; use AuthenticatedHTTPClient for the shared authentication and refresh mechanics.
     source_files:
-      - Sources/SwapFoundationKit/Core/Networking.swift
-      - Sources/SwapFoundationKit/Core/NetworkService.swift
-      - Sources/SwapFoundationKit/SwapFoundationKit.swift
+      - Sources/SwapFoundationKitNetworking/Networking.swift
+      - Sources/SwapFoundationKitNetworking/NetworkService.swift
+      - Sources/SwapFoundationKitNetworking/NetworkMonitor.swift
 
   - id: security
     audit_tier: exact
@@ -238,9 +272,8 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/Core/SecurityService.swift
       - Sources/SwapFoundationKit/Extensions/Data+Crypto.swift
-      - Sources/SwapFoundationKit/Core/AppAttestService.swift
-
   - id: app_attest
+    module: SwapFoundationKitAuthentication
     audit_tier: exact
     confidence: high
     capability_notes: >-
@@ -266,9 +299,10 @@ capabilities:
     keep_custom_when:
       - App-specific authorization policy and identity/proof sources belong to the host; generic session lifecycle and transport belong to SFK.
     source_files:
-      - Sources/SwapFoundationKit/Core/AppAttestService.swift
+      - Sources/SwapFoundationKitAuthentication/AppAttestService.swift
 
   - id: authenticated_sessions
+    module: SwapFoundationKitAuthentication
     audit_tier: exact
     confidence: high
     capability_notes: >-
@@ -302,9 +336,9 @@ capabilities:
     keep_custom_when:
       - The host wrapper only supplies identity/proof adapters, legacy record decoding, configuration, route policy, analytics or UI.
     source_files:
-      - Sources/SwapFoundationKit/Core/Authentication/AuthenticatedSessionService.swift
-      - Sources/SwapFoundationKit/Core/Authentication/AppAttestSessionHTTPBackend.swift
-      - Sources/SwapFoundationKit/Core/Authentication/AuthenticatedHTTPClient.swift
+      - Sources/SwapFoundationKitAuthentication/Authentication/AuthenticatedSessionService.swift
+      - Sources/SwapFoundationKitAuthentication/Authentication/AppAttestSessionHTTPBackend.swift
+      - Sources/SwapFoundationKitAuthentication/Authentication/AuthenticatedHTTPClient.swift
 
   - id: backup
     audit_tier: exact
@@ -335,6 +369,7 @@ capabilities:
       - Sources/SwapFoundationKit/Core/BackupService.swift
 
   - id: currency
+    module: SwapFoundationKitCurrency
     audit_tier: exact
     confidence: medium
     replace_with:
@@ -358,10 +393,11 @@ capabilities:
     keep_custom_when:
       - The host app depends on a paid provider, custom cache policy, or accounting-specific rounding rules.
     source_files:
-      - Sources/SwapFoundationKit/Currency/Currency.swift
-      - Sources/SwapFoundationKit/Currency/ExchangeRateManager.swift
+      - Sources/SwapFoundationKitCurrency/Currency/Currency.swift
+      - Sources/SwapFoundationKitCurrency/Currency/ExchangeRateManager.swift
 
   - id: image_processing
+    module: SwapFoundationKitMedia
     audit_tier: exact
     confidence: medium
     replace_with:
@@ -389,7 +425,7 @@ capabilities:
     keep_custom_when:
       - The host app relies on a third-party image pipeline with networking, decoding, and animated image support.
     source_files:
-      - Sources/SwapFoundationKit/ImageProcessor/ImageProcessor.swift
+      - Sources/SwapFoundationKitMedia/ImageProcessor/ImageProcessor.swift
 
   - id: debouncing
     audit_tier: exact
@@ -448,6 +484,7 @@ capabilities:
       - Sources/SwapFoundationKit/Utilities/PersistentTTLStore.swift
 
   - id: item_sync
+    module: SwapFoundationKitSync
     audit_tier: exact
     confidence: high
     replace_with:
@@ -478,12 +515,12 @@ capabilities:
     keep_custom_when:
       - The host app has domain orchestration around sync; migrate the persistence and transport pieces first, then keep a thin app-specific wrapper.
     source_files:
-      - Sources/SwapFoundationKit/ItemSync/Core/SyncableData.swift
-      - Sources/SwapFoundationKit/ItemSync/Core/DataSyncService.swift
-      - Sources/SwapFoundationKit/ItemSync/ItemSyncServiceFactory.swift
-      - Sources/SwapFoundationKit/ItemSync/Implementations/DataSyncServiceImpl.swift
-      - Sources/SwapFoundationKit/ItemSync/Implementations/AppGroupFileStorageService.swift
-      - Sources/SwapFoundationKit/ItemSync/Implementations/WatchConnectivityServiceImpl.swift
+      - Sources/SwapFoundationKitSync/ItemSync/Core/SyncableData.swift
+      - Sources/SwapFoundationKitSync/ItemSync/Core/DataSyncService.swift
+      - Sources/SwapFoundationKitSync/ItemSync/ItemSyncServiceFactory.swift
+      - Sources/SwapFoundationKitSync/ItemSync/Implementations/DataSyncServiceImpl.swift
+      - Sources/SwapFoundationKitSync/ItemSync/Implementations/AppGroupFileStorageService.swift
+      - Sources/SwapFoundationKitSync/ItemSync/Implementations/WatchConnectivityServiceImpl.swift
 
   - id: app_links_and_metadata
     audit_tier: exact
@@ -543,7 +580,13 @@ capabilities:
   - id: settings_ui
     audit_tier: exact
     confidence: high
+    notes:
+      - Prefer SFKSettingsScreen's typed builder with SFKSettingsSection and direct bindings/actions; array-driven section configurations are deprecated compatibility API.
+      - The default settings theme is projected from the nearest SFKTheme; explicit sfkSettingsTheme overrides remain available for legacy row customization.
     replace_with:
+      - SFKSettingsSection
+      - SFKSettingsPicker
+      - SFKSettingsBindingRow
       - SettingsItem
       - SFKSettingsRow
       - SFKSettingsLabel
@@ -567,6 +610,11 @@ capabilities:
       - SFKInformationSectionHandler
       - SFKDeveloperSectionHandler
     public_symbols:
+      - SFKSettingsScreen.init(navigationTitle:content:)
+      - SFKSettingsSection.init(_:footer:content:)
+      - SFKSettingsPicker<Value>.init(_:selection:options:label:onChange:presentation:)
+      - SFKSettingsBindingRow<Value>.init(_:value:valueLabel:action:presentation:)
+      - SFKSettingsPickerPresentation.init(subtitle:systemImage:tint:)
       - SettingsItem protocol
       - SFKSettingsRow<Item: SettingsItem>
       - SFKSettingsLabel
@@ -587,6 +635,9 @@ capabilities:
       - SFKInformationSectionItem (all cases)
       - SFKDeveloperSectionItem (all cases)
       - SFKSettingsActionHandler
+      - SFKSettingsScreen.init(sections:customSections:header:theme:showsAura:trailingToolbarContent:showsChevron:onItemTap:) (deprecated)
+      - SFKSettingsSectionConfiguration (deprecated compatibility adapter)
+      - SFKSettingsCustomSection (deprecated compatibility adapter)
     host_search_terms:
       - SettingsView
       - SettingsScreen
@@ -617,6 +668,7 @@ capabilities:
       - Sources/SwapFoundationKit/UI/Settings/SettingsItem.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsRow.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsScreen.swift
+      - Sources/SwapFoundationKit/UI/Settings/SFKSettingsTypedRows.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKInformationSectionItem.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKDeveloperSectionItem.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsActionHandler.swift
@@ -625,6 +677,54 @@ capabilities:
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsStepperRow.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsColorPickerRow.swift
       - Sources/SwapFoundationKit/UI/Settings/SFKSettingsLinkRow.swift
+
+  - id: picker_ui
+    audit_tier: exact
+    confidence: high
+    notes:
+      - Prefer concrete selection bindings and label/onSelect closures. The view-model/delegate and color delegate surfaces are deprecated compatibility APIs and remain only for the transition window.
+      - Typed item selections use `SFKPickableItem.pickableItemId` for identity, so mutable display fields do not invalidate an existing selection.
+    replace_with:
+      - SFKItemPickerView<Item>.init(_:items:selection:label:onSelect:)
+      - SFKItemPickerView<Item>.init(_:items:selections:label:onSelect:)
+      - SFKItemPickerView<Item>.init(_:items:selection:label:onSelect:) (non-optional selection)
+      - SFKItemPickerConfiguration<Item>
+      - SFKColorPickerConfiguration
+      - SFKColorPickerSheet.init(selection:configuration:onApply:)
+      - SFKPhotoPicker.init(selection:configuration:onPick:)
+    public_symbols:
+      - SFKPickableItem
+      - SFKItemPickerView<Item>
+      - SFKItemPickerConfiguration<Item>
+      - SFKItemPickerToolbarAction
+      - SFKItemPickerItemAction
+      - SFKItemPickerEmptyState
+      - SFKColorPickerSheet
+      - SFKPhotoPicker
+      - SFKItemPickerViewModel (deprecated compatibility surface)
+      - SFKItemPickerDelegate (deprecated compatibility surface)
+      - SFKColorPickerDelegate (deprecated compatibility surface)
+    host_search_terms:
+      - ItemPicker
+      - SelectionViewModel
+      - selection sheet
+      - ColorPickerSheet
+      - PHPickerViewController
+      - PhotoPickerDelegate
+    suspicious_file_patterns:
+      - "*ItemPicker*"
+      - "*Selection*Sheet*"
+      - "*ColorPicker*"
+      - "*PhotoPicker*"
+    keep_custom_when:
+      - The host owns domain-specific filtering, ranking, or multi-step selection policy and uses SFK only for the list surface.
+    source_files:
+      - Sources/SwapFoundationKit/UI/ItemPicker/SFKItemPickerView.swift
+      - Sources/SwapFoundationKit/UI/ItemPicker/SFKItemPickerViewModel.swift
+      - Sources/SwapFoundationKit/UI/ItemPicker/Model/SFKItemPickerDelegate.swift
+      - Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerSheet.swift
+      - Sources/SwapFoundationKit/UI/ColorPicker/SFKColorPickerDelegate.swift
+      - Sources/SwapFoundationKit/UI/PhotoPicker.swift
 
   - id: text_fields
     audit_tier: exact
@@ -671,7 +771,8 @@ capabilities:
       - SFKSelectableChip
       - View.sfkGlass(material:tint:isInteractive:shape:)
       - UIKit convenience extensions
-      - SFKColorPickerSheet
+      - SFKColorPickerSheet(selection:configuration:onApply:)
+      - SFKPhotoPicker(selection:onPick:)
     public_symbols:
       - SFKButton
       - SFKButtonStyle
@@ -683,7 +784,7 @@ capabilities:
       - SFKChipStyle
       - SFKChipHapticStyle
       - SFKSelectableChip
-      - SFKColorPickerDelegate
+      - SFKColorPickerDelegate (deprecated)
       - SFKColorPickerSheet
       - SFKGlassMaterial
       - SFKGlassShape
@@ -730,6 +831,7 @@ capabilities:
       - Sources/SwapFoundationKit/UI/UIApplication+.swift
 
   - id: configuration
+    module: SwapFoundationKitLegacy
     audit_tier: heuristic
     confidence: medium
     replace_with:
@@ -753,9 +855,9 @@ capabilities:
     keep_custom_when:
       - The host app maintains environment policy, feature flags, or secrets management above SFK.
     source_files:
-      - Sources/SwapFoundationKit/SwapFoundationKit.swift
-      - Sources/SwapFoundationKit/SwapFoundationKitConfiguration.swift
-      - Sources/SwapFoundationKit/Core/ConfigurationService.swift
+      - Sources/SwapFoundationKitLegacy/SwapFoundationKit.swift
+      - Sources/SwapFoundationKitLegacy/SwapFoundationKitConfiguration.swift
+      - Sources/SwapFoundationKitLegacy/ConfigurationService.swift
 
   - id: toast
     audit_tier: exact
@@ -1020,13 +1122,22 @@ capabilities:
   - id: pro_gate
     audit_tier: exact
     confidence: medium
+    notes:
+      - Use the default product's instance-based SFKAccessGate with an injected SFKAccessPolicy for new code. SFKProGate is a deprecated compatibility surface moved to SwapFoundationKitLegacy.
     replace_with:
-      - SFKProGate
+      - SFKAccessPolicy
+      - SFKAccessGate
+      - SFKAccessGate.check(_:)
+      - SFKAccessGate.require(_:action:)
     public_symbols:
-      - SFKProGate.isProEnabled
-      - SFKProGate.presentProSheet
-      - SFKProGate.check(_:)
-      - SFKProGate.require(_:action:)
+      - SFKAccessPolicy
+      - SFKAccessGate.init(policy:)
+      - SFKAccessGate.check(_:)
+      - SFKAccessGate.require(_:action:)
+      - SFKProGate.isProEnabled (deprecated; SwapFoundationKitLegacy)
+      - SFKProGate.presentProSheet (deprecated; SwapFoundationKitLegacy)
+      - SFKProGate.check(_:) (deprecated; SwapFoundationKitLegacy)
+      - SFKProGate.require(_:action:) (deprecated; SwapFoundationKitLegacy)
     host_search_terms:
       - ProValidation
       - ProGate
@@ -1041,7 +1152,8 @@ capabilities:
     keep_custom_when:
       - The host app has domain-specific Pro reasons tied to analytics or custom UI.
     source_files:
-      - Sources/SwapFoundationKit/Services/SFKProGate.swift
+      - Sources/SwapFoundationKit/Services/SFKAccessPolicy.swift
+      - Sources/SwapFoundationKitLegacy/SFKProGate.swift
 
   - id: notification_service
     audit_tier: heuristic
@@ -1074,7 +1186,7 @@ capabilities:
   - id: analytics_loggers
     audit_tier: exact
     confidence: medium
-    module: SwapFoundationKitFirebase (planned opt-in product; temporary guarded adapter remains in default target)
+    module: SwapFoundationKitFirebase
     replace_with:
       - SFKFirebaseLogger
     public_symbols:
@@ -1088,11 +1200,12 @@ capabilities:
     keep_custom_when:
       - The host app uses a different analytics provider not covered by SFK's pre-built loggers.
     notes:
-      - Move this adapter to the explicit SwapFoundationKitFirebase product before v4; do not treat the temporary default-target exception as permanent.
+      - Add the explicit product and provide host event, identity, user-property and screen forwarding handlers. A host Firebase import does not automatically link Firebase into this package target.
     source_files:
-      - Sources/SwapFoundationKit/Services/Analytics/SFKFirebaseLogger.swift
+      - Sources/SwapFoundationKitFirebase/SFKFirebaseLogger.swift
 
   - id: image_compressor
+    module: SwapFoundationKitMedia
     audit_tier: exact
     confidence: high
     replace_with:
@@ -1116,9 +1229,10 @@ capabilities:
     keep_custom_when:
       - The host app needs format-specific compression (PNG, HEIC) or domain-specific resizing.
     source_files:
-      - Sources/SwapFoundationKit/ImageProcessor/SFKImageCompressor.swift
+      - Sources/SwapFoundationKitMedia/ImageProcessor/SFKImageCompressor.swift
 
   - id: enhanced_currency
+    module: SwapFoundationKitCurrency
     audit_tier: exact
     confidence: medium
     replace_with:
@@ -1147,7 +1261,7 @@ capabilities:
     keep_custom_when:
       - The host app needs custom currency formatting or sorting rules.
     source_files:
-      - Sources/SwapFoundationKit/Currency/Currency.swift
+      - Sources/SwapFoundationKitCurrency/Currency/Currency.swift
 
   - id: async_collections
     audit_tier: heuristic

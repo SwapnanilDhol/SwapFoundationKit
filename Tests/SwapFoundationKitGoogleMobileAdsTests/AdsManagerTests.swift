@@ -13,6 +13,7 @@
 import UIKit
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitLegacy
 @testable import SwapFoundationKitGoogleMobileAds
 
 @MainActor

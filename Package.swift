@@ -29,6 +29,38 @@ let package = Package(
             name: "SwapFoundationKitToast",
             targets: ["SwapFoundationKitToast"]
         ),
+        .library(
+            name: "SwapFoundationKitNetworking",
+            targets: ["SwapFoundationKitNetworking"]
+        ),
+        .library(
+            name: "SwapFoundationKitAuthentication",
+            targets: ["SwapFoundationKitAuthentication"]
+        ),
+        .library(
+            name: "SwapFoundationKitSync",
+            targets: ["SwapFoundationKitSync"]
+        ),
+        .library(
+            name: "SwapFoundationKitMedia",
+            targets: ["SwapFoundationKitMedia"]
+        ),
+        .library(
+            name: "SwapFoundationKitCurrency",
+            targets: ["SwapFoundationKitCurrency"]
+        ),
+        .library(
+            name: "SwapFoundationKitRemoteAI",
+            targets: ["SwapFoundationKitRemoteAI"]
+        ),
+        .library(
+            name: "SwapFoundationKitFirebase",
+            targets: ["SwapFoundationKitFirebase"]
+        ),
+        .library(
+            name: "SwapFoundationKitLegacy",
+            targets: ["SwapFoundationKitLegacy"]
+        ),
     ],
     dependencies: [
         .package(
@@ -58,13 +90,14 @@ let package = Package(
         ),
         .target(
             name: "SwapFoundationKitFeedback",
-            dependencies: ["SwapFoundationKit"],
+            dependencies: ["SwapFoundationKit", "SwapFoundationKitMedia"],
             exclude: ["README.md"]
         ),
         .target(
             name: "SwapFoundationKitPulse",
             dependencies: [
                 "SwapFoundationKit",
+                "SwapFoundationKitNetworking",
                 .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
                 .product(name: "PulseUI", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
                 .product(name: "PulseProxy", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
@@ -79,10 +112,67 @@ let package = Package(
             ],
             exclude: ["README.md"]
         ),
+        .target(
+            name: "SwapFoundationKitNetworking",
+            dependencies: ["SwapFoundationKit"],
+            path: "Sources/SwapFoundationKitNetworking",
+            exclude: ["README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitAuthentication",
+            dependencies: ["SwapFoundationKit", "SwapFoundationKitNetworking"],
+            path: "Sources/SwapFoundationKitAuthentication",
+            exclude: ["README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitSync",
+            dependencies: ["SwapFoundationKit"],
+            path: "Sources/SwapFoundationKitSync",
+            exclude: ["README.md", "ItemSync/README.md", "WatchSync/README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitMedia",
+            dependencies: ["SwapFoundationKit", "SwapFoundationKitNetworking"],
+            path: "Sources/SwapFoundationKitMedia",
+            exclude: ["README.md", "ImageProcessor/README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitCurrency",
+            dependencies: ["SwapFoundationKit", "SwapFoundationKitNetworking"],
+            path: "Sources/SwapFoundationKitCurrency",
+            exclude: ["README.md", "Currency/README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitRemoteAI",
+            dependencies: ["SwapFoundationKit", "SwapFoundationKitNetworking"],
+            path: "Sources/SwapFoundationKitRemoteAI",
+            exclude: ["README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitFirebase",
+            dependencies: ["SwapFoundationKit"],
+            path: "Sources/SwapFoundationKitFirebase",
+            exclude: ["README.md"]
+        ),
+        .target(
+            name: "SwapFoundationKitLegacy",
+            dependencies: ["SwapFoundationKit", "SwapFoundationKitNetworking", "SwapFoundationKitSync"],
+            path: "Sources/SwapFoundationKitLegacy",
+            exclude: ["README.md"]
+        ),
         .testTarget(
             name: "SwapFoundationKitTests",
             dependencies: [
                 "SwapFoundationKit",
+                "SwapFoundationKitNetworking",
+                "SwapFoundationKitAuthentication",
+                "SwapFoundationKitSync",
+                "SwapFoundationKitMedia",
+                "SwapFoundationKitCurrency",
+                "SwapFoundationKitRemoteAI",
+                "SwapFoundationKitFirebase",
+                "SwapFoundationKitLegacy",
+                "SwapFoundationKitGoogleMobileAds",
             ]
         ),
         .testTarget(
@@ -90,6 +180,7 @@ let package = Package(
             dependencies: [
                 "SwapFoundationKit",
                 "SwapFoundationKitGoogleMobileAds",
+                "SwapFoundationKitLegacy",
             ]
         ),
         .testTarget(
@@ -100,6 +191,7 @@ let package = Package(
             name: "SwapFoundationKitPulseTests",
             dependencies: [
                 "SwapFoundationKit",
+                "SwapFoundationKitNetworking",
                 "SwapFoundationKitPulse",
                 .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
             ]

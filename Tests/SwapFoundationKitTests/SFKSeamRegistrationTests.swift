@@ -11,6 +11,7 @@
 
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitNetworking
 
 /// Covers the two injection seams the default target exposes so opt-in products (like
 /// `SwapFoundationKitPulse`) can instrument networking and logging without the default

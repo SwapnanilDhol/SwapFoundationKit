@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		44EBEC8D2E45F28600E1CA90 /* SwapFoundationKit in Frameworks */ = {isa = PBXBuildFile; productRef = 44EBEC8C2E45F28600E1CA90 /* SwapFoundationKit */; };
+		44EBEC8F2E45F28600E1CA90 /* SwapFoundationKitCurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 44EBEC8E2E45F28600E1CA90 /* SwapFoundationKitCurrency */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				44EBEC8D2E45F28600E1CA90 /* SwapFoundationKit in Frameworks */,
+				44EBEC8F2E45F28600E1CA90 /* SwapFoundationKitCurrency in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = SwapFoundationKitHost;
 			packageProductDependencies = (
 				44EBEC8C2E45F28600E1CA90 /* SwapFoundationKit */,
+				44EBEC8E2E45F28600E1CA90 /* SwapFoundationKitCurrency */,
 			);
 			productName = SwapFoundationKitHost;
 			productReference = 44EBEC7D2E45F26A00E1CA90 /* SwapFoundationKitHost.app */;
@@ -357,6 +360,10 @@
 		44EBEC8C2E45F28600E1CA90 /* SwapFoundationKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwapFoundationKit;
+		};
+		44EBEC8E2E45F28600E1CA90 /* SwapFoundationKitCurrency */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwapFoundationKitCurrency;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

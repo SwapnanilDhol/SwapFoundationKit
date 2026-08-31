@@ -45,12 +45,14 @@ public enum SFKChipHapticStyle: Sendable {
 @available(iOS 16, *)
 public struct SFKChip: View {
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.sfkTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let hapticsHelper = HapticsHelper()
 
     private let title: String
     private let leadingIconName: String?
-    private let tintColor: Color
+    private let tintColor: Color?
     private let controlSize: ControlSize
     private let style: SFKChipStyle
     private let hapticStyle: SFKChipHapticStyle?
@@ -59,7 +61,7 @@ public struct SFKChip: View {
     public init(
         _ title: String,
         leadingIconName: String? = nil,
-        tintColor: Color = .blue,
+        tintColor: Color? = nil,
         controlSize: ControlSize = .regular,
         style: SFKChipStyle = .secondary,
         hapticStyle: SFKChipHapticStyle? = .light,
@@ -92,7 +94,7 @@ public struct SFKChip: View {
             .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, metrics.horizontalPadding)
             .padding(.vertical, metrics.verticalPadding)
-            .foregroundStyle(.primary)
+            .foregroundStyle(theme.colors.text)
             .contentShape(Capsule(style: .continuous))
         }
         .buttonStyle(.plain)
@@ -108,27 +110,28 @@ public struct SFKChip: View {
             shape: .capsule
         )
         .opacity(isEnabled ? 1 : 0.55)
+        .animation(reduceMotion ? nil : theme.motion.standard, value: isEnabled)
     }
 
     private var metrics: SFKChipSizeMetrics {
-        SFKChipSizeMetrics(controlSize: controlSize)
+        SFKChipSizeMetrics(controlSize: controlSize, theme: theme)
     }
 
     private var glassTintColor: Color {
         switch style {
         case .primary:
-            tintColor.opacity(0.28)
+            resolvedTintColor.opacity(0.28)
         case .secondary:
-            tintColor.opacity(0.08)
+            resolvedTintColor.opacity(0.08)
         }
     }
 
     private var strokeColor: Color {
         switch style {
         case .primary:
-            tintColor.opacity(0.75)
+            resolvedTintColor.opacity(0.75)
         case .secondary:
-            Color.primary.opacity(0.06)
+            theme.colors.border
         }
     }
 
@@ -142,6 +145,8 @@ public struct SFKChip: View {
     private func triggerHapticIfNeeded() {
         guard isEnabled else { return }
 
+        guard theme.feedback.enabled else { return }
+
         switch hapticStyle {
         case .light:
             hapticsHelper.lightImpact()
@@ -153,33 +158,43 @@ public struct SFKChip: View {
             break
         }
     }
+
+    private var resolvedTintColor: Color {
+        tintColor ?? theme.colors.accent
+    }
 }
 
 struct SFKChipSizeMetrics {
     let controlSize: ControlSize
+    let theme: SFKTheme
 
     var isCompact: Bool {
         controlSize == .mini || controlSize == .small
     }
 
+    init(controlSize: ControlSize, theme: SFKTheme) {
+        self.controlSize = controlSize
+        self.theme = theme
+    }
+
     var horizontalPadding: CGFloat {
-        isCompact ? 12 : 14
+        isCompact ? theme.spacing.inline + 4 : theme.spacing.control + 2
     }
 
     var verticalPadding: CGFloat {
-        isCompact ? 6 : 10
+        isCompact ? theme.spacing.inline - 2 : theme.spacing.inline + 2
     }
 
     var contentSpacing: CGFloat {
-        isCompact ? 7 : 8
+        isCompact ? theme.spacing.inline - 1 : theme.spacing.inline
     }
 
     var labelFont: Font {
-        isCompact ? .subheadline.weight(.medium) : .subheadline.weight(.semibold)
+        isCompact ? theme.typography.caption.weight(.medium) : theme.typography.body.weight(.semibold)
     }
 
     var iconFont: Font {
-        isCompact ? .footnote.weight(.semibold) : .subheadline.weight(.semibold)
+        isCompact ? theme.typography.caption.weight(.semibold) : theme.typography.body.weight(.semibold)
     }
 }
 

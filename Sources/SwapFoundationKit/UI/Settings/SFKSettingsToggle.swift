@@ -55,7 +55,27 @@ public struct SFKSettingsToggle: View {
         self.icon = icon
         self.tint = tint
         self._isOn = isOn
+        self.action = nil
     }
+
+    /// Creates a concise typed toggle for the v4 settings builder.
+    public init(
+        _ title: String,
+        subtitle: String = "",
+        systemImage: String = "checkmark.circle",
+        tint: Color? = nil,
+        isOn: Binding<Bool>,
+        action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = systemImage
+        self.tint = tint
+        self._isOn = isOn
+        self.action = action
+    }
+
+    private let action: (() -> Void)?
 
     public var body: some View {
         let resolvedTint = theme.resolvedTint(tint)
@@ -69,6 +89,7 @@ public struct SFKSettingsToggle: View {
                 .labelsHidden()
                 .toggleStyle(.switch)
                 .tint(theme.colors.toggleOnTint ?? theme.colors.accent)
+                .onChange(of: isOn) { _, _ in action?() }
         }
         .padding(.vertical, theme.metrics.rowVerticalPadding)
     }

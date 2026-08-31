@@ -33,18 +33,19 @@ public enum SFKCloseButtonChrome: Sendable {
 /// Mirrors the standard `Button(action:)` initializer so callers can use
 /// either `SFKCloseButton { ... }` or `SFKCloseButton(action: onClose)`.
 public struct SFKCloseButton: View {
+    @Environment(\.sfkTheme) private var theme
     private let title: String?
     private let systemImage: String
     private let accessibilityLabel: LocalizedStringKey
     private let chrome: SFKCloseButtonChrome
-    private let foreground: Color
+    private let foreground: Color?
     private let action: () -> Void
 
     public init(
         systemImage: String = "xmark",
         accessibilityLabel: LocalizedStringKey = "Close",
         chrome: SFKCloseButtonChrome = .toolbar,
-        foreground: Color = .primary,
+        foreground: Color? = nil,
         action: @escaping () -> Void
     ) {
         self.title = nil
@@ -63,7 +64,7 @@ public struct SFKCloseButton: View {
     public init(
         _ title: String,
         chrome: SFKCloseButtonChrome = .toolbar,
-        foreground: Color = .primary,
+        foreground: Color? = nil,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -100,16 +101,16 @@ public struct SFKCloseButton: View {
             case .toolbar:
                 Image(systemName: systemImage)
                     .font(iconFont)
-                    .foregroundStyle(foreground)
+                    .foregroundStyle(resolvedForeground)
             case .glass:
                 if #available(iOS 26, *) {
                     Image(systemName: systemImage)
                         .font(iconFont)
-                        .foregroundStyle(foreground)
+                        .foregroundStyle(resolvedForeground)
                 } else {
                     Image(systemName: systemImage)
                         .font(iconFont)
-                        .foregroundStyle(foreground)
+                        .foregroundStyle(resolvedForeground)
                         .frame(width: hitSize, height: hitSize)
                         .contentShape(Circle())
                 }
@@ -118,14 +119,14 @@ public struct SFKCloseButton: View {
     }
 
     private func labeledContent(_ title: String) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: theme.spacing.inline) {
             Image(systemName: "xmark")
                 .font(iconFont)
 
             Text(title)
-                .font(.footnote.weight(.semibold))
+                .font(theme.typography.caption.weight(.semibold))
         }
-        .foregroundStyle(foreground)
+        .foregroundStyle(resolvedForeground)
     }
 
     private var hitSize: CGFloat {
@@ -137,9 +138,13 @@ public struct SFKCloseButton: View {
 
     private var iconFont: Font {
         switch chrome {
-        case .toolbar: return .footnote.weight(.bold)
-        case .glass: return .body.weight(.semibold)
+        case .toolbar: return theme.typography.caption.weight(.bold)
+        case .glass: return theme.typography.body.weight(.semibold)
         }
+    }
+
+    private var resolvedForeground: Color {
+        foreground ?? theme.colors.text
     }
 }
 
@@ -166,6 +171,7 @@ private struct CloseButtonStyleModifier: ViewModifier {
 }
 
 private struct CloseChromeModifier: ViewModifier {
+    @Environment(\.sfkTheme) private var theme
     let chrome: SFKCloseButtonChrome
     let isLabeled: Bool
 
@@ -186,14 +192,14 @@ private struct CloseChromeModifier: ViewModifier {
             } else {
                 if isLabeled {
                     content
-                        .background(Color.primary.opacity(0.10), in: Capsule())
+                        .background(theme.colors.surface.opacity(0.10), in: Capsule())
                         .overlay {
                             Capsule()
-                                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                                .strokeBorder(theme.colors.border, lineWidth: 1)
                         }
                 } else {
                     content
-                        .background(Color.primary.opacity(0.10), in: Circle())
+                        .background(theme.colors.surface.opacity(0.10), in: Circle())
                 }
             }
         }

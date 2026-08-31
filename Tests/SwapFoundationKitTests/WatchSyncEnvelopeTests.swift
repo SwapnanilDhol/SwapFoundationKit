@@ -11,6 +11,7 @@
 
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitSync
 
 final class WatchSyncEnvelopeTests: XCTestCase {
     func testMakeAndDecodePayload() throws {

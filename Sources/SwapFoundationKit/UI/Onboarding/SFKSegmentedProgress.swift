@@ -29,6 +29,7 @@ import SwiftUI
 /// ```
 public struct SFKSegmentedProgress: View {
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.sfkTheme) private var theme
 
     /// The index of the current step (0-based).
     public let currentStep: Int
@@ -54,6 +55,9 @@ public struct SFKSegmentedProgress: View {
     /// The total width of the indicator. Pass `nil` to fill the proposed width.
     public var width: CGFloat?
 
+    private let usesThemeActiveColor: Bool
+    private let usesThemeInactiveColor: Bool
+
     /// Creates a segmented progress indicator.
     /// - Parameters:
     ///   - currentStep: The index of the current step (0-based).
@@ -67,8 +71,8 @@ public struct SFKSegmentedProgress: View {
     public init(
         currentStep: Int,
         totalSteps: Int,
-        activeColor: Color = .accentColor,
-        inactiveColor: Color = .secondary.opacity(0.18),
+        activeColor: Color? = nil,
+        inactiveColor: Color? = nil,
         height: CGFloat = 4,
         spacing: CGFloat = 5,
         currentSegmentWidthMultiplier: CGFloat = 1.75,
@@ -76,8 +80,10 @@ public struct SFKSegmentedProgress: View {
     ) {
         self.currentStep = currentStep
         self.totalSteps = totalSteps
-        self.activeColor = activeColor
-        self.inactiveColor = inactiveColor
+        self.activeColor = activeColor ?? .accentColor
+        self.inactiveColor = inactiveColor ?? .secondary.opacity(0.18)
+        self.usesThemeActiveColor = activeColor == nil
+        self.usesThemeInactiveColor = inactiveColor == nil
         self.height = height
         self.segmentSpacing = spacing
         self.currentSegmentWidthMultiplier = max(currentSegmentWidthMultiplier, 1)
@@ -89,7 +95,7 @@ public struct SFKSegmentedProgress: View {
             HStack(spacing: segmentSpacing) {
                 ForEach(0..<safeTotalSteps, id: \.self) { index in
                     Capsule(style: .continuous)
-                        .fill(index <= safeCurrentStep ? activeColor : inactiveColor)
+                        .fill(index <= safeCurrentStep ? resolvedActiveColor : resolvedInactiveColor)
                         .frame(width: segmentWidth(in: proxy.size.width, at: index))
                         .frame(height: height)
                 }
@@ -117,10 +123,16 @@ public struct SFKSegmentedProgress: View {
         return unitWidth * (index == safeCurrentStep ? currentSegmentWidthMultiplier : 1)
     }
 
-    private var progressAnimation: Animation {
-        accessibilityReduceMotion
-            ? .easeOut(duration: 0.15)
-            : .spring(response: 0.3, dampingFraction: 1)
+    private var progressAnimation: Animation? {
+        accessibilityReduceMotion ? nil : theme.motion.standard
+    }
+
+    private var resolvedActiveColor: Color {
+        usesThemeActiveColor ? theme.colors.accent : activeColor
+    }
+
+    private var resolvedInactiveColor: Color {
+        usesThemeInactiveColor ? theme.colors.secondaryText.opacity(0.18) : inactiveColor
     }
 }
 

@@ -38,9 +38,7 @@ final class SFKColorPickerViewModel: ObservableObject {
     }
 
     func selectPresetColor(_ color: Color) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            selectedColor = color
-        }
+        selectedColor = color
         haptics.lightImpact()
     }
 

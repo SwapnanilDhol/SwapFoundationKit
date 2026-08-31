@@ -18,6 +18,7 @@ import Pulse
 import PulseProxy
 #endif
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitNetworking
 @testable import SwapFoundationKitPulse
 
 #if canImport(Pulse)

@@ -18,10 +18,13 @@ import SwiftUI
 /// - ``primary``: The main action in a flow.
 /// - ``secondary``: A supporting or alternative action.
 /// - ``toolbar``: A compact control placed in a system toolbar.
+/// - ``destructive``: An action that removes or irreversibly changes data.
 public enum SFKButtonStyle: Sendable {
     case primary
     case secondary
     case toolbar
+    /// A destructive action such as deleting or removing data.
+    case destructive
 
     var defaultTitleColor: Color {
         switch self {
@@ -29,6 +32,8 @@ public enum SFKButtonStyle: Sendable {
             .white
         case .secondary, .toolbar:
             .primary
+        case .destructive:
+            .white
         }
     }
 
@@ -38,6 +43,8 @@ public enum SFKButtonStyle: Sendable {
             Color.white.opacity(0.8)
         case .secondary, .toolbar:
             .secondary
+        case .destructive:
+            Color.white.opacity(0.8)
         }
     }
 }

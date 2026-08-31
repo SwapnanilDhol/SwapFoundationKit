@@ -126,6 +126,8 @@ public struct AppMetaData {
 
 extension AppMetaData {
 
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
+
     /// Opens the app's review page in the App Store
     public static func openAppReviewPage() {
         let reviewURL = "itms-apps:itunes.apple.com/us/app/apple-store/1480273650?mt=8&action=write-review"
@@ -134,6 +136,7 @@ extension AppMetaData {
 
     /// Opens the app's product page in the App Store
     /// Uses the appID from the current app's metadata
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openAppProductPage() {
         let productURL = "itms-apps:itunes.apple.com/us/app/apple-store/\(Bundle.main.bundleIdentifier)?mt=8"
         openLink(for: productURL)
@@ -141,6 +144,7 @@ extension AppMetaData {
 
     /// Opens the developer's App Store page
     /// - Parameter developerID: The developer's Apple ID
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openDeveloperPage(developerID: String) {
         let developerURL = "itms-apps:itunes.apple.com/developer/id\(developerID)?mt=8"
         openLink(for: developerURL)
@@ -148,6 +152,7 @@ extension AppMetaData {
 
     /// Opens the app's privacy policy URL if available
     /// - Parameter fallbackURL: Optional fallback URL if no privacy policy URL is set
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openPrivacyPolicy(fallbackURL: URL? = nil) {
         if let privacyURL = Bundle.main.infoDictionary?["NSPrivacyPolicyURL"] as? String,
            let url = URL(string: privacyURL) {
@@ -159,6 +164,7 @@ extension AppMetaData {
 
     /// Opens the app's terms of service URL if available
     /// - Parameter fallbackURL: Optional fallback URL if no terms URL is set
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openTermsOfService(fallbackURL: URL? = nil) {
         if let termsURL = Bundle.main.infoDictionary?["NSAppleTermsOfServiceURL"] as? String,
            let url = URL(string: termsURL) {
@@ -204,6 +210,7 @@ extension AppMetaData {
 
     /// Helper method to open URLs
     /// - Parameter url: URL string or URL object to open
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openLink(for url: String) {
         if let url = URL(string: url) {
             openLink(for: url)
@@ -212,10 +219,14 @@ extension AppMetaData {
 
     /// Helper method to open URLs
     /// - Parameter url: URL object to open
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openLink(for url: URL) {
         #if os(iOS)
-        if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        // Keep this compatibility API synchronous while honoring AppLinkOpener's main-actor
+        // boundary. UIApplication opening itself is asynchronous, so scheduling the handoff
+        // preserves the legacy fire-and-forget behavior.
+        Task { @MainActor in
+            AppLinkOpener.open(url: url)
         }
         #elseif os(macOS)
         NSWorkspace.shared.open(url)
@@ -223,6 +234,7 @@ extension AppMetaData {
     }
 
     /// Opens the app's settings page
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openAppSettings() {
         #if os(iOS)
         if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
@@ -232,6 +244,7 @@ extension AppMetaData {
     }
 
     /// Opens the device's system settings
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openSystemSettings() {
         #if os(iOS)
         if let settingsURL = URL(string: "App-Prefs:") {
@@ -242,6 +255,7 @@ extension AppMetaData {
 
     /// Calls a phone number
     /// - Parameter phoneNumber: Phone number to call (without spaces or special characters)
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func callPhoneNumber(_ phoneNumber: String) {
         let cleanNumber = phoneNumber.replacingOccurrences(of: "[^0-9+]", with: "", options: .regularExpression)
         let telURL = "tel://\(cleanNumber)"
@@ -252,6 +266,7 @@ extension AppMetaData {
     /// - Parameter email: Email address to send to
     /// - Parameter subject: Optional email subject
     /// - Parameter body: Optional email body
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func sendEmail(to email: String, subject: String? = nil, body: String? = nil) {
         var mailURL = "mailto:\(email)"
         var queryItems: [String] = []
@@ -273,12 +288,14 @@ extension AppMetaData {
 
     /// Opens a website URL
     /// - Parameter url: Website URL to open
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openWebsite(_ url: URL) {
         openLink(for: url)
     }
 
     /// Opens a website URL string
     /// - Parameter urlString: Website URL string to open
+    @available(*, deprecated, message: "Use AppLinkOpener for URL-opening side effects.")
     public static func openWebsite(_ urlString: String) {
         openLink(for: urlString)
     }

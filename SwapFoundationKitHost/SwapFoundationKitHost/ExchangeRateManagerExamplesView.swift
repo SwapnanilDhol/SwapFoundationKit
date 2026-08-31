@@ -11,6 +11,7 @@
 
 import SwiftUI
 import SwapFoundationKit
+import SwapFoundationKitCurrency
 
 /// Examples for `ExchangeRateManager`.
 struct ExchangeRateManagerExamplesView: View {
@@ -39,5 +40,4 @@ struct ExchangeRateManagerExamplesView: View {
         .navigationTitle("Exchange Rates")
     }
 }
-
 

@@ -12,6 +12,7 @@
 import XCTest
 import Network
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitNetworking
 
 /// Covers `NetworkService.performRequest`'s origin-scoped merge of `backendDefaultHeaders`
 /// (see `SFKBackendOriginRegistry`): headers must only reach requests whose origin was explicitly

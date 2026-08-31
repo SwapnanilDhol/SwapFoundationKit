@@ -36,6 +36,7 @@ import Combine
 /// let selected = pickerVM.selectedItems
 /// ```
 @MainActor
+@available(*, deprecated, message: "Use SFKItemPickerView with a typed selection binding instead.")
 public final class SFKItemPickerViewModel: ObservableObject {
     @Published public private(set) var sections: [SFKItemPickerSection]
     public let selectionType: SFKItemPickerSelectionMode

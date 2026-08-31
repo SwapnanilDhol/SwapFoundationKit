@@ -11,6 +11,9 @@
 
 import XCTest
 @testable import SwapFoundationKit
+@testable import SwapFoundationKitNetworking
+@testable import SwapFoundationKitLegacy
+@testable import SwapFoundationKitSync
 
 final class NetworkingTests: XCTestCase {
     var client: HTTPClient!

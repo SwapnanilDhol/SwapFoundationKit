@@ -9,6 +9,7 @@ description: >
   glass materials, UIKit extensions, ads manager, configuration service,
   text field, TextField, SecureField, form input, validation field,
   environment, launch arguments, persistent TTL store, expiring cache, cooldown,
+  design tokens, SFKTheme, semantic theme, shared spacing,
   pro gate, notifications, Pulse, PulseUI,
   network inspector, debug console, App Attest, authenticated sessions,
   session refresh, purchase binding, authenticated transport, appearance, rounded font, hosting
@@ -23,9 +24,9 @@ A comprehensive Swift package providing essential utilities, extensions, UI comp
 
 Read files in this order:
 
-1. `Docs/capabilities.yaml` — Agent-first discovery catalog (14 domains)
-2. `README.md` — Parent index with links to all 12 module READMEs
-3. Module READMEs under `Sources/SwapFoundationKit/` — Per-module API references
+1. `Docs/capabilities.yaml` — Agent-first discovery catalog
+2. `README.md` — Parent index with links to the owning product READMEs
+3. Module READMEs under `Sources/` — Per-product API references
 4. `Docs/migration/catalog.yaml` — Curated audit catalog (60+ capabilities with tiers)
 5. `AGENTS.md` — LLM workflow document
 6. `Docs/migration/migration-guide.md` — Full migration guide
@@ -79,15 +80,19 @@ Read files in this order:
 
 | Module | README | Key Types |
 |--------|--------|-----------|
-| Core | [Core/README.md](Sources/SwapFoundationKit/Core/README.md) | HTTPClient, SecurityService, AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient, BackupService, ConfigurationService |
-| Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager, UserDefault, DeeplinkHandler, SFKProGate, SFKNotificationService (Pulse/Toast are opt-in products) |
-| UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKButton, SFKTextField, SFKSettingsScreen, SFKSegmentedProgress, SFKItemPickerView, BarcodeScannerScreen, SFKAppearanceManager |
+| Core | [Core/README.md](Sources/SwapFoundationKit/Core/README.md) | SecurityService, BackupService; other infrastructure requires opt-in imports |
+| Networking | [Networking/README.md](Sources/SwapFoundationKitNetworking/README.md) | HTTPClient, NetworkRequest, NetworkService, NetworkMonitor |
+| Authentication | [Authentication/README.md](Sources/SwapFoundationKitAuthentication/README.md) | AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient |
+| Firebase | [Firebase/README.md](Sources/SwapFoundationKitFirebase/README.md) | SFKFirebaseLogger with required host handlers |
+| Legacy | [Legacy/README.md](Sources/SwapFoundationKitLegacy/README.md) | Deprecated bootstrap and ConfigurationService |
+| Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager (instance-based), UserDefault, DeeplinkHandler, SFKAccessGate, SFKNotificationService (Pulse/Toast are opt-in products) |
+| UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKTheme, SFKButton, SFKTextField, typed SFKSettingsScreen/SFKSettingsSection, SFKSegmentedProgress, typed SFKItemPickerView, SFKColorPickerSheet, SFKPhotoPicker, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
 | Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | PersistentTTLStore, Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
-| Currency | [Currency/README.md](Sources/SwapFoundationKit/Currency/README.md) | Currency, ExchangeRateManager |
-| ImageProcessor | [ImageProcessor/README.md](Sources/SwapFoundationKit/ImageProcessor/README.md) | ImageProcessor, SFKImageCompressor |
-| ItemSync | [ItemSync/README.md](Sources/SwapFoundationKit/ItemSync/README.md) | SyncableData, DataSyncService, ItemSyncServiceFactory |
-| WatchSync | [WatchSync/README.md](Sources/SwapFoundationKit/WatchSync/README.md) | WatchSyncService, WatchSyncEnvelope, WatchSyncTransport |
+| Currency | [Currency/README.md](Sources/SwapFoundationKitCurrency/Currency/README.md) | Currency, ExchangeRateManager |
+| ImageProcessor | [ImageProcessor/README.md](Sources/SwapFoundationKitMedia/ImageProcessor/README.md) | ImageProcessor, SFKImageCompressor |
+| ItemSync | [ItemSync/README.md](Sources/SwapFoundationKitSync/ItemSync/README.md) | SyncableData, DataSyncService, ItemSyncServiceFactory |
+| WatchSync | [WatchSync/README.md](Sources/SwapFoundationKitSync/WatchSync/README.md) | WatchSyncService, WatchSyncEnvelope, WatchSyncTransport |
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | Compatibility | [Compatibility/README.md](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | Ads | [Ads/README.md](Sources/SwapFoundationKit/Ads/README.md) | AdsConfiguration, AdUnitConfiguration |
