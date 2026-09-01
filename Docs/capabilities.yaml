@@ -322,16 +322,21 @@ domains:
       - The app has a custom design-system alert implementation or domain-specific orchestration
     public_api:
       - AlertPresenter
+      - UIApplication.requestReview()
+      - UIApplication.foregroundActiveScene
     docs:
       - Docs/migration/migration-guide.md
       - Docs/guides/settings.md
     examples:
       - Sources/SwapFoundationKit/UI/AlertPresenter.swift
+      - Sources/SwapFoundationKit/UI/UIApplication+.swift
     host_app_triggers:
       - alert
       - confirmation
       - destructive action
       - reset dialog
+      - review prompt
+      - rate the app
 
   - id: networking
     priority: 6
@@ -475,6 +480,8 @@ domains:
       - SFKAppEnvironment
       - SFKLaunchArguments
       - SFKAppearanceManager
+      - SFKAppearanceManager.applyRoundedFonts(to: UINavigationBar)
+      - SFKAppearanceManager.applyRoundedFonts(to: UINavigationItem)
       - UIFont.roundedSystemFont(ofSize:weight:)
       - SFKRoundedHostingController
     docs:

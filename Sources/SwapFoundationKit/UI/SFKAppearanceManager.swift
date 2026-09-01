@@ -15,6 +15,18 @@ import SwiftUI
 @MainActor
 public enum SFKAppearanceManager {
 
+    /// Rounded title font shared by `configure()` and `applyRoundedFonts(to:)` so
+    /// re-applied appearances always match the initial configuration.
+    private static let titleFont = UIFont.roundedSystemFont(ofSize: 17, weight: .semibold)
+    /// Rounded large-title font shared by `configure()` and `applyRoundedFonts(to:)`.
+    private static let largeTitleFont = UIFont.roundedSystemFont(ofSize: 34, weight: .bold)
+    /// Rounded bar-button font shared by `configure()` and `applyRoundedFonts(to:)`.
+    private static let barButtonFont = UIFont.roundedSystemFont(ofSize: 17, weight: .semibold)
+    /// Rounded font used for tab bar item titles.
+    private static let tabFont = UIFont.roundedSystemFont(ofSize: 10, weight: .semibold)
+    /// Rounded font used for segmented control titles.
+    private static let segmentedFont = UIFont.roundedSystemFont(ofSize: 13, weight: .semibold)
+
     /// Applies rounded system font to all UIKit chrome.
     ///
     /// Affects:
@@ -23,12 +35,6 @@ public enum SFKAppearanceManager {
     /// - `UIBarButtonItem` normal and highlighted
     /// - `UISegmentedControl` normal and selected
     public static func configure() {
-        let titleFont = UIFont.roundedSystemFont(ofSize: 17, weight: .semibold)
-        let largeTitleFont = UIFont.roundedSystemFont(ofSize: 34, weight: .bold)
-        let barButtonFont = UIFont.roundedSystemFont(ofSize: 17, weight: .semibold)
-        let tabFont = UIFont.roundedSystemFont(ofSize: 10, weight: .semibold)
-        let segmentedFont = UIFont.roundedSystemFont(ofSize: 13, weight: .semibold)
-
         let navigationAppearance = UINavigationBarAppearance()
         navigationAppearance.configureWithDefaultBackground()
         navigationAppearance.titleTextAttributes = [.font: titleFont]
@@ -66,6 +72,81 @@ public enum SFKAppearanceManager {
 
         UISegmentedControl.appearance().setTitleTextAttributes([.font: segmentedFont], for: .normal)
         UISegmentedControl.appearance().setTitleTextAttributes([.font: segmentedFont], for: .selected)
+
+        reinforceRoundedNavigationTypography()
+    }
+
+    /// Patches a live navigation bar after SwiftUI may have replaced its appearances.
+    ///
+    /// SwiftUI modifiers like `toolbarBackground` synthesize fresh, per-instance
+    /// `UINavigationBarAppearance` values that do not inherit the `UINavigationBar.appearance()`
+    /// proxy configured by `configure()`. Call this from a hosting controller's lifecycle methods
+    /// (see `SFKRoundedHostingController`) to keep rounded typography applied after SwiftUI
+    /// re-synthesizes those appearances.
+    public static func applyRoundedFonts(to navigationBar: UINavigationBar) {
+        navigationBar.titleTextAttributes = [.font: titleFont]
+        navigationBar.largeTitleTextAttributes = [.font: largeTitleFont]
+
+        let appearances = [
+            navigationBar.standardAppearance,
+            navigationBar.scrollEdgeAppearance,
+            navigationBar.compactAppearance,
+            navigationBar.compactScrollEdgeAppearance
+        ].compactMap { $0 }
+
+        appearances.forEach(applyRoundedFonts(to:))
+    }
+
+    /// Patches navigation-item appearances SwiftUI synthesizes for toolbar backgrounds.
+    public static func applyRoundedFonts(to navigationItem: UINavigationItem) {
+        [
+            navigationItem.standardAppearance,
+            navigationItem.scrollEdgeAppearance,
+            navigationItem.compactAppearance,
+            navigationItem.compactScrollEdgeAppearance
+        ]
+        .compactMap { $0 }
+        .forEach(applyRoundedFonts(to:))
+    }
+
+    /// SwiftUI can synthesize a new navigation-bar appearance when a view uses
+    /// toolbar background modifiers. Keep the direct appearance-proxy values in
+    /// sync so those synthesized appearances still resolve to rounded fonts.
+    private static func reinforceRoundedNavigationTypography() {
+        let navigationBar = UINavigationBar.appearance()
+
+        navigationBar.titleTextAttributes = [.font: titleFont]
+        navigationBar.largeTitleTextAttributes = [.font: largeTitleFont]
+
+        let appearances = [
+            navigationBar.standardAppearance,
+            navigationBar.scrollEdgeAppearance,
+            navigationBar.compactAppearance,
+            navigationBar.compactScrollEdgeAppearance
+        ].compactMap { $0 }
+
+        appearances.forEach(applyRoundedFonts(to:))
+        navigationBar.compactScrollEdgeAppearance = navigationBar.compactAppearance
+
+        let barButton = UIBarButtonItem.appearance()
+        [UIControl.State.normal, .highlighted, .disabled, .focused].forEach { state in
+            barButton.setTitleTextAttributes([.font: barButtonFont], for: state)
+        }
+    }
+
+    private static func applyRoundedFonts(to appearance: UINavigationBarAppearance) {
+        appearance.titleTextAttributes[.font] = titleFont
+        appearance.largeTitleTextAttributes[.font] = largeTitleFont
+        apply(barButtonFont, to: appearance.buttonAppearance)
+        apply(barButtonFont, to: appearance.doneButtonAppearance)
+        apply(barButtonFont, to: appearance.backButtonAppearance)
+    }
+
+    private static func apply(_ font: UIFont, to appearance: UIBarButtonItemAppearance) {
+        appearance.normal.titleTextAttributes[.font] = font
+        appearance.highlighted.titleTextAttributes[.font] = font
+        appearance.disabled.titleTextAttributes[.font] = font
+        appearance.focused.titleTextAttributes[.font] = font
     }
 }
 
