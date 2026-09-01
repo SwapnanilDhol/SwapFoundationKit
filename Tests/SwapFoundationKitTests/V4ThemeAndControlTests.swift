@@ -63,8 +63,8 @@ final class V4ThemeAndControlTests: XCTestCase {
         ) { }
         let compactText = SFKCompactButton("Edit") { }
         let compactIconAndText = SFKCompactButton("Edit", systemImage: "pencil") { }
-        let legacyChrome: SFKCloseButtonChrome = .toolbar
-        _ = (compactIcon, compactText, compactIconAndText, legacyChrome)
+        let close = SFKCompactButton(type: .close, chrome: .glass) { }
+        _ = (compactIcon, compactText, compactIconAndText, close)
     }
 
     func testCompactTextFieldAndFocusedAppearanceCompile() {

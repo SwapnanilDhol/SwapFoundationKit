@@ -10,7 +10,7 @@ compiler inventory, not a source grep or a count that hides retained APIs.
 
 | Product | Located public declarations | Top-level public types |
 |---|---:|---:|
-| SwapFoundationKit | 1,316 | 103 |
+| SwapFoundationKit | 1,304 | 102 |
 | Networking | 135 | 16 |
 | Authentication | 201 | 34 |
 | Sync | 110 | 18 |
@@ -22,17 +22,17 @@ compiler inventory, not a source grep or a count that hides retained APIs.
 | GoogleMobileAds | 48 | 10 |
 | Pulse | 27 | 6 |
 | Toast | 18 | 4 |
-| **Total** | **2,132** | **226** |
+| **Total** | **2,120** | **225** |
 
 | Measure | Pre-extraction `55ff7a1` | Compatibility checkpoint `148deb6` | Final | Original design target |
 |---|---:|---:|---:|---:|
-| Default public types | 235 | 152 | 103 | 60–75 |
-| UI public types | 92 | 102 | 53 | <40 |
-| All-product public types | 262 | 286 | 226 | ≤157 |
+| Default public types | 235 | 152 | 102 | 60–75 |
+| UI public types | 92 | 102 | 52 | <40 |
+| All-product public types | 262 | 286 | 225 | ≤157 |
 | Default third-party dependency edges | 0 | 0 | 0 | 0 |
 
-Compared with `55ff7a1`, the default has **56.2% fewer** types, UI has **42.4%
-fewer**, and the complete package has **13.7% fewer**. Compared with the coexistence
+Compared with `55ff7a1`, the default has **56.6% fewer** types, UI has **43.5%
+fewer**, and the complete package has **14.1% fewer**. Compared with the coexistence
 checkpoint, cleanup removes 60 top-level types across products. Default-product
 reduction includes relocation; it must not be presented as all-package deletion.
 
@@ -40,12 +40,11 @@ reduction includes relocation; it must not be presented as all-package deletion.
 
 The original 75/39/157 ceilings were run against the graph and failed. **Those
 design targets are not achieved.** The regression budgets now enforce the measured
-103/53/226, with the original targets retained separately in
-`v4-api-budgets.json`. The increase from the prior 100/50/223 checkpoint is
-reviewed: `SFKCompactButton` and `SFKCompactButtonChrome` add the general compact
-control requested by the maintainer, while the regenerated baseline also captures
-the already-public `SFKButtonAlignment` that the prior artifact omitted. This is
-an explicit scope revision, not a claim that the original acceptance numbers passed.
+102/52/225, with the original targets retained separately in
+`v4-api-budgets.json`. The current surface replaces the legacy close-button
+wrapper and compatibility alias with the semantic `SFKCompactButtonType`, while
+retaining the shared compact control. This is an explicit scope revision, not a
+claim that the original acceptance numbers passed.
 
 - The default retains reusable services/utilities, typed settings/pickers,
   barcode/photo presentation, UIKit interoperability, and forward-compatible

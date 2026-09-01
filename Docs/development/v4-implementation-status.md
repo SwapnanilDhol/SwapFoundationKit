@@ -32,13 +32,14 @@ a published v4 release or approval to change backend enforcement.
 
 | Public top-level types | Before extraction (`55ff7a1`) | Final |
 |---|---:|---:|
-| Default product | 235 | 103 |
-| UI | 92 | 53 |
-| All products | 262 | 226 |
+| Default product | 235 | 102 |
+| UI | 92 | 52 |
+| All products | 262 | 225 |
 
 The original 75/39/157 numerical design targets were **not achieved**. Distinct
 specialized and security contracts are retained; the reviewed regression limits
-are 103/53/226 after the compact-button addition and baseline reconciliation. See
+are 102/52/225 after replacing the legacy close-button wrapper with the semantic
+compact-button type and reconciling the baseline. See
 the [API ledger](v4-api-ledger.md) for the explicit scope
 revision and retained-capability rationale. Moves and nesting are not claimed as
 equivalent to deleting functionality.

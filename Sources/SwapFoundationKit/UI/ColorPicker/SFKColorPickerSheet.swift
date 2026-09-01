@@ -156,7 +156,7 @@ public struct SFKColorPickerSheet: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        SFKCloseButton {
+                        SFKCompactButton(type: .close, chrome: .toolbar) {
                             dismiss()
                         }
                     }

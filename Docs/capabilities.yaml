@@ -99,8 +99,7 @@ domains:
       - SFKButtonAlignment
       - SFKCompactButton
       - SFKCompactButtonChrome
-      - SFKCloseButton
-      - SFKCloseButtonChrome
+      - SFKCompactButtonType
       - SFKGlassMaterial
       - SFKGlassShape
       - View.sfkGlass(material:tint:isInteractive:shape:)
@@ -109,7 +108,6 @@ domains:
     examples:
       - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
       - Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift
-      - Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift
     host_app_triggers:
       - primary button
       - CTA

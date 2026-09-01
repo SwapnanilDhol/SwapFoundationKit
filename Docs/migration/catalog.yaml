@@ -889,7 +889,7 @@ capabilities:
         - SFKButtonAlignment
         - SFKCompactButton
         - SFKCompactButtonChrome
-        - SFKCloseButton
+        - SFKCompactButtonType
         - SFKTextField
         - SFKTextFieldStatus
         - SFKTextFieldAppearance
@@ -908,7 +908,7 @@ capabilities:
       - SFKButtonAlignment
       - SFKCompactButton
       - SFKCompactButtonChrome
-      - SFKCloseButton
+      - SFKCompactButtonType
       - SFKTextField
       - SFKTextFieldStatus
       - SFKTextFieldAppearance
@@ -925,7 +925,7 @@ capabilities:
       - SFKButtonAlignment
       - SFKCompactButton
       - SFKCompactButtonChrome
-      - SFKCloseButton
+      - SFKCompactButtonType
       - SFKTextField
       - SFKTextFieldStatus
       - SFKTextFieldAppearance
@@ -970,7 +970,6 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
       - Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift
-      - Sources/SwapFoundationKit/UI/Buttons/SFKCloseButton.swift
       - Sources/SwapFoundationKit/UI/TextField/SFKTextField.swift
       - Sources/SwapFoundationKit/UI/Chips/SFKChip.swift
       - Sources/SwapFoundationKit/UI/Onboarding/SFKSelectableChip.swift

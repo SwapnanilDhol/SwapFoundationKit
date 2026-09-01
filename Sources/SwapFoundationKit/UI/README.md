@@ -31,8 +31,7 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 | `SFKButtonAlignment` | enum | Semantic `leading`, `center`, or `trailing` content alignment |
 | `SFKCompactButton` | View | Lightweight icon-only, text-only, or icon/text action for toolbars and standalone overlay chrome |
 | `SFKCompactButtonChrome` | enum | `toolbar` (system toolbar owns sizing), `glass` (self-contained 35-point minimum circle or growing capsule) |
-| `SFKCloseButton` | View | Close-specific compatibility wrapper around `SFKCompactButton`, with X and Close defaults |
-| `SFKCloseButtonChrome` | typealias | Source-compatible alias for `SFKCompactButtonChrome` |
+| `SFKCompactButtonType` | enum | Semantic compact-button types, currently `.close` (X symbol and Close accessibility label) |
 | `SFKTheme.Feedback.Style` | enum | Shared none/light/medium/heavy feedback policy for buttons and chips |
 
 ### Text Fields
@@ -179,8 +178,8 @@ SFKChipFlowLayout(spacing: 8) {
 }
 
 // Close / dismiss
-// The close wrapper keeps its X and Close defaults for existing call sites.
-SFKCloseButton {
+// The semantic type supplies the X symbol and Close accessibility label.
+SFKCompactButton(type: .close) {
     dismiss()
 }
 
@@ -211,8 +210,8 @@ SFKCompactButton("Edit", systemImage: "pencil", chrome: .glass) {
     editItem()
 }
 
-// Labeled close convenience remains available.
-SFKCloseButton("Close", chrome: .glass) {
+// Close can use the same standalone glass chrome as other compact buttons.
+SFKCompactButton(type: .close, chrome: .glass) {
     dismiss()
 }
 
@@ -306,7 +305,7 @@ AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 
 ## Source Files
 
-- `Buttons/` — SFKButton, SFKCompactButton, SFKCloseButton, and semantic styles
+- `Buttons/` — SFKButton, SFKCompactButton, and semantic styles
 - `TextField/` — SFKTextField, validation states, focus synchronization, and appearance tokens
 - `ColorPicker/` — SFKColorPickerSheet and its binding-backed Configuration
 - `Settings/` — typed screen/section/row/toggle/picker views

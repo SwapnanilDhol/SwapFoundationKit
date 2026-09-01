@@ -42,8 +42,6 @@ struct ButtonExamplesView: View {
     @State private var subtitleLineLimit = 1
     @State private var controlSize = ButtonControlSize.regular
 
-    @State private var closeShowsTitle = false
-    @State private var closeTitle = "Close"
     @State private var closeChrome = CloseChrome.toolbar
     @State private var closeForeground = Color.primary
     @State private var tapCount = 0
@@ -80,7 +78,7 @@ struct ButtonExamplesView: View {
                 "SFKButton",
                 "SFKCompactButton",
                 "SFKCompactButtonChrome",
-                "SFKCloseButton"
+                "SFKCompactButtonType"
             ]
         ) {
             VStack(spacing: 12) {
@@ -125,19 +123,19 @@ struct ButtonExamplesView: View {
 
                 HStack(spacing: 20) {
                     VStack(spacing: 6) {
-                        SFKCloseButton {}
-                        Text("Close wrapper")
+                        SFKCompactButton(type: .close, chrome: .toolbar) {}
+                        Text("Close toolbar")
                     }
 
                     VStack(spacing: 6) {
-                        SFKCloseButton("Close", chrome: .glass) {}
-                        Text("Close capsule")
+                        SFKCompactButton(type: .close, chrome: .glass) {}
+                        Text("Close glass")
                     }
                 }
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 
-                Text("Use SFKCompactButton for lightweight toolbar or overlay actions. SFKCloseButton keeps the X and Close defaults for existing call sites.")
+                Text("Use SFKCompactButton for lightweight toolbar or overlay actions. The .close type supplies the X symbol and Close accessibility label.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -149,7 +147,7 @@ struct ButtonExamplesView: View {
     private var closeButtonNavigationBar: some View {
         CatalogExampleGroup(
             title: "Close Button in a Navigation Bar",
-            apiNames: ["SFKCloseButton", "ToolbarItem"]
+            apiNames: ["SFKCompactButton", "SFKCompactButtonType", "ToolbarItem"]
         ) {
             CloseButtonNavigationBarExample()
                 .frame(height: 220)
@@ -208,21 +206,12 @@ struct ButtonExamplesView: View {
 
     @ViewBuilder
     private var closeButton: some View {
-        if closeShowsTitle {
-            SFKCloseButton(
-                closeTitle,
-                chrome: closeChrome.value,
-                foreground: closeForeground
-            ) {
-                tapCount += 1
-            }
-        } else {
-            SFKCloseButton(
-                chrome: closeChrome.value,
-                foreground: closeForeground
-            ) {
-                tapCount += 1
-            }
+        SFKCompactButton(
+            type: .close,
+            chrome: closeChrome.value,
+            foreground: closeForeground
+        ) {
+            tapCount += 1
         }
     }
 
@@ -305,10 +294,9 @@ struct ButtonExamplesView: View {
     @ViewBuilder
     private var closeButtonConfiguration: some View {
         Section("Content") {
-            Toggle("Text label", isOn: $closeShowsTitle)
-            if closeShowsTitle {
-                TextField("Title", text: $closeTitle)
-            }
+            Text("The close type uses the X symbol and Close accessibility label.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
 
         Section("Style") {
@@ -369,7 +357,7 @@ private enum ButtonComponent: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .standard: "SFKButton"
-        case .close: "SFKCloseButton"
+        case .close: "SFKCompactButton (.close)"
         }
     }
 }
@@ -481,7 +469,7 @@ private enum CloseChrome: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String { rawValue.capitalized }
 
-    var value: SFKCloseButtonChrome {
+    var value: SFKCompactButtonChrome {
         switch self {
         case .toolbar: .toolbar
         case .glass: .glass
@@ -517,7 +505,7 @@ private struct CloseButtonNavigationBarExample: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    SFKCloseButton(accessibilityLabel: "Close details") {
+                    SFKCompactButton(type: .close, chrome: .toolbar) {
                         closeTapCount += 1
                     }
                 }

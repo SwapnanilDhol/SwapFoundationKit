@@ -2,27 +2,30 @@
 
 ## Intent
 
-Promote the reusable compact toolbar/overlay control behind `SFKCloseButton` to
-`SFKCompactButton`. Keep close-specific convenience calls working. Outside a
+Make the reusable toolbar/overlay control `SFKCompactButton`; close is a semantic
+variant of that one control rather than a separate view. Outside a
 toolbar, the visible control must be at least 35 by 35 points with breathing room
 around its content. A labeled control becomes a capsule, not a forced circle.
 
 ## Public API
 
-- Add `SFKCompactButton` and `SFKCompactButtonChrome` (`toolbar`, `glass`).
+- Add `SFKCompactButton`, `SFKCompactButtonChrome` (`toolbar`, `glass`), and
+  `SFKCompactButtonType` (`close`).
 - Icon-only initializer: `init(systemImage:accessibilityLabel:chrome:foreground:action:)`.
   Require both the symbol and accessible label; never default a generic action to
   an X or “Close”.
 - Text initializer: `init(_:systemImage:chrome:foreground:action:)`, with optional
   `systemImage = nil`. This supports text alone and text plus an icon. Accessible
   naming comes from the visible title.
+- Semantic initializer: `init(type:chrome:foreground:action:)`. For `.close`,
+  render the X symbol and use “Close” as the accessibility label. Keep this
+  initializer intentionally small so more semantic presets can be added later
+  without creating parallel button views.
 - Default the new component to `.glass`, making standalone calls self-contained.
   Toolbar callers explicitly choose `.toolbar`.
-- Keep `SFKCloseButton` as a thin wrapper with both existing initializers and
-  `.toolbar` default. Forward the X/Close semantics through the new component.
-  Preserve custom symbols and accessibility labels in the existing icon overload.
-- Preserve `SFKCloseButtonChrome` source compatibility with a typealias to the
-  new enum, rather than duplicating rendering or conversion logic.
+- Remove the legacy close-button source file and its public symbols. This is an
+  intentional source-breaking rename; all package, host-catalog, and
+  documentation call sites use `SFKCompactButton`.
 - Do not introduce loading, async actions, haptics, destructive roles, arbitrary
   view builders, or unrelated changes to `SFKButton`.
 
@@ -47,9 +50,9 @@ around its content. A labeled control becomes a capsule, not a forced circle.
 
 Update the UI README, capabilities catalog, migration catalog, and root SKILL.md
 with the new API. Explain `SFKButton` for semantic CTAs/loading versus
-`SFKCompactButton` for lightweight toolbar/overlay controls, and keep the close
-wrapper discoverable. Add host catalog examples for icon-only, text-only,
-icon/text glass buttons and toolbar use; update searchable API names. Prefer
+`SFKCompactButton` for lightweight toolbar/overlay controls, with `.close` as a
+semantic type. Add host catalog examples for icon-only, text-only, icon/text,
+typed close glass buttons, and toolbar use; update searchable API names. Prefer
 focused edits over unrelated playground cleanup.
 
 ## Verification
@@ -61,5 +64,4 @@ focused edits over unrelated playground cleanup.
 - Parent agent builds the catalog and runs focused control tests on the existing
   SFK-specific simulator clone using simslim, with parallel test clones disabled.
 - Stop after more than two failed test attempts; do not fix unrelated failures.
-- Preserve the pre-existing edits to `Docs/README.md` and the untracked
-  `Docs/development/review-request-plan.md`. Do not commit or publish.
+- Preserve unrelated working-tree changes if present. Do not commit or publish.

@@ -86,7 +86,7 @@ Read files in this order:
 | Authentication | [Authentication/README.md](Sources/SwapFoundationKitAuthentication/README.md) | AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient |
 | Firebase | [Firebase/README.md](Sources/SwapFoundationKitFirebase/README.md) | SFKFirebaseLogger with required host handlers |
 | Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager (instance-based), UserDefault, DeeplinkHandler, SFKAccessGate, SFKNotificationService (Pulse/Toast are opt-in products) |
-| UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKTheme, SFKButton, SFKCompactButton, SFKCloseButton, SFKTextField, typed SFKSettingsScreen/SFKSettingsSection, SFKSegmentedProgress, typed SFKItemPickerView, SFKColorPickerSheet, SFKPhotoPicker, BarcodeScannerScreen, SFKAppearanceManager |
+| UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKTheme, SFKButton, SFKCompactButton, SFKCompactButtonType, SFKTextField, typed SFKSettingsScreen/SFKSettingsSection, SFKSegmentedProgress, typed SFKItemPickerView, SFKColorPickerSheet, SFKPhotoPicker, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
 | Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | PersistentTTLStore, Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
 | Currency | [Currency/README.md](Sources/SwapFoundationKitCurrency/Currency/README.md) | Currency, ExchangeRateManager |

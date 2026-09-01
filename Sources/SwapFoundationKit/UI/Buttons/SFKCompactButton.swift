@@ -11,6 +11,12 @@
 
 import SwiftUI
 
+/// Semantic meaning for a compact button with platform-independent visuals.
+public enum SFKCompactButtonType: Sendable {
+    /// An action that dismisses or closes the current surface.
+    case close
+}
+
 /// Visual treatment for an ``SFKCompactButton``.
 public enum SFKCompactButtonChrome: Sendable {
     /// A control placed in a system toolbar or navigation bar.
@@ -40,6 +46,28 @@ public struct SFKCompactButton: View {
     private let chrome: SFKCompactButtonChrome
     private let foreground: Color?
     private let action: () -> Void
+
+    /// Creates a compact button for a semantic action.
+    ///
+    /// The close type uses the standard X symbol and exposes "Close" as its
+    /// accessibility label. Semantic types keep intent explicit while all
+    /// compact buttons share one rendering and sizing implementation.
+    public init(
+        type: SFKCompactButtonType,
+        chrome: SFKCompactButtonChrome = .glass,
+        foreground: Color? = nil,
+        action: @escaping () -> Void
+    ) {
+        switch type {
+        case .close:
+            self.title = nil
+            self.systemImage = "xmark"
+            self.accessibilityLabel = "Close"
+        }
+        self.chrome = chrome
+        self.foreground = foreground
+        self.action = action
+    }
 
     /// Creates an icon-only compact button.
     ///

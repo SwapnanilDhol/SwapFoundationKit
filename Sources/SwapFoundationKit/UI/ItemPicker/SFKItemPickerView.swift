@@ -306,7 +306,9 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
     @ToolbarContentBuilder
     private func toolbarContent(onDismiss: @escaping () -> Void) -> some ToolbarContent {
         ToolbarItemGroup(placement: .topBarLeading) {
-            if showsCloseButton { SFKCloseButton(action: onDismiss) }
+            if showsCloseButton {
+                SFKCompactButton(type: .close, chrome: .toolbar, action: onDismiss)
+            }
             ForEach(toolbarActions.filter { $0.placement == .topBarLeading }) { action in
                 toolbarButton(action)
             }

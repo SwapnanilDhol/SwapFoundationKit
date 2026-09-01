@@ -37,7 +37,8 @@ keys, sync behavior, and backend contracts unchanged.
 - `SFKCompactButton` provides lightweight icon-only, text-only, or icon/text
   controls. Standalone glass controls have a 35-point minimum surface and
   grow as labels require; use `.toolbar` when the system toolbar owns chrome.
-- `SFKCloseButton` remains a close-specific wrapper with X and Close defaults.
+- `SFKCompactButton(type: .close)` provides the standard X symbol and Close
+  accessibility label while sharing the compact-button implementation.
 - `SFKSettingsScreen { SFKSettingsSection { ... } }` is the typed settings
   composition path. Use `SFKSettingsRow`, `SFKSettingsToggle`,
   `SFKSettingsPicker`, and `SFKSettingsBindingRow`; compose native
@@ -126,6 +127,10 @@ SFKCompactButton(
     navigateBack()
 }
 
+SFKCompactButton(type: .close, chrome: .toolbar) {
+    dismiss()
+}
+
 SFKCompactButton("Edit", systemImage: "pencil") {
     editItem()
 }
@@ -142,7 +147,7 @@ context. Typical replacements include:
 - repeated haptic calls → `HapticsHelper`;
 - custom settings rows → typed SFK rows or native controls;
 - custom item selection state → typed picker bindings;
-- hand-built close buttons → `SFKCloseButton`;
+- hand-built close buttons → `SFKCompactButton(type: .close)`;
 - repeated URL/review plumbing → `AppLinkOpener`;
 - direct widget reloads around sync writes → one host-owned sync wrapper;
 - ad hoc image transforms → the Media module's injected service.
