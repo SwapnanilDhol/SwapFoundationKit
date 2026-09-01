@@ -12,7 +12,7 @@
 # Per-target totals (declarations = all public, located symbols;
 # types = top-level class/struct/enum/protocol/typealias only):
 #   target                             declarations    types
-#   SwapFoundationKit                          1304      102
+#   SwapFoundationKit                          1249      100
 #   SwapFoundationKitNetworking                 135       16
 #   SwapFoundationKitAuthentication             201       34
 #   SwapFoundationKitSync                       110       18
@@ -31,16 +31,15 @@
 #   Services                      209       33
 #   Extensions                    208        3
 #   Protocols                      58        4
-#   Compatibility                  55        2
 #   Core                           38        2
 #   Utilities                      36        6
 #
 # SwapFoundationKit — declarations by kind:
-#   method                  486
+#   method                  435
 #   property                403
 #   enum.case               109
-#   init                     91
-#   struct                   57
+#   init                     89
+#   struct                   55
 #   type.method              49
 #   enum                     35
 #   type.property            34
@@ -52,61 +51,6 @@
 #
 ## SYMBOLS
 # target | kind | file:line | symbol
-SwapFoundationKit | struct | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:11 | SFKNavigationSubtitle
-SwapFoundationKit | init | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:14 | SFKNavigationSubtitle.init(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:18 | SFKNavigationSubtitle.body(content:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | BarcodeScannerScreen.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | BarcodeScannerView.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKAuraGlowBackground.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKAuraLayer.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKButton.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKCard.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKChip.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKColorPickerSheet.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKCompactButton.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKEmptyStateView.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKItemPickerView.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKPhotoPicker.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKProBannerView.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSegmentedProgress.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSelectableChip.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSettingsBindingRow.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSettingsPicker.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSettingsRow.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSettingsScreen.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSettingsSection.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKSettingsToggle.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | SFKTextField.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | TopAuraBackground.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleNavigationSubtitle.swift:30 | View.compatibleNavigationSubtitle(_:)
-SwapFoundationKit | struct | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:16 | SFKTabBarMinimizeBehavior
-SwapFoundationKit | init | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:17 | SFKTabBarMinimizeBehavior.init()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:19 | SFKTabBarMinimizeBehavior.body(content:)
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | BarcodeScannerScreen.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | BarcodeScannerView.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKAuraGlowBackground.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKAuraLayer.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKButton.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKCard.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKChip.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKColorPickerSheet.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKCompactButton.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKEmptyStateView.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKItemPickerView.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKPhotoPicker.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKProBannerView.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSegmentedProgress.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSelectableChip.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSettingsBindingRow.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSettingsPicker.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSettingsRow.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSettingsScreen.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSettingsSection.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKSettingsToggle.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | SFKTextField.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | TopAuraBackground.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/CompatibleTabBarMinimizeBehavior.swift:31 | View.compatibleTabBarMinimizeBehavior()
-SwapFoundationKit | method | Sources/SwapFoundationKit/Compatibility/UIKit/UIKitTabBarMinimizeBehavior.swift:34 | UITabBarController.setTabBarMinimizeBehavior(on:)
 SwapFoundationKit | class | Sources/SwapFoundationKit/Core/BackupService.swift:19 | BackupService
 SwapFoundationKit | init | Sources/SwapFoundationKit/Core/BackupService.swift:27 | BackupService.init(fileManager:documentsDirectoryOverride:)
 SwapFoundationKit | enum | Sources/SwapFoundationKit/Core/BackupService.swift:35 | BackupService.FileType

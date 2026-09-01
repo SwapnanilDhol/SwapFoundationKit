@@ -1,8 +1,8 @@
 {
   "limits": {
-    "default_top_level_types": 102,
+    "default_top_level_types": 100,
     "ui_top_level_types": 52,
-    "all_product_top_level_types": 225,
+    "all_product_top_level_types": 223,
     "all_initializer_max_labels": 10
   },
   "original_design_targets_not_achieved": {
@@ -10,7 +10,7 @@
     "ui_top_level_types": 39,
     "all_product_top_level_types": 157
   },
-  "review_note": "Limits reflect the fresh 12-product symbol graph on 2026-09-01 after replacing the legacy close-button wrapper with SFKCompactButtonType. Original numerical design targets were not achieved; see v4-api-ledger.md for scope and actual reductions.",
+  "review_note": "Limits reflect the fresh 12-product symbol graph on 2026-09-01 after removing the compatibility wrapper module and replacing the legacy close-button wrapper with SFKCompactButtonType. Original numerical design targets were not achieved; see v4-api-ledger.md for scope and actual reductions.",
   "common_constructor_prefixes": {
     "SFKButton": 6,
     "SFKTextField": 6,

@@ -9,6 +9,8 @@ a published v4 release or approval to change backend enforcement.
   dependency edges. Networking, Authentication, Sync, Media, Currency, RemoteAI,
   Firebase, Feedback, Ads, Pulse, and Toast are opt-in.
 - Shared semantic `SFKTheme`; compact controls and focused customization modifiers.
+- Compatibility wrapper module removed; platform availability is handled at the
+  direct call site where an iOS 26 API is required.
 - Typed settings composition and selection bindings; native SwiftUI controls
   replace redundant specialized settings wrappers.
 - Legacy bootstrap/configuration product, erased settings adapters, picker
@@ -32,13 +34,13 @@ a published v4 release or approval to change backend enforcement.
 
 | Public top-level types | Before extraction (`55ff7a1`) | Final |
 |---|---:|---:|
-| Default product | 235 | 102 |
+| Default product | 235 | 100 |
 | UI | 92 | 52 |
-| All products | 262 | 225 |
+| All products | 262 | 223 |
 
 The original 75/39/157 numerical design targets were **not achieved**. Distinct
 specialized and security contracts are retained; the reviewed regression limits
-are 102/52/225 after replacing the legacy close-button wrapper with the semantic
+are 100/52/223 after removing the compatibility wrapper module and replacing the legacy close-button wrapper with the semantic
 compact-button type and reconciling the baseline. See
 the [API ledger](v4-api-ledger.md) for the explicit scope
 revision and retained-capability rationale. Moves and nesting are not claimed as

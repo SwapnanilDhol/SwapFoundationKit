@@ -107,7 +107,6 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [ItemSync](Sources/SwapFoundationKitSync/ItemSync/README.md) | App Group data sync for widgets and extensions |
 | [WatchSync](Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity transport |
 | [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
-| [Compatibility](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |
 | [Pulse](Sources/SwapFoundationKitPulse/README.md) | Pulse network logging and debug console (optional product) |
 | [Toast](Sources/SwapFoundationKitToast/README.md) | Toast presentation (optional product) |

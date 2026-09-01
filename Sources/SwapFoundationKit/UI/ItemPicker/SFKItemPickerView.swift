@@ -218,7 +218,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
             label($0).localizedCaseInsensitiveContains(query)
                 || ($0.pickableItemSubtitle?.localizedCaseInsensitiveContains(query) ?? false)
         }
-        return List {
+        let list = List {
             ForEach(visibleItems, id: \.pickableItemId) { item in
                 typedRow(item)
             }
@@ -231,7 +231,14 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         }
         .navigationTitle(pageTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .compatibleNavigationSubtitle(resolvedTypedSubtitle)
+
+        return Group {
+            if #available(iOS 26, *) {
+                list.navigationSubtitle(resolvedTypedSubtitle)
+            } else {
+                list
+            }
+        }
         .searchable(text: $searchText)
         .toolbar { toolbarContent(onDismiss: { dismiss() }) }
     }

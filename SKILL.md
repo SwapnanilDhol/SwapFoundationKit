@@ -94,7 +94,6 @@ Read files in this order:
 | ItemSync | [ItemSync/README.md](Sources/SwapFoundationKitSync/ItemSync/README.md) | SyncableData, DataSyncService, ItemSyncServiceFactory |
 | WatchSync | [WatchSync/README.md](Sources/SwapFoundationKitSync/WatchSync/README.md) | WatchSyncService, WatchSyncEnvelope, WatchSyncTransport |
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
-| Compatibility | [Compatibility/README.md](Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | Ads | [Ads/README.md](Sources/SwapFoundationKitGoogleMobileAds/README.md) | AdsConfiguration, AdUnitConfiguration |
 | Pulse (opt-in) | [Pulse/README.md](Sources/SwapFoundationKitPulse/README.md) | SFKPulseService, SFKPulseConfiguration, SFKPulseConsoleView |
 | Toast (opt-in) | [Toast/README.md](Sources/SwapFoundationKitToast/README.md) | ToastManager, SFKToastKind, SFKToastStyle, SFKToastConfiguration |

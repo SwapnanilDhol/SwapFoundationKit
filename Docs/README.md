@@ -31,7 +31,6 @@ Each module has its own README with full API reference and code examples:
 | [ItemSync](../Sources/SwapFoundationKitSync/ItemSync/README.md) | App Group sync for widgets and extensions |
 | [WatchSync](../Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity |
 | [Protocols](../Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
-| [Compatibility](../Sources/SwapFoundationKit/Compatibility/README.md) | iOS 26+ forward-compatible wrappers |
 | [Ads](../Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration |
 
 ## Migration Tools
