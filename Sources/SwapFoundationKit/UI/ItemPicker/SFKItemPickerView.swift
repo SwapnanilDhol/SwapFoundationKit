@@ -218,16 +218,22 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
             label($0).localizedCaseInsensitiveContains(query)
                 || ($0.pickableItemSubtitle?.localizedCaseInsensitiveContains(query) ?? false)
         }
-        let list = List {
-            ForEach(visibleItems, id: \.pickableItemId) { item in
-                typedRow(item)
+        let list = ZStack {
+            // List's scroll host may not paint the replacement background
+            // consistently when its native content background is hidden.
+            theme.colors.background
+                .ignoresSafeArea()
+
+            List {
+                ForEach(visibleItems, id: \.pickableItemId) { item in
+                    typedRow(item)
+                }
             }
-        }
-        .scrollContentBackground(.hidden)
-        .background(theme.colors.background)
-        .overlay {
-            if items.isEmpty, let emptyState { emptyStateView(emptyState) }
-            else if visibleItems.isEmpty { ContentUnavailableView.search(text: searchText) }
+            .scrollContentBackground(.hidden)
+            .overlay {
+                if items.isEmpty, let emptyState { emptyStateView(emptyState) }
+                else if visibleItems.isEmpty { ContentUnavailableView.search(text: searchText) }
+            }
         }
         .navigationTitle(pageTitle)
         .navigationBarTitleDisplayMode(.inline)

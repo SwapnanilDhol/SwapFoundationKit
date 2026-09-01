@@ -68,12 +68,17 @@ public struct SFKSettingsScreen<Content: View>: View {
     }
 
     public var body: some View {
-        Form { content() }
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .scrollContentBackground(.hidden)
-            .background(_SFKSettingsThemeSurface())
-            .tint(theme.colors.accent)
+        ZStack {
+            // Form's scroll host can remain transparent after its content
+            // background is hidden, so keep the theme surface outside it.
+            _SFKSettingsThemeSurface()
+
+            Form { content() }
+                .scrollContentBackground(.hidden)
+        }
+        .navigationTitle(navigationTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .tint(theme.colors.accent)
     }
 }
 
