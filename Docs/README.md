@@ -8,6 +8,7 @@ Quick links to all documentation.
 |-------|-------------|
 | [Quick Start](../README.md#quick-start) | Theme injection and zero-bootstrap usage |
 | [Migration Guide](migration/migration-guide.md) | Step-by-step guide for migrating an iOS app to SFK |
+| [Rounded Typography & Review](migration/rounded-typography-and-review.md) | Replacing a host app's local rounded-font workaround and `requestReview` copy |
 
 ## Module Reference
 

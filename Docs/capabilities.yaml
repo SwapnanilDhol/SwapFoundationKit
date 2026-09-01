@@ -326,6 +326,7 @@ domains:
       - UIApplication.foregroundActiveScene
     docs:
       - Docs/migration/migration-guide.md
+      - Docs/migration/rounded-typography-and-review.md
       - Docs/guides/settings.md
     examples:
       - Sources/SwapFoundationKit/UI/AlertPresenter.swift
@@ -486,6 +487,7 @@ domains:
       - SFKRoundedHostingController
     docs:
       - Sources/SwapFoundationKit/UI/README.md
+      - Docs/migration/rounded-typography-and-review.md
     examples:
       - Sources/SwapFoundationKit/Utilities/SFKAppEnvironment.swift
       - Sources/SwapFoundationKit/Utilities/SFKLaunchArguments.swift

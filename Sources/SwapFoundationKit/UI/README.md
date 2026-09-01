@@ -109,8 +109,8 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 | `AlertPresenter` | enum | Main-actor UIKit alert, confirmation, action-sheet, and text-input presenter |
 | `AlertAction` / `AlertActionStyle` | model | Typed action title, handler, and semantic role |
 | `PhotoPicker` | class | PHPickerViewController wrapper |
-| `SFKAppearanceManager` | enum | Global rounded UIKit typography configuration |
-| `SFKRoundedHostingController` | class | UIHostingController with `.fontDesign(.rounded)` |
+| `SFKAppearanceManager` | enum | Global rounded UIKit typography, plus `applyRoundedFonts(to:)` to re-patch a live `UINavigationBar` / `UINavigationItem` after SwiftUI replaces its appearances |
+| `SFKRoundedHostingController` | class | `UIHostingController` with `.fontDesign(.rounded)` that re-applies rounded navigation fonts across the appear/layout lifecycle |
 
 ## Quick Examples
 
@@ -286,6 +286,14 @@ Text("Hello")
 
 // Alerts
 AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
+
+// Rounded typography: configure once at launch, then host SwiftUI screens in
+// SFKRoundedHostingController so the fonts survive SwiftUI's toolbar synthesis.
+SFKAppearanceManager.configure()
+let controller = SFKRoundedHostingController(rootView: SettingsView())
+
+// App Store review prompt. `reason` identifies the trigger and is logged.
+UIApplication.shared.requestReview(reason: "transactionSaved")
 ```
 
 > Presentation guidance: present `SFKColorPickerSheet` with a medium detent by
@@ -300,6 +308,7 @@ AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 | `UIView+Layout.swift` | DSL: `anchor()`, `fillSuperview()`, `centerInSuperview()` |
 | `UIView+Hierarchy.swift` | `addSubviews()`, `allSubViewsOf()`, `removeAllSubviews()` |
 | `UIViewController+.swift` | Child VC management, top-most/root traversal |
+| `UIApplication+.swift` | `topViewController()`, `foregroundKeyWindow`, `foregroundActiveScene`, `endEditing()`, `requestReview(reason:)` |
 | `UIApplication+SafeArea.swift` | Safe area inset shortcuts |
 | `CGTypes+Extensions.swift` | CGPoint/CGSize/CGRect/CGVector/UIEdgeInsets math |
 
@@ -321,3 +330,4 @@ AlertPresenter.showAlert(title: "Done", message: "Saved successfully")
 - `PhotoPicker.swift` — PHPicker wrapper
 - `SFKAppearanceManager.swift` — UIKit rounded typography
 - `SFKRoundedHostingController.swift` — Rounded font hosting controller
+- `UIApplication+.swift` — Top view controller, scene/window lookup, review prompt
