@@ -77,13 +77,26 @@ public extension UIApplication {
     /// (e.g. immediately after a save or navigation animation completes) — surfacing it a beat
     /// later reads as intentional rather than jarring. Silently does nothing if there is no
     /// foreground active scene to present in.
-    func requestReview() {
+    ///
+    /// - Parameter reason: The trigger that asked for the prompt (e.g. `"textTransactionEntry"`).
+    ///   iOS caps review prompts at three per user per year and gives no callback saying whether
+    ///   one was actually shown, so the request is logged with its reason: without that, there is
+    ///   no way to tell after the fact which trigger consumed the quota, or that a request was
+    ///   dropped for want of a foreground scene.
+    func requestReview(reason: String) {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(1.5))
             // Resolve the scene *after* the delay rather than before it: the app can be
             // backgrounded while we wait, and requesting a review in a scene that is no
             // longer foreground active would target the wrong (or a dead) scene.
-            guard let scene = UIApplication.shared.foregroundActiveScene else { return }
+            guard let scene = UIApplication.shared.foregroundActiveScene else {
+                Logger.info(
+                    "Review request '\(reason)' dropped: no foreground active scene",
+                    context: "Review"
+                )
+                return
+            }
+            Logger.info("Requesting review for reason '\(reason)'", context: "Review")
             AppStore.requestReview(in: scene)
         }
     }

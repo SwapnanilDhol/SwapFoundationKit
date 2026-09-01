@@ -322,7 +322,7 @@ domains:
       - The app has a custom design-system alert implementation or domain-specific orchestration
     public_api:
       - AlertPresenter
-      - UIApplication.requestReview()
+      - UIApplication.requestReview(reason:)
       - UIApplication.foregroundActiveScene
     docs:
       - Docs/migration/migration-guide.md
