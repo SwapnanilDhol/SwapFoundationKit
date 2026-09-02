@@ -11,7 +11,14 @@ public struct SFKTheme {
         public var text: Color
         public var secondaryText: Color
         public var background: Color
+        /// The fill behind grouped `List` and `Form` containers.
+        public var groupedBackground: Color
         public var surface: Color
+        /// The fill used by rows inside grouped `List` and `Form` containers.
+        ///
+        /// This is intentionally separate from ``surface``: grouped system
+        /// containers use a different secondary background in light mode.
+        public var groupedRowSurface: Color
         public var border: Color
         public var destructive: Color
         public var onAccent: Color
@@ -22,7 +29,9 @@ public struct SFKTheme {
             text: Color = .primary,
             secondaryText: Color = .secondary,
             background: Color = Color(.systemBackground),
+            groupedBackground: Color = Color(.systemGroupedBackground),
             surface: Color = Color(.secondarySystemBackground),
+            groupedRowSurface: Color = Color(.secondarySystemGroupedBackground),
             border: Color = Color.primary.opacity(0.12),
             destructive: Color = .red,
             onAccent: Color = .white,
@@ -32,7 +41,9 @@ public struct SFKTheme {
             self.text = text
             self.secondaryText = secondaryText
             self.background = background
+            self.groupedBackground = groupedBackground
             self.surface = surface
+            self.groupedRowSurface = groupedRowSurface
             self.border = border
             self.destructive = destructive
             self.onAccent = onAccent

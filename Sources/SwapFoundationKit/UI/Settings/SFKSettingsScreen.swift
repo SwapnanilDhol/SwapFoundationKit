@@ -34,7 +34,7 @@ public struct SFKSettingsSection<Content: View>: View {
         } footer: {
             if let footer { Text(footer) }
         }
-        .listRowBackground(theme.colors.surface)
+        .listRowBackground(theme.colors.groupedRowSurface)
     }
 }
 
@@ -109,7 +109,7 @@ public struct _SFKSettingsThemeSurface: View {
     public init() {}
 
     public var body: some View {
-        theme.colors.background
+        theme.colors.groupedBackground
             .ignoresSafeArea()
     }
 }

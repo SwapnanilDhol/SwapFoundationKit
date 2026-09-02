@@ -10,6 +10,19 @@ import Testing
 @MainActor
 struct V4SettingsAndPickerCompilationTests {
     @Test
+    func themeExposesGroupedRowSurfaceOverride() {
+        let groupedBackground = Color.orange
+        let groupedRowSurface = Color.mint
+        let colors = SFKTheme.Colors(
+            groupedBackground: groupedBackground,
+            groupedRowSurface: groupedRowSurface
+        )
+
+        #expect(colors.groupedBackground == groupedBackground)
+        #expect(colors.groupedRowSurface == groupedRowSurface)
+    }
+
+    @Test
     func settingsBuilderKeepsConcreteBindings() {
         let enabled = Binding.constant(true)
         let value = Binding.constant(FixtureItem.first)

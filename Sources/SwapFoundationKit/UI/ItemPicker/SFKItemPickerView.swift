@@ -289,7 +289,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         let list = ZStack {
             // List's scroll host may not paint the replacement background
             // consistently when its native content background is hidden.
-            theme.colors.background
+            theme.colors.groupedBackground
                 .ignoresSafeArea()
 
             List {
@@ -298,14 +298,14 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
                         Section(section.title) {
                             ForEach(section.items, id: \.pickableItemId) { item in
                                 typedRow(item)
-                                    .listRowBackground(theme.colors.surface)
+                                    .listRowBackground(theme.colors.groupedRowSurface)
                             }
                         }
                     }
                 } else {
                     ForEach(visibleItems, id: \.pickableItemId) { item in
                         typedRow(item)
-                            .listRowBackground(theme.colors.surface)
+                            .listRowBackground(theme.colors.groupedRowSurface)
                     }
                 }
             }

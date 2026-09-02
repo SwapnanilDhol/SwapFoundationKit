@@ -17,6 +17,12 @@ Its nested `colors`, `typography`, `spacing`, `radii`, `motion`, and `feedback`
 values are public for focused brand overrides. Controls use semantic modifiers
 for one-off changes rather than oversized initializers. `colors.onAccent` and
 `colors.onDestructive` control foreground contrast for semantic filled actions.
+`colors.background` is the general full-screen fill. For grouped `List` and
+`Form` containers, use the paired `colors.groupedBackground` and
+`colors.groupedRowSurface` tokens. `colors.surface` is the general card, field,
+and button fill. The grouped defaults follow `systemGroupedBackground` and
+`secondarySystemGroupedBackground`, keeping grouped rows distinct from the
+container background in light mode.
 
 The separate `SwapFoundationKitFeedback` product provides the reusable in-app
 feedback flow while keeping RevenueCat and product analytics in host apps.
