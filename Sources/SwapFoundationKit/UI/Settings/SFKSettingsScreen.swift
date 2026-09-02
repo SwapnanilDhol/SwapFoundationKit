@@ -53,39 +53,62 @@ public struct SFKSettingsSection<Content: View>: View {
 ///     }
 /// }
 /// ```
-public struct SFKSettingsScreen<Content: View>: View {
+public struct SFKSettingsScreen<Content: View, Background: View>: View {
     @Environment(\.sfkTheme) private var theme
     private let navigationTitle: String
     private let content: () -> Content
+    private let background: () -> Background
 
     /// Creates a typed settings screen from a SwiftUI result-builder closure.
     public init(
         navigationTitle: String = "Settings",
         @ViewBuilder content: @escaping () -> Content
+    ) where Background == _SFKSettingsThemeSurface {
+        self.navigationTitle = navigationTitle
+        self.content = content
+        self.background = { _SFKSettingsThemeSurface() }
+    }
+
+    /// Creates a typed settings screen with a custom background layer (e.g. a
+    /// ``TabRootAuraLayer``-style glow over a flat fill) instead of the plain
+    /// themed surface. The caller owns the full background — including its
+    /// own base fill — so the Form is never stacked over more than one
+    /// painted layer, which is what keeps `.listRowBackground` reliable once
+    /// `.scrollContentBackground(.hidden)` is applied.
+    public init(
+        navigationTitle: String = "Settings",
+        @ViewBuilder background: @escaping () -> Background,
+        @ViewBuilder content: @escaping () -> Content
     ) {
         self.navigationTitle = navigationTitle
         self.content = content
+        self.background = background
     }
 
     public var body: some View {
-        ZStack {
-            // Form's scroll host can remain transparent after its content
-            // background is hidden, so keep the theme surface outside it.
-            _SFKSettingsThemeSurface()
-
-            Form { content() }
-                .scrollContentBackground(.hidden)
-        }
-        .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .tint(theme.colors.accent)
+        // A ZStack pairing the List with its background is unreliable once
+        // `.scrollContentBackground(.hidden)` is applied — `.listRowBackground`
+        // silently stops painting. Chaining `.background()` directly onto the
+        // Form (the same pattern HomeView's List uses for its aura) keeps the
+        // Form as the sole top-level view and avoids that failure mode.
+        Form { content() }
+            .scrollContentBackground(.hidden)
+            .background(alignment: .top) {
+                background()
+                    .allowsHitTesting(false)
+            }
+            .navigationTitle(navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .tint(theme.colors.accent)
     }
 }
 
-private struct _SFKSettingsThemeSurface: View {
+public struct _SFKSettingsThemeSurface: View {
     @Environment(\.sfkTheme) private var theme
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         theme.colors.background
             .ignoresSafeArea()
     }

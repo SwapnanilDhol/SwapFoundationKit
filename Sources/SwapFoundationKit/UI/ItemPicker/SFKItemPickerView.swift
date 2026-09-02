@@ -33,6 +33,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
     private let pageTitle: String
     private let pageSubtitle: String
     private let items: [Item]
+    private let sections: [SFKItemPickerSection<Item>]?
     private let label: (Item) -> String
     private let onSelectTyped: ((Item) -> Void)?
     private let actionsProviderTyped: ((Item) -> [SFKItemPickerItemAction])?
@@ -58,6 +59,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.pageTitle = pageTitle
         self.pageSubtitle = "Tap to Select".localized
         self.items = items
+        self.sections = nil
         self.label = label
         self.onSelectTyped = onSelect
         self.actionsProviderTyped = nil
@@ -83,6 +85,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.pageTitle = pageTitle
         self.pageSubtitle = configuration.pageSubtitle.isEmpty ? "Tap to Select".localized : configuration.pageSubtitle
         self.items = items
+        self.sections = nil
         self.label = configuration.label
         self.onSelectTyped = onSelect
         self.actionsProviderTyped = configuration.actionsProvider
@@ -108,6 +111,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.pageTitle = pageTitle
         self.pageSubtitle = "Select Multiple".localized
         self.items = items
+        self.sections = nil
         self.label = label
         self.onSelectTyped = onSelect
         self.actionsProviderTyped = nil
@@ -133,6 +137,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.pageTitle = pageTitle
         self.pageSubtitle = configuration.pageSubtitle.isEmpty ? "Select Multiple".localized : configuration.pageSubtitle
         self.items = items
+        self.sections = nil
         self.label = configuration.label
         self.onSelectTyped = onSelect
         self.actionsProviderTyped = configuration.actionsProvider
@@ -160,6 +165,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.pageTitle = pageTitle
         self.pageSubtitle = "Tap to Select".localized
         self.items = items
+        self.sections = nil
         self.label = label
         self.onSelectTyped = onSelect
         self.actionsProviderTyped = nil
@@ -185,6 +191,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.pageTitle = pageTitle
         self.pageSubtitle = configuration.pageSubtitle.isEmpty ? "Tap to Select".localized : configuration.pageSubtitle
         self.items = items
+        self.sections = nil
         self.label = configuration.label
         self.onSelectTyped = onSelect
         self.actionsProviderTyped = configuration.actionsProvider
@@ -197,6 +204,58 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         self.typedSingleSelection = nil
         self.typedNonOptionalSelection = selection
         self.typedMultiSelection = nil
+    }
+
+    /// Creates a single-select, sectioned picker with focused advanced configuration.
+    public init(
+        pageTitle: String,
+        sections: [SFKItemPickerSection<Item>],
+        selection: Binding<Item?>,
+        configuration: SFKItemPickerConfiguration<Item>,
+        onSelect: ((Item) -> Void)? = nil
+    ) {
+        self.pageTitle = pageTitle
+        self.pageSubtitle = configuration.pageSubtitle.isEmpty ? "Tap to Select".localized : configuration.pageSubtitle
+        self.items = []
+        self.sections = sections
+        self.label = configuration.label
+        self.onSelectTyped = onSelect
+        self.actionsProviderTyped = configuration.actionsProvider
+        self.selectsItems = configuration.selectsItems
+        self.autoDismissOnSingleSelection = configuration.autoDismissOnSingleSelection
+        self.showsCloseButton = configuration.showsCloseButton
+        self.embedsInNavigationStack = configuration.embedsInNavigationStack
+        self.toolbarActions = configuration.toolbarActions
+        self.emptyState = configuration.emptyState
+        self.typedSingleSelection = selection
+        self.typedNonOptionalSelection = nil
+        self.typedMultiSelection = nil
+    }
+
+    /// Creates a multi-select, sectioned picker with focused advanced configuration.
+    public init(
+        pageTitle: String,
+        sections: [SFKItemPickerSection<Item>],
+        selections: Binding<Set<Item>>,
+        configuration: SFKItemPickerConfiguration<Item>,
+        onSelect: ((Item) -> Void)? = nil
+    ) {
+        self.pageTitle = pageTitle
+        self.pageSubtitle = configuration.pageSubtitle.isEmpty ? "Select Multiple".localized : configuration.pageSubtitle
+        self.items = []
+        self.sections = sections
+        self.label = configuration.label
+        self.onSelectTyped = onSelect
+        self.actionsProviderTyped = configuration.actionsProvider
+        self.selectsItems = configuration.selectsItems
+        self.autoDismissOnSingleSelection = false
+        self.showsCloseButton = configuration.showsCloseButton
+        self.embedsInNavigationStack = configuration.embedsInNavigationStack
+        self.toolbarActions = configuration.toolbarActions
+        self.emptyState = configuration.emptyState
+        self.typedSingleSelection = nil
+        self.typedNonOptionalSelection = nil
+        self.typedMultiSelection = selections
     }
 
     public var body: some View {
@@ -212,12 +271,21 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         typedContent(items)
     }
 
+    private func matches(_ item: Item, query: String) -> Bool {
+        query.isEmpty
+            || label(item).localizedCaseInsensitiveContains(query)
+            || (item.pickableItemSubtitle?.localizedCaseInsensitiveContains(query) ?? false)
+    }
+
     private func typedContent(_ items: [Item]) -> some View {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let visibleItems = query.isEmpty ? items : items.filter {
-            label($0).localizedCaseInsensitiveContains(query)
-                || ($0.pickableItemSubtitle?.localizedCaseInsensitiveContains(query) ?? false)
+        let visibleItems = items.filter { matches($0, query: query) }
+        let visibleSections = sections?.compactMap { section -> SFKItemPickerSection<Item>? in
+            let filtered = section.items.filter { matches($0, query: query) }
+            return filtered.isEmpty ? nil : SFKItemPickerSection(id: section.id, title: section.title, items: filtered)
         }
+        let sourceIsEmpty = sections?.allSatisfy { $0.items.isEmpty } ?? items.isEmpty
+        let visibleIsEmpty = visibleSections?.isEmpty ?? visibleItems.isEmpty
         let list = ZStack {
             // List's scroll host may not paint the replacement background
             // consistently when its native content background is hidden.
@@ -225,28 +293,35 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
                 .ignoresSafeArea()
 
             List {
-                ForEach(visibleItems, id: \.pickableItemId) { item in
-                    typedRow(item)
+                if let visibleSections {
+                    ForEach(visibleSections) { section in
+                        Section(section.title) {
+                            ForEach(section.items, id: \.pickableItemId) { item in
+                                typedRow(item)
+                                    .listRowBackground(theme.colors.surface)
+                            }
+                        }
+                    }
+                } else {
+                    ForEach(visibleItems, id: \.pickableItemId) { item in
+                        typedRow(item)
+                            .listRowBackground(theme.colors.surface)
+                    }
                 }
             }
             .scrollContentBackground(.hidden)
             .overlay {
-                if items.isEmpty, let emptyState { emptyStateView(emptyState) }
-                else if visibleItems.isEmpty { ContentUnavailableView.search(text: searchText) }
+                if sourceIsEmpty, let emptyState { emptyStateView(emptyState) }
+                else if visibleIsEmpty { ContentUnavailableView.search(text: searchText) }
             }
         }
         .navigationTitle(pageTitle)
         .navigationBarTitleDisplayMode(.inline)
-
-        return Group {
-            if #available(iOS 26, *) {
-                list.navigationSubtitle(resolvedTypedSubtitle)
-            } else {
-                list
-            }
-        }
+        .modifier(NavigationSubtitleModifier(subtitle: resolvedTypedSubtitle))
         .searchable(text: $searchText)
         .toolbar { toolbarContent(onDismiss: { dismiss() }) }
+
+        return list
     }
 
     private func typedRow(_ item: Item) -> some View {
@@ -356,4 +431,20 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
         }
     }
 
+}
+
+/// Applies `.navigationSubtitle` on iOS 26+ without wrapping the content in an
+/// extra container. A wrapping `Group` here would put `.searchable`/`.toolbar`
+/// one view level above `.navigationTitle`, which makes the navigation bar
+/// resolve in two passes and the title visibly pop in after first appearance.
+private struct NavigationSubtitleModifier: ViewModifier {
+    let subtitle: String
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.navigationSubtitle(subtitle)
+        } else {
+            content
+        }
+    }
 }

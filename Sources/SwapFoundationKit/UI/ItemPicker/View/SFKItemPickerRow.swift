@@ -69,16 +69,7 @@ struct SFKItemPickerRow<Item: SFKPickableItem>: View {
                     }
                 }
                 Spacer()
-
-                if item.pickableItemTrailingAccessory == .disclosureIndicator {
-                    Image(systemName: "chevron.right")
-                        .font(theme.typography.caption.weight(.semibold))
-                        .foregroundStyle(theme.colors.secondaryText)
-                } else if isSelected {
-                    Image(systemName: isMultiple ? "checkmark.square.fill" : "inset.filled.circle")
-                        .foregroundStyle(theme.colors.accent)
-                        .fontWeight(.bold)
-                }
+                trailingAccessory
             }
             .padding(.vertical, 1)
             .contentShape(Rectangle())
@@ -87,35 +78,64 @@ struct SFKItemPickerRow<Item: SFKPickableItem>: View {
     }
 
     @ViewBuilder
-    private func iconView(for kind: SFKPickableItemIconKind) -> some View {
-        switch kind {
-        case .iconImage(let uiImage):
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFit()
-        case .systemIcon(let symbolName):
-            if let tintColor = item.pickableItemIconTintColor {
-                let color = Color(tintColor)
-                Image(systemName: symbolName)
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(color)
-                    .padding(7)
-                    .background(
-                        RoundedRectangle(cornerRadius: theme.radii.control)
-                            .fill(color.opacity(0.15))
-                    )
-            } else {
-                Image(systemName: symbolName)
-                    .resizable()
-                    .scaledToFit()
-            }
-        case .text(let text):
-            Text(text)
-                .font(theme.typography.title)
-                .fontWeight(.heavy)
+    private var trailingAccessory: some View {
+        switch item.pickableItemTrailingAccessory {
         case .none:
-            EmptyView()
+            if isSelected {
+                selectionIndicator
+            }
+        case .disclosureIndicator:
+            Image(systemName: "chevron.right")
+                .font(theme.typography.caption.weight(.semibold))
+                .foregroundStyle(theme.colors.secondaryText)
+        case .checkmark:
+            if isSelected {
+                selectionIndicator
+            }
+        case .custom(let iconName):
+            Image(systemName: iconName)
+                .font(theme.typography.caption.weight(.semibold))
+                .foregroundStyle(theme.colors.secondaryText)
         }
+    }
+
+    private var selectionIndicator: some View {
+        Image(systemName: isMultiple ? "checkmark.square.fill" : "inset.filled.circle")
+            .foregroundStyle(theme.colors.accent)
+            .fontWeight(.bold)
+    }
+
+    @ViewBuilder
+    private func iconView(for kind: SFKPickableItemIconKind) -> some View {
+        if case .none = kind {
+            EmptyView()
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: theme.radii.control, style: .continuous)
+                    .fill(iconTint.opacity(0.15))
+
+                switch kind {
+                case .iconImage(let uiImage):
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(7)
+                case .systemIcon(let symbolName):
+                    Image(systemName: symbolName)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(iconTint)
+                case .text(let text):
+                    Text(text)
+                        .font(theme.typography.title)
+                        .fontWeight(.heavy)
+                case .none:
+                    EmptyView()
+                }
+            }
+        }
+    }
+
+    private var iconTint: Color {
+        item.pickableItemIconTintColor.map(Color.init) ?? theme.colors.accent
     }
 }

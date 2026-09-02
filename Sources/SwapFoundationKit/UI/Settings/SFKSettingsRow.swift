@@ -34,6 +34,7 @@ struct SFKSettingsValueText: View {
 /// ```
 public struct SFKSettingsRow: View {
     @Environment(\.sfkTheme) private var theme
+    private let hapticsHelper = HapticsHelper()
 
     private let icon: String
     private let title: String
@@ -74,7 +75,10 @@ public struct SFKSettingsRow: View {
     }
 
     public var body: some View {
-        Button(action: action) {
+        Button {
+            hapticsHelper.mediumImpact()
+            action()
+        } label: {
             _SFKSettingsRowContent(
                 title: title,
                 subtitle: subtitle,

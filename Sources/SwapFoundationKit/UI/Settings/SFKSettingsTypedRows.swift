@@ -23,6 +23,7 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
     }
 
     @Environment(\.sfkTheme) private var theme
+    private let hapticsHelper = HapticsHelper()
 
     private let title: String
     private let subtitle: String
@@ -74,6 +75,7 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
         Menu {
             ForEach(options, id: \.self) { option in
                 Button {
+                    hapticsHelper.mediumImpact()
                     selection = option
                     onChange?(option)
                 } label: {
@@ -114,6 +116,7 @@ public struct SFKSettingsPicker<Value: Hashable>: View {
 /// action receives the current value and can present that editor in the host.
 public struct SFKSettingsBindingRow<Value>: View {
     @Environment(\.sfkTheme) private var theme
+    private let hapticsHelper = HapticsHelper()
 
     private let title: String
     private let subtitle: String
@@ -139,7 +142,10 @@ public struct SFKSettingsBindingRow<Value>: View {
     }
 
     public var body: some View {
-        Button { action(value) } label: {
+        Button {
+            hapticsHelper.mediumImpact()
+            action(value)
+        } label: {
             _SFKSettingsRowContent(
                 title: title,
                 subtitle: subtitle,
