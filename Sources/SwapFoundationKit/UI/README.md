@@ -15,11 +15,14 @@ ContentView()
 
 Its nested `colors`, `typography`, `spacing`, `radii`, `motion`, and `feedback`
 values are public for focused brand overrides. Controls use semantic modifiers
-for one-off changes rather than oversized initializers. `colors.onAccent` and
-`colors.onDestructive` are the fallbacks for loading spinners on filled
-actions. Filled `primary` and `destructive` labels use the platform button
-style's contrasting color so a `.sfkTint(.primary)` fill stays readable in
-dark mode. `.sfkTint` on a `borderless` button sets the title color directly.
+for one-off changes rather than oversized initializers. Buttons with a rendered background (`primary`, `secondary`, and
+`destructive`) deterministically choose whichever of white or near-black has
+the higher measured contrast against that background in the current light/dark
+appearance. Dynamic colors such as `Color.primary` are resolved against that
+appearance before the contrast calculation. An explicit `.sfkLabelColor(...)`
+always wins. `.sfkTint(...)` controls the background; it never changes the
+button's rendering role. Borderless buttons have no background, so they retain
+their existing tint/title behavior unless an explicit label color is supplied.
 `colors.background` is the general full-screen fill. For grouped `List` and
 `Form` containers, use the paired `colors.groupedBackground` and
 `colors.groupedRowSurface` tokens. `colors.surface` is the general card, field,
@@ -131,6 +134,15 @@ SFKButton("Continue", role: .primary) {
 .sfkIcon("arrow.right")
 .sfkLoading(isSaving)
 .sfkAlignment(.leading)
+
+// Automatic label contrast: the label always contrasts with the resolved fill.
+SFKButton("Continue", role: .primary) { nextStep() }
+    .sfkTint(.primary)
+
+// Explicit label color always takes precedence over automatic contrast.
+SFKButton("Continue", role: .primary) { nextStep() }
+    .sfkTint(.black)
+    .sfkLabelColor(.yellow)
 
 // Secondary action
 SFKButton("Filters", role: .secondary) {

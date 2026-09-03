@@ -17,6 +17,7 @@ public struct SFKButton: View {
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.sfkTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
     private let hapticsHelper = HapticsHelper()
 
     private let title: String
@@ -25,6 +26,7 @@ public struct SFKButton: View {
     private var isLoading: Bool
     private var fullWidth: Bool
     private var tintOverride: Color?
+    private var labelColorOverride: Color?
     private var controlSize: ControlSize
     private var alignment: SFKButtonAlignment
     private let role: SFKButtonStyle
@@ -43,6 +45,7 @@ public struct SFKButton: View {
         self.isLoading = false
         self.fullWidth = true
         self.tintOverride = nil
+        self.labelColorOverride = nil
         self.controlSize = .regular
         self.alignment = .center
         self.action = action
@@ -61,6 +64,8 @@ public struct SFKButton: View {
                     maxWidth: shouldUseFullWidth ? .infinity : nil,
                     alignment: alignment.frameAlignment
                 )
+                // The label owns its foreground. Button styles may supply the
+                // container treatment, but never get to replace this color.
                 .foregroundStyle(resolvedTitleColor)
                 .contentShape(Rectangle())
         }
@@ -152,68 +157,61 @@ public struct SFKButton: View {
     }
 
     private var resolvedTitleColor: Color {
-        guard isEnabled && !isLoading else { return Self.disabledTitleColor }
+        if let labelColorOverride {
+            return Color(
+                SFKButtonLabelColorResolver.resolve(
+                    labelColorOverride,
+                    colorScheme: colorScheme
+                )
+            )
+        }
+
+        // Disabled/loading glass renders against a system-background-like
+        // surface. Use the dynamic system label color for that state instead
+        // of contrasting against the pre-disabled tint.
+        guard isEnabled && !isLoading else { return .primary }
+        return baseTitleColor
+    }
+
+    private var baseTitleColor: Color {
         switch role {
         case .primary:
-            return filledTitleColor(default: theme.colors.onAccent)
+            return filledTitleColor(background: resolvedBackgroundColor)
         case .destructive:
-            return filledTitleColor(default: theme.colors.onDestructive)
+            return filledTitleColor(background: resolvedBackgroundColor)
         case .secondary:
-            return theme.colors.text
+            return filledTitleColor(background: resolvedBackgroundColor)
         case .borderless:
             return tintOverride ?? theme.colors.secondaryText
         }
     }
 
     private var resolvedSubtitleColor: Color {
-        guard isEnabled && !isLoading else { return Self.disabledSubtitleColor }
-        switch role {
-        case .primary:
-            return filledTitleColor(default: theme.colors.onAccent).opacity(0.8)
-        case .destructive:
-            return filledTitleColor(default: theme.colors.onDestructive).opacity(0.8)
-        case .secondary:
-            return theme.colors.secondaryText
-        case .borderless:
-            return tintOverride ?? theme.colors.secondaryText
-        }
+        resolvedTitleColor.opacity(0.8)
     }
 
-    /// Filled titles must invert the fill. `onAccent` is a static white token, and
-    /// `.glassProminent` will also paint a white label onto a `Color.primary` fill
-    /// in dark mode. Use the canvas color for label-like fills.
-    private func filledTitleColor(default defaultColor: Color) -> Color {
-        guard let tintOverride else { return defaultColor }
-        if isLabelColoredFill(tintOverride) {
-            return Color(.systemBackground)
-        }
-        return tintOverride.contrastingColor
-    }
-
-    /// `Color.primary` / `UIColor.label` track the label color. Equality on
-    /// `Color.primary` is unreliable, so also treat a fill that flips luminance
-    /// across appearances as a label color.
-    private func isLabelColoredFill(_ fill: Color) -> Bool {
-        if fill == Color.primary || fill == Color(uiColor: .label) {
-            return true
-        }
-        let light = UIColor(fill).resolvedColor(
-            with: UITraitCollection(userInterfaceStyle: .light)
+    private func filledTitleColor(background: Color) -> Color {
+        Color(
+            SFKButtonLabelColorResolver.resolve(
+                background: background,
+                explicitLabelColor: nil,
+                colorScheme: colorScheme
+            )
         )
-        let dark = UIColor(fill).resolvedColor(
-            with: UITraitCollection(userInterfaceStyle: .dark)
-        )
-        return abs(light.rgba.luminance - dark.rgba.luminance) > 0.35
     }
 
-    private var resolvedColor: Color {
-        guard isEnabled && !isLoading else { return Self.disabledColor }
+    private var resolvedBackgroundColor: Color {
         if let tintOverride { return tintOverride }
         switch role {
         case .primary: return theme.colors.accent
         case .destructive: return theme.colors.destructive
-        case .secondary, .borderless: return theme.colors.surface
+        case .secondary: return theme.colors.surface
+        case .borderless: return theme.colors.surface
         }
+    }
+
+    private var resolvedColor: Color {
+        return resolvedBackgroundColor
     }
 
     private var resolvedSpacing: CGFloat {
@@ -240,17 +238,6 @@ public struct SFKButton: View {
         theme.typography.body.weight(.semibold)
     }
 
-    private static var disabledColor: Color {
-        Color(.systemGray4).opacity(0.3)
-    }
-
-    private static var disabledTitleColor: Color {
-        .secondary
-    }
-
-    private static var disabledSubtitleColor: Color {
-        .secondary.opacity(0.8)
-    }
 }
 
 public extension SFKButton {
@@ -289,6 +276,19 @@ public extension SFKButton {
         return copy
     }
 
+    /// Returns a copy with an explicit label color.
+    ///
+    /// For buttons with a rendered background, the default label color is the
+    /// higher-contrast black or white value for that background in the current
+    /// light/dark appearance. This override has precedence over that rule. On
+    /// borderless buttons it also takes precedence over the existing tint/title
+    /// behavior.
+    func sfkLabelColor(_ color: Color?) -> Self {
+        var copy = self
+        copy.labelColorOverride = color
+        return copy
+    }
+
     /// Returns a copy with a platform-relative control size.
     func sfkControlSize(_ controlSize: ControlSize) -> Self {
         var copy = self
@@ -309,45 +309,43 @@ private extension SFKButton {
     @ViewBuilder
     func styledButton<Content: View>(_ content: Content) -> some View {
         if #available(iOS 26, *) {
-            switch role {
-            case .primary, .destructive:
+            switch SFKButtonRendering.role(for: role, supportsGlass: true) {
+            case .glassProminent:
                 content
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .buttonBorderShape(.capsule)
                     .tint(resolvedColor)
-                    .foregroundStyle(resolvedTitleColor)
                     .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
-            case .secondary:
+            case .glass:
                 content
                     .buttonStyle(.glass)
                     .tint(resolvedColor)
-            case .borderless:
+            case .plain:
                 content
                     .buttonStyle(.plain)
-                    .tint(resolvedTitleColor)
+            case .borderedProminent, .bordered:
+                // Unreachable on iOS 26, retained for exhaustive future-proofing.
+                content
+                    .buttonStyle(.bordered)
             }
         } else {
-            switch role {
-            case .primary:
+            switch SFKButtonRendering.role(for: role, supportsGlass: false) {
+            case .borderedProminent:
                 content
                     .buttonStyle(.borderedProminent)
                     .tint(resolvedColor)
-                    .foregroundStyle(resolvedTitleColor)
                     .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
-            case .secondary:
+            case .bordered:
                 content
                     .buttonStyle(.bordered)
                     .tint(resolvedColor)
-            case .destructive:
-                content
-                    .buttonStyle(.borderedProminent)
-                    .tint(resolvedColor)
-                    .foregroundStyle(resolvedTitleColor)
-                    .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
-            case .borderless:
+            case .plain:
                 content
                     .buttonStyle(.plain)
-                    .tint(resolvedTitleColor)
+            case .glassProminent, .glass:
+                // Unreachable before iOS 26, retained for exhaustive future-proofing.
+                content
+                    .buttonStyle(.bordered)
             }
         }
     }
