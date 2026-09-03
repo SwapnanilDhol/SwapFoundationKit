@@ -33,7 +33,7 @@ feedback flow while keeping RevenueCat and product analytics in host apps.
 | Type | Kind | Description |
 |------|------|-------------|
 | `SFKButton` | View | Configurable button with loading states, haptics, semantic styles, and platform control sizing |
-| `SFKButtonStyle` | enum | `primary`, `secondary`, `toolbar`, or `destructive` |
+| `SFKButtonStyle` | enum | `primary`, `secondary`, `borderless`, or `destructive` |
 | `SFKButtonAlignment` | enum | Semantic `leading`, `center`, or `trailing` content alignment |
 | `SFKCompactButton` | View | Lightweight icon-only, text-only, or icon/text action for toolbars and standalone overlay chrome |
 | `SFKCompactButtonChrome` | enum | `toolbar` (system toolbar owns sizing), `glass` (self-contained 35-point minimum circle or growing capsule) |
@@ -134,12 +134,11 @@ SFKButton("Filters", role: .secondary) {
     showFilters()
 }
 
-// System toolbar action
-SFKButton("", role: .toolbar) {
-    showMoreActions()
+// Borderless text or icon action
+SFKButton("Not now", role: .borderless) {
+    skip()
 }
-.sfkIcon("ellipsis")
-.accessibilityLabel("More")
+.sfkFullWidth(false)
 
 // Compact inline action
 SFKButton("Edit", role: .secondary) {

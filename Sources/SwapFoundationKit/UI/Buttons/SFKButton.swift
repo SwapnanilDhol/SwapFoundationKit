@@ -54,8 +54,8 @@ public struct SFKButton: View {
             action()
         } label: {
             buttonLabel
-                .padding(.horizontal, isToolbarButton ? 0 : resolvedHorizontalPadding)
-                .padding(.vertical, isToolbarButton ? 0 : resolvedVerticalPadding)
+                .padding(.horizontal, isBorderless ? 0 : resolvedHorizontalPadding)
+                .padding(.vertical, isBorderless ? 0 : resolvedVerticalPadding)
                 .frame(
                     maxWidth: shouldUseFullWidth ? .infinity : nil,
                     alignment: alignment.frameAlignment
@@ -127,11 +127,11 @@ public struct SFKButton: View {
     }
 
     private var shouldUseFullWidth: Bool {
-        fullWidth && !isLoading && !isToolbarButton
+        fullWidth && !isLoading && !isBorderless
     }
 
-    private var isToolbarButton: Bool {
-        role == .toolbar
+    private var isBorderless: Bool {
+        role == .borderless
     }
 
     private func triggerHapticIfNeeded() {
@@ -155,7 +155,7 @@ public struct SFKButton: View {
         case .primary: return theme.colors.onAccent
         case .destructive: return theme.colors.onDestructive
         case .secondary: return theme.colors.text
-        case .toolbar: return tintOverride ?? theme.colors.text
+        case .borderless: return tintOverride ?? theme.colors.text
         }
     }
 
@@ -165,7 +165,7 @@ public struct SFKButton: View {
         case .primary: return theme.colors.onAccent.opacity(0.8)
         case .destructive: return theme.colors.onDestructive.opacity(0.8)
         case .secondary: return theme.colors.secondaryText
-        case .toolbar: return tintOverride ?? theme.colors.secondaryText
+        case .borderless: return tintOverride ?? theme.colors.secondaryText
         }
     }
 
@@ -175,7 +175,7 @@ public struct SFKButton: View {
         switch role {
         case .primary: return theme.colors.accent
         case .destructive: return theme.colors.destructive
-        case .secondary, .toolbar: return theme.colors.surface
+        case .secondary, .borderless: return theme.colors.surface
         }
     }
 
@@ -285,7 +285,7 @@ private extension SFKButton {
                 content
                     .buttonStyle(.glassProminent)
                     .tint(resolvedColor)
-            case .toolbar:
+            case .borderless:
                 content
             }
         } else {
@@ -302,7 +302,7 @@ private extension SFKButton {
                 content
                     .buttonStyle(.borderedProminent)
                     .tint(resolvedColor)
-            case .toolbar:
+            case .borderless:
                 content
             }
         }
@@ -317,6 +317,8 @@ private extension SFKButton {
             .sfkIcon("arrow.right")
         SFKButton("Review", role: .secondary) { }
             .sfkIcon("doc.text")
+            .sfkFullWidth(false)
+        SFKButton("Skip", role: .borderless) { }
             .sfkFullWidth(false)
         SFKButton("Delete", role: .destructive) { }
             .sfkIcon("trash")

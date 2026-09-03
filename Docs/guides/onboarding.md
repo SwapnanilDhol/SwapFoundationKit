@@ -12,7 +12,7 @@ Generic, reusable SwiftUI components extracted from multi-step onboarding flows.
 | `SFKChipFlowLayout` | `SFKChipFlowLayout.swift` | Flex-wrap `Layout` for chips/tags |
 | `SFKSegmentedProgress` | `SFKSegmentedProgress.swift` | Story-style segmented progress bar |
 | `SFKSelectableChip` | `SFKSelectableChip.swift` | Selectable capsule button with icon support |
-| `SFKButton` | `Buttons/SFKButton.swift` | Semantic primary, secondary, and toolbar actions |
+| `SFKButton` | `Buttons/SFKButton.swift` | Semantic primary, secondary, borderless, and destructive actions |
 | `SFKTypography` | `SFKTypography.swift` | Six View-extension typography modifiers |
 | `SFKCard` | `SFKCard.swift` | Rounded-rectangle card container with optional icon |
 
@@ -163,8 +163,8 @@ SFKButton("Not now", role: .destructive) {
 
 ### Configuration
 
-Use `.secondary` for a supporting action with visible chrome and `.toolbar` for
-a compact text or icon control. Add `.sfkIcon`, `.sfkSubtitle`, `.sfkLoading`,
+Use `.secondary` for a supporting action with visible chrome and `.borderless` for
+a text or icon control with no fill. Add `.sfkIcon`, `.sfkSubtitle`, `.sfkLoading`,
 `.sfkFullWidth`, `.sfkTint`, or `.sfkControlSize` only when the screen needs
 that focused variation. Button feedback comes from the nearest
 `SFKTheme.Feedback` policy.
@@ -412,7 +412,7 @@ struct MyOnboardingView: View {
             }
 
             if currentStep > 0 {
-                SFKButton("Skip", role: .toolbar) {
+                SFKButton("Skip", role: .borderless) {
                     currentStep = totalSteps - 1
                 }
                 .sfkFullWidth(false)

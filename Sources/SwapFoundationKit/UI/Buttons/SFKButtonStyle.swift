@@ -13,24 +13,28 @@ import SwiftUI
 
 /// The semantic role of an ``SFKButton``.
 ///
-/// Choose a role based on hierarchy rather than a specific glass implementation:
+/// Choose a role based on visual hierarchy rather than placement:
 ///
 /// - ``primary``: The main action in a flow.
-/// - ``secondary``: A supporting or alternative action.
-/// - ``toolbar``: A compact control placed in a system toolbar.
+/// - ``secondary``: A supporting or alternative action with visible chrome.
+/// - ``borderless``: A text or icon control with no fill, glass, or border.
 /// - ``destructive``: An action that removes or irreversibly changes data.
 public enum SFKButtonStyle: Sendable, Equatable {
     case primary
     case secondary
-    case toolbar
+    case borderless
     /// A destructive action such as deleting or removing data.
     case destructive
+
+    /// Renamed to ``borderless``. The old name described placement, not appearance.
+    @available(*, deprecated, renamed: "borderless")
+    public static var toolbar: Self { .borderless }
 
     var defaultTitleColor: Color {
         switch self {
         case .primary:
             .white
-        case .secondary, .toolbar:
+        case .secondary, .borderless:
             .primary
         case .destructive:
             .white
@@ -41,7 +45,7 @@ public enum SFKButtonStyle: Sendable, Equatable {
         switch self {
         case .primary:
             Color.white.opacity(0.8)
-        case .secondary, .toolbar:
+        case .secondary, .borderless:
             .secondary
         case .destructive:
             Color.white.opacity(0.8)

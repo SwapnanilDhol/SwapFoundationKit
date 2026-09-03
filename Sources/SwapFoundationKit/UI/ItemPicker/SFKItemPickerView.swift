@@ -409,7 +409,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
     }
 
     private func toolbarButton(_ action: SFKItemPickerToolbarAction) -> some View {
-        SFKButton(action.title ?? "", role: .toolbar, action: action.action)
+        SFKButton(action.title ?? "", role: .borderless, action: action.action)
             .sfkIcon(action.systemImage)
             .sfkFullWidth(false)
             .sfkTint(.primary)

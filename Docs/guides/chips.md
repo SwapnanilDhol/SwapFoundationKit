@@ -29,7 +29,7 @@ SFKChipFlowLayout(spacing: 8) {
 }
 ```
 
-Use `.primary` for the preferred action in a chip group and `.secondary` for supporting actions. Use `SFKButton` for full-size CTAs and toolbar controls.
+Use `.primary` for the preferred action in a chip group and `.secondary` for supporting actions. Use `SFKButton` for full-size CTAs and borderless text actions.
 
 ## Selectable chips
 

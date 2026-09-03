@@ -86,6 +86,8 @@ struct ButtonExamplesView: View {
                     .sfkIcon("sparkles")
                 SFKButton("Secondary", role: .secondary) {}
                     .sfkIcon("doc.text")
+                SFKButton("Skip", role: .borderless) {}
+                    .sfkFullWidth(false)
                 SFKButton("Delete", role: .destructive) {}
                     .sfkIcon("trash")
 
@@ -365,7 +367,7 @@ private enum ButtonComponent: String, CaseIterable, Identifiable {
 private enum ButtonStyleOption: String, CaseIterable, Identifiable {
     case primary
     case secondary
-    case toolbar
+    case borderless
 
     var id: Self { self }
     var title: String { rawValue.capitalized }
@@ -374,7 +376,7 @@ private enum ButtonStyleOption: String, CaseIterable, Identifiable {
         switch self {
         case .primary: .primary
         case .secondary: .secondary
-        case .toolbar: .toolbar
+        case .borderless: .borderless
         }
     }
 }

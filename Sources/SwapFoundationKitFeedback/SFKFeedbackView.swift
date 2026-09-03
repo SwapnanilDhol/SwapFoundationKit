@@ -210,7 +210,7 @@ struct SFKFeedbackView: View {
     }
 
     private var submitAction: some View {
-        SFKButton("Send", role: .toolbar) {
+        SFKButton("Send", role: .borderless) {
             focusedField = nil
             viewModel.submit()
         }
