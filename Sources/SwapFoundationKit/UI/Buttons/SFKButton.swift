@@ -105,6 +105,7 @@ public struct SFKButton: View {
                 if !title.isEmpty {
                     Text(title)
                         .font(resolvedTitleFont)
+                        .foregroundStyle(resolvedTitleColor)
                 }
 
                 if let subtitle, !subtitle.isEmpty {
@@ -155,7 +156,7 @@ public struct SFKButton: View {
         case .primary: return theme.colors.onAccent
         case .destructive: return theme.colors.onDestructive
         case .secondary: return theme.colors.text
-        case .borderless: return tintOverride ?? theme.colors.text
+        case .borderless: return tintOverride ?? theme.colors.secondaryText
         }
     }
 
@@ -287,6 +288,8 @@ private extension SFKButton {
                     .tint(resolvedColor)
             case .borderless:
                 content
+                    .buttonStyle(.plain)
+                    .tint(resolvedTitleColor)
             }
         } else {
             switch role {
@@ -304,6 +307,8 @@ private extension SFKButton {
                     .tint(resolvedColor)
             case .borderless:
                 content
+                    .buttonStyle(.plain)
+                    .tint(resolvedTitleColor)
             }
         }
     }
