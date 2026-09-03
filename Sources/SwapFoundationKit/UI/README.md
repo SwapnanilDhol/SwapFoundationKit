@@ -16,7 +16,10 @@ ContentView()
 Its nested `colors`, `typography`, `spacing`, `radii`, `motion`, and `feedback`
 values are public for focused brand overrides. Controls use semantic modifiers
 for one-off changes rather than oversized initializers. `colors.onAccent` and
-`colors.onDestructive` control foreground contrast for semantic filled actions.
+`colors.onDestructive` are the fallbacks for loading spinners on filled
+actions. Filled `primary` and `destructive` labels use the platform button
+style's contrasting color so a `.sfkTint(.primary)` fill stays readable in
+dark mode. `.sfkTint` on a `borderless` button sets the title color directly.
 `colors.background` is the general full-screen fill. For grouped `List` and
 `Form` containers, use the paired `colors.groupedBackground` and
 `colors.groupedRowSurface` tokens. `colors.surface` is the general card, field,

@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 import SwiftUI
+import UIKit
 
 @available(iOS 16, *)
 public struct SFKButton: View {
@@ -153,21 +154,56 @@ public struct SFKButton: View {
     private var resolvedTitleColor: Color {
         guard isEnabled && !isLoading else { return Self.disabledTitleColor }
         switch role {
-        case .primary: return theme.colors.onAccent
-        case .destructive: return theme.colors.onDestructive
-        case .secondary: return theme.colors.text
-        case .borderless: return tintOverride ?? theme.colors.secondaryText
+        case .primary:
+            return filledTitleColor(default: theme.colors.onAccent)
+        case .destructive:
+            return filledTitleColor(default: theme.colors.onDestructive)
+        case .secondary:
+            return theme.colors.text
+        case .borderless:
+            return tintOverride ?? theme.colors.secondaryText
         }
     }
 
     private var resolvedSubtitleColor: Color {
         guard isEnabled && !isLoading else { return Self.disabledSubtitleColor }
         switch role {
-        case .primary: return theme.colors.onAccent.opacity(0.8)
-        case .destructive: return theme.colors.onDestructive.opacity(0.8)
-        case .secondary: return theme.colors.secondaryText
-        case .borderless: return tintOverride ?? theme.colors.secondaryText
+        case .primary:
+            return filledTitleColor(default: theme.colors.onAccent).opacity(0.8)
+        case .destructive:
+            return filledTitleColor(default: theme.colors.onDestructive).opacity(0.8)
+        case .secondary:
+            return theme.colors.secondaryText
+        case .borderless:
+            return tintOverride ?? theme.colors.secondaryText
         }
+    }
+
+    /// Filled titles must invert the fill. `onAccent` is a static white token, and
+    /// `.glassProminent` will also paint a white label onto a `Color.primary` fill
+    /// in dark mode. Use the canvas color for label-like fills.
+    private func filledTitleColor(default defaultColor: Color) -> Color {
+        guard let tintOverride else { return defaultColor }
+        if isLabelColoredFill(tintOverride) {
+            return Color(.systemBackground)
+        }
+        return tintOverride.contrastingColor
+    }
+
+    /// `Color.primary` / `UIColor.label` track the label color. Equality on
+    /// `Color.primary` is unreliable, so also treat a fill that flips luminance
+    /// across appearances as a label color.
+    private func isLabelColoredFill(_ fill: Color) -> Bool {
+        if fill == Color.primary || fill == Color(uiColor: .label) {
+            return true
+        }
+        let light = UIColor(fill).resolvedColor(
+            with: UITraitCollection(userInterfaceStyle: .light)
+        )
+        let dark = UIColor(fill).resolvedColor(
+            with: UITraitCollection(userInterfaceStyle: .dark)
+        )
+        return abs(light.rgba.luminance - dark.rgba.luminance) > 0.35
     }
 
     private var resolvedColor: Color {
@@ -274,17 +310,16 @@ private extension SFKButton {
     func styledButton<Content: View>(_ content: Content) -> some View {
         if #available(iOS 26, *) {
             switch role {
-            case .primary:
+            case .primary, .destructive:
                 content
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                     .tint(resolvedColor)
+                    .foregroundStyle(resolvedTitleColor)
+                    .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
             case .secondary:
                 content
                     .buttonStyle(.glass)
-                    .tint(resolvedColor)
-            case .destructive:
-                content
-                    .buttonStyle(.glassProminent)
                     .tint(resolvedColor)
             case .borderless:
                 content
@@ -297,6 +332,8 @@ private extension SFKButton {
                 content
                     .buttonStyle(.borderedProminent)
                     .tint(resolvedColor)
+                    .foregroundStyle(resolvedTitleColor)
+                    .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
             case .secondary:
                 content
                     .buttonStyle(.bordered)
@@ -305,6 +342,8 @@ private extension SFKButton {
                 content
                     .buttonStyle(.borderedProminent)
                     .tint(resolvedColor)
+                    .foregroundStyle(resolvedTitleColor)
+                    .frame(maxWidth: shouldUseFullWidth ? .infinity : nil)
             case .borderless:
                 content
                     .buttonStyle(.plain)

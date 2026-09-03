@@ -137,6 +137,26 @@ final class UIColorExtensionsTests: XCTestCase {
         XCTAssertEqual(lightColor.contrastingColor.hexString(), "#1D1D1F")
     }
 
+    func testLabelColorContrastsInBothAppearances() {
+        let lightLabel = UIColor.label.resolvedColor(
+            with: UITraitCollection(userInterfaceStyle: .light)
+        )
+        let darkLabel = UIColor.label.resolvedColor(
+            with: UITraitCollection(userInterfaceStyle: .dark)
+        )
+
+        XCTAssertGreaterThan(
+            lightLabel.contrastRatio(with: lightLabel.contrastingColor),
+            4.5
+        )
+        XCTAssertGreaterThan(
+            darkLabel.contrastRatio(with: darkLabel.contrastingColor),
+            4.5
+        )
+        XCTAssertEqual(lightLabel.contrastingColor, .white)
+        XCTAssertEqual(darkLabel.contrastingColor.hexString(), "#1D1D1F")
+    }
+
     /// Regression: `contrastingColor` used to pick by a luminance threshold of 0.42, so
     /// colours sitting just under it took white text even where near-black was far more
     /// legible. These six are a real palette derived to a uniform contrast against black,
