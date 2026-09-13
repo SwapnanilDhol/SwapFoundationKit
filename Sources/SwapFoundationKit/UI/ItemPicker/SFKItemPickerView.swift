@@ -312,14 +312,20 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
             .scrollContentBackground(.hidden)
             .overlay {
                 if sourceIsEmpty, let emptyState { emptyStateView(emptyState) }
-                else if visibleIsEmpty { ContentUnavailableView.search(text: searchText) }
+                else if visibleIsEmpty {
+                    SFKEmptyStateView(
+                        title: "No Results",
+                        message: LocalizedStringKey("Nothing matched “\(searchText)”."),
+                        systemImage: "magnifyingglass"
+                    )
+                }
             }
         }
         .navigationTitle(pageTitle)
         .navigationBarTitleDisplayMode(.inline)
         .modifier(NavigationSubtitleModifier(subtitle: resolvedTypedSubtitle))
-        .searchable(text: $searchText)
-        .toolbar { toolbarContent(onDismiss: { dismiss() }) }
+        .modifier(ItemPickerSearchModifier(text: $searchText, isEnabled: !sourceIsEmpty))
+        .toolbar { toolbarContent(sourceIsEmpty: sourceIsEmpty, onDismiss: { dismiss() }) }
 
         return list
     }
@@ -392,43 +398,52 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
     }
 
     @ToolbarContentBuilder
-    private func toolbarContent(onDismiss: @escaping () -> Void) -> some ToolbarContent {
+    private func toolbarContent(sourceIsEmpty: Bool, onDismiss: @escaping () -> Void) -> some ToolbarContent {
         ToolbarItemGroup(placement: .topBarLeading) {
             if showsCloseButton {
                 SFKCompactButton(type: .close, chrome: .toolbar, action: onDismiss)
             }
-            ForEach(toolbarActions.filter { $0.placement == .topBarLeading }) { action in
-                toolbarButton(action)
+            if !sourceIsEmpty {
+                ForEach(toolbarActions.filter { $0.placement == .topBarLeading }) { action in
+                    toolbarButton(action)
+                }
             }
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            ForEach(toolbarActions.filter { $0.placement == .topBarTrailing }) { action in
-                toolbarButton(action)
+            if !sourceIsEmpty {
+                ForEach(toolbarActions.filter { $0.placement == .topBarTrailing }) { action in
+                    toolbarButton(action)
+                }
             }
         }
-    }
-
-    private func toolbarButton(_ action: SFKItemPickerToolbarAction) -> some View {
-        SFKButton(action.title ?? "", role: .borderless, action: action.action)
-            .sfkIcon(action.systemImage)
-            .sfkFullWidth(false)
-            .sfkTint(.primary)
     }
 
     @ViewBuilder
-    private func emptyStateView(_ state: SFKItemPickerEmptyState) -> some View {
-        if let actionTitle = state.actionTitle, let action = state.action {
-            ContentUnavailableView {
-                Label(state.title, systemImage: state.systemImage)
-            } description: {
-                if let description = state.description { Text(description) }
-            } actions: {
-                Button(actionTitle, action: action)
-            }
+    private func toolbarButton(_ action: SFKItemPickerToolbarAction) -> some View {
+        if let title = action.title, !title.isEmpty {
+            SFKButton(title, role: .borderless, action: action.action)
+                .sfkIcon(action.systemImage)
+                .sfkFullWidth(false)
+                .sfkTint(.primary)
         } else {
-            ContentUnavailableView(state.title, systemImage: state.systemImage,
-                                   description: state.description.map { Text($0) })
+            SFKCompactButton(
+                systemImage: action.systemImage,
+                accessibilityLabel: LocalizedStringKey(action.accessibilityLabel ?? "Add"),
+                chrome: .toolbar,
+                action: action.action
+            )
         }
+    }
+
+    private func emptyStateView(_ state: SFKItemPickerEmptyState) -> some View {
+        SFKEmptyStateView(
+            title: LocalizedStringKey(state.title),
+            message: LocalizedStringKey(state.description ?? ""),
+            systemImage: state.systemImage,
+            actionTitle: state.actionTitle,
+            actionSystemImage: state.actionSystemImage,
+            action: state.action
+        )
     }
 
 }
@@ -437,6 +452,19 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
 /// extra container. A wrapping `Group` here would put `.searchable`/`.toolbar`
 /// one view level above `.navigationTitle`, which makes the navigation bar
 /// resolve in two passes and the title visibly pop in after first appearance.
+private struct ItemPickerSearchModifier: ViewModifier {
+    @Binding var text: String
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.searchable(text: $text)
+        } else {
+            content
+        }
+    }
+}
+
 private struct NavigationSubtitleModifier: ViewModifier {
     let subtitle: String
 

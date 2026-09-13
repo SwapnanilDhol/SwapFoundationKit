@@ -20,6 +20,7 @@ public struct SFKItemPickerToolbarAction: Identifiable {
     public let id: String
     public let title: String?
     public let systemImage: String
+    public let accessibilityLabel: String?
     public let placement: Placement
     public let action: () -> Void
 
@@ -27,12 +28,14 @@ public struct SFKItemPickerToolbarAction: Identifiable {
         id: String? = nil,
         title: String? = nil,
         systemImage: String,
+        accessibilityLabel: String? = nil,
         placement: Placement = .topBarTrailing,
         action: @escaping () -> Void
     ) {
-        self.id = id ?? "\(title ?? "")-\(systemImage)-\(placement)"
+        self.id = id ?? "\(title ?? accessibilityLabel ?? "")-\(systemImage)-\(placement)"
         self.title = title
         self.systemImage = systemImage
+        self.accessibilityLabel = accessibilityLabel
         self.placement = placement
         self.action = action
     }
