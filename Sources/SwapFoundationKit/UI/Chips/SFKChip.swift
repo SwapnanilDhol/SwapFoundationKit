@@ -154,6 +154,113 @@ public struct SFKChip: View {
     }
 }
 
+/// A compact capsule-shaped control that presents a native SwiftUI menu.
+///
+/// Use this instead of wrapping ``SFKChip`` in `Menu`; the menu must own the
+/// interactive label so the resulting view does not contain nested controls.
+@available(iOS 16, *)
+public struct SFKMenuChip<MenuContent: View>: View {
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.sfkTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private let title: String
+    private let leadingIconName: String?
+    private let trailingIconName: String?
+    private let tintColor: Color?
+    private let controlSize: ControlSize
+    private let style: SFKChipStyle
+    private let menuContent: MenuContent
+
+    public init(
+        _ title: String,
+        leadingIconName: String? = nil,
+        trailingIconName: String? = "chevron.down",
+        tintColor: Color? = nil,
+        controlSize: ControlSize = .regular,
+        style: SFKChipStyle = .secondary,
+        @ViewBuilder content: () -> MenuContent
+    ) {
+        self.title = title
+        self.leadingIconName = leadingIconName
+        self.trailingIconName = trailingIconName
+        self.tintColor = tintColor
+        self.controlSize = controlSize
+        self.style = style
+        self.menuContent = content()
+    }
+
+    public var body: some View {
+        Menu {
+            menuContent
+        } label: {
+            HStack(spacing: metrics.contentSpacing) {
+                if let leadingIconName {
+                    Image(systemName: leadingIconName)
+                        .font(metrics.iconFont)
+                }
+
+                Text(title)
+                    .font(metrics.labelFont)
+                    .lineLimit(1)
+
+                if let trailingIconName {
+                    Image(systemName: trailingIconName)
+                        .font(metrics.iconFont)
+                }
+            }
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.horizontal, metrics.horizontalPadding)
+            .padding(.vertical, metrics.verticalPadding)
+            .foregroundStyle(theme.colors.text)
+            .contentShape(Capsule(style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .controlSize(controlSize)
+        .overlay {
+            Capsule(style: .continuous)
+                .strokeBorder(strokeColor, lineWidth: strokeWidth)
+        }
+        .sfkGlass(
+            material: .regular,
+            tint: glassTintColor,
+            isInteractive: isEnabled,
+            shape: .capsule
+        )
+        .opacity(isEnabled ? 1 : 0.55)
+        .animation(reduceMotion ? nil : theme.motion.standard, value: isEnabled)
+    }
+
+    private var metrics: SFKChipSizeMetrics {
+        SFKChipSizeMetrics(controlSize: controlSize, theme: theme)
+    }
+
+    private var glassTintColor: Color {
+        switch style {
+        case .primary: resolvedTintColor.opacity(0.28)
+        case .secondary: resolvedTintColor.opacity(0.08)
+        }
+    }
+
+    private var strokeColor: Color {
+        switch style {
+        case .primary: resolvedTintColor.opacity(0.75)
+        case .secondary: theme.colors.border
+        }
+    }
+
+    private var strokeWidth: CGFloat {
+        switch style {
+        case .primary: 1.5
+        case .secondary: 1
+        }
+    }
+
+    private var resolvedTintColor: Color {
+        tintColor ?? theme.colors.accent
+    }
+}
+
 struct SFKChipSizeMetrics {
     let controlSize: ControlSize
     let theme: SFKTheme
@@ -192,6 +299,10 @@ struct SFKChipSizeMetrics {
     SFKChipFlowLayout(spacing: 8) {
         SFKChip("Primary", leadingIconName: "star.fill", controlSize: .small, style: .primary) {}
         SFKChip("Secondary", leadingIconName: "tag", controlSize: .small, style: .secondary) {}
+        SFKMenuChip("Status", leadingIconName: "book", controlSize: .small, style: .primary) {
+            Button("Reading") {}
+            Button("Finished") {}
+        }
     }
     .padding()
 }

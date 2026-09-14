@@ -195,6 +195,7 @@ domains:
       - The chip visual intentionally diverges from the shared SFK treatment
     public_api:
       - SFKChip
+      - SFKMenuChip
       - SFKChipStyle
       - SFKChipFlowLayout
       - SFKSelectableChip

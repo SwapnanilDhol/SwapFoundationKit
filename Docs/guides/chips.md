@@ -7,6 +7,7 @@ SwapFoundationKit distinguishes action chips from selectable chips so host apps 
 | Component | Purpose |
 |-----------|---------|
 | `SFKChip` | Performs a compact action using primary or secondary hierarchy |
+| `SFKMenuChip` | Presents a native menu from a chip-styled label |
 | `SFKChipStyle` | Selects `.primary` or `.secondary` action emphasis |
 | `SFKSelectableChip` | Represents state that can be selected or deselected |
 | `SFKChipFlowLayout` | Wraps either chip type across rows |
@@ -30,6 +31,16 @@ SFKChipFlowLayout(spacing: 8) {
 ```
 
 Use `.primary` for the preferred action in a chip group and `.secondary` for supporting actions. Use `SFKButton` for full-size CTAs and borderless text actions.
+
+Use `SFKMenuChip` when the compact action opens a native menu. This keeps the
+menu as the owning control instead of nesting an `SFKChip` button inside it.
+
+```swift
+SFKMenuChip("Reading", leadingIconName: "book", style: .primary) {
+    Button("Want to Read") { updateStatus(.wantToRead) }
+    Button("Finished") { updateStatus(.finished) }
+}
+```
 
 ## Selectable chips
 
