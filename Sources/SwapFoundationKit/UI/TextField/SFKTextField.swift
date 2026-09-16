@@ -293,6 +293,10 @@ public struct SFKTextField: View {
                 trailingAccessory
             }
             .padding(.horizontal, resolvedAppearance.horizontalPadding)
+            // A multiline field grows past `minimumHeight` to fit its line limit, so the
+            // frame's centering no longer helps — without this, the placeholder sits flush
+            // against the top edge instead of reading like inset text.
+            .padding(.vertical, axis == .vertical ? 12 : 0)
             .frame(minHeight: resolvedAppearance.minimumHeight)
             .background(fieldBackground)
             .overlay(fieldBorder)
