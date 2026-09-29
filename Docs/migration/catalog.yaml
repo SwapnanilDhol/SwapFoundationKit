@@ -110,48 +110,6 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKit/Services/Logger.swift
 
-  - id: pulse_logging_console
-    audit_tier: exact
-    confidence: high
-    migration:
-      replacement:
-        - SFKPulseService
-        - SFKPulseConsoleView
-        - SFKPulseConfiguration
-        - SFKPulseNetworkCaptureMode
-      compatibility: canonical
-      removal_release: null
-    module: SwapFoundationKitPulse
-    replace_with:
-      - SFKPulseService
-      - SFKPulseConsoleView
-      - SFKPulseConfiguration
-      - SFKPulseNetworkCaptureMode
-    public_symbols:
-      - SFKPulseService.configure(_:)
-      - SFKPulseService.isEnabled
-      - SFKPulseConsoleView.init(mode:)
-      - SFKPulseConfiguration.init(...)
-    host_search_terms:
-      - Pulse
-      - PulseUI
-      - ConsoleView
-      - NetworkLogger
-      - LoggerStore
-      - URLSessionProxy
-      - network inspector
-      - debug console
-    suspicious_file_patterns:
-      - "*Pulse*"
-      - "*Console*"
-      - "*NetworkInspector*"
-      - "*LoggerStore*"
-    keep_custom_when:
-      - The host app intentionally uses a different log viewer or must support a custom observability backend instead of Pulse.
-    source_files:
-      - Sources/SwapFoundationKitPulse/SFKPulseService.swift
-      - Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift
-
   - id: analytics
     module: SwapFoundationKit
     audit_tier: exact

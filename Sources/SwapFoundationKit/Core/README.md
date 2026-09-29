@@ -19,7 +19,7 @@ mean they are all available from `import SwapFoundationKit`.
 | `HTTPClient` | class | Async/await HTTP client with logging, default headers, JSON decoding, and file downloads |
 | `SFKURLSessionPerforming` | protocol | Abstraction over `URLSession.data(for:)` used to instrument `HTTPClient` requests |
 | `SFKInstrumentedSession` | struct | A `URLSession` paired with the performer `HTTPClient` should execute requests through |
-| `SFKNetworkInstrumentation` | enum | Registry opt-in products (like `SwapFoundationKitPulse`) use to supply `HTTPClient`'s session; a plain `URLSession` is used when nothing is registered |
+| `SFKNetworkInstrumentation` | enum | Registry an opt-in product uses to supply `HTTPClient`'s session; a plain `URLSession` is used when nothing is registered |
 | `NetworkRequest` | protocol | Declarative request builder with URL, method, headers, body, explicit URL preservation, and default-header opt-out |
 | `NetworkRequest.explicitURL` | property | Optional verbatim URL for presigned, XML, or otherwise non-losslessly-decomposable URLs |
 | `NetworkRequest.usesClientDefaultHeaders` | property | Defaults to `true`; set `false` when the request must not merge `HTTPClient.defaultHeaders` |
@@ -113,8 +113,8 @@ Custom `SFKURLSessionPerforming` implementations used with origin-scoped backend
 headers must implement `data(for:delegate:)` and forward or enforce the supplied
 delegate. A performer that cannot honor a non-`nil` delegate fails closed with
 `URLError(.unsupportedURL)`, which `HTTPClient` may wrap as `NetworkError`.
-Ordinary `data(for:)` requests are unchanged; `URLSession` and Pulse support the
-delegate path.
+Ordinary `data(for:)` requests are unchanged; `URLSession` and other opt-in
+performers support the delegate path.
 
 ## Source Files
 

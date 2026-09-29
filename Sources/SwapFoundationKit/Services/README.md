@@ -2,9 +2,8 @@
 
 Application-level services for haptics, logging, analytics, user defaults, deeplinks, file I/O, pasteboard, location, app links, notifications, and Pro gating.
 
-Pulse-backed log/network inspection and toast presentation are opt-in products —
-`SwapFoundationKitPulse` and `SwapFoundationKitToast` — and are no longer part of this default
-target. See [SFKPulseService and ToastManager have moved](#sfkpulseservice-and-toastmanager-have-moved)
+Toast presentation is an opt-in product — `SwapFoundationKitToast` — and is no longer part of this default
+target. See [ToastManager has moved](#toastmanager-has-moved)
 below.
 
 ## Public API
@@ -15,7 +14,7 @@ below.
 | `Logger` | enum | Colored console logging with emoji prefixes, log-sink and analytics fan-out on errors |
 | `LogLevel` | enum | debug, info, warning, error |
 | `SFKLogSink` | protocol | Destination that receives every `Logger.log` message |
-| `SFKLogSinkRegistry` | enum | Registers `SFKLogSink` destinations; `SwapFoundationKitPulse` registers into it |
+| `SFKLogSinkRegistry` | enum | Registers `SFKLogSink` destinations for opt-in products to plug into |
 | `AnalyticsManager` | class | Protocol-based fan-out to multiple `AnalyticsLogger` providers |
 | `AnalyticsLogger` | protocol | Implement to forward events to the host app's analytics provider. |
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
@@ -50,7 +49,7 @@ helper.successNotification()
 Logger.info("User signed in", context: "Auth")
 Logger.error("Network timeout", context: "API")
 
-// Log sink (opt-in products like SwapFoundationKitPulse register into this)
+// Log sink (opt-in products can register into this)
 struct MySink: SFKLogSink {
     func record(level: LogLevel, message: String, context: String?, function: String, file: String, line: Int) {
         // forward elsewhere
@@ -90,19 +89,16 @@ await SFKNotificationService.shared.requestAuthorization()
 await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 ```
 
-## SFKPulseService and ToastManager have moved
+## ToastManager has moved
 
-`SFKPulseService`, `SFKPulseConfiguration`, `SFKPulseConsoleView`, and their supporting enums now
-ship in the opt-in `SwapFoundationKitPulse` product. `ToastManager`, `SFKToastKind`, and
+`ToastManager`, `SFKToastKind`, and
 `SFKToastStyle`/`SFKToastConfiguration` now ship in the opt-in `SwapFoundationKitToast` product. Add the product
-you need and change `import SwapFoundationKit` to `import SwapFoundationKitPulse` /
+you need and change `import SwapFoundationKit` to
 `import SwapFoundationKitToast` at call sites — the APIs themselves are unchanged. See
 [Docs/migration/v4-phase-1-product-extraction.md](../../../Docs/migration/v4-phase-1-product-extraction.md).
 
-This target still owns the seams those products plug into: `SFKLogSink`/`SFKLogSinkRegistry`
+This target still owns the seams opt-in products plug into: `SFKLogSink`/`SFKLogSinkRegistry`
 here, and `SFKURLSessionPerforming`/`SFKNetworkInstrumentation` in `Core/`.
-
-Host-app Pulse integration guidance lives in [Docs/guides/pulse-integration.md](../../../Docs/guides/pulse-integration.md).
 
 Firebase integration is intentionally opt-in. Add the `SwapFoundationKitFirebase`
 product and inject `SFKFirebaseLogger` with host-owned handlers; it has no
@@ -139,7 +135,7 @@ see [its module reference](../../SwapFoundationKitNetworking/README.md).
 ### Other
 - `HapticsHelper.swift` — Haptic feedback
 - `Logger.swift` — Colored logging
-- `SFKLogSink.swift` — Log sink protocol and registry (`SwapFoundationKitPulse` registers into this)
+- `SFKLogSink.swift` — Log sink protocol and registry (opt-in products can register into this)
 - `UserDefault.swift` + `UserDefaults+.swift` — Type-safe defaults
 - `PasteboardService.swift` — Clipboard access
 - `LocationSearchService.swift` — MapKit search

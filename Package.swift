@@ -22,10 +22,6 @@ let package = Package(
             targets: ["SwapFoundationKitFeedback"]
         ),
         .library(
-            name: "SwapFoundationKitPulse",
-            targets: ["SwapFoundationKitPulse"]
-        ),
-        .library(
             name: "SwapFoundationKitToast",
             targets: ["SwapFoundationKitToast"]
         ),
@@ -67,10 +63,6 @@ let package = Package(
             url: "https://github.com/BastiaanJansen/Toast-Swift.git",
             exact: "2.1.3"
         ),
-        .package(
-            url: "https://github.com/kean/Pulse.git",
-            exact: "5.2.3"
-        ),
     ],
     targets: [
         .target(
@@ -87,17 +79,6 @@ let package = Package(
         .target(
             name: "SwapFoundationKitFeedback",
             dependencies: ["SwapFoundationKit", "SwapFoundationKitMedia"],
-            exclude: ["README.md"]
-        ),
-        .target(
-            name: "SwapFoundationKitPulse",
-            dependencies: [
-                "SwapFoundationKit",
-                "SwapFoundationKitNetworking",
-                .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
-                .product(name: "PulseUI", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
-                .product(name: "PulseProxy", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
-            ],
             exclude: ["README.md"]
         ),
         .target(
@@ -174,15 +155,6 @@ let package = Package(
         .testTarget(
             name: "SwapFoundationKitFeedbackTests",
             dependencies: ["SwapFoundationKitFeedback"]
-        ),
-        .testTarget(
-            name: "SwapFoundationKitPulseTests",
-            dependencies: [
-                "SwapFoundationKit",
-                "SwapFoundationKitNetworking",
-                "SwapFoundationKitPulse",
-                .product(name: "Pulse", package: "Pulse", condition: .when(platforms: [.iOS, .tvOS, .watchOS, .visionOS])),
-            ]
         ),
         .testTarget(
             name: "SwapFoundationKitToastTests",

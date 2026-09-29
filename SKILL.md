@@ -11,8 +11,8 @@ description: >
   environment, launch arguments, persistent TTL store, expiring cache, cooldown,
   design tokens, SFKTheme, semantic theme, shared spacing, SFKCompactButton,
   compact toolbar button, compact glass button,
-  pro gate, notifications, Pulse, PulseUI,
-  network inspector, debug console, App Attest, authenticated sessions,
+  pro gate, notifications,
+  App Attest, authenticated sessions,
   session refresh, purchase binding, authenticated transport, appearance, rounded font, hosting
   controller, JSON codable, device info, async collections.
 ---
@@ -85,7 +85,7 @@ Read files in this order:
 | Networking | [Networking/README.md](Sources/SwapFoundationKitNetworking/README.md) | HTTPClient, NetworkRequest, NetworkService, NetworkMonitor |
 | Authentication | [Authentication/README.md](Sources/SwapFoundationKitAuthentication/README.md) | AppAttestService, AuthenticatedSessionService, AuthenticatedHTTPClient |
 | Firebase | [Firebase/README.md](Sources/SwapFoundationKitFirebase/README.md) | SFKFirebaseLogger with required host handlers |
-| Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager (instance-based), UserDefault, DeeplinkHandler, SFKAccessGate, SFKNotificationService (Pulse/Toast are opt-in products) |
+| Services | [Services/README.md](Sources/SwapFoundationKit/Services/README.md) | HapticsHelper, Logger, AnalyticsManager (instance-based), UserDefault, DeeplinkHandler, SFKAccessGate, SFKNotificationService (Toast is an opt-in product) |
 | UI | [UI/README.md](Sources/SwapFoundationKit/UI/README.md) | SFKTheme, SFKButton, SFKCompactButton, SFKCompactButtonType, SFKTextField, typed SFKSettingsScreen/SFKSettingsSection, SFKSegmentedProgress, typed SFKItemPickerView, SFKColorPickerSheet, SFKPhotoPicker, BarcodeScannerScreen, SFKAppearanceManager |
 | Extensions | [Extensions/README.md](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, JSONCodable, async collections |
 | Utilities | [Utilities/README.md](Sources/SwapFoundationKit/Utilities/README.md) | PersistentTTLStore, Debouncer, Throttler, SFKAppEnvironment, SFKLaunchArguments |
@@ -95,5 +95,4 @@ Read files in this order:
 | WatchSync | [WatchSync/README.md](Sources/SwapFoundationKitSync/WatchSync/README.md) | WatchSyncService, WatchSyncEnvelope, WatchSyncTransport |
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | Ads | [Ads/README.md](Sources/SwapFoundationKitGoogleMobileAds/README.md) | AdsConfiguration, AdUnitConfiguration |
-| Pulse (opt-in) | [Pulse/README.md](Sources/SwapFoundationKitPulse/README.md) | SFKPulseService, SFKPulseConfiguration, SFKPulseConsoleView |
 | Toast (opt-in) | [Toast/README.md](Sources/SwapFoundationKitToast/README.md) | ToastManager, SFKToastKind, SFKToastStyle, SFKToastConfiguration |

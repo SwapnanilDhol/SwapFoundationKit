@@ -246,8 +246,8 @@ public actor ExchangeRateManager: NSObject, XMLParserDelegate {
 /// Abstraction over the transport used to fetch the ECB exchange rate XML feed, so `fetchAndParse`
 /// can be unit-tested with a fake and production code routes through the package's canonical
 /// `HTTPClient` instead of `URLSession.shared` (feature code must not call `URLSession.shared`
-/// directly; see `SFKNetworkInstrumentation`, which lets opt-in products like
-/// `SwapFoundationKitPulse` observe `HTTPClient` traffic).
+/// directly; see `SFKNetworkInstrumentation`, which lets an opt-in product
+/// observe `HTTPClient` traffic).
 protocol ExchangeRateTransport: Sendable {
     func data(from url: URL) async throws -> (Data, HTTPURLResponse)
 }

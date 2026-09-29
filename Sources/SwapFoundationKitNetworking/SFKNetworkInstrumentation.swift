@@ -11,8 +11,8 @@
 
 import Foundation
 
-/// Abstraction over `URLSession.data(for:)` so opt-in instrumentation layers (such as
-/// `SwapFoundationKitPulse`) can proxy the requests `HTTPClient` executes without the
+/// Abstraction over `URLSession.data(for:)` so opt-in instrumentation layers
+/// can proxy the requests `HTTPClient` executes without the
 /// default target depending on any third-party vendor.
 public protocol SFKURLSessionPerforming: Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
@@ -59,8 +59,8 @@ public enum SFKNetworkInstrumentation {
     private static var factory: (@Sendable (URLSessionConfiguration) -> SFKInstrumentedSession)?
 
     /// Registers the factory used to build the `URLSession` (and its performer) for every
-    /// new `HTTPClient` instance. Intended for opt-in integrations, such as
-    /// `SwapFoundationKitPulse`, to call during their own configuration step.
+    /// new `HTTPClient` instance. Intended for opt-in integrations
+    /// to call during their own configuration step.
     ///
     /// This is intentionally a function rather than a public mutable static property: it keeps
     /// the registration boundary explicit and prevents arbitrary call sites from silently

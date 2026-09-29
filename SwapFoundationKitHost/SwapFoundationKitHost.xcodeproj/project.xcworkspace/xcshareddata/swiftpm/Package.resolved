@@ -2,15 +2,6 @@
   "originHash" : "536b0d6b36a518c82149317b8fb112fe64ff23d9a54e1b7ad21c431d6a8888a2",
   "pins" : [
     {
-      "identity" : "pulse",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kean/Pulse.git",
-      "state" : {
-        "revision" : "94b92731d370c129bb771e9c18f69b0a44ccca5c",
-        "version" : "5.2.3"
-      }
-    },
-    {
       "identity" : "swift-package-manager-google-mobile-ads",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",

@@ -125,7 +125,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .appearance: "Rounded UIKit and SwiftUI typography configuration."
         case .haptics: "Standardized impact and notification feedback."
         case .analytics: "Shared analytics event routing and logger integrations."
-        case .logging: "Structured logging and Pulse inspection."
+        case .logging: "Structured logging."
         case .appLinks: "Safe URL opening and application-link helpers."
         case .userDefaults: "Property-wrapper-backed preference storage."
         case .currency: "Currency metadata, formatting, and locale support."
@@ -214,7 +214,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable {
         case .appearance: ["SFKAppearanceManager", "SFKRoundedHostingController"]
         case .haptics: ["HapticsHelper"]
         case .analytics: ["AnalyticsManager"]
-        case .logging: ["Logger", "SFKPulseConsoleView"]
+        case .logging: ["Logger"]
         case .appLinks: ["AppLinkOpener"]
         case .userDefaults: ["UserDefault"]
         case .currency: ["Currency"]

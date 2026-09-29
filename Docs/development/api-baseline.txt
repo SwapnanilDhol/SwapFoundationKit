@@ -22,7 +22,6 @@
 #   SwapFoundationKitFirebase                     7        1
 #   SwapFoundationKitFeedback                    82       15
 #   SwapFoundationKitGoogleMobileAds             48       10
-#   SwapFoundationKitPulse                       27        6
 #   SwapFoundationKitToast                       18        4
 #
 # SwapFoundationKit — per-domain breakdown (public declarations / top-level public types):
@@ -1943,33 +1942,6 @@ SwapFoundationKitNetworking | init | Sources/SwapFoundationKitNetworking/SFKNetw
 SwapFoundationKitNetworking | enum | Sources/SwapFoundationKitNetworking/SFKNetworkInstrumentation.swift:57 | SFKNetworkInstrumentation
 SwapFoundationKitNetworking | type.method | Sources/SwapFoundationKitNetworking/SFKNetworkInstrumentation.swift:68 | SFKNetworkInstrumentation.register(_:)
 SwapFoundationKitNetworking | type.method | Sources/SwapFoundationKitNetworking/SFKNetworkInstrumentation.swift:74 | SFKNetworkInstrumentation.makeSession(configuration:)
-SwapFoundationKitPulse | enum | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:17 | SFKPulseConsoleMode
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:18 | SFKPulseConsoleMode.all
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:19 | SFKPulseConsoleMode.logs
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:20 | SFKPulseConsoleMode.network
-SwapFoundationKitPulse | struct | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:24 | SFKPulseConsoleView
-SwapFoundationKitPulse | init | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:28 | SFKPulseConsoleView.init(mode:hidesCloseButton:)
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift:33 | SFKPulseConsoleView.body
-SwapFoundationKitPulse | enum | Sources/SwapFoundationKitPulse/SFKPulseService.swift:27 | SFKPulseNetworkCaptureMode
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseService.swift:29 | SFKPulseNetworkCaptureMode.disabled
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseService.swift:31 | SFKPulseNetworkCaptureMode.sfkHTTPClientOnly
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseService.swift:33 | SFKPulseNetworkCaptureMode.debugProxyAllURLSessions
-SwapFoundationKitPulse | enum | Sources/SwapFoundationKitPulse/SFKPulseService.swift:37 | SFKPulseStoreLocation
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseService.swift:39 | SFKPulseStoreLocation.shared
-SwapFoundationKitPulse | enum.case | Sources/SwapFoundationKitPulse/SFKPulseService.swift:41 | SFKPulseStoreLocation.custom(_:)
-SwapFoundationKitPulse | struct | Sources/SwapFoundationKitPulse/SFKPulseService.swift:45 | SFKPulseConfiguration
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:46 | SFKPulseConfiguration.storeLocation
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:47 | SFKPulseConfiguration.networkCaptureMode
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:48 | SFKPulseConfiguration.sizeLimitBytes
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:49 | SFKPulseConfiguration.enableRemoteLogging
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:50 | SFKPulseConfiguration.sensitiveHeaders
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:51 | SFKPulseConfiguration.sensitiveQueryItems
-SwapFoundationKitPulse | property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:52 | SFKPulseConfiguration.sensitiveBodyFields
-SwapFoundationKitPulse | init | Sources/SwapFoundationKitPulse/SFKPulseService.swift:54 | SFKPulseConfiguration.init(storeLocation:networkCaptureMode:sizeLimitBytes:enableRemoteLogging:sensitiveHeaders:sensitiveQueryItems:sensitiveBodyFields:)
-SwapFoundationKitPulse | enum | Sources/SwapFoundationKitPulse/SFKPulseService.swift:74 | SFKPulseService
-SwapFoundationKitPulse | type.property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:79 | SFKPulseService.isEnabled
-SwapFoundationKitPulse | type.property | Sources/SwapFoundationKitPulse/SFKPulseService.swift:85 | SFKPulseService.currentConfiguration
-SwapFoundationKitPulse | type.method | Sources/SwapFoundationKitPulse/SFKPulseService.swift:92 | SFKPulseService.configure(_:)
 SwapFoundationKitRemoteAI | class | Sources/SwapFoundationKitRemoteAI/RemoteAI/RemoteAIClient.swift:17 | RemoteAIClient
 SwapFoundationKitRemoteAI | init | Sources/SwapFoundationKitRemoteAI/RemoteAI/RemoteAIClient.swift:21 | RemoteAIClient.init(configuration:client:)
 SwapFoundationKitRemoteAI | type.property | Sources/SwapFoundationKitRemoteAI/RemoteAI/RemoteAIClient.swift:30 | RemoteAIClient.defaultEncoder

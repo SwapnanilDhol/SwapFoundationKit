@@ -502,38 +502,6 @@ domains:
       - appearance
       - hosting controller
 
-  - id: pulse_inspection
-    priority: 8
-    module: SwapFoundationKitPulse
-    summary: Opt-in Pulse-backed network logging and debug console integration.
-    when_to_check:
-      - Adding an in-app network inspector
-      - Adding a Pulse debug console
-      - Capturing HTTPClient requests during development
-    prefer_when:
-      - The host wants Pulse's existing network store and console UI
-      - The host can make an explicit opt-in product dependency
-    keep_in_host_app_when:
-      - The host intentionally uses another observability or log-viewing backend
-    public_api:
-      - SFKPulseService
-      - SFKPulseConfiguration
-      - SFKPulseNetworkCaptureMode
-      - SFKPulseStoreLocation
-      - SFKPulseConsoleView
-      - SFKPulseConsoleMode
-    docs:
-      - Docs/migration/v4-phase-1-product-extraction.md
-      - Sources/SwapFoundationKitPulse/README.md
-    examples:
-      - Sources/SwapFoundationKitPulse/SFKPulseService.swift
-      - Sources/SwapFoundationKitPulse/SFKPulseConsoleView.swift
-    host_app_triggers:
-      - Pulse
-      - PulseUI
-      - network inspector
-      - debug console
-
   - id: toast_presentation
     priority: 8
     module: SwapFoundationKitToast

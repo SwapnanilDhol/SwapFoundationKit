@@ -9,7 +9,7 @@ This checkout contains the breaking v4 API cleanup. See the [implementation stat
 - **iOS**: 17.0+
 - **Swift**: 5.9+
 - **Dependencies (default product)**: none
-- **Optional products**: `SwapFoundationKitPulse` + [Pulse](https://github.com/kean/Pulse) 5.2.3, `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
+- **Optional products**: `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
 
 Networking, Authentication, Sync, Media, Currency, RemoteAI, and Firebase
 have explicit opt-in products. The Firebase
@@ -53,34 +53,6 @@ Customize colors, semantic typography, spacing, radii, motion, and feedback thro
 `SFKTheme`; individual controls can override only what they need. Construct optional
 services at your app's composition root when their feature is used.
 
-### Optional Pulse integration
-
-Add the `SwapFoundationKitPulse` product only when the app needs Pulse. Configure it before
-constructing `HTTPClient` instances, so those instances
-use the Pulse instrumentation seam:
-
-```swift
-import SwapFoundationKit
-import SwapFoundationKitPulse
-import SwapFoundationKitNetworking
-
-@main
-struct MyApp: App {
-    init() {
-        SFKPulseService.configure(
-            SFKPulseConfiguration(networkCaptureMode: .sfkHTTPClientOnly)
-        )
-        _ = HTTPClient()
-    }
-
-    var body: some Scene {
-        WindowGroup { ContentView() }
-    }
-}
-```
-
-To inspect logs, present `SFKPulseConsoleView()` from a host-owned debug entry point.
-
 ## Component Catalog
 
 `SwapFoundationKitHost` is an installable iPhone and iPad catalog for browsing SFK's visual components and foundation APIs. It uses the local package directly, so component changes appear in the catalog on the next build.
@@ -98,7 +70,7 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [Media](Sources/SwapFoundationKitMedia/README.md) | Image processing and remote image transport |
 | [Remote AI](Sources/SwapFoundationKitRemoteAI/README.md) | Host-configured AI requests over Networking |
 | [Firebase](Sources/SwapFoundationKitFirebase/README.md) | Host-handler-injected analytics adapter |
-| [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, files, location, pro gating, notifications (Pulse and Toast are opt-in products) |
+| [Services](Sources/SwapFoundationKit/Services/README.md) | Haptics, logging, analytics, defaults, deeplinks, files, location, pro gating, notifications (Toast is an opt-in product) |
 | [UI](Sources/SwapFoundationKit/UI/README.md) | Buttons, text fields, settings, onboarding, pickers, glass, aura, barcode, alerts, appearance |
 | [Extensions](Sources/SwapFoundationKit/Extensions/README.md) | Date, String, Number, Collection, Bundle, URL, FileManager, Result, Data, JSON, async collections |
 | [Utilities](Sources/SwapFoundationKit/Utilities/README.md) | Persistent TTL storage, debounce/throttle, environment detection, launch arguments |
@@ -108,7 +80,6 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [WatchSync](Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity transport |
 | [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |
-| [Pulse](Sources/SwapFoundationKitPulse/README.md) | Pulse network logging and debug console (optional product) |
 | [Toast](Sources/SwapFoundationKitToast/README.md) | Toast presentation (optional product) |
 
 ## Documentation

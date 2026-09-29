@@ -101,7 +101,6 @@ TARGETS=(
   SwapFoundationKitFirebase
   SwapFoundationKitFeedback
   SwapFoundationKitGoogleMobileAds
-  SwapFoundationKitPulse
   SwapFoundationKitToast
 )
 

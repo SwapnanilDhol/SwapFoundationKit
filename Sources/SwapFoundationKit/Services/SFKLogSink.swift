@@ -13,7 +13,7 @@ import Foundation
 
 /// A destination that receives every message routed through `Logger.log`.
 ///
-/// Register a sink from an opt-in product (such as `SwapFoundationKitPulse`) to forward SFK's
+/// Register a sink from an opt-in product to forward SFK's
 /// log stream elsewhere, without the default `SwapFoundationKit` target depending on that
 /// product.
 public protocol SFKLogSink: Sendable {

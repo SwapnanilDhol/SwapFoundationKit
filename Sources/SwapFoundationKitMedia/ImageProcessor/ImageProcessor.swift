@@ -377,7 +377,7 @@ public enum ImageProcessorError: Error, LocalizedError {
 /// `cacheImage(from:targetSize:quality:)` can be unit-tested with a fake and production code
 /// routes through the package's canonical `HTTPClient` instead of `URLSession.shared` (feature
 /// code must not call `URLSession.shared` directly; see the v4 Media ownership rule and
-/// `SFKNetworkInstrumentation`, which lets opt-in products like `SwapFoundationKitPulse` observe
+/// `SFKNetworkInstrumentation`, which lets an opt-in product observe
 /// `HTTPClient` traffic).
 public protocol ImageProcessorTransport: Sendable {
     func data(from url: URL) async throws -> (Data, HTTPURLResponse)
