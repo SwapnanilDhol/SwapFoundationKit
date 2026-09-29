@@ -211,6 +211,40 @@ domains:
       - selectable chip
       - tag cloud
 
+  - id: number_pad
+    priority: 3
+    summary: Fixed-style amount-entry keypad plus a value type applying the shared digit/decimal-separator/backspace rules.
+    when_to_check:
+      - Building a currency or amount entry screen with a custom numeric keypad
+      - Replacing a bespoke 1-9/period/0/backspace grid
+      - Wiring keypad input into an amount string on a ViewModel
+    prefer_when:
+      - The keypad's look (3-column grid, glass keys, haptics, system sounds) matches the shared style as-is
+      - The amount rules (single decimal separator, 2 fraction-digit cap, leading-zero replacement, period-on-empty seeds "0.") match the host's existing behavior
+    keep_in_host_app_when:
+      - The host needs a different key layout or visual treatment
+      - The host's amount parsing/validation/display rules diverge from another host's (SFKAmountInput does not parse to Double or validate; only the keypad text-editing rules are shared)
+    public_api:
+      - SFKNumberPad
+      - SFKNumberPadButton
+      - SFKNumberPadInput
+      - SFKAmountInput
+    migration_notes:
+      - "SFKAmountInput takes the decimal separator as a parameter to `apply(_:decimalSeparator:)` rather than deriving one; pass whatever separator the host already computes (Locale or an injected NumberFormatter), including in tests."
+      - "`maxIntegerDigits` is nil (unlimited) by default; pass the host's existing cap (if any) explicitly since hosts have historically disagreed on this."
+      - "Parsing the amount string to a Double, validation messages, and any general-purpose sanitizer for externally-set text (e.g. seeding from a saved record) stay in the host; only the keypad's own editing rules moved here."
+    docs:
+      - Sources/SwapFoundationKit/UI/README.md
+    examples:
+      - Sources/SwapFoundationKit/UI/NumberPad/SFKNumberPad.swift
+      - Sources/SwapFoundationKit/UI/NumberPad/SFKAmountInput.swift
+    host_app_triggers:
+      - number pad
+      - NumberPad
+      - amount entry
+      - currency keypad
+      - applyNumberPadInput
+
   - id: empty_state
     priority: 3
     summary: Centered empty and error placeholders with optional primary CTA via SFKButton.

@@ -66,6 +66,14 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 | `SFKSelectableChip` | View | State-driven selectable chip with glass effect, theme feedback, and stroke |
 | `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds (iOS 16+) |
 
+### Number Pad
+| Type | Kind | Description |
+|------|------|-------------|
+| `SFKNumberPad` | View | Fixed-style 3-column amount-entry keypad (`1`-`9`, `.`, `0`, backspace) |
+| `SFKNumberPadButton` | View | Single glass keypad key with the shared haptic and system-sound feedback |
+| `SFKNumberPadInput` | enum | Keypad key identity (`.one`...`.nine`, `.period`, `.zero`, `.backspace`) |
+| `SFKAmountInput` | struct | Amount-string value type applying the shared digit/decimal-separator/backspace editing rules |
+
 ### Settings
 | Type | Kind | Description |
 |------|------|-------------|
@@ -244,6 +252,20 @@ SFKCompactButton(
     dismiss()
 }
 
+// Number Pad
+SFKNumberPad { input in
+    viewModel.applyNumberPadInput(input)
+}
+
+// Inside the ViewModel: SFKAmountInput applies the shared keypad rules to a
+// plain amount string. It does not parse to Double or validate; keep that
+// (and the decimal separator, usually from a NumberFormatter) in the host.
+func applyNumberPadInput(_ input: SFKNumberPadInput) {
+    var amount = SFKAmountInput(text: amountValueString, maxIntegerDigits: 9)
+    amount.apply(input, decimalSeparator: decimalSeparator)
+    amountValueString = amount.text
+}
+
 // Settings
 SFKSettingsScreen(navigationTitle: "Settings") {
     SFKSettingsSection("Preferences") {
@@ -339,6 +361,7 @@ UIApplication.shared.requestReview(reason: "transactionSaved")
 - `ColorPicker/` — SFKColorPickerSheet and its binding-backed Configuration
 - `Settings/` — typed screen/section/row/toggle/picker views
 - `Chips/` — Primary and secondary action chips
+- `NumberPad/` — SFKNumberPad, SFKNumberPadButton, SFKNumberPadInput, and SFKAmountInput
 - `Onboarding/` — Selectable chips, flow layout, progress, typography, and cards
 - `ItemPicker/` — typed view/configuration and item/action models
 - `Effects/` — Aura layer, glow background, top aura
