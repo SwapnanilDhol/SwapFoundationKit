@@ -56,15 +56,21 @@ public struct SFKSettingsSection<Content: View>: View {
 public struct SFKSettingsScreen<Content: View, Background: View>: View {
     @Environment(\.sfkTheme) private var theme
     private let navigationTitle: String
+    private let titleDisplayMode: NavigationBarItem.TitleDisplayMode
     private let content: () -> Content
     private let background: () -> Background
 
     /// Creates a typed settings screen from a SwiftUI result-builder closure.
+    /// - Parameter titleDisplayMode: The navigation bar title style. Defaults
+    ///   to `.inline`, matching every existing call site; pass `.large` for a
+    ///   tab root screen that should show the large-title style instead.
     public init(
         navigationTitle: String = "Settings",
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode = .inline,
         @ViewBuilder content: @escaping () -> Content
     ) where Background == _SFKSettingsThemeSurface {
         self.navigationTitle = navigationTitle
+        self.titleDisplayMode = titleDisplayMode
         self.content = content
         self.background = { _SFKSettingsThemeSurface() }
     }
@@ -75,12 +81,17 @@ public struct SFKSettingsScreen<Content: View, Background: View>: View {
     /// own base fill — so the Form is never stacked over more than one
     /// painted layer, which is what keeps `.listRowBackground` reliable once
     /// `.scrollContentBackground(.hidden)` is applied.
+    /// - Parameter titleDisplayMode: The navigation bar title style. Defaults
+    ///   to `.inline`, matching every existing call site; pass `.large` for a
+    ///   tab root screen that should show the large-title style instead.
     public init(
         navigationTitle: String = "Settings",
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode = .inline,
         @ViewBuilder background: @escaping () -> Background,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.navigationTitle = navigationTitle
+        self.titleDisplayMode = titleDisplayMode
         self.content = content
         self.background = background
     }
@@ -98,7 +109,7 @@ public struct SFKSettingsScreen<Content: View, Background: View>: View {
                     .allowsHitTesting(false)
             }
             .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(titleDisplayMode)
             .tint(theme.colors.accent)
     }
 }
