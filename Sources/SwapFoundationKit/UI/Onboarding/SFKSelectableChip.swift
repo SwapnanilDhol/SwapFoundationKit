@@ -174,6 +174,7 @@ public struct SFKSelectableChip: View {
             .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, horizontalPadding)
             .padding(.vertical, verticalPadding)
+            .contentShape(Capsule(style: .continuous))
         }
         .buttonStyle(.plain)
         .controlSize(controlSize)
