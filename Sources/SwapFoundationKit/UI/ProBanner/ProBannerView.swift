@@ -35,6 +35,7 @@ public struct SFKProBannerView: View {
     public let proDisabledSubtitle: String
     public let upgradeButtonTitle: String
     public let upgradeButtonFillColor: Color
+    public let upgradeButtonLabelColor: Color?
     public let onUpgradeTap: () -> Void
     private let usesThemeUpgradeButtonColor: Bool
 
@@ -46,6 +47,7 @@ public struct SFKProBannerView: View {
         proDisabledSubtitle: String,
         upgradeButtonTitle: String = "Upgrade Now".localized,
         upgradeButtonFillColor: Color? = nil,
+        upgradeButtonLabelColor: Color? = nil,
         onUpgradeTap: @escaping () -> Void
     ) {
         self.isProEnabled = isProEnabled
@@ -55,6 +57,7 @@ public struct SFKProBannerView: View {
         self.proDisabledSubtitle = proDisabledSubtitle
         self.upgradeButtonTitle = upgradeButtonTitle
         self.upgradeButtonFillColor = upgradeButtonFillColor ?? .purple
+        self.upgradeButtonLabelColor = upgradeButtonLabelColor
         self.usesThemeUpgradeButtonColor = upgradeButtonFillColor == nil
         self.onUpgradeTap = onUpgradeTap
     }
@@ -74,6 +77,7 @@ public struct SFKProBannerView: View {
                 SFKButton(upgradeButtonTitle, role: .primary, action: onUpgradeTap)
                     .sfkIcon("sparkles")
                     .sfkTint(usesThemeUpgradeButtonColor ? nil : upgradeButtonFillColor)
+                    .sfkLabelColor(upgradeButtonLabelColor)
                     .padding(.vertical, theme.spacing.inline)
             }
         }
