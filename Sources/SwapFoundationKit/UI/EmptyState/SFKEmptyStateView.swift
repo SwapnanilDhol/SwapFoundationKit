@@ -17,9 +17,14 @@ import SwiftUI
 /// `actionColor` when the optional CTA should match product accent.
 @available(iOS 16, *)
 public struct SFKEmptyStateView: View {
+    private enum MessageContent {
+        case key(LocalizedStringKey)
+        case verbatim(String)
+    }
+
     @Environment(\.sfkTheme) private var theme
     private let title: LocalizedStringKey
-    private let message: LocalizedStringKey
+    private let message: MessageContent
     private let systemImage: String
     private let actionTitle: String?
     private let actionSystemImage: String?
@@ -38,13 +43,45 @@ public struct SFKEmptyStateView: View {
         action: (() -> Void)? = nil
     ) {
         self.title = title
-        self.message = message
+        self.message = .key(message)
         self.systemImage = systemImage
         self.actionTitle = actionTitle
         self.actionSystemImage = actionSystemImage
         self.actionColor = actionColor
         self.actionAccessibilityIdentifier = actionAccessibilityIdentifier
         self.action = action
+    }
+
+    /// Use when `message` is an already-localized runtime string (e.g. an error
+    /// description) rather than a lookup key.
+    public init(
+        title: LocalizedStringKey,
+        message: String,
+        systemImage: String,
+        actionTitle: String? = nil,
+        actionSystemImage: String? = nil,
+        actionColor: Color? = nil,
+        actionAccessibilityIdentifier: String? = nil,
+        action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.message = .verbatim(message)
+        self.systemImage = systemImage
+        self.actionTitle = actionTitle
+        self.actionSystemImage = actionSystemImage
+        self.actionColor = actionColor
+        self.actionAccessibilityIdentifier = actionAccessibilityIdentifier
+        self.action = action
+    }
+
+    @ViewBuilder
+    private var messageText: some View {
+        switch message {
+        case .key(let key):
+            Text(key)
+        case .verbatim(let string):
+            Text(verbatim: string)
+        }
     }
 
     public var body: some View {
@@ -60,7 +97,7 @@ public struct SFKEmptyStateView: View {
                     .font(theme.typography.title)
                     .foregroundStyle(theme.colors.text)
 
-                Text(message)
+                messageText
                     .font(theme.typography.body)
                     .foregroundStyle(theme.colors.secondaryText)
                     .multilineTextAlignment(.center)

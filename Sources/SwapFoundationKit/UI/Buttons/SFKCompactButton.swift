@@ -29,6 +29,15 @@ public enum SFKCompactButtonChrome: Sendable {
     /// Icon-only content uses a circular surface. Text and icon/text content
     /// use a capsule that grows with the visible title.
     case glass
+
+    /// An icon button embedded inside a content row (e.g. a `Form`/`List` row
+    /// that already contains a `TextField`).
+    ///
+    /// Unlike ``toolbar``, this chrome supplies its own button style and a
+    /// 44pt hit target so the tap is not swallowed by the surrounding row.
+    /// The extra hit height is offset with negative vertical padding so the
+    /// row itself does not grow taller. It never applies glass.
+    case inline
 }
 
 /// A lightweight button for toolbar actions and compact controls over content.
@@ -148,12 +157,18 @@ public struct SFKCompactButton: View {
                 .font(iconFont)
                 .foregroundStyle(resolvedForeground)
 
-            if chrome == .glass {
+            switch chrome {
+            case .glass:
                 label
                     .padding(iconPadding)
                     .frame(minWidth: minimumSize, minHeight: minimumSize)
                     .contentShape(Circle())
-            } else {
+            case .inline:
+                label
+                    .frame(minWidth: 44, minHeight: 44)
+                    .padding(.vertical, -10)
+                    .contentShape(Rectangle())
+            case .toolbar:
                 label
             }
         }
@@ -161,7 +176,7 @@ public struct SFKCompactButton: View {
 
     private var minimumSize: CGFloat {
         switch chrome {
-        case .toolbar:
+        case .toolbar, .inline:
             0
         case .glass:
             35
@@ -170,7 +185,7 @@ public struct SFKCompactButton: View {
 
     private var iconPadding: CGFloat {
         switch chrome {
-        case .toolbar:
+        case .toolbar, .inline:
             0
         case .glass:
             8
@@ -183,6 +198,8 @@ public struct SFKCompactButton: View {
             theme.typography.caption.weight(.bold)
         case .glass:
             theme.typography.body.weight(.semibold)
+        case .inline:
+            theme.typography.body
         }
     }
 
@@ -208,6 +225,10 @@ private struct CompactButtonStyleModifier: ViewModifier {
             } else {
                 content.buttonStyle(.plain)
             }
+        case .inline:
+            // `.borderless` is required inside a `List`/`Form` row so the tap
+            // is not captured by the row's own button/selection handling.
+            content.buttonStyle(.borderless)
         }
     }
 }
@@ -220,7 +241,9 @@ private struct CompactButtonChromeModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
         switch chrome {
-        case .toolbar:
+        case .toolbar, .inline:
+            // Neither draws a surface: `.toolbar` defers to the navigation
+            // bar, `.inline` must stay glass-free inside content rows.
             content
         case .glass:
             if #available(iOS 26, *) {

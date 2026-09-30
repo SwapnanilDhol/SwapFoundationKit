@@ -134,7 +134,7 @@ public struct SFKButton: View {
     }
 
     private var shouldUseFullWidth: Bool {
-        fullWidth && !isLoading && !isBorderless
+        fullWidth && !isBorderless
     }
 
     private var isBorderless: Bool {
