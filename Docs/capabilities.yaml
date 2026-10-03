@@ -273,11 +273,12 @@ domains:
 
   - id: onboarding
     priority: 3
-    summary: Reusable progress, typography, and card primitives for multi-step onboarding flows.
+    summary: Reusable progress, typography, card, and action footer primitives for multi-step onboarding flows.
     when_to_check:
       - Building multi-step onboarding
       - Adding story-style progress indicators
       - Standardizing onboarding typography or card shells
+      - Adding a safe-area-aware action footer
     prefer_when:
       - The flow needs reusable onboarding primitives rather than a one-off screen
       - The host app wants shared onboarding building blocks but keeps its own state machine
@@ -287,14 +288,18 @@ domains:
       - SFKSegmentedProgress
       - SFKTypography
       - SFKCard
+      - AppFooterView
     docs:
       - Docs/guides/onboarding.md
     examples:
       - Sources/SwapFoundationKit/UI/Onboarding/SFKSegmentedProgress.swift
+      - Sources/SwapFoundationKit/UI/Onboarding/AppFooterView.swift
     host_app_triggers:
       - onboarding
       - multi-step flow
       - segmented progress
+      - action footer
+      - AppFooterView
 
   - id: pickers
     priority: 4

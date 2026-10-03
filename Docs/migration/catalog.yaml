@@ -843,6 +843,7 @@ capabilities:
     migration:
       replacement:
         - SFKButton
+        - AppFooterView
         - SFKButtonStyle
         - SFKButtonAlignment
         - SFKCompactButton
@@ -862,6 +863,7 @@ capabilities:
       removal_release: null
     replace_with:
       - SFKButton
+      - AppFooterView
       - SFKButtonStyle
       - SFKButtonAlignment
       - SFKCompactButton
@@ -879,6 +881,7 @@ capabilities:
       - SFKPhotoPicker(selection:onPick:)
     public_symbols:
       - SFKButton
+      - AppFooterView
       - SFKButtonStyle
       - SFKButtonAlignment
       - SFKCompactButton
@@ -898,6 +901,9 @@ capabilities:
       - Color.init(hex:)
     host_search_terms:
       - PrimaryButton
+      - AppFooterView
+      - AppFooterContentView
+      - OnboardingFooterView
       - SecondaryButton
       - PillButton
       - ChipButton
@@ -918,6 +924,7 @@ capabilities:
       - safeAreaInsets
     suspicious_file_patterns:
       - "*Button*"
+      - "*Footer*"
       - "*TextField*"
       - "*ColorPicker*"
       - "*Layout*"
@@ -927,6 +934,7 @@ capabilities:
       - The host app already has a design system and should only adopt SFK components intentionally.
     source_files:
       - Sources/SwapFoundationKit/UI/Buttons/SFKButton.swift
+      - Sources/SwapFoundationKit/UI/Onboarding/AppFooterView.swift
       - Sources/SwapFoundationKit/UI/Buttons/SFKCompactButton.swift
       - Sources/SwapFoundationKit/UI/TextField/SFKTextField.swift
       - Sources/SwapFoundationKit/UI/Chips/SFKChip.swift

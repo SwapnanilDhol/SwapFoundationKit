@@ -13,6 +13,7 @@ Generic, reusable SwiftUI components extracted from multi-step onboarding flows.
 | `SFKSegmentedProgress` | `SFKSegmentedProgress.swift` | Story-style segmented progress bar |
 | `SFKSelectableChip` | `SFKSelectableChip.swift` | Selectable capsule button with icon support |
 | `SFKButton` | `Buttons/SFKButton.swift` | Semantic primary, secondary, borderless, and destructive actions |
+| `AppFooterView` | `AppFooterView.swift` | Safe-area-aware footer for caller-supplied actions |
 | `SFKTypography` | `SFKTypography.swift` | Six View-extension typography modifiers |
 | `SFKCard` | `SFKCard.swift` | Rounded-rectangle card container with optional icon |
 

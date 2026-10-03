@@ -87,6 +87,7 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 ### Onboarding
 | Type | Kind | Description |
 |------|------|-------------|
+| `AppFooterView<Primary, Secondary>` | View | Safe-area-aware action footer accepting caller-supplied buttons, with stacked or side-by-side layout and material or solid background |
 | `SFKSegmentedProgress` | View | Capsule-style step progress indicator with a configurable expanded current segment |
 | `SFKTypography` | (modifiers) | `.sfkFlowTitleStyle()`, `.sfkFlowSubtitleStyle()`, etc. |
 | `SFKCard` | View | Card container with icon, background, padding |
