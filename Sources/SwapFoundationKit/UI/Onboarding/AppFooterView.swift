@@ -25,6 +25,17 @@ import SwiftUI
 ///     SFKButton("Continue with Free", role: .borderless) { continueForFree() }
 /// })
 /// ```
+/// The surface an ``AppFooterView`` draws behind its actions.
+public enum SFKFooterAppearance: Sendable {
+    /// Uses a translucent ultra-thin material.
+    case material
+    /// Uses the grouped system background with slight transparency.
+    case solid
+    /// Draws nothing, for footers that sit over a static, non-scrolling
+    /// layout and would otherwise show a stray band.
+    case clear
+}
+
 public struct AppFooterView<Primary: View, Secondary: View>: View {
     /// The layout used when both action views are present.
     public enum Arrangement {
@@ -35,12 +46,7 @@ public struct AppFooterView<Primary: View, Secondary: View>: View {
     }
 
     /// The footer surface style.
-    public enum Appearance {
-        /// Uses a translucent ultra-thin material.
-        case material
-        /// Uses the grouped system background with slight transparency.
-        case solid
-    }
+    public typealias Appearance = SFKFooterAppearance
 
     private let primary: Primary
     private let secondary: Secondary?
@@ -96,6 +102,8 @@ public struct AppFooterView<Primary: View, Secondary: View>: View {
                 case .solid:
                     Color(.systemGroupedBackground)
                         .opacity(0.92)
+                case .clear:
+                    Color.clear
                 }
             }
             .ignoresSafeArea(edges: .bottom)
