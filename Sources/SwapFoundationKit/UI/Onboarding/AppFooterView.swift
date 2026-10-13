@@ -106,7 +106,9 @@ public struct AppFooterView<Primary: View, Secondary: View>: View {
                     Color.clear
                 }
             }
-            .ignoresSafeArea(edges: .bottom)
+            // Sideways too: beside a vertical bar (iPhone Duo) the surface
+            // should run under the bar rather than stop at its inset.
+            .ignoresSafeArea(.container, edges: [.bottom, .horizontal])
         }
     }
 }
