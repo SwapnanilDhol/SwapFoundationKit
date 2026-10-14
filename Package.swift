@@ -53,6 +53,10 @@ let package = Package(
             name: "SwapFoundationKitFirebase",
             targets: ["SwapFoundationKitFirebase"]
         ),
+        .library(
+            name: "SwapFoundationKitOnboarding",
+            targets: ["SwapFoundationKitOnboarding"]
+        ),
     ],
     dependencies: [
         .package(
@@ -131,6 +135,12 @@ let package = Package(
             path: "Sources/SwapFoundationKitFirebase",
             exclude: ["README.md"]
         ),
+        .target(
+            name: "SwapFoundationKitOnboarding",
+            dependencies: ["SwapFoundationKit"],
+            path: "Sources/SwapFoundationKitOnboarding",
+            exclude: ["README.md"]
+        ),
         .testTarget(
             name: "SwapFoundationKitTests",
             dependencies: [
@@ -155,6 +165,10 @@ let package = Package(
         .testTarget(
             name: "SwapFoundationKitFeedbackTests",
             dependencies: ["SwapFoundationKitFeedback"]
+        ),
+        .testTarget(
+            name: "SwapFoundationKitOnboardingTests",
+            dependencies: ["SwapFoundationKitOnboarding"]
         ),
         .testTarget(
             name: "SwapFoundationKitToastTests",

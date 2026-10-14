@@ -301,6 +301,65 @@ domains:
       - action footer
       - AppFooterView
 
+  - id: onboarding_flow_layout
+    priority: 3
+    module: SwapFoundationKitOnboarding
+    summary: Opt-in layout rules and step, footer and flow containers for full-screen onboarding and wizards on iPhone, iPad and iPhone Duo (two panes or a fold-aware centred column).
+    when_to_check:
+      - Building a full-screen onboarding or multi-step wizard
+      - Adapting onboarding to iPad or iPhone Duo (two panes, the fold, the side bar)
+      - Keeping CTAs and copy off the fold
+      - Re-evaluating supported orientations when iPhone Duo folds
+    prefer_when:
+      - The host can make an explicit opt-in SwapFoundationKitOnboarding product dependency
+      - The flow should split hero and copy across the fold, or stay one readable column that steps off it
+    keep_in_host_app_when:
+      - The host's onboarding state machine, persistence, analytics, purchase logic and hero content
+      - A screen's composition is product-specific (keep it, but host it in SFKOnboardingStep)
+    public_api:
+      - SFKOnboardingWindow
+      - SFKOnboardingWindowContext
+      - SFKOnboardingWideWindowMode
+      - SFKOnboardingStep
+      - SFKOnboardingStepHeadline
+      - SFKOnboardingFooter
+      - SFKOnboardingFooterContainer
+      - SFKOnboardingPrimaryButton
+      - SFKOnboardingBrandMark
+      - SFKOnboardingSelectionCard
+      - SFKOnboardingSelectionStatus
+      - SFKOnboardingPressableRowButtonStyle
+      - SFKOnboardingLayout
+      - SFKWindowPaneLayout
+      - SFKTwoPaneSplit
+      - EnvironmentValues.twoPaneSplit
+      - EnvironmentValues.isOnboardingPaneColumn
+      - EnvironmentValues.onboardingWideWindowMode
+      - View.sfkOnboardingBrandMark(_:)
+      - SFKVerticalBarProbe
+      - SFKFoldRegionLayout
+      - View.sfkFoldAwareColumn(maxWidth:)
+      - SFKOrientationPolicy.keepOrientationCurrent(in:)
+    docs:
+      - Docs/guides/onboarding.md
+      - Sources/SwapFoundationKitOnboarding/README.md
+    examples:
+      - Sources/SwapFoundationKitOnboarding/Step/SFKOnboardingWindow.swift
+      - Sources/SwapFoundationKitOnboarding/Step/SFKOnboardingStep.swift
+      - Sources/SwapFoundationKitOnboarding/Footer/SFKOnboardingFooter.swift
+    host_app_triggers:
+      - two pane
+      - TwoPaneSplit
+      - iPhone Duo
+      - fold
+      - foldable
+      - side bar
+      - onboarding step
+      - wizard
+      - OnboardingScrollableStep
+      - OnboardingReadableColumn
+      - foldAwareColumn
+
   - id: pickers
     priority: 4
     summary: Generic item picker/list screen and settings pickers for single-select, multi-select, searchable browsing, and row-action flows.

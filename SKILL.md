@@ -4,7 +4,7 @@ description: >
   Use when the user mentions SwapFoundationKit, SFK, or wants to audit, migrate,
   or build with SwapFoundationKit components. Also triggers on: haptics, logger,
   analytics, UserDefaults, networking, security, backup, currency, image
-  processor, debouncer, throttler, settings screen, chips, SFKChip, onboarding, AppFooterView, action footer, alerts, item
+  processor, debouncer, throttler, settings screen, chips, SFKChip, onboarding, AppFooterView, two pane, iPhone Duo, fold, SFKOnboardingStep, action footer, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
   glass materials, UIKit extensions, ads manager, configuration service,
   text field, TextField, SecureField, form input, validation field,
@@ -96,3 +96,4 @@ Read files in this order:
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | Ads | [Ads/README.md](Sources/SwapFoundationKitGoogleMobileAds/README.md) | AdsConfiguration, AdUnitConfiguration |
 | Toast (opt-in) | [Toast/README.md](Sources/SwapFoundationKitToast/README.md) | ToastManager, SFKToastKind, SFKToastStyle, SFKToastConfiguration |
+| Onboarding (opt-in) | [Onboarding/README.md](Sources/SwapFoundationKitOnboarding/README.md) | SFKOnboardingWindow, SFKOnboardingStep, SFKOnboardingFooter, SFKTwoPaneSplit, SFKOnboardingWideWindowMode, sfkFoldAwareColumn, SFKOrientationPolicy |

@@ -9,7 +9,7 @@ This checkout contains the breaking v4 API cleanup. See the [implementation stat
 - **iOS**: 17.0+
 - **Swift**: 5.9+
 - **Dependencies (default product)**: none
-- **Optional products**: `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0
+- **Optional products**: `SwapFoundationKitToast` + [Toast-Swift](https://github.com/BastiaanJansen/Toast-Swift) 2.1.3, and `SwapFoundationKitGoogleMobileAds` + Google Mobile Ads 13.6.0; `SwapFoundationKitOnboarding` (no third-party dependency)
 
 Networking, Authentication, Sync, Media, Currency, RemoteAI, and Firebase
 have explicit opt-in products. The Firebase
@@ -81,6 +81,7 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
 | [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |
 | [Toast](Sources/SwapFoundationKitToast/README.md) | Toast presentation (optional product) |
+| [Onboarding](Sources/SwapFoundationKitOnboarding/README.md) | Full-screen onboarding/wizard layout for iPhone, iPad and iPhone Duo: two panes or a fold-aware column, step, footer and selection containers (optional product) |
 
 ## Documentation
 

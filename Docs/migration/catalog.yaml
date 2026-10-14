@@ -982,6 +982,71 @@ capabilities:
     source_files:
       - Sources/SwapFoundationKitToast/ToastManager.swift
 
+  - id: onboarding_flow_layout
+    audit_tier: heuristic
+    confidence: medium
+    migration:
+      replacement:
+        - SFKOnboardingWindow
+        - SFKOnboardingStep
+        - SFKOnboardingStepHeadline
+        - SFKOnboardingFooter
+        - SFKOnboardingFooterContainer
+        - SFKOnboardingPrimaryButton
+        - SFKOnboardingBrandMark
+        - SFKOnboardingSelectionCard
+        - SFKOnboardingSelectionStatus
+        - SFKTwoPaneSplit
+        - SFKWindowPaneLayout
+        - SFKVerticalBarProbe
+        - SFKOrientationPolicy
+      compatibility: canonical
+      removal_release: null
+    module: SwapFoundationKitOnboarding
+    replace_with:
+      - SFKOnboardingWindow
+      - SFKOnboardingStep
+      - SFKOnboardingStepHeadline
+      - SFKOnboardingFooter
+      - SFKOnboardingFooterContainer
+      - SFKOnboardingPrimaryButton
+      - SFKOnboardingBrandMark
+      - SFKOnboardingSelectionCard
+      - SFKOnboardingSelectionStatus
+      - SFKTwoPaneSplit
+      - SFKWindowPaneLayout
+      - SFKVerticalBarProbe
+      - SFKOrientationPolicy
+    public_symbols:
+      - SFKOnboardingWindow(mode:content:)
+      - SFKOnboardingWideWindowMode.twoPane
+      - SFKOnboardingWideWindowMode.centredColumn(maxWidth:)
+      - SFKTwoPaneSplit.resolve(sizeClass:size:safeAreaInsets:)
+      - SFKOrientationPolicy.keepOrientationCurrent(in:)
+    host_search_terms:
+      - TwoPaneSplit
+      - WindowPaneLayout
+      - OnboardingScrollableStep
+      - OnboardingFooterContainer
+      - OnboardingReadableColumn
+      - foldAwareColumn
+      - FoldRegionLayout
+      - VerticalBarProbe
+      - keepOrientationCurrent
+    suspicious_file_patterns:
+      - "*TwoPane*"
+      - "*Fold*Column*"
+      - "Onboarding*Step*.swift"
+      - "Onboarding*Footer*.swift"
+    keep_custom_when:
+      - The screen's hero or composition is product-specific; keep it and host it inside SFKOnboardingStep.
+    source_files:
+      - Sources/SwapFoundationKitOnboarding/Step/SFKOnboardingWindow.swift
+      - Sources/SwapFoundationKitOnboarding/Step/SFKOnboardingStep.swift
+      - Sources/SwapFoundationKitOnboarding/Footer/SFKOnboardingFooterContainer.swift
+      - Sources/SwapFoundationKitOnboarding/Layout/SFKTwoPaneSplit.swift
+      - Sources/SwapFoundationKitOnboarding/Fold/SFKFoldAwareColumnModifier.swift
+
   - id: file_export_import
     module: SwapFoundationKit
     audit_tier: exact

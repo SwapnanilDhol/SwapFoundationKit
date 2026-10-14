@@ -17,6 +17,10 @@ Generic, reusable SwiftUI components extracted from multi-step onboarding flows.
 | `SFKTypography` | `SFKTypography.swift` | Six View-extension typography modifiers |
 | `SFKCard` | `SFKCard.swift` | Rounded-rectangle card container with optional icon |
 
+Full-screen flow layout (one column, two panes on iPad and iPhone Duo, fold-aware
+centred column) lives in the opt-in `SwapFoundationKitOnboarding` product; see
+[SwapFoundationKitOnboarding product](#swapfoundationkitonboarding-product).
+
 ---
 
 ## SFKChipFlowLayout
@@ -428,6 +432,170 @@ struct MyOnboardingView: View {
 
 ---
 
+## SwapFoundationKitOnboarding product
+
+An opt-in library product with the layout rules and containers for full-screen
+onboarding and wizard flows that hold their shape on iPhone, iPad and iPhone Duo
+(closed and open). Goaley's onboarding and goal-entry wizard are the reference.
+Add the `SwapFoundationKitOnboarding` product and import it next to SwapFoundationKit:
+
+```swift
+import SwapFoundationKit
+import SwapFoundationKitOnboarding
+```
+
+The product is layered. Layer 1 is layout rules (no views of their own), layer 2 is
+the step and flow containers built on them. A later layer will add an enum of screen
+kinds with a `.custom` escape hatch; host apps keep the state machine, persistence,
+analytics and purchase logic either way.
+
+### Layer 1: layout rules
+
+| API | Purpose |
+|-----|---------|
+| `SFKWindowPaneLayout` | `.single` or `.twoPane`. Two panes need regular width **and** a window (safe area insets included) of at least `2 × minimumPaneWidth` (880 pt). Never a device check. |
+| `SFKTwoPaneSplit` | Pane widths inside the safe area, split on the **window's** centre line (the fold), with a 24 pt `gutter`, a 480 pt `maximumContentWidth` per pane and a 20 pt `contentInset`. `resolve(sizeClass:size:safeAreaInsets:)` returns `nil` for one column. |
+| `SFKOnboardingWideWindowMode` | `.twoPane` (default) or `.centredColumn(maxWidth: 560)`. |
+| `SFKOnboardingLayout` | `contentWidth` (640 pt single-column cap) and the welcome icon-stage widths. |
+| `\.twoPaneSplit` | Published by the flow root while two panes show; a pane resets it to `nil` for its own content. |
+| `\.isOnboardingPaneColumn` | `true` for a single column living in a trailing pane (a form beside a live preview), so it and its footer use the pane's inset and cap. |
+| `\.onboardingWideWindowMode` | The enclosing window's mode. |
+| `\.onboardingBrandMark`, `.sfkOnboardingBrandMark { … }` | What a hero-less step shows in the leading pane. |
+| `SFKVerticalBarProbe` (iOS 27.1) | Reports when bar items run down iPhone Duo's side bar, so a screen can move progress or a back button into it. |
+| `SFKFoldRegionLayout`, `SFKFoldPose`, `SFKFoldColumnPlacement`, `.sfkFoldAwareColumn(maxWidth:)` | Fold math and the readable column that steps off an active fold (book: trailing half; tabletop: bottom half). Powers `.centredColumn`. |
+| `SFKOrientationPolicy.keepOrientationCurrent(in:)` | Re-asks for supported orientations on every size-class change, so a flow opened landscape on the Duo's inner display comes back portrait on the outer one. Call it from the scene delegate. |
+
+### Layer 2: containers
+
+| API | Purpose |
+|-----|---------|
+| `SFKOnboardingWindow(mode:content:)` | The flow root. Measures the window on every size change, resolves the split for `mode`, publishes it, and hands the content an `SFKOnboardingWindowContext` (`split`, `size`, `safeAreaInsets`). |
+| `SFKOnboardingStep(eyebrow:title:subtitle:heroToHeadlineSpacing:hero:content:)` | One step. One column: hero above headline and content, the hero shrinking (to 60%) on short displays. Two panes: hero leading, copy and controls trailing; no hero shows the brand mark. Centred column: the one-column layout in a fold-aware column. |
+| `SFKOnboardingStepHeadline` | Eyebrow (theme accent), title, subtitle. |
+| `SFKOnboardingFooterContainer` | Puts any actions on `AppFooterView`, aligned with the step: centred and capped in one column, over the trailing pane in two, inside the fold-aware column in `.centredColumn`. |
+| `SFKOnboardingFooter` | Primary button plus an optional back/secondary action (text or glass circle) that slides in and out. |
+| `SFKOnboardingPrimaryButton` | Full-width `SFKButton` with enabled, loading and loading-label states. |
+| `SFKOnboardingBrandMark` | A mark (any view, or `image:` drawn as a rounded icon) with a tinted shadow and an accent glow. |
+| `SFKOnboardingSelectionCard` | Selectable option row with an icon tile (emoji or any view), title, subtitle and check. |
+| `SFKOnboardingSelectionStatus` | "SELECT ALL THAT APPLY / SELECT ONE" and the selection count or "REQUIRED / OPTIONAL". Labels resolve in the host's string catalogue. |
+| `SFKOnboardingPressableRowButtonStyle` | The press-in style the cards use. |
+
+Colours come from `SFKTheme` (`accent`, `text`, `secondaryText`, `surface`); per-option
+tints are passed in. No copy, colour or model of any app lives in the product.
+
+### Two-pane flow (default)
+
+```swift
+struct OnboardingContainerView: View {
+    @StateObject var state: OnboardingState
+
+    var body: some View {
+        SFKOnboardingWindow { window in
+            VStack(spacing: 0) {
+                SFKSegmentedProgress(currentStep: state.index, totalSteps: state.count, width: 128)
+                    // Status bar on the side (Duo open) leaves no top inset.
+                    .padding(.top, window.safeAreaInsets.top > 0 ? 14 : 24)
+                    // Over the trailing pane in two panes, centred in one.
+                    .frame(width: window.split?.trailingWidth)
+                    .frame(maxWidth: .infinity, alignment: window.split == nil ? .center : .trailing)
+
+                stepView(for: state.step)
+                    .id(state.step)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                SFKOnboardingFooter(primaryTitle: "Continue", isPrimaryEnabled: state.canAdvance) {
+                    state.advance()
+                }
+            }
+        }
+        .sfkOnboardingBrandMark {
+            SFKOnboardingBrandMark(image: Image("BrandIcon"))
+        }
+    }
+}
+
+struct GoalQuestionStep: View {
+    @ObservedObject var state: OnboardingState
+
+    var body: some View {
+        SFKOnboardingStep(
+            eyebrow: "YOUR GOAL",
+            title: "What are you saving for?",
+            subtitle: "Pick everything that applies."
+        ) {
+            EmptyView()                                  // brand mark fills the leading pane
+        } content: {
+            SFKOnboardingSelectionStatus(selectionCount: state.selection.count, isRequired: true)
+            ForEach(GoalKind.allCases) { kind in
+                SFKOnboardingSelectionCard(
+                    emoji: kind.emoji,
+                    title: kind.title,
+                    tint: kind.color,
+                    isSelected: state.selection.contains(kind)
+                ) { state.toggle(kind) }
+            }
+        }
+    }
+}
+```
+
+A wizard whose form sits beside a live preview splits by hand and marks the trailing
+column as a pane column:
+
+```swift
+SFKOnboardingWindow { window in
+    if let split = window.split {
+        HStack(spacing: SFKTwoPaneSplit.gutter) {
+            DraftPreview().frame(width: split.leadingWidth)
+            stepColumn
+                .frame(width: split.trailingWidth)
+                .environment(\.twoPaneSplit, nil)
+                .environment(\.isOnboardingPaneColumn, true)
+        }
+    } else {
+        stepColumn
+    }
+}
+```
+
+On iPhone Duo, put an `SFKVerticalBarProbe` in the background and, while it reports a
+vertical bar, move the step progress and the back button into toolbar items instead
+of the footer (see Goaley's `GoalEntryStepView`).
+
+### Centred-column flow
+
+Apps whose compositions should stay one readable column on wide windows (Windfall)
+pass `.centredColumn`:
+
+```swift
+SFKOnboardingWindow(mode: .centredColumn(maxWidth: 560)) { _ in
+    currentStep
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            SFKOnboardingFooter(primaryTitle: "Continue", primaryAction: advance)
+        }
+}
+```
+
+No split is resolved. Every `SFKOnboardingStep` and footer caps itself at `maxWidth`
+in regular width and, while a fold divides the window, moves into the trailing half
+(book) or the bottom half (tabletop). The footer's surface still spans the window.
+Compact width is unchanged. Custom screens get the same behaviour with
+`.sfkFoldAwareColumn(maxWidth:)`; apply it outside any `GeometryReader` that derives
+positions from width.
+
+### Checklist
+
+- [ ] The flow root is an `SFKOnboardingWindow` (or resolves `SFKTwoPaneSplit` itself and sets `\.twoPaneSplit`).
+- [ ] Every step is an `SFKOnboardingStep` or reads `\.twoPaneSplit` and splits itself.
+- [ ] Hero-less steps have a brand mark via `.sfkOnboardingBrandMark`.
+- [ ] Footers use `SFKOnboardingFooter` / `SFKOnboardingFooterContainer`, never a bare button row.
+- [ ] Progress sits over the trailing pane in two panes and in the side bar on iPhone Duo.
+- [ ] The scene delegate calls `SFKOrientationPolicy.keepOrientationCurrent(in:)`.
+- [ ] Verified on iPhone, iPad landscape, Duo closed and Duo open.
+
+---
+
 ## Migration from App-Local Components
 
 If your app already has local onboarding components, replace them with the SFK equivalents:
@@ -445,6 +613,10 @@ If your app already has local onboarding components, replace them with the SFK e
 | `onboardingCardBodyStyle()` | `sfkFlowCardBodyStyle()` |
 | `onboardingChipTitleStyle()` | `sfkFlowChipStyle()` |
 | Custom card container | `SFKCard` |
+| `OnboardingScrollableStep` | `SFKOnboardingStep` (SwapFoundationKitOnboarding) |
+| `OnboardingFooterView` / `OnboardingFooterContainer` | `SFKOnboardingFooter` / `SFKOnboardingFooterContainer` |
+| `TwoPaneSplit` / `WindowPaneLayout` | `SFKTwoPaneSplit` / `SFKWindowPaneLayout` |
+| `OnboardingReadableColumn` / `foldAwareColumn(maxWidth:)` | `SFKOnboardingWindow(mode: .centredColumn())` / `sfkFoldAwareColumn(maxWidth:)` |
 
 ### Migration Steps
 

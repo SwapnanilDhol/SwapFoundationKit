@@ -102,6 +102,7 @@ TARGETS=(
   SwapFoundationKitFeedback
   SwapFoundationKitGoogleMobileAds
   SwapFoundationKitToast
+  SwapFoundationKitOnboarding
 )
 
 MODE="write"
