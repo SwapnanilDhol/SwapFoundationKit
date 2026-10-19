@@ -79,6 +79,35 @@ domains:
       - toggle row
       - color picker
 
+  - id: app-promotion
+    priority: 3
+    summary: Cross-promote another app from the same developer with a dismissible inline card and an in-app App Store overlay.
+    when_to_check:
+      - Promoting a sibling app inside a host app
+      - Opening another app's App Store page without leaving the host
+      - Hiding a promotion from people who already have the promoted app
+    prefer_when:
+      - The promotion is an inline notice above a list or in Settings
+      - Installs should be attributed per placement with a campaign token
+    keep_in_host_app_when:
+      - Eligibility rules (engagement thresholds, cooldowns, review-prompt spacing) are product-specific
+    public_api:
+      - SFKAppPromotion
+      - SFKAppPromotion.isInstalled
+      - SFKAppPromotion.appStoreURL(campaignToken:)
+      - SFKAppPromotionCard
+      - SFKAppStorePresenter.present(_:campaignToken:)
+    docs: []
+    examples:
+      - Sources/SwapFoundationKit/UI/AppPromotion/SFKAppPromotionCard.swift
+    host_app_triggers:
+      - cross-promo
+      - other app by me
+      - more apps
+      - SKOverlay
+      - SKStoreProductViewController
+      - LSApplicationQueriesSchemes
+
   - id: buttons
     priority: 2
     summary: Reusable SFK button components for semantic CTAs plus compact toolbar, overlay, close, back, and dismiss patterns.
