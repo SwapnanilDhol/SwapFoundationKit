@@ -62,8 +62,6 @@ public struct SFKAppPromotionCard: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.primary.opacity(0.06), lineWidth: 1)
         }
-        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .onTapGesture(perform: onOpen)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("appPromotion.card")
     }
