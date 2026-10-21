@@ -217,6 +217,7 @@ domains:
       - Adding compact capsule-shaped actions
       - Building selectable chip groups
       - Wrapping tags or chip controls across rows
+      - Showing a non-tappable status label such as PRO, TODAY, or PAUSED
     prefer_when:
       - The control is semantically a chip rather than a full button
       - The host app needs consistent primary, secondary, or selectable chip treatments
@@ -226,6 +227,7 @@ domains:
       - SFKChip
       - SFKMenuChip
       - SFKChipStyle
+      - SFKBadge
       - SFKChipFlowLayout
       - SFKSelectableChip
       - SFKTheme.Feedback.Style (shared haptic policy)
@@ -239,6 +241,8 @@ domains:
       - action chip
       - selectable chip
       - tag cloud
+      - badge
+      - status pill
 
   - id: number_pad
     priority: 3

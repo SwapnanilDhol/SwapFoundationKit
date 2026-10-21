@@ -9,9 +9,23 @@ SwapFoundationKit distinguishes action chips from selectable chips so host apps 
 | `SFKChip` | Performs a compact action using primary or secondary hierarchy |
 | `SFKMenuChip` | Presents a native menu from a chip-styled label |
 | `SFKChipStyle` | Selects `.primary` or `.secondary` action emphasis |
+| `SFKBadge` | Labels a status the person reads but does not tap |
 | `SFKSelectableChip` | Represents state that can be selected or deselected |
 | `SFKChipFlowLayout` | Wraps either chip type across rows |
 | `SFKChipItem` | Adapts model values for `SFKSelectableChip` |
+
+## Badges
+
+Use `SFKBadge` for a status label: "PRO", "TODAY", "2 DAYS LATE", "PAUSED". It has no button trait, haptics, or glass, so VoiceOver reads it as text. Use `SFKChip` when tapping does something.
+
+```swift
+SFKBadge("TODAY", tintColor: .green)
+SFKBadge("2 DAYS LATE", tintColor: .orange)
+SFKBadge("PAUSED")                                   // neutral
+SFKBadge("PRO", leadingIconName: "sparkles", tintColor: .green, controlSize: .regular)
+```
+
+A tinted badge draws the tint as text over a 15% fill of the same color. Padding comes from the theme's spacing tokens, so rows and headers stay consistent.
 
 ## Action chips
 

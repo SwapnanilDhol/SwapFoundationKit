@@ -4,7 +4,7 @@ description: >
   Use when the user mentions SwapFoundationKit, SFK, or wants to audit, migrate,
   or build with SwapFoundationKit components. Also triggers on: haptics, logger,
   analytics, UserDefaults, networking, security, backup, currency, image
-  processor, debouncer, throttler, settings screen, chips, SFKChip, onboarding, AppFooterView, two pane, iPhone Duo, fold, SFKOnboardingStep, action footer, alerts, item
+  processor, debouncer, throttler, settings screen, chips, SFKChip, badge, SFKBadge, onboarding, AppFooterView, two pane, iPhone Duo, fold, SFKOnboardingStep, action footer, alerts, item
   picker, toast, file export/import, deeplink, ItemSync, WatchSync, SFKButton,
   glass materials, UIKit extensions, ads manager, configuration service,
   text field, TextField, SecureField, form input, validation field,

@@ -63,6 +63,7 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 |------|------|-------------|
 | `SFKChip` | View | Capsule-shaped action chip with primary and secondary hierarchy |
 | `SFKChipStyle` | enum | `primary` or `secondary` action-chip emphasis |
+| `SFKBadge` | View | Non-interactive capsule status label (PRO, TODAY, PAUSED), tinted or neutral |
 | `SFKSelectableChip` | View | State-driven selectable chip with glass effect, theme feedback, and stroke |
 | `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds (iOS 16+) |
 

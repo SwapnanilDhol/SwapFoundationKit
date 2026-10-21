@@ -854,6 +854,7 @@ capabilities:
         - SFKTextFieldAppearance
         - SFKChip
         - SFKChipStyle
+        - SFKBadge
         - SFKSelectableChip
         - View.sfkGlass(material:tint:isInteractive:shape:)
         - UIKit convenience extensions
@@ -874,6 +875,7 @@ capabilities:
       - SFKTextFieldAppearance
       - SFKChip
       - SFKChipStyle
+      - SFKBadge
       - SFKSelectableChip
       - View.sfkGlass(material:tint:isInteractive:shape:)
       - UIKit convenience extensions
@@ -892,6 +894,7 @@ capabilities:
       - SFKTextFieldAppearance
       - SFKChip
       - SFKChipStyle
+      - SFKBadge
       - SFKSelectableChip
       - SFKColorPickerSheet
       - SFKGlassMaterial
