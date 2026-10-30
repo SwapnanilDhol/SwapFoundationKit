@@ -132,6 +132,8 @@ domains:
       - SFKGlassMaterial
       - SFKGlassShape
       - View.sfkGlass(material:tint:isInteractive:shape:)
+      - View.sfkSoftScrollEdgeEffect(for:) (no-op below iOS 26)
+      - View.sfkHiddenScrollEdgeEffect(for:) (no-op below iOS 26)
     docs:
       - Docs/migration/migration-guide.md
     examples:
@@ -145,6 +147,9 @@ domains:
       - back button
       - chevron.left
       - glass close button
+      - scrollEdgeEffectStyle
+      - scrollEdgeEffectHidden
+      - scroll edge effect
       - toolbar close button
       - compact button
       - compact glass button

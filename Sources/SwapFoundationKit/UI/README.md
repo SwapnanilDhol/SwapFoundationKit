@@ -367,7 +367,7 @@ UIApplication.shared.requestReview(reason: "transactionSaved")
 - `Onboarding/` — Selectable chips, flow layout, progress, typography, and cards
 - `ItemPicker/` — typed view/configuration and item/action models
 - `Effects/` — Aura layer, glow background, top aura
-- `SwiftUIExtensions/` — Glass button modifiers
+- `SwiftUIExtensions/` — Glass button modifiers, availability-safe scroll edge effects (`sfkSoftScrollEdgeEffect`, `sfkHiddenScrollEdgeEffect`; no-op below iOS 26)
 - `UIKitExtensions/` — 8 files covering UIColor, UIImage, UIView, etc.
 - `BarcodeScanner/` — BarcodeScannerScreen, view, configuration
 - `ProBanner/` — SFKProBannerView
