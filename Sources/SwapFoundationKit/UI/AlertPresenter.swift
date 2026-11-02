@@ -80,10 +80,10 @@ public enum AlertPresenter {
     public static func showConfirmation(
         title: String,
         message: String,
-        confirmTitle: String = "Confirm",
+        confirmTitle: String = String(localized: "Confirm"),
         confirmStyle: UIAlertAction.Style = .default,
         onConfirm: @escaping () -> Void,
-        cancelTitle: String = "Cancel",
+        cancelTitle: String = String(localized: "Cancel"),
         onCancel: (() -> Void)? = nil
     ) {
         showAlert(
@@ -99,7 +99,7 @@ public enum AlertPresenter {
     public static func showAlert(
         title: String,
         message: String,
-        actionTitle: String = "OK",
+        actionTitle: String = String(localized: "OK"),
         onDismiss: (() -> Void)? = nil
     ) {
         showAlert(
@@ -131,8 +131,8 @@ public enum AlertPresenter {
         placeholder: String? = nil,
         prefilledText: String? = nil,
         keyboardType: UIKeyboardType = .default,
-        submitTitle: String = "Submit",
-        cancelTitle: String = "Cancel",
+        submitTitle: String = String(localized: "Submit"),
+        cancelTitle: String = String(localized: "Cancel"),
         onSubmit: @escaping (String) -> Void,
         onCancel: (() -> Void)? = nil
     ) {

@@ -174,7 +174,7 @@ extension AppMetaData {
         let appName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String
             ?? Bundle.main.infoDictionary?["CFBundleName"] as? String
             ?? "My App"
-        let shareText = "Check out \(appName)! Download it from the App Store."
+        let shareText = String(localized: "Check out \(appName)! Download it from the App Store.")
         let appStoreURL = URL(string: "itms-apps:itunes.apple.com/us/app/apple-store/\(bundleID)?mt=8")!
         return (shareText, appStoreURL)
     }

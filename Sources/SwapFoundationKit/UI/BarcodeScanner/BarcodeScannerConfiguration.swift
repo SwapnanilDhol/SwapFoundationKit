@@ -26,16 +26,16 @@ public struct BarcodeScannerConfiguration {
     public let unavailableMessage: String
 
     public init(
-        title: String = "Scan Barcode",
-        dismissButtonTitle: String = "Done",
-        errorTitle: String = "Scanner Error",
+        title: String = String(localized: "Scan Barcode"),
+        dismissButtonTitle: String = String(localized: "Done"),
+        errorTitle: String = String(localized: "Scanner Error"),
         supportedSymbols: [VNBarcodeSymbology] = [.qr, .pdf417, .aztec, .code128],
         qualityLevel: DataScannerViewController.QualityLevel = .balanced,
         enablesMultipleItemRecognition: Bool = false,
         enableHighFrameRateTracking: Bool = false,
         enableHighlighting: Bool = true,
-        unavailableTitle: String = "Camera Scanning Unavailable",
-        unavailableMessage: String = "Live barcode scanning is not available on this device."
+        unavailableTitle: String = String(localized: "Camera Scanning Unavailable"),
+        unavailableMessage: String = String(localized: "Live barcode scanning is not available on this device.")
     ) {
         self.title = title
         self.dismissButtonTitle = dismissButtonTitle

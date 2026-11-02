@@ -394,7 +394,7 @@ public struct SFKTextField: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(resolvedAccessoryColor)
-            .accessibilityLabel(revealsSecureText ? "Hide text" : "Show text")
+            .accessibilityLabel(revealsSecureText ? Text("Hide text") : Text("Show text"))
         } else if let trailingSystemImage {
             Button {
                 onTrailingAction?()

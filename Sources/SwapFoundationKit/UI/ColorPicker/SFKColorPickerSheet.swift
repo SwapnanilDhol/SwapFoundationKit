@@ -29,10 +29,10 @@ public struct SFKColorPickerSheet: View {
         public var supportsOpacity: Bool
 
         public init(
-            pageTitle: String = "Choose Color",
+            pageTitle: String = String(localized: "Choose Color"),
             promptTitle: String? = nil,
             promptMessage: String? = nil,
-            applyButtonTitle: String = "Apply Color",
+            applyButtonTitle: String = String(localized: "Apply Color"),
             presetColors: [Color] = SFKColorPickerSheet.defaultPresetColors,
             supportsOpacity: Bool = false
         ) {

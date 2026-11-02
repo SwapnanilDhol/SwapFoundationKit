@@ -60,9 +60,9 @@ final class SFKFeedbackViewModel: ObservableObject {
     var attachmentErrorMessage: String? {
         switch attachmentState {
         case .loadFailed:
-            return "That image couldn’t be loaded. Choose another image and try again."
+            return String(localized: "That image couldn’t be loaded. Choose another image and try again.")
         case .processingFailed:
-            return "That image couldn’t be prepared. Choose another image and try again."
+            return String(localized: "That image couldn’t be prepared. Choose another image and try again.")
         case .empty, .processing, .ready:
             return nil
         }
