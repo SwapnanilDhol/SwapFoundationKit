@@ -392,7 +392,7 @@ public struct SFKItemPickerView<Item: SFKPickableItem>: View {
 
     private var resolvedTypedSubtitle: String {
         if let selections = typedMultiSelection, !selections.wrappedValue.isEmpty {
-            return "\(selections.wrappedValue.count) Selected"
+            return String(localized: "\(selections.wrappedValue.count) Selected")
         }
         return pageSubtitle
     }

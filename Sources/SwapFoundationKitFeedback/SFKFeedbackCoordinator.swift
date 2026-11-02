@@ -54,9 +54,9 @@ public final class SFKFeedbackCoordinator: NSObject {
     private func didAccept(_ receipt: SFKFeedbackReceipt, contact: SFKFeedbackContact) {
         onAccepted?(receipt, contact)
         AlertPresenter.showAlert(
-            title: "Feedback sent",
-            message: "Thank you. Your feedback reference is \(receipt.feedbackID.uuidString.prefix(8).uppercased()).",
-            actions: [("Done", .default, { [weak self] in self?.finish() })]
+            title: String(localized: "Feedback sent"),
+            message: String(localized: "Thank you. Your feedback reference is \(String(receipt.feedbackID.uuidString.prefix(8)).uppercased())."),
+            actions: [(String(localized: "Done"), .default, { [weak self] in self?.finish() })]
         )
     }
 
@@ -64,13 +64,13 @@ public final class SFKFeedbackCoordinator: NSObject {
         let message: String
         switch reason {
         case .configuration, .unavailable:
-            message = "Feedback is temporarily unavailable. Please try again in a moment."
+            message = String(localized: "Feedback is temporarily unavailable. Please try again in a moment.")
         case .invalidFeedback:
-            message = "Check your name, message, and reply email, then try again."
+            message = String(localized: "Check your name, message, and reply email, then try again.")
         case .rateLimited:
-            message = "A few messages were sent recently. Please wait a minute and try again."
+            message = String(localized: "A few messages were sent recently. Please wait a minute and try again.")
         }
-        AlertPresenter.showAlert(title: "Couldn’t send feedback", message: message)
+        AlertPresenter.showAlert(title: String(localized: "Couldn’t send feedback"), message: message)
     }
 
     private func finish() {

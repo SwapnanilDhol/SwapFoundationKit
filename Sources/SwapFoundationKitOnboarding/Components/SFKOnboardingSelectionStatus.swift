@@ -44,7 +44,7 @@ public struct SFKOnboardingSelectionStatus: View {
     public var body: some View {
         HStack(spacing: 7) {
             Image(systemName: "hand.tap.fill")
-            Text(allowsMultiple ? "SELECT ALL THAT APPLY" : "SELECT ONE")
+            Text(allowsMultiple ? LocalizedStringKey("SELECT ALL THAT APPLY") : LocalizedStringKey("SELECT ONE"))
             Spacer()
             Text(status)
                 .foregroundStyle(selectionCount == 0 ? theme.colors.secondaryText : theme.colors.accent)

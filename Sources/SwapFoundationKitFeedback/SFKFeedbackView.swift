@@ -96,7 +96,7 @@ struct SFKFeedbackView: View {
             }
             .animation(fieldAnimation, value: focusedField)
             if shouldShowMessageError {
-                validationMessage("Enter at least 4 characters and keep your message under 2,000.")
+                validationMessage(String(localized: "Enter at least 4 characters and keep your message under 2,000."))
             }
         }
     }
@@ -115,7 +115,7 @@ struct SFKFeedbackView: View {
                             Text("Image attached").font(.subheadline.weight(.semibold))
                             Text(ByteCountFormatter.string(fromByteCount: Int64(attachment.data.count), countStyle: .file))
                                 .font(.caption).foregroundStyle(.secondary)
-                                SFKButton("Remove", role: .destructive) {
+                                SFKButton(String(localized: "Remove"), role: .destructive) {
                                     selectedPhoto = nil
                                     viewModel.removeAttachment()
                                 }
@@ -169,7 +169,10 @@ struct SFKFeedbackView: View {
     private var contactSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             sectionTitle("About you")
-            SFKTextField("Name", text: $viewModel.name, prompt: "Optional", leadingSystemImage: "person")
+            SFKTextField(
+                String(localized: "Name"), text: $viewModel.name, prompt: String(localized: "Optional"),
+                leadingSystemImage: "person"
+            )
                 .sfkStatus(nameFieldStatus)
                 .sfkTint(configuration.accentColor)
                 .sfkInput(.init(contentType: .name, textInputAutocapitalization: .words,
@@ -178,7 +181,7 @@ struct SFKFeedbackView: View {
                 .sfkOnSubmit { focusedField = .email }
                 .accessibilityIdentifier("feedbackNameField")
             SFKTextField(
-                "Email", text: $viewModel.replyEmail, prompt: "Optional",
+                String(localized: "Email"), text: $viewModel.replyEmail, prompt: String(localized: "Optional"),
                 leadingSystemImage: "envelope"
             )
             .sfkStatus(emailFieldStatus)
@@ -210,7 +213,7 @@ struct SFKFeedbackView: View {
     }
 
     private var submitAction: some View {
-        SFKButton("Send", role: .borderless) {
+        SFKButton(String(localized: "Send"), role: .borderless) {
             focusedField = nil
             viewModel.submit()
         }
@@ -225,12 +228,12 @@ struct SFKFeedbackView: View {
 
     private var attachmentDisclosure: String {
         if let days = configuration.copy.attachmentRetentionDays {
-            return "Optional. One image is compressed before upload and removed after \(days) days."
+            return String(localized: "Optional. One image is compressed before upload and removed after \(days) days.")
         }
-        return "Optional. One image is compressed before upload."
+        return String(localized: "Optional. One image is compressed before upload.")
     }
 
-    private func sectionTitle(_ title: String) -> some View {
+    private func sectionTitle(_ title: LocalizedStringKey) -> some View {
         Text(title).font(.subheadline.weight(.semibold))
     }
 
@@ -257,12 +260,12 @@ struct SFKFeedbackView: View {
 
     private var nameFieldStatus: SFKTextFieldStatus {
         !viewModel.isNameValid && focusedField != .name
-            ? .error("Keep your name under 120 characters.") : .normal
+            ? .error(String(localized: "Keep your name under 120 characters.")) : .normal
     }
 
     private var emailFieldStatus: SFKTextFieldStatus {
         !viewModel.isReplyEmailValid && focusedField != .email
-            ? .error("Enter a valid email address or leave this blank.") : .normal
+            ? .error(String(localized: "Enter a valid email address or leave this blank.")) : .normal
     }
 
     private func focusBinding(for field: Field) -> Binding<Bool> {
@@ -284,9 +287,9 @@ struct SFKFeedbackView: View {
 private extension SFKFeedbackCategory {
     var label: String {
         switch self {
-        case .feedback: "Feedback"
-        case .bug: "Bug"
-        case .idea: "Idea"
+        case .feedback: String(localized: "Feedback")
+        case .bug: String(localized: "Bug")
+        case .idea: String(localized: "Idea")
         }
     }
     var icon: String {

@@ -27,7 +27,7 @@ public enum BarcodeScannerError: LocalizedError, Equatable, Sendable {
     public var errorDescription: String? {
         switch self {
         case .scanningUnavailable:
-            return "Live barcode scanning is not available on this device."
+            return String(localized: "Live barcode scanning is not available on this device.")
         case .failedToStartScanning(let message):
             return message
         }

@@ -83,6 +83,14 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [Toast](Sources/SwapFoundationKitToast/README.md) | Toast presentation (optional product) |
 | [Onboarding](Sources/SwapFoundationKitOnboarding/README.md) | Full-screen onboarding/wizard layout for iPhone, iPad and iPhone Duo: two panes or a fold-aware column, step, footer and selection containers (optional product) |
 
+## Localization
+
+SwapFoundationKit ships no string catalog. Its user-facing copy (`Text("…")` literals, `LocalizedStringKey` parameters, and `String(localized:)` defaults such as `"Cancel"`, `"Settings"`, or the feedback form copy) resolves against the **host app's main bundle**, so translations live in the app's own `Localizable.xcstrings`.
+
+Xcode only extracts keys from the app's own sources, so add the package keys to your catalog by hand and translate them there. Interpolated strings use format keys — for example `"\(count) Selected"` becomes the key `%lld Selected`. Any key you leave out falls back to English.
+
+Strings you pass into components that take a `String` (`SFKButton`, `SFKTextField`, `AlertPresenter`, …) are shown as-is, so localize them before passing them in.
+
 ## Documentation
 
 | Resource | Description |

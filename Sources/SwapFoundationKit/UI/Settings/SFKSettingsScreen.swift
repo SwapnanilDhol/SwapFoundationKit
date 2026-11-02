@@ -65,7 +65,7 @@ public struct SFKSettingsScreen<Content: View, Background: View>: View {
     ///   to `.inline`, matching every existing call site; pass `.large` for a
     ///   tab root screen that should show the large-title style instead.
     public init(
-        navigationTitle: String = "Settings",
+        navigationTitle: String = String(localized: "Settings"),
         titleDisplayMode: NavigationBarItem.TitleDisplayMode = .inline,
         @ViewBuilder content: @escaping () -> Content
     ) where Background == _SFKSettingsThemeSurface {
@@ -85,7 +85,7 @@ public struct SFKSettingsScreen<Content: View, Background: View>: View {
     ///   to `.inline`, matching every existing call site; pass `.large` for a
     ///   tab root screen that should show the large-title style instead.
     public init(
-        navigationTitle: String = "Settings",
+        navigationTitle: String = String(localized: "Settings"),
         titleDisplayMode: NavigationBarItem.TitleDisplayMode = .inline,
         @ViewBuilder background: @escaping () -> Background,
         @ViewBuilder content: @escaping () -> Content

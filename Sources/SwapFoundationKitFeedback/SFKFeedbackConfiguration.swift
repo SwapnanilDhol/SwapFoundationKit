@@ -9,9 +9,9 @@ public struct SFKFeedbackCopy: Sendable {
     public var attachmentRetentionDays: Int?
 
     public init(
-        introductionTitle: String = "Tell me what you think",
-        introductionMessage: String = "Share what worked, what didn’t, or what you’d like me to build next. I read every message.",
-        privacyMessage: String = "Your name, email, and image are sent only if you add them. A pseudonymous subscription ID and limited app context may also be shared to help prioritize feedback.",
+        introductionTitle: String = String(localized: "Tell me what you think"),
+        introductionMessage: String = String(localized: "Share what worked, what didn’t, or what you’d like me to build next. I read every message."),
+        privacyMessage: String = String(localized: "Your name, email, and image are sent only if you add them. A pseudonymous subscription ID and limited app context may also be shared to help prioritize feedback."),
         attachmentRetentionDays: Int? = nil
     ) {
         self.introductionTitle = introductionTitle

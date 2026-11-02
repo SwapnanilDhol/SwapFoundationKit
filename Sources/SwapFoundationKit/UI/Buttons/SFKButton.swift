@@ -130,7 +130,7 @@ public struct SFKButton: View {
     }
 
     private var accessibilityTitle: String {
-        title.isEmpty ? "Button" : title
+        title.isEmpty ? String(localized: "Button") : title
     }
 
     private var shouldUseFullWidth: Bool {
