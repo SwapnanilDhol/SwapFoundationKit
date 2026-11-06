@@ -30,8 +30,8 @@ and button fill. The grouped defaults follow `systemGroupedBackground` and
 `secondarySystemGroupedBackground`, keeping grouped rows distinct from the
 container background in light mode.
 
-The separate `SwapFoundationKitFeedback` product provides the reusable in-app
-feedback flow while keeping RevenueCat and product analytics in host apps.
+In-app feedback lives in the separate FeedbackBuddy package
+(https://github.com/SwapnanilDhol/feedback-buddy), not in this kit.
 
 ## Public API
 
