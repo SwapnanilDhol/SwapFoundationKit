@@ -99,7 +99,6 @@ TARGETS=(
   SwapFoundationKitCurrency
   SwapFoundationKitRemoteAI
   SwapFoundationKitFirebase
-  SwapFoundationKitFeedback
   SwapFoundationKitGoogleMobileAds
   SwapFoundationKitToast
   SwapFoundationKitOnboarding

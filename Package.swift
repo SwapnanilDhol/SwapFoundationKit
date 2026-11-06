@@ -18,10 +18,6 @@ let package = Package(
             targets: ["SwapFoundationKitGoogleMobileAds"]
         ),
         .library(
-            name: "SwapFoundationKitFeedback",
-            targets: ["SwapFoundationKitFeedback"]
-        ),
-        .library(
             name: "SwapFoundationKitToast",
             targets: ["SwapFoundationKitToast"]
         ),
@@ -79,11 +75,6 @@ let package = Package(
                 "SwapFoundationKit",
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
             ]
-        ),
-        .target(
-            name: "SwapFoundationKitFeedback",
-            dependencies: ["SwapFoundationKit", "SwapFoundationKitMedia"],
-            exclude: ["README.md"]
         ),
         .target(
             name: "SwapFoundationKitToast",
@@ -161,10 +152,6 @@ let package = Package(
                 "SwapFoundationKit",
                 "SwapFoundationKitGoogleMobileAds",
             ]
-        ),
-        .testTarget(
-            name: "SwapFoundationKitFeedbackTests",
-            dependencies: ["SwapFoundationKitFeedback"]
         ),
         .testTarget(
             name: "SwapFoundationKitOnboardingTests",
