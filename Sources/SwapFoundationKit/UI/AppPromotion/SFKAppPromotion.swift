@@ -77,7 +77,7 @@ public enum SFKAppStorePresenter {
     /// - Parameter campaignToken: Names the placement (for example
     ///   `goaley_home`) so App Analytics can tell placements apart.
     public static func present(_ promotion: SFKAppPromotion, campaignToken: String? = nil) {
-        guard let scene = activeScene else {
+        guard let scene = UIApplication.shared.foregroundActiveScene else {
             UIApplication.shared.open(promotion.appStoreURL(campaignToken: campaignToken))
             return
         }
@@ -88,11 +88,5 @@ public enum SFKAppStorePresenter {
         configuration.campaignToken = campaignToken
         configuration.providerToken = promotion.providerToken
         SKOverlay(configuration: configuration).present(in: scene)
-    }
-
-    private static var activeScene: UIWindowScene? {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }
     }
 }

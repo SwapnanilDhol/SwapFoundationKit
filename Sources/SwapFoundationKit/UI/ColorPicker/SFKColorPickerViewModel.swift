@@ -47,7 +47,7 @@ final class SFKColorPickerViewModel: ObservableObject {
         haptics.mediumImpact()
     }
 
-    private var isUsingCustomColor: Bool {
+    var isUsingCustomColor: Bool {
         !presetColors.contains(selectedColor)
     }
 }

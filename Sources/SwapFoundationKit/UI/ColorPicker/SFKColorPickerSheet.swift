@@ -126,7 +126,7 @@ public struct SFKColorPickerSheet: View {
                         ) {
                             swatchView(
                                 color: viewModel.selectedColor,
-                                isSelected: isUsingCustomColor
+                                isSelected: viewModel.isUsingCustomColor
                             ) {
                                 Image(systemName: "paintpalette.fill")
                                     .font(.system(size: 16, weight: .semibold))
@@ -201,10 +201,6 @@ public struct SFKColorPickerSheet: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: heroHeight) 
-    }
-
-    private var isUsingCustomColor: Bool {
-        !viewModel.presetColors.contains(viewModel.selectedColor)
     }
 
     private var applyButtonTheme: SFKTheme {

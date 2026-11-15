@@ -306,13 +306,7 @@ public struct SFKSelectableChip: View {
     }
 
     private func triggerHaptic() {
-        guard theme.feedback.enabled else { return }
-        switch theme.feedback.style {
-        case .none: break
-        case .light: hapticsHelper.lightImpact()
-        case .medium: hapticsHelper.mediumImpact()
-        case .heavy: hapticsHelper.heavyImpact()
-        }
+        hapticsHelper.playImpact(for: theme.feedback)
     }
 
     private var resolvedTintColor: Color {

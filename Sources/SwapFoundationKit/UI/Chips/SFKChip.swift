@@ -105,11 +105,11 @@ public struct SFKChip: View {
         .controlSize(controlSize)
         .overlay {
             Capsule(style: .continuous)
-                .strokeBorder(strokeColor, lineWidth: strokeWidth)
+                .strokeBorder(style.strokeColor(tint: resolvedTintColor, theme: theme), lineWidth: style.strokeWidth)
         }
         .sfkGlass(
             material: .regular,
-            tint: glassTintColor,
+            tint: style.glassTint(resolvedTintColor),
             isInteractive: isEnabled,
             shape: .capsule
         )
@@ -121,46 +121,9 @@ public struct SFKChip: View {
         SFKChipSizeMetrics(controlSize: controlSize, theme: theme)
     }
 
-    private var glassTintColor: Color {
-        switch style {
-        case .primary:
-            resolvedTintColor.opacity(0.28)
-        case .secondary:
-            resolvedTintColor.opacity(0.08)
-        }
-    }
-
-    private var strokeColor: Color {
-        switch style {
-        case .primary:
-            resolvedTintColor.opacity(0.75)
-        case .secondary:
-            theme.colors.border
-        }
-    }
-
-    private var strokeWidth: CGFloat {
-        switch style {
-        case .primary: 1.5
-        case .secondary: 1
-        }
-    }
-
     private func triggerHapticIfNeeded() {
         guard isEnabled else { return }
-
-        guard theme.feedback.enabled else { return }
-
-        switch theme.feedback.style {
-        case .light:
-            hapticsHelper.lightImpact()
-        case .medium:
-            hapticsHelper.mediumImpact()
-        case .heavy:
-            hapticsHelper.heavyImpact()
-        case .none:
-            break
-        }
+        hapticsHelper.playImpact(for: theme.feedback)
     }
 
     private var resolvedTintColor: Color {
@@ -233,11 +196,11 @@ public struct SFKMenuChip<MenuContent: View>: View {
         .controlSize(controlSize)
         .overlay {
             Capsule(style: .continuous)
-                .strokeBorder(strokeColor, lineWidth: strokeWidth)
+                .strokeBorder(style.strokeColor(tint: resolvedTintColor, theme: theme), lineWidth: style.strokeWidth)
         }
         .sfkGlass(
             material: .regular,
-            tint: glassTintColor,
+            tint: style.glassTint(resolvedTintColor),
             isInteractive: isEnabled,
             shape: .capsule
         )
@@ -249,29 +212,32 @@ public struct SFKMenuChip<MenuContent: View>: View {
         SFKChipSizeMetrics(controlSize: controlSize, theme: theme)
     }
 
-    private var glassTintColor: Color {
-        switch style {
-        case .primary: resolvedTintColor.opacity(0.28)
-        case .secondary: resolvedTintColor.opacity(0.08)
+    private var resolvedTintColor: Color {
+        tintColor ?? theme.colors.accent
+    }
+}
+
+/// Glass and stroke styling shared by ``SFKChip`` and ``SFKMenuChip``.
+extension SFKChipStyle {
+    func glassTint(_ tint: Color) -> Color {
+        switch self {
+        case .primary: tint.opacity(0.28)
+        case .secondary: tint.opacity(0.08)
         }
     }
 
-    private var strokeColor: Color {
-        switch style {
-        case .primary: resolvedTintColor.opacity(0.75)
+    func strokeColor(tint: Color, theme: SFKTheme) -> Color {
+        switch self {
+        case .primary: tint.opacity(0.75)
         case .secondary: theme.colors.border
         }
     }
 
-    private var strokeWidth: CGFloat {
-        switch style {
+    var strokeWidth: CGFloat {
+        switch self {
         case .primary: 1.5
         case .secondary: 1
         }
-    }
-
-    private var resolvedTintColor: Color {
-        tintColor ?? theme.colors.accent
     }
 }
 

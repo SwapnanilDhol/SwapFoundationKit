@@ -28,16 +28,7 @@ final public class PhotoPicker: NSObject, ObservableObject, PHPickerViewControll
     /// Presents the system photo picker from a UIKit view controller.
     public func presentPicker(from viewController: UIViewController) {
         
-        var temporaryConfiguration: PHPickerConfiguration
-        if let configuration {
-            temporaryConfiguration = configuration
-        } else {
-            temporaryConfiguration = PHPickerConfiguration()
-            temporaryConfiguration.filter = .images // Only images
-            temporaryConfiguration.selectionLimit = 1 // Single selection
-        }
-
-        let picker = PHPickerViewController(configuration: temporaryConfiguration)
+        let picker = PHPickerViewController(configuration: configuration ?? .sfkSingleImage)
         picker.delegate = self
         viewController.present(picker, animated: true)
     }
@@ -46,24 +37,17 @@ final public class PhotoPicker: NSObject, ObservableObject, PHPickerViewControll
     public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
 
-        guard
-            let provider = results.first?.itemProvider,
-            provider.canLoadObject(ofClass: UIImage.self)
-        else { return }
-
         // Keep the callback values alive after the picker is dismissed. UIKit's
         // delegate is weak and the presenting controller may tear down the
         // picker owner before PhotosUI finishes loading the object.
         let onPick = self.onPick
-        provider.loadObject(ofClass: UIImage.self) { image, error in
-            if let image = image as? UIImage {
-                Task { @MainActor in
-                    onPick?(image)
-                }
-            } else {
+        loadFirstImage(
+            from: results,
+            onFailure: { error in
                 Logger.error("Error loading image: \(error?.localizedDescription ?? "Unknown error")", context: "PhotoPicker")
-            }
-        }
+            },
+            deliver: { image in onPick?(image) }
+        )
     }
 }
 
@@ -92,12 +76,7 @@ public struct SFKPhotoPicker: UIViewControllerRepresentable {
     }
 
     public func makeUIViewController(context: Context) -> PHPickerViewController {
-        var configuration = self.configuration ?? PHPickerConfiguration()
-        if self.configuration == nil {
-            configuration.filter = .images
-            configuration.selectionLimit = 1
-        }
-        let picker = PHPickerViewController(configuration: configuration)
+        let picker = PHPickerViewController(configuration: configuration ?? .sfkSingleImage)
         picker.delegate = context.coordinator
         return picker
     }
@@ -122,20 +101,45 @@ public struct SFKPhotoPicker: UIViewControllerRepresentable {
 
         public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             picker.dismiss(animated: true)
-            guard let provider = results.first?.itemProvider,
-                  provider.canLoadObject(ofClass: UIImage.self) else { return }
             // Capture the current binding and callback strongly. Dismissing the
             // picker can release the representable's coordinator before the
             // asynchronous PhotosUI load completes.
             let selection = self.selection
             let onPick = self.onPick
-            provider.loadObject(ofClass: UIImage.self) { image, _ in
-                guard let image = image as? UIImage else { return }
-                Task { @MainActor in
-                    selection.wrappedValue = image
-                    onPick?(image)
-                }
+            loadFirstImage(from: results) { image in
+                selection.wrappedValue = image
+                onPick?(image)
             }
+        }
+    }
+}
+
+private extension PHPickerConfiguration {
+    /// Single image selection, used when the caller passes no configuration.
+    static var sfkSingleImage: PHPickerConfiguration {
+        var configuration = PHPickerConfiguration()
+        configuration.filter = .images
+        configuration.selectionLimit = 1
+        return configuration
+    }
+}
+
+/// Loads the first picked item as a `UIImage` and delivers it on the main actor.
+/// `onFailure` runs (off the main actor) when the item cannot be loaded as an image.
+private func loadFirstImage(
+    from results: [PHPickerResult],
+    onFailure: ((Error?) -> Void)? = nil,
+    deliver: @escaping @MainActor (UIImage) -> Void
+) {
+    guard let provider = results.first?.itemProvider,
+          provider.canLoadObject(ofClass: UIImage.self) else { return }
+    provider.loadObject(ofClass: UIImage.self) { image, error in
+        guard let image = image as? UIImage else {
+            onFailure?(error)
+            return
+        }
+        Task { @MainActor in
+            deliver(image)
         }
     }
 }

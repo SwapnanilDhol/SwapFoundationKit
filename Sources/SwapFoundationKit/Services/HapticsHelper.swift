@@ -62,3 +62,17 @@ public final class HapticsHelper {
         impactFeedbackGenerator.impactOccurred(intensity: clampedIntensity)
     }
 }
+
+extension HapticsHelper {
+    /// Plays the impact that a theme's feedback policy asks for, or nothing
+    /// when feedback is disabled. Shared by buttons and chips.
+    func playImpact(for feedback: SFKTheme.Feedback) {
+        guard feedback.enabled else { return }
+        switch feedback.style {
+        case .none: break
+        case .light: lightImpact()
+        case .medium: mediumImpact()
+        case .heavy: heavyImpact()
+        }
+    }
+}

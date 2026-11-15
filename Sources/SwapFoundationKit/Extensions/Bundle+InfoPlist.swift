@@ -53,28 +53,7 @@ public extension Bundle {
     /// Returns the value for a given Info.plist key as the specified type, or a default value if not found or type mismatch.
     func infoPlistValue<T>(forKey key: String, default defaultValue: T) -> T {
         guard let value = infoDictionary?[key] else { return defaultValue }
-        // Try to cast directly
-        if let typedValue = value as? T {
-            return typedValue
-        }
-        // Try to convert from String for primitive types
-        if let stringValue = value as? String {
-            switch T.self {
-            case is Int.Type:
-                return (Int(stringValue) as? T) ?? defaultValue
-            case is Double.Type:
-                return (Double(stringValue) as? T) ?? defaultValue
-            case is Float.Type:
-                return (Float(stringValue) as? T) ?? defaultValue
-            case is Bool.Type:
-                return (Bool(stringValue) as? T) ?? defaultValue
-            case is String.Type:
-                return (stringValue as? T) ?? defaultValue
-            default:
-                return defaultValue
-            }
-        }
-        return defaultValue
+        return Self.coerce(value, default: defaultValue)
     }
 
     /// Overload: Returns the value for a given InfoPlistKey as the specified type, or a default value if not found or type mismatch.
@@ -162,6 +141,11 @@ public extension Bundle {
               let value = plist[key] else {
             return defaultValue
         }
+        return Self.coerce(value, default: defaultValue)
+    }
+
+    /// Casts a plist value to `T`, converting from `String` for primitive types.
+    private static func coerce<T>(_ value: Any, default defaultValue: T) -> T {
         if let typedValue = value as? T {
             return typedValue
         }
@@ -183,4 +167,4 @@ public extension Bundle {
         }
         return defaultValue
     }
-} 
+}

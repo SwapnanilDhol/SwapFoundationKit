@@ -142,18 +142,8 @@ public struct SFKButton: View {
     }
 
     private func triggerHapticIfNeeded() {
-        guard isEnabled, !isLoading, theme.feedback.enabled else { return }
-
-        switch theme.feedback.style {
-        case .light:
-            hapticsHelper.lightImpact()
-        case .medium:
-            hapticsHelper.mediumImpact()
-        case .heavy:
-            hapticsHelper.heavyImpact()
-        case .none:
-            break
-        }
+        guard isEnabled, !isLoading else { return }
+        hapticsHelper.playImpact(for: theme.feedback)
     }
 
     private var resolvedTitleColor: Color {

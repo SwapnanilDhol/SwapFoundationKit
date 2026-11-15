@@ -40,12 +40,12 @@ public extension Coordinator {
         toolbarActions: [SFKItemPickerToolbarAction] = [],
         emptyState: SFKItemPickerEmptyState? = nil
     ) {
-        var configuration = SFKItemPickerConfiguration(
-            pageSubtitle: subtitle,
-            actionsProvider: actionsProvider
+        let configuration = itemPickerConfiguration(
+            subtitle: subtitle,
+            actionsProvider: actionsProvider,
+            toolbarActions: toolbarActions,
+            emptyState: emptyState
         )
-        configuration.toolbarActions = toolbarActions
-        configuration.emptyState = emptyState
         let view = SFKItemPickerView(
             pageTitle: title,
             items: items,
@@ -67,12 +67,12 @@ public extension Coordinator {
         toolbarActions: [SFKItemPickerToolbarAction] = [],
         emptyState: SFKItemPickerEmptyState? = nil
     ) {
-        var configuration = SFKItemPickerConfiguration(
-            pageSubtitle: subtitle,
-            actionsProvider: actionsProvider
+        let configuration = itemPickerConfiguration(
+            subtitle: subtitle,
+            actionsProvider: actionsProvider,
+            toolbarActions: toolbarActions,
+            emptyState: emptyState
         )
-        configuration.toolbarActions = toolbarActions
-        configuration.emptyState = emptyState
         let view = SFKItemPickerView(
             pageTitle: title,
             items: items,
@@ -94,12 +94,12 @@ public extension Coordinator {
         toolbarActions: [SFKItemPickerToolbarAction] = [],
         emptyState: SFKItemPickerEmptyState? = nil
     ) {
-        var configuration = SFKItemPickerConfiguration(
-            pageSubtitle: subtitle,
-            actionsProvider: actionsProvider
+        let configuration = itemPickerConfiguration(
+            subtitle: subtitle,
+            actionsProvider: actionsProvider,
+            toolbarActions: toolbarActions,
+            emptyState: emptyState
         )
-        configuration.toolbarActions = toolbarActions
-        configuration.emptyState = emptyState
         let view = SFKItemPickerView(
             pageTitle: title,
             items: items,
@@ -108,6 +108,21 @@ public extension Coordinator {
             onSelect: onSelect
         )
         presentOnTop(UIHostingController(rootView: view))
+    }
+
+    private func itemPickerConfiguration<Item: SFKPickableItem>(
+        subtitle: String,
+        actionsProvider: ((Item) -> [SFKItemPickerItemAction])?,
+        toolbarActions: [SFKItemPickerToolbarAction],
+        emptyState: SFKItemPickerEmptyState?
+    ) -> SFKItemPickerConfiguration<Item> {
+        var configuration = SFKItemPickerConfiguration(
+            pageSubtitle: subtitle,
+            actionsProvider: actionsProvider
+        )
+        configuration.toolbarActions = toolbarActions
+        configuration.emptyState = emptyState
+        return configuration
     }
 
     /// Pushes a view controller onto the navigation stack.
