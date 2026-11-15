@@ -11,9 +11,7 @@
 
 import Foundation
 import Security
-#if canImport(CommonCrypto)
 import CommonCrypto
-#endif
 
 /// Service for handling security operations including encryption, keychain access, and secure storage
 public final class SecurityService {

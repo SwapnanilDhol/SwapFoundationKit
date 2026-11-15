@@ -10,25 +10,19 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
 import SwiftUI
-#endif
 
 /// A protocol for coordinating navigation and view controller management.
 /// This is commonly used in MVVM or Coordinator pattern architectures.
 public protocol Coordinator: AnyObject {
-    #if canImport(UIKit) && os(iOS)
     /// The navigation controller used for navigation.
     @MainActor var navigationController: UINavigationController { get set }
-    #endif
     
     /// Starts the coordinator's flow.
     @MainActor func start()
 }
 
-#if canImport(UIKit) && os(iOS)
 @MainActor
 public extension Coordinator {
     /// Presents a typed, single-select item picker.
@@ -177,4 +171,3 @@ public extension Coordinator {
     }
 
 }
-#endif

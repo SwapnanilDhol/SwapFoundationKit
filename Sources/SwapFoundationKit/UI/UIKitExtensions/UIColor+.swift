@@ -1,18 +1,6 @@
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
-
-#if canImport(QuartzCore) && os(iOS)
-import QuartzCore
-#endif
-
-#if canImport(SwiftUI)
 import SwiftUI
-#endif
-
-#if canImport(UIKit) && os(iOS)
 
 // MARK: - RGBA Components
 
@@ -284,7 +272,6 @@ public extension UIColor {
 
     // MARK: - Gradient
 
-    #if canImport(QuartzCore) && os(iOS)
     func gradient(
         to endColor: UIColor? = nil,
         _ transform: ((inout CAGradientLayer) -> CAGradientLayer)? = nil
@@ -298,7 +285,6 @@ public extension UIColor {
         }
         return layer
     }
-    #endif
 
     // MARK: - Blending
 
@@ -328,15 +314,11 @@ public extension UIColor {
         UIColor(red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1), alpha: 1.0)
     }
 
-    #if canImport(SwiftUI)
     var color: Color { Color(self) }
-    #endif
 }
-#endif
 
 // MARK: - SwiftUI Color Interop
 
-#if canImport(SwiftUI) && canImport(UIKit) && os(iOS)
 @available(iOS 14.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 public extension Color {
 
@@ -363,4 +345,3 @@ public extension Color {
         return Color(red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255)
     }
 }
-#endif

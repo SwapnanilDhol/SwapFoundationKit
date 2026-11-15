@@ -1,4 +1,3 @@
-#if canImport(UIKit) && os(iOS)
 import UIKit
 import SwiftUI
 
@@ -160,4 +159,3 @@ public extension UIFont {
         return UIFont(descriptor: descriptor, size: size)
     }
 }
-#endif

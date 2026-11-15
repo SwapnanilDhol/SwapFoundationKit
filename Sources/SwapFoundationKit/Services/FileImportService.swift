@@ -39,10 +39,7 @@ public final class FileImportService: NSObject {
         fileExtension: String,
         conformingTo baseType: UTType = .data
     ) -> UTType {
-        var registeredType: UTType?
-        if #available(iOS 14, *) {
-            registeredType = UTType.types(tag: fileExtension, tagClass: UTTagClass.filenameExtension, conformingTo: nil).first
-        }
+        let registeredType = UTType.types(tag: fileExtension, tagClass: UTTagClass.filenameExtension, conformingTo: nil).first
         return registeredType ?? baseType
     }
 

@@ -10,12 +10,8 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
-#if canImport(UIKit) && os(iOS)
 @MainActor
 public extension UIView {
     /// Adds multiple subviews to the current view.
@@ -80,4 +76,3 @@ public extension UIView {
         return superviews
     }
 }
-#endif

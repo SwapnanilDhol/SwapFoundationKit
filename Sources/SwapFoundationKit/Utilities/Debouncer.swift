@@ -10,7 +10,6 @@
  *****************************************************************************/
 
 import Foundation
-import Dispatch
 
 /// Debounces actions, only executing the last call after a delay.
 public final class Debouncer {

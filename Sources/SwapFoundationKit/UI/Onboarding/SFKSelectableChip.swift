@@ -10,10 +10,7 @@
  *****************************************************************************/
 
 import SwiftUI
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
 /// A selectable chip/capsule button that toggles between selected and unselected states
 /// with distinct visual styling and the shared theme feedback policy.
@@ -301,27 +298,21 @@ public struct SFKSelectableChip: View {
     /// image, otherwise falls back to plain text (so emoji icons still work).
     @ViewBuilder
     private func iconView(for icon: String) -> some View {
-        #if canImport(UIKit) && os(iOS)
         if UIImage(systemName: icon) != nil {
             Image(systemName: icon)
         } else {
             Text(icon)
         }
-        #else
-        Text(icon)
-        #endif
     }
 
     private func triggerHaptic() {
         guard theme.feedback.enabled else { return }
-        #if canImport(UIKit) && os(iOS)
         switch theme.feedback.style {
         case .none: break
         case .light: hapticsHelper.lightImpact()
         case .medium: hapticsHelper.mediumImpact()
         case .heavy: hapticsHelper.heavyImpact()
         }
-        #endif
     }
 
     private var resolvedTintColor: Color {

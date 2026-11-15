@@ -9,7 +9,6 @@
  * Refer to the COPYING file of the official project for license.
  *****************************************************************************/
 
-#if canImport(UIKit) && os(iOS)
 import UIKit
 
 // MARK: - Device Family
@@ -185,4 +184,3 @@ public enum DeviceInfo {
         "Mac15,9": "MacBook Pro 14-inch (M3)",
     ]
 }
-#endif

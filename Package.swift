@@ -67,7 +67,16 @@ let package = Package(
     targets: [
         .target(
             name: "SwapFoundationKit",
-            dependencies: []
+            dependencies: [],
+            exclude: [
+                "Ads/README.md",
+                "Core/README.md",
+                "Extensions/README.md",
+                "Protocols/README.md",
+                "Services/README.md",
+                "UI/README.md",
+                "Utilities/README.md",
+            ]
         ),
         .target(
             name: "SwapFoundationKitGoogleMobileAds",

@@ -1,8 +1,5 @@
 import Foundation
-
-#if canImport(SwiftUI)
 import SwiftUI
-#endif
 
 // MARK: - String Extension
 
@@ -133,12 +130,10 @@ public extension String {
         String(format: localized, arguments: arguments)
     }
 
-    #if canImport(SwiftUI) && (os(iOS) || os(macOS))
     @available(macOS 13.0, *)
     var localizedResource: LocalizedStringResource {
         LocalizedStringResource(stringLiteral: self)
     }
-    #endif
 }
 
 // MARK: - String Security

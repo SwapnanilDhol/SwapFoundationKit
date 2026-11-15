@@ -10,8 +10,6 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import CoreImage
 import UIKit
 
@@ -97,4 +95,3 @@ public extension UIImage {
         return UIColor(red: red, green: green, blue: blue, alpha: alpha)
     }
 }
-#endif

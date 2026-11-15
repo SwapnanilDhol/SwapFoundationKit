@@ -10,8 +10,6 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
 
 public extension CALayer {
@@ -43,4 +41,3 @@ public extension CALayer {
         )
     }
 }
-#endif

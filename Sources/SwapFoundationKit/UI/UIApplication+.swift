@@ -10,13 +10,9 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import StoreKit
 import UIKit
-#endif
 
-#if canImport(UIKit) && os(iOS)
 @MainActor
 public extension UIApplication {
     /// Returns the top-most view controller in the application.
@@ -101,4 +97,3 @@ public extension UIApplication {
         }
     }
 }
-#endif

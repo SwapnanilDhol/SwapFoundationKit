@@ -10,12 +10,8 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
-#if canImport(UIKit) && os(iOS)
 @MainActor
 public extension UIApplication {
     /// Returns the safe area insets for the key window.
@@ -43,4 +39,3 @@ public extension UIApplication {
         return safeAreaInsets.right
     }
 }
-#endif

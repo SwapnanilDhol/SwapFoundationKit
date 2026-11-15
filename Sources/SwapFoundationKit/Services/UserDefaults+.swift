@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 import Foundation
+import SwiftUI
 
 public extension UserDefaults {
 
@@ -72,7 +73,6 @@ public extension UserDefaults {
     }
 }
 
-import SwiftUI
 @available(watchOS 7.0, *)
 public extension AppStorage {
 

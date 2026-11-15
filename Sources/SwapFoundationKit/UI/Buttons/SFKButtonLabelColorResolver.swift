@@ -17,7 +17,6 @@ import UIKit
 /// UIKit resolves dynamic SwiftUI colors against a trait collection before the
 /// contrast calculation. That is important for colors such as `Color.primary`,
 /// whose RGB values intentionally invert between light and dark appearances.
-@available(iOS 16, *)
 internal enum SFKButtonLabelColorResolver {
     static func resolve(
         background: Color,

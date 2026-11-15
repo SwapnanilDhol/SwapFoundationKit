@@ -10,18 +10,14 @@
  *****************************************************************************/
 
 import Foundation
-#if canImport(CoreGraphics)
 import CoreGraphics
-#endif
 
-#if canImport(CoreGraphics)
 public extension CGFloat {
     /// Returns a random CGFloat between 0 and 1.
     static var random: CGFloat {
         return CGFloat(arc4random()) / CGFloat(UInt32.max)
     }
 }
-#endif
 
 /// Builds the formatter behind ``Double/clean`` and ``Double/plainDecimalString``.
 ///

@@ -61,13 +61,12 @@ final public class PhotoPicker: NSObject, ObservableObject, PHPickerViewControll
                     onPick?(image)
                 }
             } else {
-                print("Error loading image: \(error?.localizedDescription ?? "Unknown error")")
+                Logger.error("Error loading image: \(error?.localizedDescription ?? "Unknown error")", context: "PhotoPicker")
             }
         }
     }
 }
 
-#if canImport(UIKit) && os(iOS)
 /// A SwiftUI photo picker that writes the selected image to a binding.
 ///
 /// The representable owns the PHPicker delegate and keeps presentation details
@@ -140,4 +139,3 @@ public struct SFKPhotoPicker: UIViewControllerRepresentable {
         }
     }
 }
-#endif

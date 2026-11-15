@@ -10,12 +10,8 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
-#if canImport(UIKit) && os(iOS)
 @MainActor
 public extension UIView {
     /// Adds a full-size blur effect view pinned to the receiver's bounds.
@@ -210,4 +206,3 @@ public extension UIStackView {
 private enum AssociatedKeys {
     nonisolated(unsafe) static var layoutConstraintsKey: UInt8 = 0
 }
-#endif 

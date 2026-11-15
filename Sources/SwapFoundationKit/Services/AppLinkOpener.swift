@@ -11,17 +11,13 @@
  
 import Foundation
 import CoreLocation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
 /// Utility for opening app links, URLs, and map locations in iOS apps.
 ///
 /// Provides static methods to open URLs, strings, and map coordinates in Apple Maps or Google Maps,
 /// as well as constructing App Store and review URLs.
 public enum AppLinkOpener {
-    #if canImport(UIKit) && os(iOS)
     /// Opens a URL using UIApplication. Logs an error if the URL is nil.
     /// - Parameter url: The URL to open.
     @MainActor
@@ -117,7 +113,6 @@ public enum AppLinkOpener {
     public static func openWebsite(_ urlString: String) {
         open(string: urlString)
     }
-    #endif
 
     // MARK: - URL Constructors
 
@@ -131,21 +126,6 @@ public enum AppLinkOpener {
         urlComponents.path = "/"
         urlComponents.queryItems = [
             URLQueryItem(name: "ll", value: "\(coordinates.latitude),\(coordinates.longitude)")
-        ]
-        return urlComponents.url
-    }
-
-    /// Constructs a Google Maps URL for the given coordinates.
-    /// - Parameter coordinates: The coordinates to use.
-    /// - Returns: A URL to open Google Maps at the specified location.
-    private static func googleMapsURL(for coordinates: CLLocationCoordinate2D) -> URL? {
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "maps.google.com"
-        urlComponents.path = "/maps"
-        urlComponents.queryItems = [
-            URLQueryItem(name: "ll", value: "\(coordinates.latitude),\(coordinates.longitude)"),
-            URLQueryItem(name: "q", value: ""),
         ]
         return urlComponents.url
     }

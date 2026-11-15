@@ -1,4 +1,3 @@
-#if canImport(SwiftUI)
 import SwiftUI
 
 /// A `UIHostingController` subclass that applies `.fontDesign(.rounded)` to its root view.
@@ -65,4 +64,3 @@ open class SFKRoundedHostingController<Content: View>: UIHostingController<AnyVi
         }
     }
 }
-#endif

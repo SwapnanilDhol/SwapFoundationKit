@@ -10,14 +10,8 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(LinkPresentation)
 import LinkPresentation
-#endif
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
 /// A protocol for providing detailed information about items that can be shared or displayed.
 ///
@@ -41,7 +35,6 @@ public protocol ItemDetailSource {
     var text: String { get }
 }
 
-#if canImport(UIKit) && os(iOS)
 public extension ItemDetailSource {
     /// Returns a UIKit-ready activity item for `UIActivityViewController`.
     func makeActivityItem() -> UIActivityItemSource {
@@ -103,7 +96,6 @@ public final class ActivityItemDetailSource: NSObject, UIActivityItemSource {
         title.isEmpty ? text : title
     }
 
-    #if canImport(LinkPresentation)
     public func activityViewControllerLinkMetadata(
         _ activityViewController: UIActivityViewController
     ) -> LPLinkMetadata? {
@@ -116,6 +108,4 @@ public final class ActivityItemDetailSource: NSObject, UIActivityItemSource {
         }
         return metadata
     }
-    #endif
 }
-#endif

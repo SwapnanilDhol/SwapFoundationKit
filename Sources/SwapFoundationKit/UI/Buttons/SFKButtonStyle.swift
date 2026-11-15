@@ -29,28 +29,6 @@ public enum SFKButtonStyle: Sendable, Equatable {
     /// Renamed to ``borderless``. The old name described placement, not appearance.
     @available(*, deprecated, renamed: "borderless")
     public static var toolbar: Self { .borderless }
-
-    var defaultTitleColor: Color {
-        switch self {
-        case .primary:
-            .white
-        case .secondary, .borderless:
-            .primary
-        case .destructive:
-            .white
-        }
-    }
-
-    var defaultSubtitleColor: Color {
-        switch self {
-        case .primary:
-            Color.white.opacity(0.8)
-        case .secondary, .borderless:
-            .secondary
-        case .destructive:
-            Color.white.opacity(0.8)
-        }
-    }
 }
 
 /// Semantic content alignment for an `SFKButton`.

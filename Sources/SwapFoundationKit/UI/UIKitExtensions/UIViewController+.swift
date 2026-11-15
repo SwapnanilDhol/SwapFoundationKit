@@ -10,12 +10,8 @@
  *****************************************************************************/
 
 import Foundation
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
-#if canImport(UIKit) && os(iOS)
 @MainActor
 public extension UIViewController {    
     /// Adds a child view controller and adds its view as a subview.
@@ -62,4 +58,3 @@ public extension UIViewController {
         return self
     }
 }
-#endif

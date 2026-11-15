@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 import SwiftUI
-import AVFoundation
+import AudioToolbox
 
 /// A single key in ``SFKNumberPad``.
 ///

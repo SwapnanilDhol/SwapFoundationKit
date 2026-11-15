@@ -11,10 +11,7 @@
 
 import Foundation
 import Combine
-
-#if canImport(UIKit) && os(iOS)
 import UIKit
-#endif
 
 // MARK: - DeeplinkHandler Protocol
 

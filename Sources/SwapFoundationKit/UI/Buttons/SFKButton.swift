@@ -304,7 +304,6 @@ public extension SFKButton {
     }
 }
 
-@available(iOS 16, *)
 private extension SFKButton {
     @ViewBuilder
     func styledButton<Content: View>(_ content: Content) -> some View {

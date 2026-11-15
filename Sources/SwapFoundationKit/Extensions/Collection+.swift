@@ -51,30 +51,13 @@ public extension Collection {
         return chunks
     }
 
-    /// Groups elements into groups of the specified size
-    /// Similar to chunked but pads the last group if necessary
+    /// Groups elements into groups of the specified size.
+    /// Behaves like ``chunked(into:)``: the last group holds any remaining
+    /// elements and is not padded.
     /// - Parameter size: The size of each group
     /// - Returns: An array of groups
     func grouped(by size: Int) -> [[Element]] {
-        guard size > 0 else { return [] }
-
-        var groups: [[Element]] = []
-        var currentGroup: [Element] = []
-
-        for element in self {
-            currentGroup.append(element)
-            if currentGroup.count == size {
-                groups.append(currentGroup)
-                currentGroup = []
-            }
-        }
-
-        // Pad the last group with nil if needed (represented as optionals)
-        if currentGroup.isNotEmpty {
-            groups.append(currentGroup)
-        }
-
-        return groups
+        chunked(into: size)
     }
 
     /// Returns the first element matching the predicate
