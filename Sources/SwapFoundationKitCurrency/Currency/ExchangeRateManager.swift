@@ -257,50 +257,10 @@ struct HTTPClientExchangeRateTransport: ExchangeRateTransport {
     let client: HTTPClient
 
     func data(from url: URL) async throws -> (Data, HTTPURLResponse) {
-        let response = try await client.execute(ExchangeRateFetchRequest(url: url))
+        // The feed URL is sent verbatim (query ordering, escapes, fragments, trailing slash).
+        // XML feeds are not JSON requests, so HTTPClient's JSON default headers are disabled.
+        let request = URLNetworkRequest(url: url, timeoutInterval: 60, usesClientDefaultHeaders: false)
+        let response = try await client.execute(request)
         return (response.data, response.response)
-    }
-}
-
-/// Builds a GET `NetworkRequest` from the configured exchange rate URL.
-private struct ExchangeRateFetchRequest: NetworkRequest {
-    let scheme: String
-    let baseURL: String
-    let path: String
-    let method: HTTPMethod = .get
-    let parameters: [String: String]?
-    let headers: [String: String]? = nil
-    let body: Data? = nil
-    /// Preserve the exact feed URL, including query ordering, escapes, fragments, and trailing
-    /// slash. XML feeds are not JSON requests, so HTTPClient's JSON defaults are disabled.
-    let timeoutInterval: TimeInterval = 60
-    let explicitURL: URL?
-    let usesClientDefaultHeaders: Bool = false
-
-    init(url: URL) {
-        self.explicitURL = url
-        self.scheme = url.scheme ?? "https"
-        let host = url.host ?? ""
-        if let port = url.port {
-            self.baseURL = "\(host):\(port)"
-        } else {
-            self.baseURL = host
-        }
-        self.path = url.path.isEmpty ? "/" : url.path
-        self.parameters = Self.queryParameters(from: url)
-    }
-
-    private static func queryParameters(from url: URL) -> [String: String]? {
-        guard let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: true)?.queryItems else {
-            return nil
-        }
-
-        var parameters: [String: String] = [:]
-        for item in queryItems {
-            if let value = item.value {
-                parameters[item.name] = value
-            }
-        }
-        return parameters.isEmpty ? nil : parameters
     }
 }

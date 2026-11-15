@@ -72,7 +72,7 @@ public final class NetworkService: ObservableObject {
     /// - Throws: NetworkError
     public func get(from url: URL, headers: [String: String] = [:], timeout: TimeInterval = 30) async throws -> Data {
         return try await performRequest(
-            BasicURLNetworkRequest(
+            URLNetworkRequest(
                 url: url,
                 method: .get,
                 headers: headers,
@@ -96,7 +96,7 @@ public final class NetworkService: ObservableObject {
         }
 
         return try await performRequest(
-            BasicURLNetworkRequest(
+            URLNetworkRequest(
                 url: url,
                 method: .post,
                 headers: requestHeaders,
@@ -121,7 +121,7 @@ public final class NetworkService: ObservableObject {
         }
 
         return try await performRequest(
-            BasicURLNetworkRequest(
+            URLNetworkRequest(
                 url: url,
                 method: .put,
                 headers: requestHeaders,
@@ -139,7 +139,7 @@ public final class NetworkService: ObservableObject {
     /// - Throws: NetworkError
     public func delete(from url: URL, timeout: TimeInterval = 30) async throws -> Data {
         return try await performRequest(
-            BasicURLNetworkRequest(
+            URLNetworkRequest(
                 url: url,
                 method: .delete,
                 timeoutInterval: timeout
@@ -209,7 +209,7 @@ public final class NetworkService: ObservableObject {
         guard Self.isValidHTTPURL(url) else {
             throw NetworkError.invalidURL
         }
-        let request = BasicURLNetworkRequest(url: url, method: .get)
+        let request = URLNetworkRequest(url: url, method: .get)
         let response = try await client.download(request, to: destination, progressHandler: progressHandler)
 
         if let expectedBytes {
@@ -340,59 +340,6 @@ private final class SameOriginRedirectDelegate: NSObject, URLSessionTaskDelegate
             return
         }
         completionHandler(request)
-    }
-}
-
-private struct BasicURLNetworkRequest: NetworkRequest {
-    let scheme: String
-    let baseURL: String
-    let path: String
-    let method: HTTPMethod
-    let parameters: [String: String]?
-    let headers: [String: String]?
-    let body: Data?
-    let timeoutInterval: TimeInterval
-    let cachePolicy: URLRequest.CachePolicy
-    let explicitURL: URL?
-
-    init(
-        url: URL,
-        method: HTTPMethod,
-        parameters: [String: String]? = nil,
-        headers: [String: String]? = nil,
-        body: Data? = nil,
-        timeoutInterval: TimeInterval = 30,
-        cachePolicy: URLRequest.CachePolicy = .useProtocolCachePolicy
-    ) {
-        self.scheme = url.scheme ?? "https"
-        let host = url.host ?? ""
-        if let port = url.port {
-            self.baseURL = "\(host):\(port)"
-        } else {
-            self.baseURL = host
-        }
-        self.path = url.path.isEmpty ? "/" : url.path
-        self.method = method
-        self.parameters = parameters ?? Self.queryParameters(from: url)
-        self.headers = headers
-        self.body = body
-        self.timeoutInterval = timeoutInterval
-        self.cachePolicy = cachePolicy
-        self.explicitURL = url
-    }
-
-    private static func queryParameters(from url: URL) -> [String: String]? {
-        guard let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: true)?.queryItems else {
-            return nil
-        }
-
-        var parameters: [String: String] = [:]
-        for item in queryItems {
-            if let value = item.value {
-                parameters[item.name] = value
-            }
-        }
-        return parameters.isEmpty ? nil : parameters
     }
 }
 

@@ -390,58 +390,14 @@ public struct HTTPClientImageTransport: ImageProcessorTransport {
     }
 
     public func data(from url: URL) async throws -> (Data, HTTPURLResponse) {
-        let response = try await client.execute(RemoteImageFetchRequest(url: url))
+        // 60s preserves the original `URLSession.shared` session default; without it the
+        // request would inherit `NetworkRequest`'s 30s default, halving the timeout and burning
+        // retry budget. An image fetch must not advertise `Content-Type`/`Accept:
+        // application/json` (`HTTPClient.defaultHeaders`); with no headers of its own this
+        // reproduces `URLSession.shared`'s original behavior of sending no `Accept` header.
+        let request = URLNetworkRequest(url: url, timeoutInterval: 60, usesClientDefaultHeaders: false)
+        let response = try await client.execute(request)
         return (response.data, response.response)
-    }
-}
-
-/// Builds a GET `NetworkRequest` from an arbitrary remote image URL.
-///
-/// `explicitURL` keeps a presigned/token-signed URL byte-faithful; the decomposed properties stay
-/// populated for diagnostics.
-private struct RemoteImageFetchRequest: NetworkRequest {
-    let scheme: String
-    let baseURL: String
-    let path: String
-    let method: HTTPMethod = .get
-    let parameters: [String: String]?
-    let headers: [String: String]? = nil
-    let body: Data? = nil
-    /// Preserves the original 60s `URLSession.shared` session default. Without this, the request
-    /// would inherit `NetworkRequest`'s 30s default, halving the timeout and burning retry budget
-    /// (see `ExchangeRateManager`, which shares this request-building pattern).
-    let timeoutInterval: TimeInterval = 60
-    let explicitURL: URL?
-    /// `false`: an image fetch must not advertise `Content-Type`/`Accept: application/json`
-    /// (`HTTPClient.defaultHeaders`). Leaving `headers` `nil` alongside this reproduces
-    /// `URLSession.shared`'s original behavior of sending no `Accept` header at all.
-    let usesClientDefaultHeaders: Bool = false
-
-    init(url: URL) {
-        self.explicitURL = url
-        self.scheme = url.scheme ?? "https"
-        let host = url.host ?? ""
-        if let port = url.port {
-            self.baseURL = "\(host):\(port)"
-        } else {
-            self.baseURL = host
-        }
-        self.path = url.path.isEmpty ? "/" : url.path
-        self.parameters = Self.queryParameters(from: url)
-    }
-
-    private static func queryParameters(from url: URL) -> [String: String]? {
-        guard let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: true)?.queryItems else {
-            return nil
-        }
-
-        var parameters: [String: String] = [:]
-        for item in queryItems {
-            if let value = item.value {
-                parameters[item.name] = value
-            }
-        }
-        return parameters.isEmpty ? nil : parameters
     }
 }
 
