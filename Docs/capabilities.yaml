@@ -474,7 +474,6 @@ domains:
       - NetworkService.init(client:monitor:backendHeadersProvider:backendOrigins:)
     docs:
       - Sources/SwapFoundationKitNetworking/README.md
-      - Docs/guides/networking-rfc.md
     examples:
       - Sources/SwapFoundationKitNetworking/Networking.swift
       - Sources/SwapFoundationKitNetworking/NetworkService.swift
@@ -626,7 +625,7 @@ domains:
       - SFKToastStyle
       - SFKToastConfiguration
     docs:
-      - Docs/migration/v4-phase-1-product-extraction.md
+      - Docs/migration/v4-simplification-migration-guide.md
       - Sources/SwapFoundationKitToast/README.md
     examples:
       - Sources/SwapFoundationKitToast/ToastManager.swift

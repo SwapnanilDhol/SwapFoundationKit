@@ -13,7 +13,7 @@ import SwapFoundationKitSync
 | `WatchSyncService` | protocol | Activate, send data, envelope publisher, event publisher |
 | `WatchSyncEnvelope` | struct | Versioned, timestamped payload wrapper |
 | `WatchSyncTransport` | enum | `.applicationContext`, `.userInfo`, `.messageData`, `.file` |
-| `WatchSyncOptions` | struct | Preferred transport, fallback order, max payload bytes |
+| `WatchSyncOptions` | struct | Preferred transport, fallback order, `maxInlinePayloadBytes` (default 50,000), `enableLegacyPayloadDecoding` |
 | `WatchSyncEvent` | enum | `.activated`, `.sent`, `.received`, `.error` |
 | `WatchSyncError` | enum | `.identifierMismatch`, `.payloadEncodingFailed`, etc. |
 | `WatchSyncServiceImpl` | class | Canonical service implementation over the private WatchConnectivity adapter |

@@ -32,7 +32,7 @@ Each module has its own README with full API reference and code examples:
 | [ItemSync](../Sources/SwapFoundationKitSync/ItemSync/README.md) | App Group sync for widgets and extensions |
 | [WatchSync](../Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity |
 | [Protocols](../Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
-| [Ads](../Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration |
+| [Ads](../Sources/SwapFoundationKitGoogleMobileAds/README.md) | Google Mobile Ads integration |
 
 ## Migration Tools
 
@@ -40,7 +40,7 @@ Each module has its own README with full API reference and code examples:
 |----------|-------------|
 | [Audit Catalog](migration/catalog.yaml) | Capabilities with tier classifications for auditing host apps |
 | [Capabilities Catalog](capabilities.yaml) | Agent-first index for checking SFK before building host-app features |
-| [Agent Workflow](development/agents.md) | LLM agent workflow for auditing and migration |
+| [Agent Workflow](../AGENTS.md) | LLM agent workflow for auditing and migration |
 | [Feature Discovery Workflow](development/feature-discovery.md) | How agents should check SFK first during host-app development |
 
 ## Refactoring and Migration Planning
@@ -50,7 +50,7 @@ Each module has its own README with full API reference and code examples:
 | [v4 Simplification Refactoring Plan](development/v4-simplification-refactoring-plan.md) | Maintainer-facing architecture, API, sequencing, acceptance criteria, and rollback plan |
 | [v4 Simplification Migration Guide](migration/v4-simplification-migration-guide.md) | Staged v3-to-v4 procedure for package maintainers and host applications |
 | [v4 API Ledger](development/v4-api-ledger.md) | Final measured API reduction, reviewed retention/budgets, and historical baseline |
-| [v4 Implementation Status](development/v4-implementation-status.md) | Completed cleanup, exact verification evidence, and release limitations |
+| [v4 Implementation Status](development/v4-implementation-status.md) | Completed cleanup, verification evidence, and release limitations |
 
 ## Agent Files
 
@@ -63,7 +63,6 @@ Each module has its own README with full API reference and code examples:
 
 | Guide | Description |
 |-------|-------------|
-| [Networking RFC](guides/networking-rfc.md) | Proposed refactor for the networking stack |
 | [Google Mobile Ads](guides/google-mobile-ads.md) | Optional ads module setup and migration |
 | [Onboarding Components](guides/onboarding.md) | Generic onboarding UI components reference |
 | [Settings UI](guides/settings.md) | Build host-app settings screens with SFK components |

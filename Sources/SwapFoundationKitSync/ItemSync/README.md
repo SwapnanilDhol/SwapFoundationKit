@@ -24,7 +24,7 @@ struct MyData: SyncableData {
     static var syncIdentifier: String { "my-data" }
     var name: String
 }
-extension Array: SyncableData where Element: SyncableData {}
+// Arrays of SyncableData are SyncableData already; no extension needed.
 
 // Create sync service
 let sync = ItemSyncServiceFactory.create(appGroupIdentifier: "group.com.app")
@@ -34,7 +34,7 @@ try await sync.save([myData])
 sync.syncPublisher.sink { event in
     switch event {
     case .dataSaved: WidgetCenter.shared.reloadAllTimelines()
-    case .watchDataSent: print("Synced to watch")
+    case .watchDataSent: Logger.info("Synced to watch")
     default: break
     }
 }
@@ -48,3 +48,4 @@ sync.syncPublisher.sink { event in
 - `Implementations/DataSyncServiceImpl.swift` — Concrete orchestrator
 - `Implementations/AppGroupFileStorageService.swift` — App Group storage
 - `ItemSyncServiceFactory.swift` — Factory
+- `Core/WatchConnectivityService.swift` + `Implementations/WatchConnectivityServiceImpl.swift` — internal WatchConnectivity adapter used by WatchSync

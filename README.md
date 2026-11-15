@@ -2,7 +2,7 @@
 
 Composable SwiftUI components, semantic design tokens, and opt-in services for iOS development.
 
-This checkout contains the breaking v4 API cleanup. See the [implementation status](Docs/development/v4-implementation-status.md) and [migration guide](Docs/migration/v4-simplification-migration-guide.md) before upgrading; these changes are not a released v4 tag.
+Version 4 is a breaking release: features moved into opt-in products and legacy APIs were removed. Read the [v4 migration guide](Docs/migration/v4-simplification-migration-guide.md) before upgrading from 3.x.
 
 ## Requirements
 
@@ -21,8 +21,7 @@ of the default product.
 ```swift
 // Package.swift
 dependencies: [
-    // Use this local checkout while v4 is unreleased; adjust the path as needed.
-    .package(path: "../SwapFoundationKit")
+    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "4.0.0")
 ],
 targets: [
     .target(name: "YourApp", dependencies: [
@@ -79,13 +78,13 @@ Open [`SwapFoundationKitHost.xcodeproj`](SwapFoundationKitHost/SwapFoundationKit
 | [ItemSync](Sources/SwapFoundationKitSync/ItemSync/README.md) | App Group data sync for widgets and extensions |
 | [WatchSync](Sources/SwapFoundationKitSync/WatchSync/README.md) | Type-safe Watch Connectivity transport |
 | [Protocols](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
-| [Ads](Sources/SwapFoundationKit/Ads/README.md) | Google Mobile Ads integration (optional module) |
+| [Ads](Sources/SwapFoundationKitGoogleMobileAds/README.md) | Google Mobile Ads integration (optional product) |
 | [Toast](Sources/SwapFoundationKitToast/README.md) | Toast presentation (optional product) |
 | [Onboarding](Sources/SwapFoundationKitOnboarding/README.md) | Full-screen onboarding/wizard layout for iPhone, iPad and iPhone Duo: two panes or a fold-aware column, step, footer and selection containers (optional product) |
 
 ## Localization
 
-SwapFoundationKit ships no string catalog. Its user-facing copy (`Text("…")` literals, `LocalizedStringKey` parameters, and `String(localized:)` defaults such as `"Cancel"`, `"Settings"`, or the feedback form copy) resolves against the **host app's main bundle**, so translations live in the app's own `Localizable.xcstrings`.
+SwapFoundationKit ships no string catalog. Its user-facing copy (`Text("…")` literals, `LocalizedStringKey` parameters, and `String(localized:)` defaults such as `"Cancel"` or `"Settings"`) resolves against the **host app's main bundle**, so translations live in the app's own `Localizable.xcstrings`.
 
 Xcode only extracts keys from the app's own sources, so add the package keys to your catalog by hand and translate them there. Interpolated strings use format keys — for example `"\(count) Selected"` becomes the key `%lld Selected`. Any key you leave out falls back to English.
 
@@ -99,7 +98,7 @@ Strings you pass into components that take a `String` (`SFKButton`, `SFKTextFiel
 | [Docs/capabilities.yaml](Docs/capabilities.yaml) | Agent-first feature discovery catalog |
 | [Docs/migration/catalog.yaml](Docs/migration/catalog.yaml) | Audit catalog for host-app overlap detection |
 | [Docs/migration/migration-guide.md](Docs/migration/migration-guide.md) | Step-by-step migration guide |
-| [Docs/guides/](Docs/guides/) | In-depth guides (networking, ads, onboarding, settings) |
+| [Docs/guides/](Docs/guides/) | In-depth guides (ads, onboarding, settings, chips) |
 
 ## Agent Workflow
 

@@ -4,5 +4,5 @@ Opt-in Toast presentation. Add the `SwapFoundationKitToast` product and
 `import SwapFoundationKitToast` when the host app needs `ToastManager`,
 `SFKToastKind`, `SFKToastStyle`, or `SFKToastConfiguration`.
 
-See [the extraction guide](../Docs/migration/v4-phase-1-product-extraction.md)
-for the source-breaking product move.
+These types moved out of the default product in v4; see the
+[v4 migration guide](../../Docs/migration/v4-simplification-migration-guide.md).

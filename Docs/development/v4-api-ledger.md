@@ -1,6 +1,9 @@
 # SwapFoundationKit v4 API Ledger
 
-Status: breaking package cleanup implemented. See [verification status](v4-implementation-status.md).
+Status: historical record of the v4 reduction, measured on 2026-09-01. Rows for the
+`SwapFoundationKitPulse` and `SwapFoundationKitFeedback` products describe products that were
+removed before 4.0.0. The current inventory is [api-baseline.txt](api-baseline.txt); see
+[verification status](v4-implementation-status.md).
 
 ## Final measured surface — 2026-09-01
 

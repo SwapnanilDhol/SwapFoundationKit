@@ -1,13 +1,14 @@
 # v4 implementation and verification status
 
-The breaking package cleanup is implemented. This is repository integration, not
-a published v4 release or approval to change backend enforcement.
+The breaking package cleanup shipped as 4.0.0. This record does not approve any change
+to backend enforcement.
 
 ## Completed
 
-- Twelve explicit products; default UI/utility product has no third-party
+- Eleven explicit products; default UI/utility product has no third-party
   dependency edges. Networking, Authentication, Sync, Media, Currency, RemoteAI,
-  Firebase, Feedback, Ads, Pulse, and Toast are opt-in.
+  Firebase, Ads, Toast, and Onboarding are opt-in. The Pulse and Feedback products
+  built during v4 development were removed before release.
 - Shared semantic `SFKTheme`; compact controls and focused customization modifiers.
 - Compatibility wrapper module removed; platform availability is handled at the
   direct call site where an iOS 26 API is required.
@@ -23,7 +24,7 @@ a published v4 release or approval to change backend enforcement.
   constructor, with existing lifecycle, wire formats, key derivation, storage,
   cancellation, pending-enrollment recovery, and binding rules preserved.
 - In-repository catalog migrated; primary plan, detailed migration guide, module
-  references, 23-domain catalog, and 38-capability audit catalog synchronized.
+  references, 24-domain catalog, and 38-capability audit catalog synchronized.
 - The compiler API inventory, measured budgets, constructor bounds, obsolete APIs,
   static configuration-closure, catalog, dependency, package-test, and catalog-build
   checks/scripts remain available for local/manual verification. The newly added
@@ -76,11 +77,18 @@ been run as part of this local merge; these checks remain local/manual.
 
 ## Release/adoption limitations
 
-No external app was migrated, no release tag was created, and no backend was
-deployed. Two external apps are **not** a compatibility-removal or merge gate.
+Before the 4.0.0 tag no external app was migrated and no backend was deployed. Two external apps are **not** a compatibility-removal or merge gate.
 Real-device App Attest, Watch/App Group integration, full visual snapshots,
 contrast, and Reduce Motion validation remain release/adoption work. Rendered
 Dynamic Type checks provide bounded coverage, not a complete accessibility audit.
 Existing Swift 6 migration warnings remain; the package uses Swift 5 language mode.
 
-The requested handoff is a non-destructive merge into local `main`, without pushing.
+## 4.0.0 release check — 2026-11-16
+
+Xcode 27.2; iPhone 18 Pro simulator. An internal cleanup (dead code, iOS-only guards,
+duplicated private helpers, stale docs) landed before the tag with no public API change:
+raw symbol graphs for all 11 products were identical before and after, and the full test
+run matched the pre-cleanup run (211 XCTest with the same two toolchain-dependent
+`SFKButtonColorResolverTests` failures, 133 Swift Testing tests passing). The API baseline
+was regenerated with this toolchain. Open follow-ups are in
+[refactoring-todo.md](refactoring-todo.md).

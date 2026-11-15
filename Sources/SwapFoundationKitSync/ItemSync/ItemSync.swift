@@ -18,7 +18,7 @@ import Foundation
 ///
 /// ## Quick Start
 /// ```swift
-/// import SwapFoundationKit.ItemSync
+/// import SwapFoundationKitSync
 ///
 /// // Define your data model
 /// struct UserProfile: SyncableData {
@@ -47,8 +47,8 @@ import Foundation
 /// - ✅ Protocol-Based: Highly testable and extensible
 ///
 /// ## Requirements
-/// - iOS 13.0+ / watchOS 6.0+ / macOS 10.15+
-/// - Swift 5.0+
+/// - iOS 17.0+
+/// - Swift 5.9+
 /// - App Group capability (for widget support)
 /// - Watch Connectivity capability (for Watch support)
 ///

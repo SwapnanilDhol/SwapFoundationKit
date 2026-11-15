@@ -1,112 +1,51 @@
 # Refactoring TODO
 
-Internal SFK improvements tracked for future work. These do not affect public API.
+Open follow-ups after the 4.0.0 cleanup. Git history holds the completed items.
 
-## Priority: High
+## Behaviour bugs (need a fix and a test; deliberately left out of 4.0.0)
 
-### 1. Split Large Extension Files
+| Area | Location | Problem |
+|------|----------|---------|
+| AES encryption | `Sources/SwapFoundationKit/Core/SecurityService.swift` (`AESEncryption`) | Ignores `dataOutMoved`, so ciphertext and plaintext keep trailing zero bytes; uses a nil IV; lets `withUnsafeBytes` base addresses escape. Round-trips likely fail for inputs that are not a multiple of 16 bytes. No tests. Fixing it changes the wire format of anything already encrypted. |
+| Credit card validation | `Sources/SwapFoundationKit/Extensions/String+.swift` (`isValidCreditCard`) | `isNumbers` accepts any Unicode decimal digit, so `Int(String($0))!` can crash on, for example, Arabic-Indic digits. |
+| Toast overlap | `Sources/SwapFoundationKitToast/ToastManager.swift` (`show`) | Passes `config.autoHide` as `allowToastOverlap`. |
+| Authenticated requests | `Sources/SwapFoundationKitAuthentication/Authentication/URLRequestSnapshot.swift` | Not verified: no `explicitURL` and `parameters` is nil, so the query string may be dropped when the URL is rebuilt. |
+| Exchange rate cache | `Sources/SwapFoundationKitCurrency/Currency/ExchangeRateManager.swift` | Not verified: parser callbacks start unawaited tasks, so the cache may be saved before all rates are merged. |
+| Header merge | `Sources/SwapFoundationKitAuthentication/Authentication/AuthenticatedHTTPClient.swift` (`merge`) | Not verified: merges header names case-sensitively, unlike `sfkMergedHTTPHeaders`. |
+| App Store URL | `Sources/SwapFoundationKit/Protocols/AppMetaData.swift` | Not verified: builds the URL from the bundle ID where the numeric App Store ID belongs. |
 
-| File | Status | Notes |
-|------|--------|-------|
-| `UIColor+.swift` | Done | Added RGBA struct, made hex init optional, added Adjustment enum |
-| `String+.swift` | Done | Consolidated duplicates, reduced from 444 to 229 lines |
-| `Date+Extensions.swift` | Done | Cached formatters and calendar |
+## Public API leftovers (need a breaking or additive release)
 
-**All large extension files have been refactored.**
+| Item | Notes |
+|------|-------|
+| `SFKButtonStyle.toolbar` | Deprecated alias for `.borderless`; no callers remain in this repo. |
+| `DeviceInfo` | Public enum whose members are all internal, so hosts cannot use it. Either make the members public or remove the type. |
+| Redundant `@available(iOS 16, *)` and similar on public types | The package minimum is iOS 17. |
+| `UIColor.rgbComponents()` | Marked as legacy; `RGBAColorComponents` replaces it. |
+| `String.localizedResource` | Still carries `@available(macOS 13.0, *)` from macOS support. |
 
-### 2. DateFormatter Performance
+## Internal cleanup
 
-| Issue | Location | Recommendation |
-|-------|----------|----------------|
-| 17+ DateFormatter instances created repeatedly | `Date+Extensions.swift` | Use cached formatters as static properties |
-| Calendar.current accessed 18+ times | `Date+Extensions.swift` | Cache as static property |
+| Item | Notes |
+|------|-------|
+| `HTTPClient` vs `NetworkService` | `NetworkService` is a `@MainActor` facade over `HTTPClient`; document when to pick each. |
+| Origin parsing | `NetworkService`'s `HTTPOrigin`, `AuthenticatedOrigin`, `AuthenticatedHTTPClient.isApproved` and the two redirect delegates each parse origins separately. |
+| Ads provider | `GoogleAdsProvider`'s interstitial and rewarded load/present pairs are near-identical; that file only compiles for device builds. |
+| File naming | `UserDefault.swift` vs `UserDefaults+.swift`; extension files mix `X+.swift`, `X+Extensions.swift` and `X+Topic.swift`. |
+| `ItemDetailSource.swift` / `DefaultItemDetailSource.swift` | Tiny protocol and its only implementation could share a file. |
+| Large files | `Networking.swift`, `AuthenticatedSessionService.swift`, `SFKTextField.swift` exceed ~600 lines. |
 
-**Why**: Creating DateFormatter is expensive; repeated access to Calendar.current is wasteful.
+## Tooling and CI
 
----
-
-## Priority: Medium
-
-### 3. ConfigurationService Refactor
-
-| File | Lines | Recommendation |
-|------|-------|----------------|
-| `ConfigurationService.swift` | 418 | Extract convenience methods into separate helpers |
-
-**Why**: Large service with multiple responsibilities.
-
-### 4. NetworkError Consolidation
-
-| Status | Notes |
-|--------|-------|
-| Not an issue | `NetworkError` is defined once in `Networking.swift`. `NetworkService.swift` references it. `HTTPClientError` is a typealias, not a duplicate. |
-
-### 5. HTTPClient vs NetworkService
-
-| Issue | Recommendation |
-|-------|----------------|
-| Two overlapping networking abstractions | Clarify public API boundaries per [networking-rfc.md](../guides/networking-rfc.md) |
-
----
-
-## Priority: Low
-
-### 6. Small Protocol/Impl Consolidation
-
-| Protocol | Implementation | Recommendation |
-|----------|----------------|----------------|
-| `ItemDetailSource.swift` | `DefaultItemDetailSource.swift` | Combine into single file |
-
-**Why**: Tiny protocol with single implementation; consolidation improves discoverability.
-
-### 7. URL Hardcoding
-
-| Status | Notes |
-|--------|-------|
-| Done | `ExchangeRateManager` URL extracted to `defaultExchangeRateURL` constant with configurable `init(exchangeRateURL:)`. `AppMetaData` still has some hardcoded fallbacks. |
-
-### 8. String Extension Naming
-
-| Status | Notes |
-|--------|-------|
-| Done | Removed `isEmail` alias, removed `removingWhitespaces` duplicate. |
-
-### 9. UserDefaults File Naming
-
-| Files | Issue |
-|-------|-------|
-| `UserDefault.swift` vs `UserDefaults+.swift` | Pluralization inconsistency |
-
----
-
-## Completed
-
-| # | Issue | Resolution |
-|---|-------|------------|
-| 7 | URL Hardcoding in `ExchangeRateManager.swift` | Extracted to `ExchangeRateManager.defaultExchangeRateURL` constant. Added `init(exchangeRateURL:)` for custom URLs. |
-| 8 | String Extension Naming | Removed `isEmail` alias (duplicate of `isValidEmail`). Removed `removingWhitespaces` (duplicate of `withoutWhitespace`). |
-| 2 | DateFormatter/Date+Extensions performance | Added CachedFormatters struct with cached DateFormatter, ISO8601, and RelativeDateTimeFormatter instances. Cached Calendar.current as private var. Reduced file from 469 to 296 lines. |
-| 1 | UIColor+.swift (434 lines) | Added RGBAColorComponents struct for structured component access. Made UIColor(hex:) return optional. Added Adjustment enum for type-safe color adjustments. Consolidated gradient and component methods. Reduced from 434 to 328 lines. |
-
-### New Additions (2026-05-20)
-
-| # | Capability | Description |
-|---|-----------|-------------|
-| A1 | SecurityService encryption fix | Replaced random-key-per-call `generateEncryptionKey()` with persistent Keychain-stored key via `persistentEncryptionKey()`. |
-| A2 | Access control audit | Made 6 internal types public: `DeviceInfo`, `Throttler`/`AsyncThrottler`, `JSONCodable`/`JSONCodingError`, `FileManager+`, `Result+`, `CGTypes+`. |
-| A3 | ExchangeRateManager enhancements | Added configurable URL init, 5-min cache TTL, exponential backoff retry (3 attempts), HTTP status validation. |
-| A4 | New capabilities extracted from host apps | Added 13 new public types: `SFKAppEnvironment`, `SFKLaunchArguments`, `SFKAppearanceManager`, `SFKRoundedHostingController`, `SFKProGate`, `SFKNotificationService`, `SFKFirebaseLogger`, `SFKImageCompressor`, `Collection+Async`, enhanced `Currency` sorting/formatting, `Coordinator` dismiss/presentItemPicker. (`SFKPostHogLogger` later removed — host apps should implement their own PostHog `AnalyticsLogger`.) |
-| A5 | Host app duplicate cleanup | Deleted 14 duplicate files across PassMaker, SubscriptionTracker, and MoneyTracker. |
-
----
+| Item | Notes |
+|------|-------|
+| CI coverage | `.github/workflows/ci.yml` builds only the host app, which links 2 of 11 products, and runs no tests. |
+| Toolchain-dependent tests | `SFKButtonColorResolverTests` expects `Color.red`/`.yellow` to resolve to pure RGB; the iOS 27 SDK returns `#FF4245`/`#FFCC00`. |
 
 ## File Organization
 
-### Settings Module (14 files)
-`Sources/SwapFoundationKit/UI/Settings/` is intentionally fragmented for modular imports. Each row type is a separate file to avoid forcing consumers to import the entire module.
+### Settings Module
+`Sources/SwapFoundationKit/UI/Settings/` is intentionally fragmented: each row type is a separate file.
 
 ### UIKit vs SwiftUI Extensions
-- `UIKitExtensions/`: 8 files — extensive UIKit helpers
-- `SwiftUIExtensions/`: 1 file — glass compatibility only
-
-This asymmetry is intentional. Glass compatibility is the only SwiftUI-specific need; everything else uses cross-framework patterns.
+`UIKitExtensions/` holds the UIKit helpers; `SwiftUIExtensions/` holds glass and scroll-edge helpers only. This asymmetry is intentional.

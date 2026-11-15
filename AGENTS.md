@@ -14,7 +14,7 @@ Read files in this order:
 
 1. `Docs/capabilities.yaml` — Agent-first capability catalog
 2. `Docs/migration/catalog.yaml` — Curated audit catalog with tiers
-3. Module READMEs under `Sources/SwapFoundationKit/` — Per-module API references
+3. Module READMEs under `Sources/<Product>/` — Per-module API references
 4. `README.md` — Quick reference with module index
 5. `SKILL.md` — Trigger keywords and quick capability lookup
 
@@ -100,7 +100,11 @@ When tasked with "migrate [capability] to SFK":
 
 ## Adding a New Capability
 
-1. Place source files under the appropriate `Sources/SwapFoundationKit/` subdirectory
+1. Place source files in the target that owns the capability: `Sources/SwapFoundationKit/` for
+   dependency-free UI, services and utilities, or the matching `Sources/SwapFoundationKit<Product>/`
+   target for networking, authentication, sync, media, currency, remote AI, Firebase, ads, Toast or
+   onboarding. The default target must not gain third-party dependencies
+   (`Scripts/dependency-gate.sh` checks this).
 2. Follow conventions:
    - `SFK` prefix for public UI types
    - No prefix for protocols
@@ -128,30 +132,34 @@ SwapFoundationKit/
 ├── README.md                             ← Parent index linking to modules
 ├── AGENTS.md                             ← This file — LLM workflow document
 ├── SKILL.md                              ← Environment trigger + quick lookup
-├── Package.swift
+├── Package.swift                         ← 11 library products
 ├── Docs/
 │   ├── README.md                         ← Documentation index
-│   ├── capabilities.yaml                ← Feature discovery catalog
+│   ├── capabilities.yaml                 ← Feature discovery catalog
 │   ├── migration/
-│   │   ├── catalog.yaml                 ← Audit catalog
-│   │   └── migration-guide.md
+│   │   ├── catalog.yaml                  ← Audit catalog
+│   │   ├── migration-guide.md
+│   │   └── v4-simplification-migration-guide.md  ← 3.x → 4.0 upgrade
 │   ├── guides/                           ← In-depth guides
 │   ├── reference/                        ← Audit checklists
-│   └── development/
-│       ├── agents.md                     ← (Legacy) agent workflows
-│       ├── feature-discovery.md
-│       └── refactoring-todo.md
-└── Sources/SwapFoundationKit/
-    ├── Core/README.md                    ← Networking, security, backup
-    ├── Services/README.md                ← Haptics, logging, analytics, etc.
-    ├── UI/README.md                      ← Buttons, settings, onboarding, etc.
-    ├── Extensions/README.md              ← Date, String, Collection, etc.
-    ├── Utilities/README.md               ← Debouncer, Throttler, environment
-    ├── Currency/README.md                ← Currency + exchange rates
-    ├── ImageProcessor/README.md          ← Image processing + compression
-    ├── ItemSync/README.md                ← App Group sync
-    ├── WatchSync/README.md               ← Watch Connectivity
-    ├── Protocols/README.md               ← Coordinator, AppMetaData
-    ├── Compatibility/README.md           ← iOS 26+ wrappers
-    └── Ads/README.md                     ← Google Mobile Ads
+│   └── development/                      ← API baseline, budgets, v4 records
+├── Scripts/                              ← API baseline, acceptance and dependency gates
+└── Sources/
+    ├── SwapFoundationKit/                ← Default product (no third-party dependencies)
+    │   ├── Core/README.md                ← Security, backup
+    │   ├── Services/README.md            ← Haptics, logging, analytics, etc.
+    │   ├── UI/README.md                  ← Buttons, settings, onboarding, etc.
+    │   ├── Extensions/README.md          ← Date, String, Collection, etc.
+    │   ├── Utilities/README.md           ← Debouncer, Throttler, environment
+    │   └── Protocols/README.md           ← Coordinator, AppMetaData
+    ├── SwapFoundationKitNetworking/README.md       ← HTTP client, reachability
+    ├── SwapFoundationKitAuthentication/README.md   ← App Attest, sessions
+    ├── SwapFoundationKitSync/                      ← ItemSync/README.md, WatchSync/README.md
+    ├── SwapFoundationKitMedia/                     ← ImageProcessor/README.md
+    ├── SwapFoundationKitCurrency/                  ← Currency/README.md
+    ├── SwapFoundationKitRemoteAI/README.md
+    ├── SwapFoundationKitFirebase/README.md
+    ├── SwapFoundationKitGoogleMobileAds/README.md  ← Google Mobile Ads
+    ├── SwapFoundationKitToast/README.md
+    └── SwapFoundationKitOnboarding/README.md       ← Onboarding layout and flow containers
 ```

@@ -1,8 +1,8 @@
 # SwapFoundationKit v4 Migration Guide
 
-This guide describes the breaking v4 API in this checkout. It is not a promise
-that a v4 tag has been published. Pin your current release until your app's call
-sites have been migrated; use a local package reference while validating v4.
+This guide covers the breaking changes between SwapFoundationKit 3.x and 4.0.0.
+Stay on your current 3.x pin until your app's call sites have been migrated, then
+move to `from: "4.0.0"`.
 
 The [primary plan](../development/v4-simplification-refactoring-plan.md) explains
 the architecture. The [API ledger](../development/v4-api-ledger.md) and
@@ -37,15 +37,23 @@ merging the package.
 | Image transformation, compression, cache and remote loading | `SwapFoundationKitMedia` |
 | Currency metadata and exchange rates | `SwapFoundationKitCurrency` |
 | Backend AI requests | `SwapFoundationKitRemoteAI` |
-| Feedback flow | `SwapFoundationKitFeedback` |
-| Optional integrations | `SwapFoundationKitPulse`, `SwapFoundationKitToast`, `SwapFoundationKitFirebase`, `SwapFoundationKitGoogleMobileAds` |
+| Onboarding layout rules and flow containers | `SwapFoundationKitOnboarding` |
+| Optional integrations | `SwapFoundationKitToast`, `SwapFoundationKitFirebase`, `SwapFoundationKitGoogleMobileAds` |
 
 There is no `SwapFoundationKitLegacy` product. Optional products are not
 automatically re-exported by the default import.
 
+Two products from the v4 development branch did not ship in 4.0.0:
+`SwapFoundationKitFeedback` (use the separate
+[FeedbackBuddy](https://github.com/SwapnanilDhol/feedback-buddy) package) and
+`SwapFoundationKitPulse` (attach your own logger through `SFKLogSink` and
+`SFKNetworkInstrumentation`).
+
 ```swift
-// Package.swift — adjust this local path for your checkout.
-dependencies: [.package(path: "../SwapFoundationKit")],
+// Package.swift
+dependencies: [
+    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "4.0.0"),
+],
 targets: [
     .target(name: "YourApp", dependencies: [
         .product(name: "SwapFoundationKit", package: "SwapFoundationKit"),
@@ -57,6 +65,14 @@ targets: [
 Add the product to each consuming app/widget/extension target and import its
 module in every file that uses its symbols. A transitive product dependency is
 not a replacement for an explicit Swift import.
+
+### Toast moved to an opt-in product
+
+`ToastManager`, `SFKToastKind`, `SFKToastStyle`, and `SFKToastConfiguration` moved
+from `SwapFoundationKit` to `SwapFoundationKitToast`, so the default product no
+longer links the Toast-Swift dependency. The APIs themselves are unchanged: add
+the `SwapFoundationKitToast` product and `import SwapFoundationKitToast` next to
+`import SwapFoundationKit` in files that show toasts.
 
 ## 3. Recommended migration order
 
@@ -310,7 +326,7 @@ payload schemas. `SFKFirebaseLogger` requires forwarding handlers supplied by
 the host's Firebase installation. It is not an automatic Firebase SDK dependency.
 
 Use `AppLinkOpener` for external URLs and a host router for navigation. Pass
-entitlement policy into `SFKAccessGate`. Pulse, Toast, ads, feedback and RemoteAI
+entitlement policy into `SFKAccessGate`. Toast, ads, Firebase and RemoteAI
 remain optional; preserve each integration's documented initialization order.
 
 ## 6. Verification and rollback

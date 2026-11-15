@@ -62,7 +62,7 @@ Read files in this order:
 
 ### Add a New SFK Component
 
-1. Place source files under the appropriate `Sources/SwapFoundationKit/` subdirectory
+1. Place source files in the owning target: `Sources/SwapFoundationKit/` for dependency-free code, otherwise the matching `Sources/SwapFoundationKit<Product>/` target
 2. Follow conventions: `SFK` prefix for UI types, `*Service`/`*Manager`/`*Helper` for services
 3. Create or update the module README
 4. Update `Docs/migration/catalog.yaml` and `Docs/capabilities.yaml`
@@ -94,6 +94,6 @@ Read files in this order:
 | ItemSync | [ItemSync/README.md](Sources/SwapFoundationKitSync/ItemSync/README.md) | SyncableData, DataSyncService, ItemSyncServiceFactory |
 | WatchSync | [WatchSync/README.md](Sources/SwapFoundationKitSync/WatchSync/README.md) | WatchSyncService, WatchSyncEnvelope, WatchSyncTransport |
 | Protocols | [Protocols/README.md](Sources/SwapFoundationKit/Protocols/README.md) | Coordinator, ValueDefaultProvider, AppMetaData |
-| Ads | [Ads/README.md](Sources/SwapFoundationKitGoogleMobileAds/README.md) | AdsConfiguration, AdUnitConfiguration |
+| Ads (opt-in) | [GoogleMobileAds/README.md](Sources/SwapFoundationKitGoogleMobileAds/README.md) | AdsManager, AdsConfiguration, AdUnitConfiguration |
 | Toast (opt-in) | [Toast/README.md](Sources/SwapFoundationKitToast/README.md) | ToastManager, SFKToastKind, SFKToastStyle, SFKToastConfiguration |
 | Onboarding (opt-in) | [Onboarding/README.md](Sources/SwapFoundationKitOnboarding/README.md) | SFKOnboardingWindow, SFKOnboardingStep, SFKOnboardingFooter, SFKTwoPaneSplit, SFKOnboardingWideWindowMode, sfkFoldAwareColumn, SFKOrientationPolicy |

@@ -65,7 +65,8 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 | `SFKChipStyle` | enum | `primary` or `secondary` action-chip emphasis |
 | `SFKBadge` | View | Non-interactive capsule status label (PRO, TODAY, PAUSED), tinted or neutral |
 | `SFKSelectableChip` | View | State-driven selectable chip with glass effect, theme feedback, and stroke |
-| `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds (iOS 16+) |
+| `SFKMenuChip` | View | Chip-styled label that presents a native SwiftUI `Menu` |
+| `SFKChipFlowLayout` | Layout | Wrapping flex-flow layout for chip clouds |
 
 ### Number Pad
 | Type | Kind | Description |
@@ -90,7 +91,7 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 |------|------|-------------|
 | `AppFooterView<Primary, Secondary>` | View | Safe-area-aware action footer accepting caller-supplied buttons, with stacked or side-by-side layout and material or solid background |
 | `SFKSegmentedProgress` | View | Capsule-style step progress indicator with a configurable expanded current segment |
-| `SFKTypography` | (modifiers) | `.sfkFlowTitleStyle()`, `.sfkFlowSubtitleStyle()`, etc. |
+| `View.sfkFlowTitleStyle()` and siblings | modifiers | Rounded flow typography: title, subtitle, card title, card body, chip (`SFKTypography.swift`) |
 | `SFKCard` | View | Card container with icon, background, padding |
 
 ### Pickers
@@ -130,9 +131,12 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 | `SFKProBannerView` | View | Pro upgrade banner |
 | `AlertPresenter` | enum | Main-actor UIKit alert, confirmation, action-sheet, and text-input presenter |
 | `AlertAction` / `AlertActionStyle` | model | Typed action title, handler, and semantic role |
-| `PhotoPicker` | class | PHPickerViewController wrapper |
 | `SFKAppearanceManager` | enum | Global rounded UIKit typography, plus `applyRoundedFonts(to:)` to re-patch a live `UINavigationBar` / `UINavigationItem` after SwiftUI replaces its appearances |
 | `SFKRoundedHostingController` | class | `UIHostingController` with `.fontDesign(.rounded)` that re-applies rounded navigation fonts across the appear/layout lifecycle |
+| `SFKEmptyStateView` | View | Icon, title, message, and optional action for empty lists and screens |
+| `SFKAppPromotion` | struct | A promoted app: App Store ID, URL scheme, campaign-tagged App Store URL |
+| `SFKAppPromotionCard` | View | Dismissible card advertising another app |
+| `SFKAppStorePresenter` | enum | Presents the App Store overlay for a promotion, falling back to opening the App Store page |
 
 ## Quick Examples
 
@@ -352,9 +356,12 @@ UIApplication.shared.requestReview(reason: "transactionSaved")
 | `UIView+Layout.swift` | DSL: `anchor()`, `fillSuperview()`, `centerInSuperview()` |
 | `UIView+Hierarchy.swift` | `addSubviews()`, `allSubViewsOf()`, `removeAllSubviews()` |
 | `UIViewController+.swift` | Child VC management, top-most/root traversal |
-| `UIApplication+.swift` | `topViewController()`, `foregroundKeyWindow`, `foregroundActiveScene`, `endEditing()`, `requestReview(reason:)` |
 | `UIApplication+SafeArea.swift` | Safe area inset shortcuts |
 | `CGTypes+Extensions.swift` | CGPoint/CGSize/CGRect/CGVector/UIEdgeInsets math |
+| `CALayer+PixelSampling.swift` | `pickColor(at:)` reads the color at a point in a layer |
+
+`UIApplication+.swift` (`topViewController()`, `foregroundKeyWindow`, `foregroundActiveScene`,
+`endEditing()`, `requestReview(reason:)`) sits directly in `UI/`.
 
 ## Source Files
 
@@ -368,11 +375,14 @@ UIApplication.shared.requestReview(reason: "transactionSaved")
 - `ItemPicker/` — typed view/configuration and item/action models
 - `Effects/` — Aura layer, glow background, top aura
 - `SwiftUIExtensions/` — Glass button modifiers, availability-safe scroll edge effects (`sfkSoftScrollEdgeEffect`, `sfkHiddenScrollEdgeEffect`; no-op below iOS 26)
-- `UIKitExtensions/` — 8 files covering UIColor, UIImage, UIView, etc.
+- `UIKitExtensions/` — 8 files covering UIColor, UIImage, UIView, CALayer, etc.
+- `AppPromotion/` — SFKAppPromotion, SFKAppPromotionCard, SFKAppStorePresenter
+- `EmptyState/` — SFKEmptyStateView
 - `BarcodeScanner/` — BarcodeScannerScreen, view, configuration
 - `ProBanner/` — SFKProBannerView
 - `AlertPresenter.swift` — Alerts and confirmations
-- `PhotoPicker.swift` — PHPicker wrapper
+- `PhotoPicker.swift` — PhotoPicker (UIKit) and SFKPhotoPicker (SwiftUI)
+- `SFKTheme.swift` — semantic theme tokens
 - `SFKAppearanceManager.swift` — UIKit rounded typography
 - `SFKRoundedHostingController.swift` — Rounded font hosting controller
 - `UIApplication+.swift` — Top view controller, scene/window lookup, review prompt

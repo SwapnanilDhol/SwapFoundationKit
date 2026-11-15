@@ -1,6 +1,6 @@
 # Core and optional infrastructure
 
-The default product retains security and backup utilities. Networking,
+The default product retains security and backup utilities. Networking
 and Authentication have explicit product boundaries. Environment/configuration
 policy belongs to the host; there is no SFK bootstrap or configuration service.
 The combined reference below identifies APIs across those products; it does not
@@ -13,6 +13,9 @@ mean they are all available from `import SwapFoundationKit`.
 | `AppAttestService`, `AuthenticatedSessionService`, `AuthenticatedHTTPClient` | `SwapFoundationKitAuthentication` |
 
 ## Public API
+
+Only `SecurityService` and `BackupService` ship in this folder; the rest are listed here for
+reference and live in the Networking and Authentication products (see the table above).
 
 | Type | Kind | Description |
 |------|------|-------------|

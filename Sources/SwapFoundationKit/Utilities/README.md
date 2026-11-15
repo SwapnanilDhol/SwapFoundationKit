@@ -49,7 +49,7 @@ if SFKAppEnvironment.current.isDebug {
 
 // Launch Arguments
 if SFKLaunchArguments.hasFlag("-force-pro") {
-    ProManager.shared.isProEnabled = true
+    entitlements.forceProForTesting() // host-owned entitlement store
 }
 if SFKLaunchArguments.isAutomationMode {
     skipOnboarding = true

@@ -1,6 +1,7 @@
 # SwapFoundationKit v4 Simplification Refactoring Plan
 
-Status: breaking package cleanup implemented; final verification is recorded in the implementation status
+Status: historical. Shipped in 4.0.0; final verification is recorded in the implementation status.
+The planned Pulse and Feedback products were removed before release.
 
 Maintainer amendment: the newly added API/dependency/acceptance GitHub workflows
 have been removed, and the existing CI workflow is unchanged. The checks remain
@@ -8,8 +9,7 @@ local/manual scripts; references below to adding automated CI gates describe the
 original plan, not the current automation configuration.
 
 The maintainer has explicitly requested completion and merge without an external-app
-pilot prerequisite. The [finalization brief](v4-finalization-brief.md) supersedes the
-earlier two-app approval gate. Historical rationale is retained; other repositories
+pilot prerequisite, superseding the earlier two-app approval gate. Historical rationale is retained; other repositories
 and backend deployment are not part of this task.
 
 This document turns the SFK architecture audit into an implementation brief for package maintainers. Names and code snippets prefixed with “design target” describe the intended v4 shape; they are not promises that those APIs exist today. For the consumer-facing sequence, see the [v4 simplification migration guide](../migration/v4-simplification-migration-guide.md).

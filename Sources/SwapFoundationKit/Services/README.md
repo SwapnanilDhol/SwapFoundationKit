@@ -20,14 +20,13 @@ below.
 | `AnalyticsEvent` | protocol | Event type with `rawValue` and optional `parameters` |
 | `DefaultAnalyticsEvent` | struct | Concrete event for ad-hoc tracking |
 | `UserDefault` | property wrapper | Type-safe, observable UserDefaults with SwiftUI binding support |
-| `SharedUserDefaults` | property wrapper | Type-safe app-group defaults with an explicit suite identifier |
 | `UserDefaultKeyProtocol` | protocol | Enum-based key definition for UserDefaults |
 | `DeeplinkHandler` | protocol | URL and user activity handling with Combine publisher |
 | `DeeplinkRoute` | protocol | Parsable route types for deeplink routing |
 | `DeeplinkEvent` | struct | Emitted event with route, URL, and source |
 | `PasteboardService` | class | Wraps `UIPasteboard.general` with typed payloads |
 | `LocationSearchService` | class | MapKit location autocomplete and reverse geocoding |
-| `DeviceInfo` | enum | Device model, OS version, screen size, idiom checks |
+| `SFKDeviceFamily` / `UIDevice.deviceFamily` | enum / property | Phone, pad, or Mac (Catalyst) device family |
 | `AppLinkOpener` | enum | URL opening with App Store, Maps, reviews support |
 | `FileExportService` | class | Share sheet presenter for data and Encodable objects |
 | `FileImportService` | class | Document picker for importing files with delegate |
@@ -69,9 +68,7 @@ enum AppKeys: String, UserDefaultKeyProtocol {
 }
 @UserDefault(AppKeys.hasOnboarded, default: false) var hasOnboarded
 
-@SharedUserDefaults(AppKeys.hasOnboarded, default: false, appGroupIdentifier: "group.com.example.app")
-var sharedHasOnboarded
-sharedHasOnboarded = true
+// App Group defaults: `SharedUserDefaults` ships in the opt-in SwapFoundationKitSync product.
 
 // Deeplink
 enum AppRoute: DeeplinkRoute {
@@ -95,10 +92,11 @@ await SFKNotificationService.shared.post(title: "Reminder", body: "...")
 `SFKToastStyle`/`SFKToastConfiguration` now ship in the opt-in `SwapFoundationKitToast` product. Add the product
 you need and change `import SwapFoundationKit` to
 `import SwapFoundationKitToast` at call sites — the APIs themselves are unchanged. See
-[Docs/migration/v4-phase-1-product-extraction.md](../../../Docs/migration/v4-phase-1-product-extraction.md).
+the [v4 migration guide](../../../Docs/migration/v4-simplification-migration-guide.md).
 
 This target still owns the seams opt-in products plug into: `SFKLogSink`/`SFKLogSinkRegistry`
-here, and `SFKURLSessionPerforming`/`SFKNetworkInstrumentation` in `Core/`.
+here. The networking seams (`SFKURLSessionPerforming`/`SFKNetworkInstrumentation`) live in the
+opt-in `SwapFoundationKitNetworking` product.
 
 Firebase integration is intentionally opt-in. Add the `SwapFoundationKitFirebase`
 product and inject `SFKFirebaseLogger` with host-owned handlers; it has no
@@ -139,10 +137,10 @@ see [its module reference](../../SwapFoundationKitNetworking/README.md).
 - `UserDefault.swift` + `UserDefaults+.swift` — Type-safe defaults
 - `PasteboardService.swift` — Clipboard access
 - `LocationSearchService.swift` — MapKit search
-- `DeviceInfo.swift` — Hardware info
+- `DeviceInfo.swift` — `SFKDeviceFamily` and `UIDevice.deviceFamily`
 - `AppLinkOpener.swift` — URL opening
 - App Store lookup lives in the `SwapFoundationKitNetworking` product.
 - `FileExportService.swift` + `FileImportService.swift` — File I/O
-- `ItemDetailSource.swift` + `DefaultItemDetailSource.swift` + `ActivityItemDetailSource` — Sharing (`makeActivityItem()`)
+- `ItemDetailSource.swift` (including `ActivityItemDetailSource`) + `DefaultItemDetailSource.swift` — Sharing (`makeActivityItem()`)
 - `SFKAccessPolicy.swift` — injected entitlement policy and gate
 - `SFKNotificationService.swift` — Local notifications

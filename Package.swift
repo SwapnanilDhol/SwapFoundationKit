@@ -69,7 +69,6 @@ let package = Package(
             name: "SwapFoundationKit",
             dependencies: [],
             exclude: [
-                "Ads/README.md",
                 "Core/README.md",
                 "Extensions/README.md",
                 "Protocols/README.md",
@@ -83,7 +82,8 @@ let package = Package(
             dependencies: [
                 "SwapFoundationKit",
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
-            ]
+            ],
+            exclude: ["README.md"]
         ),
         .target(
             name: "SwapFoundationKitToast",
