@@ -336,7 +336,7 @@ public final class HTTPClient {
             let (data, response) = result
 
             guard let httpResponse = response as? HTTPURLResponse else {
-                log(.error, "Received non-HTTP response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
+                log(.error, "Received non-HTTP response for \(finalRequest.logSummary)")
                 throw NetworkError.invalidResponse
             }
 
@@ -346,19 +346,19 @@ public final class HTTPClient {
             guard networkResponse.isSuccessful else {
                 log(
                     .error,
-                    "Request failed with HTTP \(httpResponse.statusCode) for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")\(formattedBodySuffix(data))"
+                    "Request failed with HTTP \(httpResponse.statusCode) for \(finalRequest.logSummary)\(formattedBodySuffix(data))"
                 )
                 throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: data)
             }
 
             return networkResponse
         } catch let error as URLError {
-            log(.error, "Transport error for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
+            log(.error, "Transport error for \(finalRequest.logSummary): \(error.localizedDescription)")
             throw NetworkError.from(error)
         } catch let error as NetworkError {
             throw error
         } catch {
-            log(.error, "Unexpected request failure for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
+            log(.error, "Unexpected request failure for \(finalRequest.logSummary): \(error.localizedDescription)")
             throw NetworkError.from(error)
         }
     }
@@ -397,26 +397,13 @@ public final class HTTPClient {
         logRequest(finalRequest)
 
         let fileManager = FileManager.default
-        let destinationDirectory = destination.deletingLastPathComponent()
 
         do {
             if usesCustomProtocolTransport {
                 let (data, response) = try await sessionPerformer.data(for: finalRequest)
+                let httpResponse = try validatedDownloadResponse(response, for: finalRequest, errorBody: data)
 
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    log(.error, "Received non-HTTP download response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
-                    throw NetworkError.invalidResponse
-                }
-
-                guard (200...299).contains(httpResponse.statusCode) else {
-                    log(.error, "Download failed with HTTP \(httpResponse.statusCode) for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
-                    throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: data)
-                }
-
-                try fileManager.createDirectoryIfNeeded(at: destinationDirectory)
-                if fileManager.fileExists(at: destination) {
-                    try fileManager.removeItem(at: destination)
-                }
+                try fileManager.clearDestination(destination)
                 try data.write(to: destination, options: .atomic)
 
                 let snapshot = NetworkDownloadProgress(
@@ -440,20 +427,9 @@ public final class HTTPClient {
                 progressHandler: progressHandler
             )
 
-            guard let httpResponse = response as? HTTPURLResponse else {
-                log(.error, "Received non-HTTP download response for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
-                throw NetworkError.invalidResponse
-            }
+            let httpResponse = try validatedDownloadResponse(response, for: finalRequest, errorBody: nil)
 
-            guard (200...299).contains(httpResponse.statusCode) else {
-                log(.error, "Download failed with HTTP \(httpResponse.statusCode) for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL")")
-                throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: nil)
-            }
-
-            try fileManager.createDirectoryIfNeeded(at: destinationDirectory)
-            if fileManager.fileExists(at: destination) {
-                try fileManager.removeItem(at: destination)
-            }
+            try fileManager.clearDestination(destination)
             try fileManager.moveFile(from: temporaryURL, to: destination)
 
             return NetworkDownloadResponse(
@@ -466,8 +442,25 @@ public final class HTTPClient {
             throw error
         } catch {
             fileManager.removeItemSafely(at: destination)
-            log(.error, "Download transport failure for \(finalRequest.httpMethod ?? "REQUEST") \(finalRequest.url?.absoluteString ?? "unknown URL"): \(error.localizedDescription)")
+            log(.error, "Download transport failure for \(finalRequest.logSummary): \(error.localizedDescription)")
             throw NetworkError.from(error)
+        }
+    }
+}
+
+private extension URLRequest {
+    /// "METHOD url" for log messages.
+    var logSummary: String {
+        "\(httpMethod ?? "REQUEST") \(url?.absoluteString ?? "unknown URL")"
+    }
+}
+
+private extension FileManager {
+    /// Creates the destination's directory and removes any file already there.
+    func clearDestination(_ destination: URL) throws {
+        try createDirectoryIfNeeded(at: destination.deletingLastPathComponent())
+        if fileExists(at: destination) {
+            try removeItem(at: destination)
         }
     }
 }
@@ -478,6 +471,23 @@ private final class DownloadTaskBox: @unchecked Sendable {
 }
 
 private extension HTTPClient {
+    /// Checks a download response is HTTP 2xx, logging and throwing otherwise.
+    func validatedDownloadResponse(
+        _ response: URLResponse,
+        for request: URLRequest,
+        errorBody: Data?
+    ) throws -> HTTPURLResponse {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            log(.error, "Received non-HTTP download response for \(request.logSummary)")
+            throw NetworkError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            log(.error, "Download failed with HTTP \(httpResponse.statusCode) for \(request.logSummary)")
+            throw NetworkError.httpError(statusCode: httpResponse.statusCode, data: errorBody)
+        }
+        return httpResponse
+    }
+
     var usesCustomProtocolTransport: Bool {
         !(session.configuration.protocolClasses ?? []).isEmpty
     }

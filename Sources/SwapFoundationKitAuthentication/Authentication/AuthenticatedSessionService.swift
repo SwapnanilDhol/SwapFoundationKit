@@ -512,32 +512,37 @@ public actor AuthenticatedSessionService {
     }
 
     private func loadSession() throws -> AuthenticatedSessionCredential? {
-        guard let data = try storage.loadData(forKey: configuration.storageKeys.session) else { return nil }
-        if let value = try? JSONDecoder().decode(AuthenticatedSessionCredential.self, from: data) {
-            return value
-        }
-        if let legacy = try storage.loadLegacyData(forKey: configuration.storageKeys.session),
-           let decode = configuration.legacyMigration?.decodeSession,
-           let value = try decode(legacy) {
-            try storage.storeData(try JSONEncoder().encode(value), forKey: configuration.storageKeys.session)
-            return value
-        }
-        try storage.removeData(forKey: configuration.storageKeys.session)
-        return nil
+        try loadStoredValue(
+            forKey: configuration.storageKeys.session,
+            legacyDecode: configuration.legacyMigration?.decodeSession
+        )
     }
 
     private func loadBinding() throws -> AuthenticatedSessionBindingMetadata? {
-        guard let data = try storage.loadData(forKey: configuration.storageKeys.binding) else { return nil }
-        if let value = try? JSONDecoder().decode(AuthenticatedSessionBindingMetadata.self, from: data) {
+        try loadStoredValue(
+            forKey: configuration.storageKeys.binding,
+            legacyDecode: configuration.legacyMigration?.decodeBinding
+        )
+    }
+
+    /// Loads a stored JSON value. When it does not decode, tries the host's legacy
+    /// decoder on the legacy entry and re-stores the result in the current format;
+    /// if neither works, removes the unreadable entry.
+    private func loadStoredValue<Value: Codable>(
+        forKey key: String,
+        legacyDecode: (@Sendable (Data) throws -> Value?)?
+    ) throws -> Value? {
+        guard let data = try storage.loadData(forKey: key) else { return nil }
+        if let value = try? JSONDecoder().decode(Value.self, from: data) {
             return value
         }
-        if let legacy = try storage.loadLegacyData(forKey: configuration.storageKeys.binding),
-           let decode = configuration.legacyMigration?.decodeBinding,
+        if let legacy = try storage.loadLegacyData(forKey: key),
+           let decode = legacyDecode,
            let value = try decode(legacy) {
-            try storage.storeData(try JSONEncoder().encode(value), forKey: configuration.storageKeys.binding)
+            try storage.storeData(try JSONEncoder().encode(value), forKey: key)
             return value
         }
-        try storage.removeData(forKey: configuration.storageKeys.binding)
+        try storage.removeData(forKey: key)
         return nil
     }
 

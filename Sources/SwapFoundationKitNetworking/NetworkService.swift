@@ -309,18 +309,6 @@ private struct HTTPOrigin: Hashable {
         self.port = url.port ?? defaultPort
     }
 
-    init?(host: String, scheme: String, port: Int?) {
-        let normalizedScheme = scheme.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let normalizedHost = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard let defaultPort = Self.defaultPort(for: normalizedScheme),
-              !normalizedHost.isEmpty else { return nil }
-        let normalizedPort = port ?? defaultPort
-        guard (1...65_535).contains(normalizedPort) else { return nil }
-        self.scheme = normalizedScheme
-        self.host = normalizedHost
-        self.port = normalizedPort
-    }
-
     private static func defaultPort(for scheme: String) -> Int? {
         switch scheme {
         case "https": return 443

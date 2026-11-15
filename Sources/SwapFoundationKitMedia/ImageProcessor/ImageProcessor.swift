@@ -227,17 +227,15 @@ public class ImageProcessor {
             return processedImage
         } catch let error as ImageProcessorError {
             throw error
-        } catch let error as NetworkError {
+        } catch {
             // Routing through `HTTPClient` means a non-2xx response (e.g. a 404 error page)
             // throws `NetworkError.httpError` before we ever see response bytes, instead of
             // falling through to `UIImage(data:)` and failing decode as `.invalidRemoteImageData`
             // the way the old direct `URLSession.shared.data(from:)` call did. We deliberately
-            // surface this as `.downloadFailed` (we never received usable image bytes) rather
-            // than `.invalidRemoteImageData` (bytes were received but weren't a decodable image),
-            // so callers can tell "server refused/failed to serve the image" apart from
-            // "server returned garbage".
-            throw ImageProcessorError.downloadFailed(error)
-        } catch {
+            // surface that, like any other transport failure, as `.downloadFailed` (we never
+            // received usable image bytes) rather than `.invalidRemoteImageData` (bytes were
+            // received but weren't a decodable image), so callers can tell "server
+            // refused/failed to serve the image" apart from "server returned garbage".
             throw ImageProcessorError.downloadFailed(error)
         }
     }
