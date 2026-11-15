@@ -1,6 +1,6 @@
 version: 2
 module: SwapFoundationKit
-last_reviewed: "2026-08-31"
+last_reviewed: "2026-11-16"
 purpose: >
   Agent-first capability index for host-app feature development. Use this file
   before implementing new UI, utilities, or app infrastructure in a host app.
@@ -63,7 +63,7 @@ domains:
       - SFKSettingsToggle
     migration_notes:
       - "Preferred screen path: SFKSettingsScreen(navigationTitle:content:) with SFKSettingsSection and concrete rows; it does not erase row content."
-      - "SFKSettingsPicker uses a Binding<Value>, options, and a Value-to-String label; use SFKSettingsPickerPresentation for subtitle, icon, and tint overrides."
+      - "SFKSettingsPicker uses a Binding<Value>, options, and a Value-to-String label; use SFKSettingsPicker<Value>.Presentation for subtitle, icon, and tint overrides."
       - "SFKSettingsBindingRow keeps a Binding<Value> and action(Value) concrete; hosts own product-specific navigation and row actions."
     docs:
       - Docs/guides/settings.md
@@ -186,35 +186,6 @@ domains:
       - form input
       - validation message
 
-  - id: user_feedback
-    priority: 2
-    summary: Reusable feedback contract, attachment processing, form UI, coordinator, and backend client with host-app configuration seams.
-    when_to_check:
-      - Adding in-app feedback, bug reporting, or idea submission
-      - Sending optional screenshots and user context to a feedback backend
-      - Standardizing feedback forms across apps
-    prefer_when:
-      - The app uses the shared v1 feedback ingestion contract
-      - Product-specific analytics and subscription context can be injected
-    keep_in_host_app_when:
-      - Navigation, analytics event mapping, RevenueCat SDK access, or privacy copy is product-specific
-    public_api:
-      - SFKFeedbackCoordinator
-      - SFKFeedbackConfiguration
-      - SFKFeedbackCopy
-      - SFKFeedbackUserContextProvider
-      - SFKFeedbackUserContext
-      - SFKFeedbackInstallationIdentifierStore
-    docs:
-      - Sources/SwapFoundationKitFeedback/README.md
-    examples:
-      - Sources/SwapFoundationKitFeedback/SFKFeedbackCoordinator.swift
-    host_app_triggers:
-      - user feedback
-      - send feedback
-      - bug report form
-      - feedback screenshot
-
   - id: chips
     priority: 3
     summary: Reusable action and selectable chips with shared sizing and wrapping layouts.
@@ -324,7 +295,7 @@ domains:
       - The onboarding is deeply product-specific and only borrows some low-level UI patterns
     public_api:
       - SFKSegmentedProgress
-      - SFKTypography
+      - "View.sfkFlowTitleStyle() / sfkFlowSubtitleStyle() / sfkFlowCardTitleStyle() / sfkFlowCardBodyStyle() / sfkFlowChipStyle()"
       - SFKCard
       - AppFooterView
     docs:
