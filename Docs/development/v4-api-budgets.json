@@ -1,8 +1,8 @@
 {
   "limits": {
-    "default_top_level_types": 100,
-    "ui_top_level_types": 52,
-    "all_product_top_level_types": 223,
+    "default_top_level_types": 112,
+    "ui_top_level_types": 64,
+    "all_product_top_level_types": 237,
     "all_initializer_max_labels": 10
   },
   "original_design_targets_not_achieved": {
@@ -10,7 +10,7 @@
     "ui_top_level_types": 39,
     "all_product_top_level_types": 157
   },
-  "review_note": "Limits reflect the fresh 12-product symbol graph on 2026-09-01 after removing the compatibility wrapper module and replacing the legacy close-button wrapper with SFKCompactButtonType. Original numerical design targets were not achieved; see v4-api-ledger.md for scope and actual reductions.",
+  "review_note": "Limits reflect the 11-product symbol graph measured for v4.0.0 on 2026-11-16 (Xcode 27.2), approved by the maintainer. They rose from 100/52/223 because of features added after the 2026-09-01 review (SFKBadge, app promotion, number pad and amount input, menu chip, empty state, sectioned item pickers, and the Onboarding product). Original numerical design targets were not achieved; see v4-api-ledger.md.",
   "common_constructor_prefixes": {
     "SFKButton": 6,
     "SFKTextField": 6,
@@ -31,6 +31,10 @@
     "WatchSyncServiceImpl": 6,
     "ItemSyncServiceFactory": 6
   },
+  "initializer_label_exemptions": [
+    "SFKTheme.Colors.init(accent:text:secondaryText:background:groupedBackground:surface:groupedRowSurface:border:destructive:onAccent:onDestructive:)",
+    "SFKOnboardingFooter.init(primaryTitle:isPrimaryEnabled:isLoading:loadingAccessibilityLabel:accessibilityIdentifier:bottomSafeAreaInset:appearance:secondaryTitle:secondaryLeadingIconName:secondaryIsCircular:secondaryAccessibilityIdentifier:secondaryAction:primaryAction:)"
+  ],
   "obsolete_public_roots": [
     "SwapFoundationKit",
     "SwapFoundationKitConfiguration",
@@ -48,7 +52,6 @@
     "SFKSettingsPickerRow",
     "SFKSettingsStepperRow",
     "SFKItemPickerDelegate",
-    "SFKItemPickerSection",
     "SFKItemPickerSelectionMode",
     "SFKItemPickerViewModel",
     "SFKColorPickerDelegate"

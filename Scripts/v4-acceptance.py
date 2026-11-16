@@ -90,11 +90,13 @@ def validate_surface(rows, budgets, errors):
             fail(errors, f"surface budget exceeded: {key} measured {value}, limit {limit}")
 
     common = budgets.get("common_constructor_prefixes", {})
+    # Reviewed initializers allowed past the global label limit; new ones still fail.
+    label_exemptions = set(budgets.get("initializer_label_exemptions", []))
     for target, kind, location, symbol in rows:
         labels = initializer_labels(symbol)
         if labels is None:
             continue
-        if labels > int(limits.get("all_initializer_max_labels", 10)):
+        if labels > int(limits.get("all_initializer_max_labels", 10)) and symbol not in label_exemptions:
             fail(errors, f"initializer exceeds 10 labels: {symbol} ({labels}) at {location}")
         for prefix, max_labels in common.items():
             if symbol.startswith(prefix + ".init("):
