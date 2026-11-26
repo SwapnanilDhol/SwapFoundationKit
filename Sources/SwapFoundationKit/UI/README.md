@@ -42,7 +42,7 @@ In-app feedback lives in the separate FeedbackBuddy package
 | `SFKButtonStyle` | enum | `primary`, `secondary`, `borderless`, or `destructive` |
 | `SFKButtonAlignment` | enum | Semantic `leading`, `center`, or `trailing` content alignment |
 | `SFKCompactButton` | View | Lightweight icon-only, text-only, or icon/text action for toolbars and standalone overlay chrome |
-| `SFKCompactButtonChrome` | enum | `toolbar` (system toolbar owns sizing), `glass` (self-contained 35-point minimum circle or growing capsule) |
+| `SFKCompactButtonChrome` | enum | `toolbar` (system toolbar owns sizing), `glass` (self-contained 35-point minimum circle or growing capsule), `inline` (surface-free icon in a content row), `corner` (small quiet icon for the corner of a card) |
 | `SFKCompactButtonType` | enum | Semantic compact-button types, currently `.close` (X symbol and Close accessibility label) |
 | `SFKTheme.Feedback.Style` | enum | Shared none/light/medium/heavy feedback policy for buttons and chips |
 
@@ -137,6 +137,9 @@ use `.sfkInput(.email)`, `.sfkFocused(_:)`, `.sfkStatus(_:)`,
 | `SFKAppPromotion` | struct | A promoted app: App Store ID, URL scheme, campaign-tagged App Store URL |
 | `SFKAppPromotionCard` | View | Dismissible card advertising another app |
 | `SFKAppStorePresenter` | enum | Presents the App Store overlay for a promotion, falling back to opening the App Store page |
+| `SFKRemoteBanner` | struct | A banner from a hosted JSON file: copy, action, date window, audience (plan, app version, region, language), localizations |
+| `SFKRemoteBannerService` | class | Fetches and caches the banner file, picks the banner for this install, and remembers impressions and dismissals per banner id |
+| `SFKRemoteBannerCard` | View | Dismissible card for a remote banner |
 
 ## Quick Examples
 
@@ -377,6 +380,7 @@ UIApplication.shared.requestReview(reason: "transactionSaved")
 - `SwiftUIExtensions/` — Glass button modifiers, availability-safe scroll edge effects (`sfkSoftScrollEdgeEffect`, `sfkHiddenScrollEdgeEffect`; no-op below iOS 26)
 - `UIKitExtensions/` — 8 files covering UIColor, UIImage, UIView, CALayer, etc.
 - `AppPromotion/` — SFKAppPromotion, SFKAppPromotionCard, SFKAppStorePresenter
+- `RemoteBanner/` — SFKRemoteBanner, SFKRemoteBannerService, SFKRemoteBannerCard
 - `EmptyState/` — SFKEmptyStateView
 - `BarcodeScanner/` — BarcodeScannerScreen, view, configuration
 - `ProBanner/` — SFKProBannerView

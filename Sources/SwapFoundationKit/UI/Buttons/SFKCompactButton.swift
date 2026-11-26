@@ -38,6 +38,13 @@ public enum SFKCompactButtonChrome: Sendable {
     /// The extra hit height is offset with negative vertical padding so the
     /// row itself does not grow taller. It never applies glass.
     case inline
+
+    /// A small, quiet icon button for the corner of a card, such as the
+    /// close button on a banner.
+    ///
+    /// The symbol is drawn at caption size inside a 32pt hit target with no
+    /// surface, so it stays out of the way of the card's own content.
+    case corner
 }
 
 /// A lightweight button for toolbar actions and compact controls over content.
@@ -168,6 +175,10 @@ public struct SFKCompactButton: View {
                     .frame(minWidth: 44, minHeight: 44)
                     .padding(.vertical, -10)
                     .contentShape(Rectangle())
+            case .corner:
+                label
+                    .frame(minWidth: 32, minHeight: 32)
+                    .contentShape(Rectangle())
             case .toolbar:
                 label
             }
@@ -176,7 +187,7 @@ public struct SFKCompactButton: View {
 
     private var minimumSize: CGFloat {
         switch chrome {
-        case .toolbar, .inline:
+        case .toolbar, .inline, .corner:
             0
         case .glass:
             35
@@ -185,7 +196,7 @@ public struct SFKCompactButton: View {
 
     private var iconPadding: CGFloat {
         switch chrome {
-        case .toolbar, .inline:
+        case .toolbar, .inline, .corner:
             0
         case .glass:
             8
@@ -200,6 +211,8 @@ public struct SFKCompactButton: View {
             theme.typography.body.weight(.semibold)
         case .inline:
             theme.typography.body
+        case .corner:
+            Font.caption2.weight(.bold)
         }
     }
 
@@ -229,6 +242,8 @@ private struct CompactButtonStyleModifier: ViewModifier {
             // `.borderless` is required inside a `List`/`Form` row so the tap
             // is not captured by the row's own button/selection handling.
             content.buttonStyle(.borderless)
+        case .corner:
+            content.buttonStyle(.plain)
         }
     }
 }
@@ -241,9 +256,10 @@ private struct CompactButtonChromeModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
         switch chrome {
-        case .toolbar, .inline:
-            // Neither draws a surface: `.toolbar` defers to the navigation
-            // bar, `.inline` must stay glass-free inside content rows.
+        case .toolbar, .inline, .corner:
+            // None draws a surface: `.toolbar` defers to the navigation bar,
+            // `.inline` must stay glass-free inside content rows, and
+            // `.corner` is meant to be barely there.
             content
         case .glass:
             if #available(iOS 26, *) {

@@ -1,6 +1,6 @@
 version: 2
 module: SwapFoundationKit
-last_reviewed: "2026-11-16"
+last_reviewed: "2026-11-26"
 purpose: >
   Agent-first capability index for host-app feature development. Use this file
   before implementing new UI, utilities, or app infrastructure in a host app.
@@ -107,6 +107,40 @@ domains:
       - SKOverlay
       - SKStoreProductViewController
       - LSApplicationQueriesSchemes
+
+  - id: remote-banner
+    priority: 3
+    summary: Show a dismissible banner (a sale, an announcement) driven by a hosted JSON file, with targeting and show-once tracking per banner id.
+    when_to_check:
+      - Announcing a sale, a launch or a notice without shipping an app update
+      - Targeting a message at free or Pro users, app versions, regions or languages
+      - Showing a message once per id and never again after dismissal
+    prefer_when:
+      - The message is an inline card above a list
+      - Copy, dates and audience must be changeable remotely
+    keep_in_host_app_when:
+      - What a tap does (which paywall, which link handling) and where the card sits among other cards are product-specific
+    public_api:
+      - SFKRemoteBanner
+      - SFKRemoteBanner.isEligible(in:)
+      - SFKRemoteBanner.banners(fromPayload:)
+      - SFKRemoteBannerService
+      - SFKRemoteBannerService.refresh(force:)
+      - SFKRemoteBannerService.banner(for:)
+      - SFKRemoteBannerService.recordImpression(of:)
+      - SFKRemoteBannerService.dismiss(_:)
+      - SFKRemoteBannerCard
+    docs: []
+    examples:
+      - Sources/SwapFoundationKit/UI/RemoteBanner/SFKRemoteBanner.swift
+      - Sources/SwapFoundationKit/UI/RemoteBanner/SFKRemoteBannerService.swift
+    host_app_triggers:
+      - promo banner
+      - sale banner
+      - Black Friday
+      - remote config banner
+      - announcement card
+      - in-app message
 
   - id: buttons
     priority: 2
