@@ -92,3 +92,20 @@ run matched the pre-cleanup run (211 XCTest with the same two toolchain-dependen
 `SFKButtonColorResolverTests` failures, 133 Swift Testing tests passing). The API baseline
 was regenerated with this toolchain. Open follow-ups are in
 [refactoring-todo.md](refactoring-todo.md).
+
+## 4.1.0 release check — 2026-11-27
+
+Xcode 27.2; iPhone 17 Pro simulator. 4.1.0 adds to 4.0.0 and removes nothing:
+
+- Remote banners: `SFKRemoteBanner`, `SFKRemoteBannerService`, `SFKRemoteBannerCard` (capability
+  `remote-banner` in [capabilities.yaml](../capabilities.yaml)).
+- `SFKCompactButtonChrome.corner`, a small surface-free icon button for the corner of a card. A host that
+  switches exhaustively over `SFKCompactButtonChrome` needs a case for it.
+
+The type budget rose by the three new top-level types, to 115/67/240 ([v4-api-budgets.json](v4-api-budgets.json)).
+`Scripts/v4-acceptance.py` and `Scripts/dependency-gate.sh` pass, and the API baseline was regenerated.
+Full test run: 231 XCTest with the same two toolchain-dependent `SFKButtonColorResolverTests` failures as
+4.0.0 (they fail identically on the untouched `v4.0.0` tag), 133 Swift Testing tests passing. The 20 new
+XCTest cases cover banner decoding, targeting, localization, impressions, dismissal and caching.
+
+Goaley 1.16.1 is the first adopter, pinned to `85716b2`, the commit before this record.

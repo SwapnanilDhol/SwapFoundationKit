@@ -21,7 +21,7 @@ of the default product.
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "4.0.0")
+    .package(url: "https://github.com/SwapnanilDhol/SwapFoundationKit", from: "4.1.0")
 ],
 targets: [
     .target(name: "YourApp", dependencies: [

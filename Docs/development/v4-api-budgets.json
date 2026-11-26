@@ -10,7 +10,7 @@
     "ui_top_level_types": 39,
     "all_product_top_level_types": 157
   },
-  "review_note": "Limits reflect the 11-product symbol graph measured for v4.0.0 on 2026-11-16 (Xcode 27.2), approved by the maintainer. They rose from 100/52/223 because of features added after the 2026-09-01 review (SFKBadge, app promotion, number pad and amount input, menu chip, empty state, sectioned item pickers, and the Onboarding product). Raised by 3 (to 115/67/240) on 2026-11-26 for remote banners (SFKRemoteBanner, SFKRemoteBannerService, SFKRemoteBannerCard); that raise is pending the maintainer's review. Original numerical design targets were not achieved; see v4-api-ledger.md.",
+  "review_note": "Limits reflect the 11-product symbol graph measured for v4.0.0 on 2026-11-16 (Xcode 27.2), approved by the maintainer. They rose from 100/52/223 because of features added after the 2026-09-01 review (SFKBadge, app promotion, number pad and amount input, menu chip, empty state, sectioned item pickers, and the Onboarding product). Raised by 3 (to 115/67/240) on 2026-11-26 for remote banners (SFKRemoteBanner, SFKRemoteBannerService, SFKRemoteBannerCard); that raise shipped in 4.1.0, released at the maintainer's request on 2026-11-27. Original numerical design targets were not achieved; see v4-api-ledger.md.",
   "common_constructor_prefixes": {
     "SFKButton": 6,
     "SFKTextField": 6,
